@@ -1,0 +1,136 @@
+{
+  "app": {
+    "name": "JAPAR Akademi",
+    "tagline": "Eğitim ve yetkinlik platformu"
+  },
+  "common": {
+    "loading": "Yükleniyor…",
+    "comingSoon": "Bu bölüm sonraki iş paketlerinde açılacak.",
+    "skipToContent": "İçeriğe geç"
+  },
+  "nav": {
+    "mainMenu": "Ana menü",
+    "home": "Ana sayfa",
+    "learn": "Eğitimlerim",
+    "trainer": "Eğitmen",
+    "manage": "Yönetim",
+    "reports": "Raporlar",
+    "security": "Güvenlik",
+    "admin": "Sistem",
+    "profile": "Profil",
+    "more": "Daha fazla"
+  },
+  "auth": {
+    "login": {
+      "title": "Giriş yap",
+      "sicilLabel": "Sicil no",
+      "passwordLabel": "Şifre",
+      "showPassword": "Şifreyi göster",
+      "hidePassword": "Şifreyi gizle",
+      "sharedDevice": "Ortak cihaz (eğitim odası, şirket tableti)",
+      "sharedDeviceHint": "İşlem yapılmazsa oturum kısa süre sonra kendiliğinden kapanır.",
+      "submit": "Giriş yap",
+      "submitting": "Giriş yapılıyor…",
+      "help": "Şifrenizi unuttuysanız İK ile görüşün."
+    },
+    "errors": {
+      "invalid_input": "Sicil no ve şifrenizi girin.",
+      "invalid_credentials": "Sicil no veya şifre hatalı.",
+      "locked": "Çok fazla hatalı deneme yapıldı. Hesabınız {time} saatine kadar kilitli.",
+      "inactive": "Hesabınız aktif değil. İK ile görüşün.",
+      "rate_limited": "Bu cihazdan çok fazla deneme yapıldı. Biraz sonra tekrar deneyin."
+    },
+    "changePassword": {
+      "title": "Şifre değiştir",
+      "firstLoginInfo": "İlk girişiniz olduğu için kendinize yeni bir şifre belirleyin.",
+      "current": "Mevcut şifre",
+      "new": "Yeni şifre",
+      "confirm": "Yeni şifre (tekrar)",
+      "submit": "Şifreyi değiştir",
+      "submitting": "Kaydediliyor…",
+      "rulesTitle": "Şifre kuralları",
+      "ruleMinLength": "En az {min} karakter (yalnızca rakam da olabilir)",
+      "ruleNoSicil": "Sicil numaranızı içermesin",
+      "ruleNotCommon": "Kolay tahmin edilen bir şifre olmasın (12345678, sifre123 gibi)"
+    },
+    "passwordIssues": {
+      "too_short": "Şifre en az {min} karakter olmalı.",
+      "too_long": "Şifre çok uzun.",
+      "common": "Bu şifre çok yaygın, başka bir şifre seçin.",
+      "contains_sicil": "Şifre sicil numaranızı içeremez.",
+      "repeated": "Şifre aynı karakterin tekrarından oluşamaz.",
+      "sequential": "Şifre sıralı karakterlerden (1234, abcd gibi) oluşamaz.",
+      "same_as_current": "Yeni şifre eskisiyle aynı olamaz.",
+      "mismatch": "Yeni şifreler birbiriyle aynı değil.",
+      "current_password_invalid": "Mevcut şifre hatalı."
+    },
+    "signOut": "Çıkış yap"
+  },
+  "home": {
+    "greeting": "Merhaba, {name}",
+    "intro": "Eğitimlerinize ve görevlerinize buradan ulaşabilirsiniz."
+  },
+  "sections": {
+    "learn": {
+      "title": "Eğitimlerim",
+      "empty": "Şu anda size atanmış bir eğitim yok."
+    },
+    "trainer": {
+      "title": "Eğitmen paneli",
+      "description": "Kursiyerleriniz ve işaretlenmeyi bekleyen pratik görevler burada olacak."
+    },
+    "manage": {
+      "title": "Yönetim",
+      "description": "Pozisyon kartları, içerik kütüphanesi, soru bankası ve ekip ilerlemesi burada olacak."
+    },
+    "reports": {
+      "title": "Raporlar",
+      "description": "Eğitim, sınav ve İSG raporları burada olacak."
+    },
+    "security": {
+      "title": "Güvenlik",
+      "description": "Ziyaretçi kaydı ve tahliye yoklaması Faz 2'de açılacak."
+    },
+    "admin": {
+      "title": "Sistem",
+      "description": "Organizasyon yapısı, personel, roller ve parametreler burada olacak."
+    },
+    "more": {
+      "title": "Tüm bölümler"
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "sicil": "Sicil no",
+    "roles": "Rolleriniz",
+    "changePassword": "Şifre değiştir",
+    "sharedDevice": "Bu oturum ortak cihaz modunda açıldı."
+  },
+  "roles": {
+    "personnel": "Personel",
+    "trainer": "Pratik eğitmen",
+    "section_manager": "Bölüm sorumlusu",
+    "ohs_specialist": "İSG uzmanı",
+    "hr": "İnsan kaynakları",
+    "security": "Güvenlik",
+    "sysadmin": "Sistem yöneticisi"
+  },
+  "offline": {
+    "title": "Bağlantı yok",
+    "description": "İnternet bağlantınız kesilmiş görünüyor. Bağlantı geri gelince tekrar deneyin.",
+    "retry": "Tekrar dene"
+  },
+  "pwa": {
+    "updateAvailable": "Uygulamanın yeni sürümü hazır.",
+    "reload": "Yenile"
+  },
+  "errors": {
+    "forbidden": "Bu işlem için yetkiniz yok.",
+    "unexpected": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin."
+  },
+  "notFound": {
+    "title": "Sayfa bulunamadı",
+    "description": "Aradığınız sayfa yok ya da bu sayfayı görme yetkiniz yok.",
+    "home": "Ana sayfaya dön"
+  }
+}

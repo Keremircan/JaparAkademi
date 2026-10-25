@@ -153,7 +153,7 @@ Ziyaretçi bilgilendirmeyi tamamlayıp kuralları onaylamadan ziyaretçi kartı 
   - Ret gerekçesi zorunludur. Tüm onay ve retler değiştirilemez `approvals` kayıtlarıdır.
 - **FG-2.4** Etiketler: makine, bölüm, risk, vardiya (etiket türleri genişletilebilir). Başlık, metin ve etiketlerde Türkçe tam metin araması yapılır (PostgreSQL `tsvector`, `turkish` sözlüğü + `unaccent`).
 - **FG-2.5** Çoklu dil altyapısı: her içerik sürümü dil bazında (`tr`, `en`) tutulur. İlk sürümde personel içerikleri Türkçedir. Ziyaretçi bilgilendirmesinde İngilizce zorunludur (Faz 2).
-- **Video:** yüklenen video arka plan işinde ffmpeg ile HLS'e (360p + 720p) dönüştürülür ve MinIO'da saklanır. Oynatıcı bağlantı hızına göre kaliteyi otomatik seçer; kullanıcı da elle "düşük kalite" seçebilir.
+- **Video:** yüklenen video arka plan işinde ffmpeg ile HLS'e (360p + 720p) dönüştürülür ve Garage'da (S3 uyumlu depolama) saklanır. Oynatıcı bağlantı hızına göre kaliteyi otomatik seçer; kullanıcı da elle "düşük kalite" seçebilir.
 - **Dosya limitleri (parametre):** video 2 GB, PDF 50 MB, görsel 15 MB (yüklemede WebP'ye dönüştürülür, en fazla 2000 px).
 
 ### 4.3 Eğitim Planı ve Atama
@@ -387,7 +387,7 @@ Kanallar: **uygulama içi** (her zaman), **web push** (PWA, Faz 2) ve **e-posta*
 | UI | Tailwind CSS 4, shadcn/ui (`base-nova`), lucide ikonlar, vaul (mobil bottom sheet) |
 | Veritabanı | **PostgreSQL 17**, **Drizzle ORM** + drizzle-kit migration |
 | Kimlik doğrulama | **Better Auth** (username eklentisi = sicil no, scrypt şifre özeti, veritabanı oturumları) |
-| Dosya depolama | **MinIO** (S3 uyumlu, private bucket, süreli imzalı URL) |
+| Dosya depolama | **Garage** (S3 uyumlu, tek düğüm, private bucket, süreli imzalı URL). MinIO artık hazır imaj dağıtmadığı için tercih edilmedi |
 | Arka plan işleri | **pg-boss** (Postgres tabanlı kuyruk + zamanlanmış işler), ayrı `worker` süreci |
 | Video | ffmpeg (worker konteynerinde) → HLS 360p/720p, oynatıcı: hls.js |
 | PDF | `@react-pdf/renderer` (sertifika, katılım belgesi, raporlar), QR: `qrcode` |
@@ -398,7 +398,7 @@ Kanallar: **uygulama içi** (her zaman), **web push** (PWA, Faz 2) ve **e-posta*
 | Doğrulama | Zod (tüm Server Action ve Route Handler girdileri) |
 | i18n | next-intl (`tr` varsayılan, `en`; URL'de `tr` öneki yok) |
 | Test | Vitest (birim + entegrasyon, gerçek Postgres konteyneri), Playwright (mobil + masaüstü) |
-| Barındırma | Türkiye'de Linux VM, Docker Compose: `app`, `worker`, `postgres`, `minio`, `caddy` (HTTPS, Let's Encrypt) |
+| Barındırma | Türkiye'de Linux VM, Docker Compose: `app`, `worker`, `postgres`, `garage`, `caddy` (HTTPS, Let's Encrypt) |
 | Gözlemlenebilirlik | Yapılandırılmış JSON loglar (pino), self-hosted hata takibi (GlitchTip, Sentry SDK uyumlu), iş hatası alarmı e-postası |
 
 ### 11.2 Mimari
@@ -423,7 +423,7 @@ Kanallar: **uygulama içi** (her zaman), **web push** (PWA, Faz 2) ve **e-posta*
 └───────────────────────────────┘   └────────────┬──────────────┘
                                                  │
                                     ┌────────────▼──────────────┐
-                                    │ MinIO (medya, belgeler,   │
+                                    │ Garage (medya, belgeler,  │
                                     │ imzalar, taranmış formlar)│
                                     └───────────────────────────┘
 ```
@@ -440,15 +440,19 @@ Kanallar: **uygulama içi** (her zaman), **web push** (PWA, Faz 2) ve **e-posta*
 ### 11.4 Kimlik Doğrulama ve Oturum
 - Giriş: **sicil no + şifre.** Açık kayıt yoktur; hesapları yalnızca İK (veya sysadmin) açar.
 - Şifre politikası (parametre): en az 8 karakter, yaygın şifre listesi kontrolü. Yalnızca rakamdan oluşan şifreye izin verilir (düşük okuryazarlık için), ama 8 haneden kısa olamaz.
-- 5 hatalı denemeden sonra 15 dk kilit; IP bazlı rate limit.
+- 5 hatalı denemeden sonra 15 dk kilit (`auth.lockout_*`); aynı IP'den 15 dk içinde 20 başarısız deneme sonrası geçici engel (`auth.ip_*`). Tüm denemeler değiştirilemez `login_attempts` tablosuna yazılır (sonuç: başarılı, bilinmeyen sicil, yanlış şifre, kilitli, pasif, IP sınırı). Yanlış şifre ve bilinmeyen sicil kullanıcıya aynı genel mesajla bildirilir.
 - İlk girişte ve İK sıfırlamasından sonra şifre değiştirmek zorunludur.
 - Şifre sıfırlama: İK geçici şifre üretir (Faz 1). E-postası olan kullanıcı e-posta bağlantısıyla kendi sıfırlayabilir (Faz 1). **SMS yoktur.**
 - Oturum: kişisel cihazda 30 gün (kayan süre), ortak cihazda 10 dk işlemsizlik. Pasif personelin tüm oturumları sonlandırılır.
+  - Süre, oturumun `last_seen_at` alanıyla sunucuda uygulanır (`session.*` parametreleri). Better Auth'un kendi yenilemesi kapalıdır; çerezin mutlak üst sınırı 1 yıldır.
+  - Şifre değişince diğer tüm oturumlar kapanır; mevcut cihazın ortak cihaz bilgisi korunur.
+- **Better Auth'un HTTP rotası (`/api/auth`) açılmaz.** Giriş, çıkış ve şifre değiştirme Server Action → `src/server/services/auth.ts` üzerinden yapılır; kilit ve IP sınırı böylece atlatılamaz. Better Auth'un kendi hız sınırlayıcısı ve telemetrisi kapalıdır.
+- Better Auth her hesap için e-posta istediğinden hesap e-postası sicil no'dan üretilen geçersiz bir adrestir (`<sicil>@personel.invalid`); kişinin gerçek e-postası `personnel` tablosundadır.
 - Faz 3: Microsoft 365 (Entra ID) ile tek oturum; sicil no ↔ M365 hesabı eşleştirmesi.
 
 ### 11.5 Dosyalar ve Medya
-- Tüm dosyalar private MinIO bucket'larında tutulur, istemciye 5 dk geçerli imzalı URL verilir. HLS segmentleri için yetki, `/api/media` üzerinden imzalı manifest ile sağlanır.
-- Yükleme: istemciden doğrudan MinIO'ya imzalı PUT (çok parçalı yükleme). Yükleme tamamlanınca worker işi tetiklenir (video dönüştürme, görsel küçültme, PDF sayfa sayısı).
+- Tüm dosyalar Garage'daki private bucket'ta (`akademi-private`, önekler: `media/`, `documents/`, `signatures/` …) tutulur, istemciye 5 dk geçerli imzalı URL verilir. HLS segmentleri için yetki, `/api/media` üzerinden imzalı manifest ile sağlanır.
+- Yükleme: istemciden doğrudan Garage'a imzalı PUT (çok parçalı yükleme). Yükleme tamamlanınca worker işi tetiklenir (video dönüştürme, görsel küçültme, PDF sayfa sayısı).
 - Görsellerde EXIF konum verisi silinir.
 
 ### 11.6 Kod Düzeni
@@ -477,7 +481,7 @@ src/
 │  ├─ services/<alan>.ts                # iş kuralları, transaction, audit actor
 │  ├─ state/                            # durum makineleri
 │  ├─ jobs/ (pg-boss iş tanımları)
-│  ├─ storage/ (MinIO istemcisi)
+│  ├─ storage/ (S3 istemcisi — Garage)
 │  ├─ mail/ (Graph istemcisi)
 │  └─ crypto/ (TC şifreleme, HMAC)
 ├─ components/ (ui/, app-shell/, mobile/)
@@ -504,6 +508,7 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `personnel`: user_id (PK), sicil_no (unique), full_name, national_id_enc (AES-256-GCM), national_id_hmac, national_id_masked, phone, email, position_id, employment_type (`employee`|`intern`), hire_date, end_date, status (`active`|`passive`|`terminated`), source (`excel`|`manual`|`hr_sync`), must_change_password
 - `user_roles`: user_id, role, granted_by, granted_at
 - `role_scopes`: user_id, role (`section_manager`), org_unit_id
+- `login_attempts`: id, at, sicil_input, user_id, ip, user_agent, result — **değiştirilemez** (güvenlik kaydı)
 - `devices`: id, kind (`shared_pc`|`kiosk`), name, token_hash, registered_by, revoked_at
 
 **İçerik**
@@ -605,7 +610,7 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 | Erişilebilirlik | WCAG 2.1 AA, min 48px dokunma alanı, büyük yazı seçeneği, sesli okuma, ikon + metin birlikte |
 | Zayıf bağlantı | HLS uyarlanabilir video + elle düşük kalite seçeneği. Uygulama kabuğu önbellekte; ilk yükleme JS < 250 KB gzip |
 | Güvenlik | HTTPS (HSTS), CSP, rol bazlı yetki (Bölüm 11.3), tüm değişiklikler denetim kaydında, private depolama + imzalı URL, şifre politikası + kilit, gizli anahtarlar `.env` dosyasında (repo dışı), bağımlılık güvenlik taraması CI'da |
-| Yedekleme | Günlük `pg_dump` + MinIO bucket aynalama. Yedekler ayrı bir depolamada (Türkiye) ve şifreli tutulur. **Üç ayda bir geri dönüş testi** (runbook: `docs/runbooks/restore.md`) |
+| Yedekleme | Günlük `pg_dump` + Garage bucket aynalama (S3 senkronu). Yedekler ayrı bir depolamada (Türkiye) ve şifreli tutulur. **Üç ayda bir geri dönüş testi** (runbook: `docs/runbooks/restore.md`) |
 | Barındırma | Veriler Türkiye'de. Yurt dışı servis kullanılmaz (tek istisna: kurumun M365 kiracısı, yalnızca e-posta) |
 | Dağıtım | Docker image'ları CI'da üretilir. Sunucuda `docker compose pull && up`. Migration'lar dağıtım adımında otomatik çalışır. Staging → production |
 | CI | GitHub Actions: lint, typecheck, unit + entegrasyon testleri (Postgres servisiyle), migration kontrolü, build, Playwright smoke |
@@ -659,6 +664,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | `session.personal_days` | 30 | — | sysadmin |
 | `auth.password_min_length` | 8 | — | sysadmin |
 | `auth.lockout_attempts` / `auth.lockout_min` | 5 / 15 | — | sysadmin |
+| `auth.ip_max_failures` / `auth.ip_window_min` | 20 / 15 | — | sysadmin |
 | `recert.lead_days` | 30 | — | sysadmin |
 | `reread.due_days` | 14 | — | sysadmin |
 | `trainer.unmarked_alert_days` | 3 | — | sysadmin |
@@ -696,9 +702,9 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 ### 16.2 Faz 1 İş Paketleri (sırayla, bir seferde bir paket)
 | Paket | Kapsam |
 |---|---|
-| **1.0 Teknik temel** | Docker Compose (postgres, minio), Drizzle kurulumu, audit + değiştirilemezlik trigger altyapısı, Better Auth (sicil no + şifre, şifre değiştirme zorunluluğu, kilit), authz katmanı, uygulama kabuğu (rol bazlı menü, alt sekme/yan menü), next-intl, `settings` + parametre şeması, PWA kabuğu, CI, seed altyapısı |
+| **1.0 Teknik temel** | Docker Compose (postgres, garage), Drizzle kurulumu, audit + değiştirilemezlik trigger altyapısı, Better Auth (sicil no + şifre, şifre değiştirme zorunluluğu, kilit), authz katmanı, uygulama kabuğu (rol bazlı menü, alt sekme/yan menü), next-intl, `settings` + parametre şeması, PWA kabuğu, CI, seed altyapısı |
 | **1.1 Organizasyon ve personel** | Org ağacı, pozisyonlar, roller ve kapsamlar, personel CRUD, Excel aktarımı, geçici şifre PDF'i, TC şifreleme, KVKK aydınlatma onayı |
-| **1.2 İçerik kütüphanesi** | İçerik tipleri, sürümleme, onay akışı, etiket/arama, MinIO yükleme, worker + video HLS + görsel işleme |
+| **1.2 İçerik kütüphanesi** | İçerik tipleri, sürümleme, onay akışı, etiket/arama, Garage'a imzalı yükleme, worker + video HLS + görsel işleme |
 | **1.3 Pozisyon kartı ve plan** | Kart editörü (13 bölüm, zorunlu alan kontrolü, sürüm karşılaştırma), modül kütüphanesi, ortak modüller, plan tasarımcısı, sınav yapılandırması |
 | **1.4 Atama ve teorik eğitim** | Otomatik atama, ön koşul kilidi, içerik görüntüleme ve ilerleme takibi, ara değerlendirme, sınıf eğitimi kaydı, ortak cihaz modu, okuma görevleri |
 | **1.5 Soru bankası ve teorik sınav** | Soru bankası (Excel içe aktarma dahil), İSG soru onayı, gözetmen kodu, sınav motoru (çekim, karıştırma, süre, otomatik kayıt, puanlama), hak/bekleme, sesli okuma, sekme olayları |
@@ -719,7 +725,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | # | Konu | Karar |
 |---|---|---|
 | 1 | Barındırma | Türkiye'de bulut sunucu (Linux VM + Docker Compose). Sağlayıcı henüz seçilmedi; mimari sağlayıcıdan bağımsız |
-| 2 | Backend | Next.js + PostgreSQL + Drizzle + Better Auth + MinIO + pg-boss. Supabase ve Vercel kullanılmaz |
+| 2 | Backend | Next.js + PostgreSQL + Drizzle + Better Auth + Garage (S3) + pg-boss. Supabase ve Vercel kullanılmaz |
 | 3 | Cihaz | Kişisel telefon + şirket cihazları. Sınav için gözetmen kodu (plan bazında) |
 | 4 | Giriş | Sicil no + şifre. Şifre sıfırlama İK veya e-posta ile. M365 tek oturum Faz 3 |
 | 5 | Uygulama tipi | Mobil uyumlu web + kurulabilir PWA. Çevrimdışı yazma yok. Kiosk ekranı Faz 2 |
@@ -744,6 +750,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 24 | Pilot | Bölüm henüz seçilmedi. Seed verisi "Üretim → Pres Hattı → Pres Operatörü" örneğiyle hazırlanır |
 | 25 | SMS | Hiçbir fazda kullanılmayacak (maliyet) |
 | 26 | QR doğrulama | Herkese açık sayfa: maskeli ad + kapsam + geçerlilik + durum |
+| 27 | Dosya depolama | Garage (S3 uyumlu). MinIO topluluk imajları artık dağıtılmıyor (iş paketi 1.0'da karar verildi) |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

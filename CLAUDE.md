@@ -9,11 +9,11 @@ Yeni bir özelliğe, tabloya veya ekrana başlamadan önce SPEC.md'nin ilgili b�
 - Next.js 16 (App Router, Server Components, Server Actions, `proxy.ts`), React 19, TypeScript (strict)
   - Bu Next.js sürümü eğitim verindekinden farklı: kod yazmadan önce `node_modules/next/dist/docs/` altındaki ilgili rehberi oku (bkz. `AGENTS.md`). `middleware.ts` yok, `proxy.ts` var. `cacheComponents` açık.
 - PostgreSQL 17 + Drizzle ORM (drizzle-kit migration), Better Auth (sicil no + şifre)
-- MinIO (S3 uyumlu depolama), pg-boss (kuyruk + zamanlanmış işler, ayrı `worker` süreci), ffmpeg (HLS)
+- Garage (S3 uyumlu depolama; AWS SDK ile), pg-boss (kuyruk + zamanlanmış işler, ayrı `worker` süreci), ffmpeg (HLS)
 - Tailwind CSS 4 + shadcn/ui (base-nova) + vaul, next-intl (varsayılan `tr`), Zod
 - `@react-pdf/renderer` + `qrcode` (sertifika), `exceljs` (içe/dışa aktarma), Microsoft Graph (e-posta), Serwist (PWA kabuğu), Web Speech API (sesli okuma)
 - Test: Vitest (birim + gerçek Postgres ile entegrasyon), Playwright (mobil + masaüstü)
-- Barındırma: Türkiye'de Linux VM, Docker Compose (`app`, `worker`, `postgres`, `minio`, `caddy`)
+- Barındırma: Türkiye'de Linux VM, Docker Compose (`app`, `worker`, `postgres`, `garage`, `caddy`)
 
 ## Değişmez kurallar
 - **Tek kurum (JAPAR).** Multi-tenant yapı, `org_id`/`tenant_id` kolonu YOK.
@@ -49,15 +49,33 @@ Yeni bir özelliğe, tabloya veya ekrana başlamadan önce SPEC.md'nin ilgili b�
 - Migration'lar `drizzle/` altında. Trigger'lar ve yetkiler elle yazılmış SQL migration'larıdır.
 - Docker dosyaları `docker/`, testler `tests/unit`, `tests/integration`, `tests/e2e`.
 - Server Action ve Route Handler girdileri her zaman Zod ile doğrulanır.
-- Kod tanımlayıcıları (tablo, sütun, değişken) İngilizce; kullanıcıya görünen metinler Türkçe.
+- Kod tanımlayıcıları (tablo, sütun, değişken) İngilizce; kullanıcıya görünen metinler Türkçe ("siz" hitabı).
+
+### Veritabanı kalıpları
+- Veri değiştiren her servis işlemi `withActor(actor, tx => …)` içinde çalışır (denetim kaydına aktör yazılır). Seed/worker için `systemActor("<ad>")`.
+- Yeni iş tablosu = Drizzle şeması + `npm run db:generate` + elle yazılmış bir migration'da `SELECT app_attach_audit('<tablo>', '{<pk>}', '{<maskeli sütunlar>}')`; değiştirilemezse ayrıca `SELECT app_attach_immutable('<tablo>', '{<izinli sütunlar>}', '<kilit sütunu>')`.
+- Uygulama `akademi_app` (yalnızca DML), migration'lar `akademi_owner` ile çalışır. `audit_log`'a uygulama yazamaz; satırları trigger yazar.
+- Değiştirilemezlik ihlali `JA001` SQLSTATE'idir (`isImmutableViolation`).
+
+### Next.js 16 kalıpları (cacheComponents açık)
+- Dil `next/root-params` ile okunur (`setRequestLocale` kullanılmaz). Server Action'da root params yoktur; next-intl orada istek dilini kullanır.
+- Oturum okuyan her sayfa içeriğini kendi `<Suspense fallback={<PageSkeleton />}>` sınırına alır (`loading.tsx` "instant navigation" doğrulamasını karşılamıyor).
+- Oturum: `requireUser()` / `getSectionUser(key)` (`src/server/auth/current-user.ts`). Yetkisiz bölümde `notFound()` değil `<NotFoundView />` döndürülür (Suspense içinde notFound akıştan sonra çalışmıyor).
+- Better Auth'un HTTP rotası yoktur; kimlik işlemleri `src/server/services/auth.ts` + Server Action. Çerezler `applySetCookies` ile yazılır.
+- Base UI `Button`'ı bağlantı olarak kullanırken `nativeButton={false}` + `render={<Link …/>}`.
 
 ## Komutlar
-> İş paketi 1.0 (teknik temel) kurulduktan sonra bu bölümü gerçek komutlarla güncelle.
-- `docker compose -f docker/compose.yml up -d` (postgres + minio)
-- `npm run dev` / `npm run build` / `npm run lint` / `npm run typecheck` / `npm run test`
-- `npm run test:integration` / `npx playwright test`
-- `npm run db:generate` / `npm run db:migrate` / `npm run db:seed`
-- `npm run worker`
+Kurulum ayrıntıları: `docs/runbooks/local-dev.md`.
+- `npm run docker:up` / `npm run docker:down` — PostgreSQL (localhost:5433) + Garage (S3 :3900, admin :3903)
+- `npm run storage:init` — Garage düğüm düzeni, erişim anahtarı ve bucket (tekrar çalıştırılabilir)
+- `npm run db:migrate` — Drizzle migration'ları + pg-boss şeması (`-- --test` ile test veritabanı)
+- `npm run db:reset` — YEREL veritabanını boşaltıp yeniden kurar (`-- --test` ile test veritabanı)
+- `npm run db:seed` — sistem yöneticisi + (geliştirmede) her rol için demo kullanıcı
+- `npm run db:generate` — şemadan yeni migration üretir
+- `npm run dev` / `npm run build` / `npm run start` / `npm run worker` (`worker:dev` izlemeli)
+- `npm run lint` / `npm run typecheck` / `npm test` (birim) / `npm run test:integration` (gerçek test DB) / `npm run test:e2e` (Playwright, mobil + masaüstü)
+- `npm run icons` — PWA ikonlarını üretir
+- Bu Windows makinesinde Next/SWC için `SWC_NATIVE_BINDING_CACHE` kullanıcı ortam değişkeni gerekir (runbook'a bakın).
 
 ## Çalışma şekli
 - SPEC.md Bölüm 16.2'deki Faz 1 iş paketlerine göre ilerle; bir seferde tek paket.

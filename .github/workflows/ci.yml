@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Lint, tip, test, build, e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Bağımlılıklar
+        run: npm ci
+
+      - name: Ortam dosyası (.env.example + CI gizli değerleri)
+        run: |
+          cp .env.example .env
+          sed -i "s#^BETTER_AUTH_SECRET=.*#BETTER_AUTH_SECRET=$(openssl rand -base64 32)#" .env
+          sed -i "s#^SEED_ADMIN_PASSWORD=.*#SEED_ADMIN_PASSWORD=Ci.Admin-$(openssl rand -hex 6)#" .env
+
+      - name: PostgreSQL + Garage
+        run: docker compose -f docker/compose.yml up -d --wait
+
+      - name: Depolama ve veritabanı kurulumu
+        run: |
+          npm run storage:init
+          npm run db:migrate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tip kontrolü
+        run: npm run typecheck
+
+      - name: Birim testleri
+        run: npm test
+
+      - name: Entegrasyon testleri
+        run: npm run test:integration
+
+      - name: Migration'lar şemayla uyumlu mu
+        run: |
+          npx drizzle-kit check
+          npx drizzle-kit generate
+          if [ -n "$(git status --porcelain drizzle)" ]; then
+            echo "::error::Şema değişmiş ama migration üretilmemiş (npm run db:generate)"
+            git status --porcelain drizzle
+            exit 1
+          fi
+
+      - name: Build
+        run: npm run build
+
+      - name: Playwright tarayıcısı
+        run: npx playwright install --with-deps chromium
+
+      - name: Uçtan uca testler
+        run: npm run test:e2e
+
+      - name: Playwright raporu
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

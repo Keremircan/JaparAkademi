@@ -1,0 +1,68 @@
+import { ForbiddenError } from "@/server/errors";
+import type { Actor, UserActor } from "./actor";
+import type { Role } from "./roles";
+
+/**
+ * Rol bazlı yetkiler (SPEC Bölüm 2.3). Kapsam kontrolleri (org ağacı, atanmış kursiyer)
+ * bunlara ek olarak ilgili serviste yapılır; org ağacıyla birlikte iş paketi 1.1'de eklenir.
+ */
+export const PERMISSIONS = {
+  // Sistem
+  "settings.manage": ["sysadmin"],
+  "settings.manage_ohs": ["ohs_specialist"],
+  "audit.view": ["sysadmin"],
+  "roles.manage": ["sysadmin"],
+  // Organizasyon ve personel
+  "org.manage": ["hr", "sysadmin"],
+  "people.manage": ["hr", "sysadmin"],
+  "people.view_national_id": ["hr"],
+  // İçerik ve pozisyon kartı
+  "content.draft": ["trainer", "section_manager", "ohs_specialist", "hr"],
+  "content.approve_section": ["section_manager", "hr"],
+  "content.approve_ohs": ["ohs_specialist"],
+  // Soru bankası
+  "questions.view": ["section_manager", "ohs_specialist", "hr"],
+  "questions.edit": ["section_manager", "ohs_specialist"],
+  // Eğitim ve değerlendirme
+  "proctor.issue_code": ["trainer", "section_manager", "ohs_specialist", "hr"],
+  "practice.mark": ["trainer", "section_manager"],
+  "practice.second_signature": ["section_manager"],
+  "readiness.decide": ["section_manager"],
+  "classroom.record": ["trainer", "section_manager", "ohs_specialist", "hr"],
+  // Raporlar
+  "reports.view": ["section_manager", "ohs_specialist", "hr", "security", "sysadmin"],
+  // Ziyaretçi (Faz 2)
+  "visitors.manage": ["security"],
+} as const satisfies Record<string, readonly Role[]>;
+
+export type Permission = keyof typeof PERMISSIONS;
+
+export function hasRole(actor: Actor, role: Role): boolean {
+  return actor.kind === "user" && actor.roles.includes(role);
+}
+
+export function hasAnyRole(actor: Actor, roles: readonly Role[]): boolean {
+  return actor.kind === "user" && actor.roles.some((r) => roles.includes(r));
+}
+
+/** Sistem aktörü (seed, worker) tüm yetkilere sahiptir; kullanıcı aktörü rollerine göre. */
+export function can(actor: Actor, permission: Permission): boolean {
+  if (actor.kind === "system") return true;
+  const allowed: readonly Role[] = PERMISSIONS[permission];
+  return actor.roles.some((r) => allowed.includes(r));
+}
+
+export function assertCan(actor: Actor, permission: Permission): void {
+  if (!can(actor, permission)) throw new ForbiddenError(permission);
+}
+
+/** Kimse kendi kaydını değerlendiremez veya onaylayamaz (SPEC 2.4). */
+export function assertNotSelf(actor: Actor, targetUserId: string): void {
+  if (actor.kind === "user" && actor.userId === targetUserId) {
+    throw new ForbiddenError("self_action");
+  }
+}
+
+export function assertUser(actor: Actor): asserts actor is UserActor {
+  if (actor.kind !== "user") throw new ForbiddenError("user_required");
+}

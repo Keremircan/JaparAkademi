@@ -5,6 +5,14 @@ JAPAR'a yeni başlayan personel için pozisyon bazlı eğitim, sınav ve yetkinl
 - Gereksinimler ve mimari: [docs/SPEC.md](docs/SPEC.md)
 - Kaynak gereksinim dokümanı: [docs/source/japar-akademi-gereksinim-dokumani.pdf](docs/source/japar-akademi-gereksinim-dokumani.pdf)
 - Geliştirme kuralları: [CLAUDE.md](CLAUDE.md)
+- Yerel kurulum: [docs/runbooks/local-dev.md](docs/runbooks/local-dev.md)
 
 ## Durum
-Faz 1, iş paketi 1.0 (teknik temel) henüz başlamadı. Kurulum ve çalıştırma komutları bu paketle eklenecek.
+Faz 1, iş paketi 1.0 (teknik temel) tamamlandı: sicil no + şifre ile giriş, rol bazlı uygulama kabuğu, denetim kaydı ve değiştirilemezlik altyapısı, parametreler, worker, depolama (Garage), PWA kabuğu, testler ve CI. Sıradaki: 1.1 Organizasyon ve personel.
+
+## Hızlı başlangıç
+```bash
+npm ci && cp .env.example .env   # .env içindeki boş değerleri doldurun
+npm run docker:up && npm run storage:init && npm run db:migrate && npm run db:seed
+npm run dev
+```
