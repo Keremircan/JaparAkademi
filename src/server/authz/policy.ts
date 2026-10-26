@@ -19,6 +19,9 @@ export const PERMISSIONS = {
   "people.view_national_id": ["hr"],
   // KVKK aydınlatma metinleri (karar: İK yönetir)
   "legal.manage": ["hr"],
+  "devices.manage": ["sysadmin"],
+  // Eğitim atamaları: başlatma, eğitmen ve hedef tarih, iptal (FG-3.2)
+  "assignments.manage": ["hr"],
   // İçerik ve pozisyon kartı
   "content.draft": ["trainer", "section_manager", "ohs_specialist", "hr"],
   "content.approve_section": ["section_manager", "hr"],

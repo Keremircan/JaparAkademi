@@ -12,6 +12,9 @@ import { Link } from "@/i18n/navigation";
 import { can } from "@/server/authz/policy";
 import { listPositionOptions, listUnitOptions } from "@/server/services/org";
 import { getPerson } from "@/server/services/people";
+import { assignmentsForPerson, trainerCandidates } from "@/server/services/assignments";
+import { AssignmentControls } from "@/features/assignments/components/assignment-controls";
+import { AssignmentSummaryView } from "@/features/assignments/components/assignment-summary";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.people");
@@ -55,6 +58,14 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
   const canRoles = can(access.actor, "roles.manage");
   const canSeeTc = can(access.actor, "people.view_national_id");
   const isSelf = access.actor.userId === person.userId;
+  const canAssign = can(access.actor, "assignments.manage");
+  const [assignmentList, trainers, ta] = await Promise.all([
+    canAssign ? assignmentsForPerson(access.actor, person.userId) : Promise.resolve([]),
+    canAssign ? trainerCandidates(access.actor) : Promise.resolve([]),
+    getTranslations("assignments"),
+  ]);
+  const open = assignmentList.find((a) => ["active", "awaiting_readiness", "awaiting_decision"].includes(a.status));
+  const past = assignmentList.filter((a) => a !== open);
   const fmtDate = (d: string | null) => (d ? format.dateTime(new Date(`${d}T00:00:00`), { dateStyle: "medium" }) : tc("none"));
 
   return (
@@ -103,6 +114,44 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
         <Row label={t("detail.sourceLabel")}>{t(`detail.source.${person.source}`)}</Row>
         {person.endDate && <Row label={t("detail.endDate")}>{fmtDate(person.endDate)}</Row>}
       </dl>
+
+      {canAssign && (
+        <section aria-labelledby="training-heading" className="mb-8">
+          <h2 id="training-heading" className="mb-2 text-lg font-semibold">
+            {ta("heading")}
+          </h2>
+          <div className="flex flex-col gap-4 rounded-2xl border px-5 py-4">
+            {open ? (
+              <>
+                <AssignmentSummaryView a={open} />
+                <AssignmentControls
+                  mode="edit"
+                  assignmentId={open.id}
+                  trainers={trainers}
+                  trainerUserId={open.trainerUserId}
+                  targetDate={open.targetDate}
+                  needsTrainer={open.modules.some((m) => m.kind === "practice" || m.kind === "practice_exam")}
+                />
+              </>
+            ) : (
+              <>
+                <p className="text-muted-foreground">{person.positionId ? ta("none") : ta("noPosition")}</p>
+                {person.status === "active" && person.positionId && !isSelf && <AssignmentControls mode="start" userId={person.userId} trainers={trainers} />}
+              </>
+            )}
+            {past.length > 0 && (
+              <details>
+                <summary className="min-h-12 cursor-pointer content-center">{ta("history", { count: past.length })}</summary>
+                <div className="flex flex-col gap-6 pt-3">
+                  {past.map((a) => (
+                    <AssignmentSummaryView key={a.id} a={a} showModules={false} />
+                  ))}
+                </div>
+              </details>
+            )}
+          </div>
+        </section>
+      )}
 
       <h2 className="mb-2 text-lg font-semibold">{t("detail.roles")}</h2>
       <div className="mb-8 rounded-2xl border px-5 py-4">

@@ -7,6 +7,7 @@
  *      · "TASLAK" işaretli KVKK aydınlatma metni (gerçek metin hukuktan gelene kadar)
  *      · örnek etiketler ve içerikler (yayında, onay bekleyen; demo kullanıcılar adına)
  *      · modüller (ortak İSG + Pres Operatörü modülleri) ve yayında Pres Operatörü kartı/planı
+ *      · demo kursiyere (1001) eğitim ataması, eğitmeni (1002) ve ara değerlendirme soruları
  *
  * Parametreler veritabanına yazılmaz; kayıt yoksa kodda tanımlı varsayılan kullanılır (SPEC Bölüm 14).
  * Kullanım: npm run db:seed
@@ -25,6 +26,9 @@ import { createAccount } from "../src/server/services/accounts";
 import { createContent, createTag, saveDraft, submitForApproval } from "../src/server/services/content";
 import { createDraft, publishText } from "../src/server/services/legal";
 import { createModule, saveTasks, setModuleContents } from "../src/server/services/modules";
+import { saveQuizQuestions } from "../src/server/services/quiz";
+import { syncAssignmentForPerson } from "../src/server/services/assignments/engine";
+import { assignments as assignmentsTable } from "../src/server/db/schema";
 import { approveCard, cardApprovalQueue, createCard, getEditableCard, saveCardSections, savePlan, submitCard } from "../src/server/services/positions";
 import { createOrgUnit, createPosition } from "../src/server/services/org";
 
@@ -387,6 +391,38 @@ async function seedTraining() {
   console.log("✓ Pozisyon kartı: Pres Operatörü (yayında)");
 }
 
+// ---- Eğitim ataması örneği ----
+
+async function seedLearning() {
+  const trainee = await userIdBySicil("1001");
+  const trainer = await userIdBySicil("1002");
+  const manager = await demoActor("1003", ["section_manager"]);
+  if (!trainee || !trainer || !manager) return;
+
+  const [theory] = await db().select({ id: modules.id }).from(modules).where(eq(modules.title, "Pres hattı temel eğitimi")).limit(1);
+  if (theory) {
+    const { listQuizQuestions } = await import("../src/server/services/quiz");
+    if ((await listQuizQuestions(manager, theory.id)).length === 0) {
+      await saveQuizQuestions(manager, theory.id, [
+        { type: "single_choice", stem: "Pres çalışırken ellerinizi nerede tutarsınız?", options: ["İki el kumandasında", "Kalıp alanında", "Cebimde"], correctIndex: 0, explanation: "İki el kumandası, eller kalıp alanındayken presin inmesini engeller." },
+        { type: "true_false", stem: "Işık perdesi arızalıyken pres çalıştırılabilir.", options: ["Doğru", "Yanlış"], correctIndex: 1, explanation: "Işık perdesi devre dışıysa pres çalıştırılmaz; vardiya şefine haber verilir." },
+        { type: "single_choice", stem: "Vardiya başı kontrolünde kritik madde hangisidir?", options: ["Acil durdurma butonu", "Masa düzeni", "Kalem"], correctIndex: 0, explanation: null },
+      ]);
+      console.log("✓ Ara değerlendirme soruları: Pres hattı temel eğitimi");
+    }
+  }
+
+  await withActor(actor, async (tx) => {
+    await syncAssignmentForPerson(tx, trainee, null);
+    await tx
+      .update(assignmentsTable)
+      .set({ trainerUserId: trainer })
+      .where(and(eq(assignmentsTable.userId, trainee), isNull(assignmentsTable.trainerUserId), eq(assignmentsTable.status, "active")));
+  });
+  const [a] = await db().select({ id: assignmentsTable.id }).from(assignmentsTable).where(eq(assignmentsTable.userId, trainee)).limit(1);
+  if (a) console.log("✓ Eğitim ataması: 1001 (Pres Operatörü), eğitmen 1002");
+}
+
 async function main() {
   await ensure({
     sicilNo: cfg.SEED_ADMIN_SICIL,
@@ -418,6 +454,7 @@ async function main() {
   if (cfg.SEED_DEMO_PASSWORD) {
     await seedContent();
     await seedTraining();
+    await seedLearning();
   }
 }
 

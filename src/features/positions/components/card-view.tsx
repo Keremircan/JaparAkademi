@@ -18,7 +18,24 @@ function Block({ id, title, children }: { id: CardSectionKey | "identity" | "pla
 }
 
 /** Kart sürümünün okunur görünümü (1–13. bölümler). */
-export async function CardView({ card, showPlan = true }: { card: CardVersionView; showPlan?: boolean }) {
+type CardData = Pick<CardVersionView, "identity" | "sections" | "linkedContents"> & Partial<Pick<CardVersionView, "plan" | "commonModules">>;
+
+/**
+ * `only` verilirse yalnızca o bölümler gösterilir (kursiyer kartı bölüm bölüm okur).
+ * `links` kapalıysa bağlı içerikler yönetim sayfalarına bağlantı vermez (kursiyer görünümü).
+ */
+export async function CardView({
+  card,
+  showPlan = true,
+  only,
+  links = true,
+}: {
+  card: CardData;
+  showPlan?: boolean;
+  only?: readonly string[];
+  links?: boolean;
+}) {
+  const show = (key: string) => !only || only.includes(key);
   const t = await getTranslations("cards");
   const s = card.sections;
   const title = (k: CardSectionKey) => t(`sections.${k}.title`);
@@ -37,15 +54,22 @@ export async function CardView({ card, showPlan = true }: { card: CardVersionVie
 
   return (
     <div className="flex flex-col gap-6">
+      {show("identity") && (
       <Block id="identity" title={t("sections.identity.title")}>
         <IdentityView identity={card.identity} />
       </Block>
+      )}
+      {show("purpose") && (
       <Block id="purpose" title={title("purpose")}>
         {s.purpose ? <p className="whitespace-pre-line">{s.purpose}</p> : empty}
       </Block>
+      )}
+      {show("duties") && (
       <Block id="duties" title={title("duties")}>
         {bullets(s.duties.map((d) => `${d.text} — ${t(`frequency.${d.frequency}`)}`))}
       </Block>
+      )}
+      {show("workflow") && (
       <Block id="workflow" title={title("workflow")}>
         {s.workflow.steps.length ? (
           <ol className="flex flex-col gap-2">
@@ -69,9 +93,13 @@ export async function CardView({ card, showPlan = true }: { card: CardVersionVie
           <img src={`/api/media/${s.workflow.diagramAssetId}/image`} alt={t("editor.diagram")} loading="lazy" className="mt-3 max-h-[32rem] w-full rounded-xl border object-contain" />
         )}
       </Block>
+      )}
+      {show("routines") && (
       <Block id="routines" title={title("routines")}>
         {bullets(s.routines.map((r) => [r.time, r.days.map((d) => t(`days.${d}.short`)).join(", "), r.text].filter(Boolean).join(" · ")))}
       </Block>
+      )}
+      {show("reporting") && (
       <Block id="reporting" title={title("reporting")}>
         {s.reporting.length ? (
           <ul className="flex flex-col gap-2">
@@ -79,7 +107,12 @@ export async function CardView({ card, showPlan = true }: { card: CardVersionVie
               <li key={i} className="rounded-xl border p-3">
                 <span className="font-medium">{r.report}</span> → {r.recipient}
                 <span className="block text-sm text-muted-foreground">{[r.frequency, r.format].filter(Boolean).join(" · ")}</span>
-                {r.sampleContentId && (
+                {r.sampleContentId && !links && (
+                  <span className="block text-sm">
+                    {t("editor.sample")}: {contentTitle.get(r.sampleContentId) ?? "—"}
+                  </span>
+                )}
+                {r.sampleContentId && links && (
                   <Link href={`/manage/library/${r.sampleContentId}`} className="inline-flex min-h-10 items-center text-sm underline underline-offset-4">
                     {t("editor.sample")}: {contentTitle.get(r.sampleContentId) ?? "—"}
                   </Link>
@@ -91,12 +124,18 @@ export async function CardView({ card, showPlan = true }: { card: CardVersionVie
           empty
         )}
       </Block>
+      )}
+      {show("equipment") && (
       <Block id="equipment" title={title("equipment")}>
         {bullets(s.equipment.map((e) => `${e.name} (${t(`equipmentKinds.${e.kind}`)})`))}
       </Block>
+      )}
+      {show("critical") && (
       <Block id="critical" title={title("critical")}>
         {bullets(s.critical.map((c) => `${t(`criticalKinds.${c.kind}`)}: ${c.text}`))}
       </Block>
+      )}
+      {show("ohs") && (
       <Block id="ohs" title={title("ohs")}>
         <div className="flex flex-col gap-3">
           {(["risks", "ppe", "instructions"] as const).map((k) =>
@@ -123,27 +162,38 @@ export async function CardView({ card, showPlan = true }: { card: CardVersionVie
             <ul className="flex flex-col">
               {s.ohs.contentIds.map((id) => (
                 <li key={id}>
+                  {!links ? (
+                    <span>{contentTitle.get(id) ?? "—"}</span>
+                  ) : (
                   <Link href={`/manage/library/${id}`} className="inline-flex min-h-10 items-center underline underline-offset-4">
                     {contentTitle.get(id) ?? "—"}
                   </Link>
+                  )}
                 </li>
               ))}
             </ul>
           )}
         </div>
       </Block>
+      )}
+      {show("competencies") && (
       <Block id="competencies" title={title("competencies")}>
         {bullets(s.competencies.map((x) => x.text))}
       </Block>
+      )}
+      {show("kpis") && (
       <Block id="kpis" title={title("kpis")}>
         {bullets(s.kpis.map((x) => x.text))}
       </Block>
+      )}
+      {show("contacts") && (
       <Block id="contacts" title={title("contacts")}>
         {bullets(s.contacts.map((c) => `${c.situation} → ${c.contact}`))}
       </Block>
-      {showPlan && (
+      )}
+      {showPlan && card.plan && card.commonModules && show("plan") && (
         <Block id="plan" title={t("sections.plan.title")}>
-          <PlanView card={card} />
+          <PlanView card={card as CardVersionView} />
         </Block>
       )}
     </div>

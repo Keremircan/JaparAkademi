@@ -8,9 +8,11 @@ import { createAccount } from "../../src/server/services/accounts";
 import { createDraft, publishText } from "../../src/server/services/legal";
 import { createOrgUnit, createPosition } from "../../src/server/services/org";
 import { setSectionManagerScopes } from "../../src/server/services/roles";
-import { createModule, saveTasks } from "../../src/server/services/modules";
-import { createCard, saveCardSections } from "../../src/server/services/positions";
-import { fullCardSections } from "../support/content";
+import { createModule, saveTasks, setModuleContents } from "../../src/server/services/modules";
+import { createContent, saveDraft, submitForApproval } from "../../src/server/services/content";
+import { saveQuizQuestions } from "../../src/server/services/quiz";
+import { approveCard, cardApprovalQueue, createCard, getEditableCard, saveCardSections, savePlan, submitCard } from "../../src/server/services/positions";
+import { fullCardSections, textBody } from "../support/content";
 import { buildPeopleXlsx } from "../support/xlsx";
 
 /**
@@ -76,7 +78,42 @@ export default async function globalSetup() {
       validityMonths: null, ownerOrgUnitId: section.id, commonTarget: null, commonSortOrder: null,
     });
     await saveTasks(smActor, practice.id, [{ title: "Görev bir", description: null, isCritical: true }]);
-    await createAccount(sys, { sicilNo: `E2E-${suffix}-OHS${p}`, fullName: "Deneme İSG Uzmanı", password: E2E_PASSWORD, roles: ["ohs_specialist"], mustChangePassword: false });
+    const ohs = await createAccount(sys, { sicilNo: `E2E-${suffix}-OHS${p}`, fullName: "Deneme İSG Uzmanı", password: E2E_PASSWORD, roles: ["ohs_specialist"], mustChangePassword: false });
+
+    // Teorik eğitim akışı (1.4): yayında kart + teorik modül (ara değerlendirmeli) ve yeni giren kursiyer
+    const ohsActor = { kind: "user" as const, userId: ohs.userId, roles: ["personnel" as const, "ohs_specialist" as const] };
+    const learnPos = await createPosition(sys, { orgUnitId: section.id, name: `E2E Öğrenme Pozisyonu ${p}`, code: `E2E-OGR-${suffix}-${p}`.toUpperCase(), collarType: "blue" });
+    const { id: contentId } = await createContent(smActor, { type: "text", title: `E2E Hat kuralları ${p}`, ownerOrgUnitId: section.id, commonTarget: null, isOhs: false });
+    await saveDraft(smActor, contentId, { title: `E2E Hat kuralları ${p}`, body: textBody("Hatta çalışırken eldiven takılır."), tagIds: [] });
+    await submitForApproval(smActor, contentId, { changeNote: null, requireReread: false });
+    const theory = await createModule(smActor, {
+      kind: "theory", title: `E2E Hat eğitimi ${p}`, description: null, durationMin: 30, isOhs: false, remoteAllowed: true,
+      validityMonths: null, ownerOrgUnitId: section.id, commonTarget: null, commonSortOrder: null,
+    });
+    await setModuleContents(smActor, theory.id, [contentId]);
+    await saveQuizQuestions(smActor, theory.id, [
+      { type: "single_choice", stem: "Hatta ne takılır?", options: ["Eldiven", "Şapka", "Saat"], correctIndex: 0, explanation: "Eldiven zorunludur." },
+      { type: "single_choice", stem: "Arızada kime haber verilir?", options: ["Bakım", "Muhasebe", "Kimseye"], correctIndex: 0, explanation: "Bakım ekibine haber verilir." },
+      { type: "true_false", stem: "Işık perdesi köprülenebilir.", options: ["Doğru", "Yanlış"], correctIndex: 1, explanation: "Asla köprülenmez." },
+    ]);
+    await createCard(smActor, learnPos.id);
+    await saveCardSections(smActor, learnPos.id, fullCardSections());
+    const learnCard = await getEditableCard(smActor, learnPos.id);
+    const learnCardModule = learnCard.plan.items.find((i) => i.isCardModule)!.moduleId;
+    await savePlan(smActor, learnPos.id, {
+      overrides: {},
+      items: [
+        { moduleId: learnCardModule, isRequired: true, prerequisiteModuleIds: [], settings: {} },
+        { moduleId: theory.id, isRequired: true, prerequisiteModuleIds: [learnCardModule], settings: {} },
+      ],
+    });
+    await submitCard(smActor, learnPos.id, { changeNote: null });
+    const pendingCard = (await cardApprovalQueue(ohsActor)).find((q) => q.positionId === learnPos.id);
+    if (pendingCard) await approveCard(ohsActor, pendingCard.versionId);
+    await createAccount(sys, {
+      sicilNo: `E2E-${suffix}-KUR${p}`, fullName: "Deneme Kursiyer", password: E2E_PASSWORD, mustChangePassword: false,
+      positionId: learnPos.id, trainingRequired: true,
+    });
   }
 
   await mkdir(path.dirname(E2E_IMPORT_FILE), { recursive: true });

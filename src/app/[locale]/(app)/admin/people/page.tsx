@@ -1,4 +1,4 @@
-import { FileSpreadsheet, Plus, Search } from "lucide-react";
+import { FileSpreadsheet, Hourglass, Plus, Search } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -68,6 +68,12 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
                 <FileSpreadsheet aria-hidden="true" />
                 {t("importButton")}
               </Button>
+              {can(access.actor, "assignments.manage") && (
+                <Button variant="outline" nativeButton={false} render={<Link href="/admin/people/waiting" />}>
+                  <Hourglass aria-hidden="true" />
+                  {t("waitingButton")}
+                </Button>
+              )}
             </>
           )
         }

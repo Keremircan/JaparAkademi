@@ -19,6 +19,7 @@ import {
   users,
 } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
+import { syncAssignmentForPerson } from "@/server/services/assignments/engine";
 import { ForbiddenError, NotFoundError, uniqueViolation, ValidationError } from "@/server/errors";
 import { createAccount } from "@/server/services/accounts";
 import { getSetting } from "@/server/services/settings";
@@ -275,6 +276,8 @@ export async function updatePerson(actor: Actor, userId: string, input: PersonIn
         .returning({ userId: personnel.userId });
       if (updated.length === 0) throw new NotFoundError("person");
       await tx.update(users).set({ name: fullName }).where(eq(users.id, userId));
+      // Pozisyon değiştiyse atama yenilenir (FG-3.3); eğitimi gerekene plan atanır (FG-3.2)
+      await syncAssignmentForPerson(tx, userId, actor.kind === "user" ? actor.userId : null);
     });
   } catch (err) {
     if (/national_?id/i.test(uniqueViolation(err) ?? "")) throw new ValidationError("national_id_taken");

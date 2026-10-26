@@ -16,6 +16,7 @@ import {
   signedPutUrl,
   startMultipart,
 } from "@/server/storage/client";
+import { learnerCanViewAsset } from "../assignments/learner";
 import { canUseLibrary, canViewContent, contentAccessFor } from "../content/access";
 
 /**
@@ -195,5 +196,7 @@ export async function getAssetForViewer(actor: Actor, assetId: string) {
     .where(sql`${positionCardVersions.sections} -> 'workflow' ->> 'diagramAssetId' = ${assetId}`);
   if (refs.length === 0 && cards.length === 0) return null;
   const access = await contentAccessFor(actor);
-  return [...refs, ...cards.map((c) => ({ ...c, isOhs: false }))].some((r) => canViewContent(access, r)) ? asset : null;
+  if ([...refs, ...cards.map((c) => ({ ...c, isOhs: false }))].some((r) => canViewContent(access, r))) return asset;
+  // Kursiyer: kendi atamasındaki veya okuma görevindeki içerik sürümleri (FG-4.1)
+  return (await learnerCanViewAsset(actor.userId, assetId)) ? asset : null;
 }

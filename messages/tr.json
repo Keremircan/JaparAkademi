@@ -93,7 +93,7 @@
     },
     "trainer": {
       "title": "Eğitmen paneli",
-      "description": "Kursiyerleriniz ve işaretlenmeyi bekleyen pratik görevler burada olacak."
+      "description": "Kursiyerleriniz ve sınıf eğitimi kayıtları. Pratik görev işaretleme sonraki iş paketinde eklenecek."
     },
     "manage": {
       "title": "Yönetim",
@@ -228,7 +228,32 @@
     "plan_archived_module": "Planda arşivlenmiş modül var; çıkarın.",
     "plan_module_empty": "Plandaki bir teorik modülde içerik veya pratik modülde görev yok.",
     "plan_practice_exam_order": "Pratik sınavdan önce en az bir pratik modül olmalı.",
-    "card_not_published": "Yayında kart yok."
+    "card_not_published": "Yayında kart yok.",
+    "module_locked": "Bu modül henüz açılmadı.",
+    "video_not_ready": "Video henüz hazır değil.",
+    "not_reached_end": "Önce içeriğin sonuna ulaşın.",
+    "quiz_locked": "Ara değerlendirme, tüm adımlar onaylanınca açılır.",
+    "quiz_already_answered": "Bu soruyu zaten cevapladınız.",
+    "trainer_is_trainee": "Kişi kendi eğitmeni olamaz.",
+    "trainer_invalid": "Seçilen kişi eğitmen veya bölüm sorumlusu değil.",
+    "person_inactive": "Personel aktif değil.",
+    "person_no_position": "Pozisyonu olmayan personele eğitim atanamaz.",
+    "assignment_exists": "Kişinin zaten açık bir eğitim ataması var.",
+    "no_published_card": "Pozisyonun yayında pozisyon kartı yok.",
+    "assignment_closed": "Bu atama kapanmış.",
+    "cancel_reason_required": "İptal gerekçesi yazın.",
+    "quiz_stem_invalid": "Soru metni 5–1000 karakter olmalı.",
+    "quiz_options_invalid": "Şıklar boş veya aynı olamaz (2–6 şık).",
+    "quiz_correct_invalid": "Doğru şıkkı işaretleyin.",
+    "quiz_count_invalid": "Ara değerlendirmede ya hiç soru olmaz ya da 3–5 soru olur.",
+    "quiz_question_invalid": "Soru bulunamadı. Sayfayı yenileyin.",
+    "location_invalid": "Yer bilgisini girin.",
+    "attendee_invalid": "Katılımcılardan biri bulunamadı veya aktif değil.",
+    "classroom_not_editable": "Bu kayıt artık düzenlenemez.",
+    "scanned_form_required": "Onaya göndermeden önce taranmış katılım formunu ekleyin.",
+    "attendees_required": "En az bir katılımcı ekleyin.",
+    "classroom_not_pending": "Bu kayıt onay beklemiyor.",
+    "device_name_invalid": "Cihaz adı 2–100 karakter olmalı."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -248,6 +273,10 @@
       "legal": {
         "title": "KVKK aydınlatma metni",
         "description": "Personelin ilk girişte onayladığı metin"
+      },
+      "devices": {
+        "title": "Ortak cihazlar",
+        "description": "Eğitim odası bilgisayarları ve tabletler."
       }
     },
     "org": {
@@ -456,7 +485,8 @@
         "password": "Geçici şifre",
         "instructions": "İlk girişte yeni şifre belirlemeniz istenecek. Bu kâğıdı kimseyle paylaşmayın.",
         "issuedAt": "Düzenlenme: {date}"
-      }
+      },
+      "waitingButton": "Eğitimi bekleyenler"
     },
     "roles": {
       "title": "Roller ve kapsam",
@@ -509,6 +539,14 @@
       "modules": {
         "title": "Modül kütüphanesi",
         "description": "Teorik, pratik ve sınav modülleri; ortak modüller."
+      },
+      "team": {
+        "title": "Ekip ilerlemesi",
+        "description": "Eğitimi süren personel, ilerleme ve hedef tarihler."
+      },
+      "classroom": {
+        "title": "Sınıf eğitimi",
+        "description": "Yüz yüze eğitim kayıtları ve onayları."
       }
     },
     "pendingCount": "{count} kayıt onay bekliyor"
@@ -763,7 +801,8 @@
         "ohs": "İSG onayı"
       },
       "cardsHeading": "Pozisyon kartları",
-      "contentsHeading": "İçerikler"
+      "contentsHeading": "İçerikler",
+      "classroomHeading": "Sınıf eğitimi kayıtları"
     }
   },
   "modules": {
@@ -868,6 +907,25 @@
       "taskCritical": "Kritik görev",
       "addTask": "Görev ekle",
       "critical": "Kritik"
+    },
+    "quiz": {
+      "heading": "Ara değerlendirme soruları",
+      "hint": "Modül sonunda sorulur; notu etkilemez. Ya hiç soru olmaz ya da 3–5 soru olur. Yanlış cevapta doğru şık ve açıklama gösterilir.",
+      "questionN": "{n}. soru",
+      "type": "Soru tipi",
+      "singleChoice": "Çoktan seçmeli",
+      "trueFalse": "Doğru / yanlış",
+      "remove": "{n}. soruyu kaldır",
+      "stem": "Soru",
+      "options": "Şıklar (doğru olanı işaretleyin)",
+      "markCorrect": "{n}. şık doğru",
+      "optionN": "{n}. şık",
+      "removeOption": "{n}. şıkkı kaldır",
+      "addOption": "Şık ekle",
+      "explanation": "Açıklama",
+      "add": "Soru ekle",
+      "true": "Doğru",
+      "false": "Yanlış"
     }
   },
   "cards": {
@@ -1124,5 +1182,215 @@
       "body": "İçerik",
       "files": "Dosyalar"
     }
+  },
+  "learn": {
+    "status": {
+      "locked": "Kilitli",
+      "available": "Başlanabilir",
+      "in_progress": "Devam ediyor",
+      "completed": "Tamamlandı",
+      "review_required": "Tekrar gerekli",
+      "waived": "Muaf"
+    },
+    "minutes": "{n} dk",
+    "common": "Ortak",
+    "optional": "İsteğe bağlı",
+    "steps": "{done}/{total} adım",
+    "via": {
+      "online": "Çevrim içi",
+      "classroom": "Sınıf eğitimiyle",
+      "carried_over": "Önceki eğitimden"
+    },
+    "lock": {
+      "trainer": "Pratik eğitmeniniz atanınca açılır.",
+      "prerequisites": "Önce tamamlayın: {list}"
+    },
+    "classroomOnly": "Yalnızca sınıf eğitimiyle tamamlanır",
+    "rereadHeading": "Okuma görevleri",
+    "due": "Son gün: {date}",
+    "rereadIntro": "Bu içerik güncellendi. Okuyup onaylamanız gerekiyor (son gün: {date}).",
+    "plan": "{position} eğitim planı",
+    "progress": "%{percent} tamamlandı",
+    "remaining": "Kalan: {hours} sa {minutes} dk",
+    "target": "Hedef tamamlanma: {date}",
+    "overdue": "Hedef tarih geçti",
+    "trainer": "Pratik eğitmeniniz: {name}",
+    "allDone": "Tebrikler! Zorunlu modüllerin hepsini tamamladınız. Bölüm sorumlunuzun işe başlama onayı bekleniyor.",
+    "nextStep": "Sıradaki adımınız",
+    "start": "Başla",
+    "continue": "Devam et",
+    "modulesHeading": "Eğitim planım",
+    "module": {
+      "done": "Bu modülü tamamladınız.",
+      "doneClassroom": "Bu modül sınıf eğitimiyle tamamlandı.",
+      "back": "Eğitimlerime dön",
+      "classroomOnly": "Bu İSG modülü yalnızca yüz yüze sınıf eğitimiyle tamamlanır. İçerikleri inceleyebilirsiniz; tamamlama eğitim kaydı onaylanınca yapılır.",
+      "placeholder": {
+        "practice": "Pratik eğitim görevlerinizi pratik eğitmeniniz işaretler. Bu ekran bir sonraki güncellemede açılacak.",
+        "theory_exam": "Teorik sınav bir sonraki güncellemede açılacak. Sınava gözetmen koduyla başlayacaksınız.",
+        "practice_exam": "Pratik sınav bir sonraki güncellemede açılacak."
+      },
+      "stepsNav": "Adımlar",
+      "stepDone": "Tamamlandı",
+      "stepOf": "Adım {n}/{total}",
+      "finishing": "Tüm adımları tamamladınız."
+    },
+    "step": {
+      "watched": "İzlenen kısım",
+      "watchedPercent": "İzlenen: %{percent} (gereken %{target}). İleri sarılan kısım sayılmaz.",
+      "download": "Formu aç: {name}",
+      "acknowledged": "Okudum, anladım — onaylandı",
+      "acknowledge": "Okudum, anladım",
+      "hint": {
+        "scroll": "Onaylamak için içeriğin sonuna kadar kaydırın.",
+        "video": "Onaylamak için videonun gereken kısmını izleyin.",
+        "pdf": "Onaylamak için son sayfaya kadar ilerleyin.",
+        "download": "Onaylamak için formu açın."
+      }
+    },
+    "pdf": {
+      "error": "PDF gösterilemedi.",
+      "open": "Yeni sekmede aç",
+      "loading": "PDF yükleniyor…",
+      "page": "Sayfa {current}/{total}",
+      "pageLabel": "{n}. sayfa"
+    },
+    "quiz": {
+      "heading": "Ara değerlendirme",
+      "intro": "Notunuzu etkilemez. Her soruyu bir kez cevaplayın; yanlışsa doğru cevabı ve açıklamasını göreceksiniz.",
+      "correctOption": "Doğru cevap",
+      "yourAnswer": "Sizin cevabınız",
+      "correct": "Doğru!",
+      "wrong": "Yanlış. Doğru cevap işaretlendi.",
+      "answer": "Cevapla"
+    },
+    "readAloud": {
+      "start": "Sesli oku",
+      "stop": "Durdur",
+      "noVoice": "Bu cihazda Türkçe ses bulunamadı; okuma başka bir dilde olabilir."
+    }
+  },
+  "assignments": {
+    "heading": "Eğitim",
+    "none": "Açık eğitim ataması yok.",
+    "noPosition": "Pozisyonu olmayan personele eğitim atanamaz.",
+    "history": "Önceki atamalar ({count})",
+    "planOf": "{position} planı (kart s{version})",
+    "status": {
+      "active": "Sürüyor",
+      "awaiting_readiness": "İşe başlama onayı bekliyor",
+      "awaiting_decision": "Karar bekliyor",
+      "completed": "Tamamlandı",
+      "cancelled": "İptal edildi"
+    },
+    "reason": {
+      "new_hire": "Yeni giriş",
+      "position_change": "Pozisyon değişikliği",
+      "recertification": "Tekrar eğitimi",
+      "extra_training": "Ek eğitim"
+    },
+    "progress": "%{percent} tamamlandı",
+    "startedOn": "Başlangıç: {date}",
+    "target": "Hedef: {date}",
+    "overdue": "geçti",
+    "trainer": "Eğitmen: {name}",
+    "noTrainer": "Eğitmen atanmadı",
+    "cancelled": "İptal gerekçesi: {reason}",
+    "controls": {
+      "trainer": "Pratik eğitmen",
+      "trainerNeeded": "Planda pratik modül var; eğitmen seçilene kadar pratik modüller kilitli kalır.",
+      "noTrainer": "Seçilmedi",
+      "targetDate": "Hedef tamamlanma tarihi",
+      "targetHint": "Boş bırakılırsa plan süresinden hesaplanır.",
+      "start": "Eğitimi başlat",
+      "cancelTitle": "Atamayı iptal et",
+      "cancelReason": "İptal gerekçesi",
+      "cancelConfirm": "Eğitim ataması iptal edilsin mi? Tamamlanan modüller kayıtta kalır.",
+      "cancel": "İptal et"
+    },
+    "waiting": {
+      "title": "Eğitimi bekleyenler",
+      "description": "Yeni girişler: pozisyonu yok ya da pozisyonun kartı henüz yayınlanmadı. Kart yayınlanınca plan otomatik atanır.",
+      "empty": "Eğitimi bekleyen personel yok.",
+      "reason": {
+        "no_position": "Pozisyon yok",
+        "no_published_card": "Pozisyon kartı yayında değil",
+        "ready": "Başlatılabilir"
+      }
+    },
+    "team": {
+      "title": "Ekip ilerlemesi",
+      "description": "Kapsamınızda eğitimi süren personel. Hedef tarihi geçenler önce listelenir.",
+      "empty": "Eğitimi süren personel yok.",
+      "overdue": "Hedef geçti"
+    },
+    "trainerPanel": {
+      "description": "Size atanan kursiyerler ve sınıf eğitimi kayıtları.",
+      "classroom": "Sınıf eğitimi",
+      "trainees": "Kursiyerlerim",
+      "empty": "Size atanmış kursiyer yok."
+    }
+  },
+  "classroom": {
+    "title": "Sınıf eğitimi",
+    "description": "Yüz yüze verilen eğitimlerin kaydı. Onaylanınca katılımcıların ilgili modülü tamamlanır.",
+    "new": "Yeni kayıt",
+    "newIntro": "Eğitimi, katılımcıları ve taranmış ıslak imzalı katılım formunu girin; sonra onaya gönderin.",
+    "pending": "Onayınızı bekleyenler",
+    "mine": "Kayıtlarım",
+    "empty": "Henüz kayıt yok.",
+    "attendeeCount": "{count} katılımcı",
+    "ohs": "İSG",
+    "status": {
+      "draft": "Taslak",
+      "submitted": "Onay bekliyor",
+      "approved": "Onaylandı",
+      "rejected": "Reddedildi"
+    },
+    "recordedBy": "Kaydeden: {name}",
+    "submit": "Onaya gönder",
+    "submitConfirm": "Kayıt onaya gönderilsin mi? Gönderdikten sonra düzenlenemez.",
+    "rejectedBy": "{name} reddetti:",
+    "approvedNote": "Kayıt onaylandı; katılımcıların modülü tamamlandı. Kayıt artık değiştirilemez.",
+    "minutes": "{n} dk",
+    "noModule": "Atamasında bu modül yok (yalnızca kayıt)",
+    "form": {
+      "module": "Modül",
+      "choose": "Seçin",
+      "ohs": "İSG",
+      "classroomOnly": "Bu modül yalnızca sınıf eğitimiyle tamamlanır.",
+      "date": "Tarih",
+      "duration": "Süre (dakika)",
+      "location": "Yer",
+      "trainer": "Eğitimi veren",
+      "changeTrainer": "Değiştir",
+      "pickTrainer": "Eğitimi veren kişiyi seçin",
+      "attendees": "Katılımcılar ({count})",
+      "search": "Personel ara",
+      "searchPlaceholder": "Ad veya sicil no",
+      "searchButton": "Ara",
+      "noResults": "Sonuç yok.",
+      "select": "Seç",
+      "add": "Ekle",
+      "remove": "{name}: çıkar",
+      "scannedForm": "Taranmış katılım formu (PDF veya fotoğraf)",
+      "notes": "Notlar"
+    }
+  },
+  "devices": {
+    "title": "Ortak cihazlar",
+    "description": "Kayıtlı cihazda giriş her zaman ortak cihaz modundadır: kısa işlemsizlik süresi, \"beni hatırla\" kapalı.",
+    "registerTitle": "Bu tarayıcıyı kaydet",
+    "registerHint": "Bu sayfayı eğitim odasındaki bilgisayarda açıp kaydedin. Kayıt yalnızca bu tarayıcı için geçerlidir.",
+    "name": "Cihaz adı",
+    "namePlaceholder": "ör. Eğitim odası 1",
+    "registered": "Bu tarayıcı ortak cihaz olarak kaydedildi.",
+    "register": "Ortak cihaz olarak kaydet",
+    "empty": "Kayıtlı cihaz yok.",
+    "registeredBy": "{name} · {date}",
+    "lastSeen": "Son kullanım: {date}",
+    "revoked": "İptal edildi",
+    "revokeConfirm": "Cihaz kaydı iptal edilsin mi?",
+    "revoke": "İptal et"
   }
 }

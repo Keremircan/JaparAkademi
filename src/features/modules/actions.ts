@@ -5,6 +5,7 @@ import { refresh } from "next/cache";
 import { z } from "zod";
 import { actionUser, formText, runAction, type ActionResult } from "@/features/shared/action-result";
 import { redirect } from "@/i18n/navigation";
+import { saveQuizQuestions } from "@/server/services/quiz";
 import {
   archiveModule,
   createModule,
@@ -91,6 +92,28 @@ export async function archiveModuleAction(moduleId: string): Promise<ActionResul
   if (!uuid.safeParse(moduleId).success) return { ok: false, error: "invalid_input" };
   const { actor } = await actionUser();
   const result = await runAction(() => archiveModule(actor, moduleId));
+  if (result.ok) refresh();
+  return result;
+}
+
+const quizSchema = z
+  .array(
+    z.object({
+      id: uuid.optional(),
+      type: z.enum(["single_choice", "true_false"]),
+      stem: z.string().max(1000),
+      options: z.array(z.string().max(300)).max(6),
+      correctIndex: z.number().int().min(0).max(5),
+      explanation: z.string().max(2000).nullable(),
+    }),
+  )
+  .max(5);
+
+export async function saveQuizAction(moduleId: string, input: unknown): Promise<ActionResult> {
+  const parsed = quizSchema.safeParse(input);
+  if (!uuid.safeParse(moduleId).success || !parsed.success) return { ok: false, error: "invalid_input" };
+  const { actor } = await actionUser();
+  const result = await runAction(() => saveQuizQuestions(actor, moduleId, parsed.data));
   if (result.ok) refresh();
   return result;
 }
