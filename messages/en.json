@@ -1,0 +1,136 @@
+{
+  "app": {
+    "name": "JAPAR Academy",
+    "tagline": "Training and competency platform"
+  },
+  "common": {
+    "loading": "Loading…",
+    "comingSoon": "This section will open in an upcoming release.",
+    "skipToContent": "Skip to content"
+  },
+  "nav": {
+    "mainMenu": "Main menu",
+    "home": "Home",
+    "learn": "My training",
+    "trainer": "Trainer",
+    "manage": "Management",
+    "reports": "Reports",
+    "security": "Security",
+    "admin": "System",
+    "profile": "Profile",
+    "more": "More"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "sicilLabel": "Employee number",
+      "passwordLabel": "Password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "sharedDevice": "Shared device (training room, company tablet)",
+      "sharedDeviceHint": "The session ends automatically after a short period of inactivity.",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "help": "If you forgot your password, contact HR."
+    },
+    "errors": {
+      "invalid_input": "Enter your employee number and password.",
+      "invalid_credentials": "Employee number or password is incorrect.",
+      "locked": "Too many failed attempts. Your account is locked until {time}.",
+      "inactive": "Your account is not active. Contact HR.",
+      "rate_limited": "Too many attempts from this device. Please try again later."
+    },
+    "changePassword": {
+      "title": "Change password",
+      "firstLoginInfo": "As this is your first sign-in, please set a new password.",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "New password (again)",
+      "submit": "Change password",
+      "submitting": "Saving…",
+      "rulesTitle": "Password rules",
+      "ruleMinLength": "At least {min} characters (digits only is allowed)",
+      "ruleNoSicil": "Must not contain your employee number",
+      "ruleNotCommon": "Must not be easy to guess (like 12345678)"
+    },
+    "passwordIssues": {
+      "too_short": "Password must be at least {min} characters.",
+      "too_long": "Password is too long.",
+      "common": "This password is too common, choose another one.",
+      "contains_sicil": "Password must not contain your employee number.",
+      "repeated": "Password must not be a repetition of the same character.",
+      "sequential": "Password must not be a sequence (like 1234 or abcd).",
+      "same_as_current": "New password must differ from the current one.",
+      "mismatch": "New passwords do not match.",
+      "current_password_invalid": "Current password is incorrect."
+    },
+    "signOut": "Sign out"
+  },
+  "home": {
+    "greeting": "Hello, {name}",
+    "intro": "Access your training and tasks from here."
+  },
+  "sections": {
+    "learn": {
+      "title": "My training",
+      "empty": "No training is assigned to you right now."
+    },
+    "trainer": {
+      "title": "Trainer panel",
+      "description": "Your trainees and practical tasks awaiting review will appear here."
+    },
+    "manage": {
+      "title": "Management",
+      "description": "Position cards, content library, question bank and team progress will appear here."
+    },
+    "reports": {
+      "title": "Reports",
+      "description": "Training, exam and OHS reports will appear here."
+    },
+    "security": {
+      "title": "Security",
+      "description": "Visitor registration and evacuation roll call will open in Phase 2."
+    },
+    "admin": {
+      "title": "System",
+      "description": "Organization, personnel, roles and parameters will appear here."
+    },
+    "more": {
+      "title": "All sections"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "sicil": "Employee number",
+    "roles": "Your roles",
+    "changePassword": "Change password",
+    "sharedDevice": "This session was opened in shared device mode."
+  },
+  "roles": {
+    "personnel": "Personnel",
+    "trainer": "Practical trainer",
+    "section_manager": "Section manager",
+    "ohs_specialist": "OHS specialist",
+    "hr": "Human resources",
+    "security": "Security",
+    "sysadmin": "System administrator"
+  },
+  "offline": {
+    "title": "No connection",
+    "description": "You appear to be offline. Try again when the connection is back.",
+    "retry": "Try again"
+  },
+  "pwa": {
+    "updateAvailable": "A new version of the app is ready.",
+    "reload": "Reload"
+  },
+  "errors": {
+    "forbidden": "You are not allowed to do this.",
+    "unexpected": "An unexpected error occurred. Please try again."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page does not exist or you are not allowed to view it.",
+    "home": "Back to home"
+  }
+}
