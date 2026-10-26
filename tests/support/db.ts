@@ -16,13 +16,17 @@ export async function closeOwner() {
   ownerSql = undefined;
 }
 
-/** public şemasındaki tüm tabloları boşaltır (migration kayıtları ve pgboss hariç). */
+/** Migration'ın yazdığı sabit referans verisi; testler arasında korunur. */
+const REFERENCE_TABLES = new Set(["tag_types"]);
+
+/** public şemasındaki tüm tabloları boşaltır (migration kayıtları, referans tabloları ve pgboss hariç). */
 export async function truncateAll() {
   const sql = owner();
   const rows = await sql<{ tablename: string }[]>`
     select tablename from pg_tables where schemaname = 'public'
   `;
-  if (rows.length === 0) return;
-  const list = rows.map((r) => `"public"."${r.tablename}"`).join(", ");
+  const tables = rows.filter((r) => !REFERENCE_TABLES.has(r.tablename));
+  if (tables.length === 0) return;
+  const list = tables.map((r) => `"public"."${r.tablename}"`).join(", ");
   await sql.unsafe(`TRUNCATE ${list} RESTART IDENTITY CASCADE`);
 }

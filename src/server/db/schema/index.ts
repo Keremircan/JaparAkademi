@@ -4,3 +4,4 @@ export * from "./people";
 export * from "./legal";
 export * from "./imports";
 export * from "./system";
+export * from "./content";

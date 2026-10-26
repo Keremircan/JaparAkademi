@@ -75,6 +75,10 @@ Yeni bir özelliğe, tabloya veya ekrana başlamadan önce SPEC.md'nin ilgili b�
 - Kişiye verilen tek seferlik çıktılar (geçici şifre PDF'i) sunucuda saklanmaz; eylem sonucu base64 döner, istemci `downloadBase64` ile indirir.
 - PDF: `@react-pdf/renderer` + `src/server/pdf/fonts/Geist-Regular.ttf` (Türkçe karakter); Excel: `exceljs`. İkisi de `serverExternalPackages`'ta.
 - Metinler `messages/tr.json`'da; `en.json`'da olmayan anahtar Türkçeye düşer (`src/i18n/request.ts`).
+- İçerik kütüphanesi: erişim kuralları `src/server/services/content/access.ts` (SQL karşılığı `visibilityFilter`), yayın akışı `src/server/state/content.ts`. Gövde şemaları `services/content/body.ts` (taslak gevşek, onaya gönderim katı). Sayfalar `libraryAccess()` ile korunur.
+- Medya: tarayıcı imzalı URL ile doğrudan Garage'a yükler (64 MB üstü 16 MB'lık parçalar) → `completeUpload` → `media.process` kuyruğu → worker (`services/media/process.ts`). Dosyalar istemciye yalnızca `/api/media/...` üzerinden (yetki + imzalı yönlendirme) verilir.
+- Kuyruklar `src/server/jobs/queues.ts`'te tanımlanır ve `db:migrate` sırasında oluşturulur; uygulama iş göndermek için `enqueue()` (`jobs/send.ts`), işleyiciler `jobs/registry.ts`.
+- Server Action'a istemci nesnesi gönderirken düz nesne olmalı: TipTap `getJSON()` prototipsiz nesne üretir, `JSON.parse(JSON.stringify(...))` ile düzleştirilir.
 
 ## Komutlar
 Kurulum ayrıntıları: `docs/runbooks/local-dev.md`.

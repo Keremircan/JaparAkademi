@@ -97,7 +97,7 @@
     },
     "manage": {
       "title": "Yönetim",
-      "description": "Pozisyon kartları, içerik kütüphanesi, soru bankası ve ekip ilerlemesi burada olacak."
+      "description": "İçerik kütüphanesi ve onay bekleyen içerikler. Pozisyon kartları ve soru bankası sonraki iş paketlerinde eklenecek."
     },
     "reports": {
       "title": "Raporlar",
@@ -184,7 +184,29 @@
     "invalid_body": "Metin çok kısa.",
     "draft_exists": "Yayınlanmamış bir taslak zaten var.",
     "already_published": "Yayınlanmış metin değiştirilemez.",
-    "legal_text_outdated": "Metin güncellendi; sayfayı yenileyip tekrar onaylayın."
+    "legal_text_outdated": "Metin güncellendi; sayfayı yenileyip tekrar onaylayın.",
+    "upload_too_large": "Dosya izin verilen boyuttan büyük.",
+    "file_type_not_allowed": "Bu dosya türü desteklenmiyor.",
+    "upload_already_completed": "Bu yükleme zaten tamamlandı.",
+    "upload_incomplete": "Dosya tam yüklenmedi. Tekrar deneyin.",
+    "upload_failed": "Yükleme başarısız oldu. Bağlantınızı kontrol edip tekrar deneyin.",
+    "version_not_editable": "Bu sürüm artık düzenlenemez.",
+    "body_invalid": "İçerik geçersiz. Alanları kontrol edin.",
+    "body_incomplete": "İçerik eksik. Onaya göndermeden önce tüm zorunlu alanları doldurun.",
+    "asset_invalid": "Eklenen dosya bulunamadı veya bu içerikte kullanılamaz.",
+    "asset_kind_invalid": "Bu içerik türüne bu dosya eklenemez.",
+    "assets_not_ready": "Dosyaların işlenmesi bitmedi. Biraz bekleyip tekrar deneyin.",
+    "tag_invalid": "Seçilen etiketlerden biri bulunamadı.",
+    "tag_name_invalid": "Etiket adı 2–60 karakter olmalı.",
+    "tag_type_invalid": "Etiket türü geçersiz.",
+    "change_note_required": "Yeni sürümde değişiklik notu zorunludur.",
+    "change_note_too_long": "Değişiklik notu çok uzun.",
+    "content_archived": "İçerik arşivlenmiş.",
+    "version_not_pending": "Bu sürüm onay beklemiyor.",
+    "reject_comment_required": "Reddetmek için gerekçe yazın.",
+    "comment_too_long": "Not çok uzun.",
+    "cannot_discard": "Bu sürüm silinemez.",
+    "org_unit_invalid": "Seçilen birim bulunamadı veya pasif."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -447,5 +469,268 @@
     "accept": "Okudum, onaylıyorum",
     "accepting": "Kaydediliyor…",
     "version": "Sürüm {version}"
+  },
+  "manage": {
+    "cards": {
+      "library": {
+        "title": "İçerik kütüphanesi",
+        "description": "Metin, PDF, video, galeri, talimat, kontrol listesi ve form şablonları."
+      },
+      "approvals": {
+        "title": "Onay bekleyenler",
+        "description": "Onayınızı bekleyen içerik sürümleri."
+      }
+    },
+    "pendingCount": "{count} içerik onay bekliyor"
+  },
+  "content": {
+    "common": "Ortak içerik",
+    "ohs": "İSG",
+    "archived": "Arşivlendi",
+    "versionN": "Sürüm {version}",
+    "target": {
+      "all": "Tüm personel",
+      "blue": "Mavi yaka",
+      "white": "Beyaz yaka"
+    },
+    "types": {
+      "text": {
+        "label": "Metin",
+        "hint": "Başlık, liste ve vurgu içeren yazı."
+      },
+      "pdf": {
+        "label": "PDF",
+        "hint": "Doküman, prosedür veya kılavuz."
+      },
+      "video": {
+        "label": "Video",
+        "hint": "Telefonda düşük kalite seçeneğiyle izlenir."
+      },
+      "gallery": {
+        "label": "Fotoğraf galerisi",
+        "hint": "Açıklamalı fotoğraflar."
+      },
+      "instruction": {
+        "label": "Adım adım talimat",
+        "hint": "Sıralı adımlar, isteğe bağlı fotoğraf."
+      },
+      "checklist": {
+        "label": "Kontrol listesi",
+        "hint": "Maddeler; kritik olanlar işaretlenir."
+      },
+      "form_template": {
+        "label": "Form şablonu",
+        "hint": "İndirilip doldurulan PDF, Excel veya Word."
+      }
+    },
+    "status": {
+      "draft": "Taslak (s{version})",
+      "section_review": "Bölüm onayında (s{version})",
+      "ohs_review": "İSG onayında (s{version})",
+      "published": "Yayında (s{version})",
+      "rejected": "Reddedildi (s{version})"
+    },
+    "tags": {
+      "title": "Etiketler",
+      "types": {
+        "machine": "Makine",
+        "section": "Bölüm",
+        "risk": "Risk",
+        "shift": "Vardiya"
+      },
+      "newPlaceholder": "Yeni etiket",
+      "newFor": "Yeni {type} etiketi",
+      "add": "Etiket ekle"
+    },
+    "library": {
+      "title": "İçerik kütüphanesi",
+      "description": "Yetkili olduğunuz birimlerin ve ortak içeriklerin tümü.",
+      "new": "Yeni içerik",
+      "search": "Ara",
+      "searchPlaceholder": "Başlık, metin veya etiket",
+      "type": "Tür",
+      "all": "Tümü",
+      "status": "Durum",
+      "statusActive": "Arşivlenmemiş",
+      "statusFilter": {
+        "published": "Yayında",
+        "pending": "Onay bekleyen",
+        "draft": "Taslak veya reddedilen",
+        "archived": "Arşiv"
+      },
+      "tag": "Etiket",
+      "total": "{count, plural, =0 {Sonuç yok} other {# içerik}}",
+      "empty": "Henüz içerik yok.",
+      "noResults": "Aramanızla eşleşen içerik bulunamadı."
+    },
+    "create": {
+      "heading": "Yeni içerik",
+      "intro": "Önce türü ve sahibini seçin; içeriği sonraki adımda hazırlayacaksınız.",
+      "type": "İçerik türü",
+      "title": "Başlık",
+      "owner": "Sahibi",
+      "ownerHint": "İçeriği görebilecek ve onaylayacak birim. Ortak içerik tüm şirket içindir.",
+      "choose": "Seçin",
+      "common": "Ortak içerik (tüm şirket)",
+      "commonTarget": "Hedef kitle",
+      "commonTargetHint": "Ortak içeriğin atanacağı personel grubu.",
+      "target": {
+        "all": "Tüm personel",
+        "blue": "Yalnızca mavi yaka",
+        "white": "Yalnızca beyaz yaka"
+      },
+      "isOhs": "İSG içeriği",
+      "isOhsHint": "Yayından önce İSG uzmanı da onaylar.",
+      "submit": "Oluştur ve düzenle",
+      "creating": "Oluşturuluyor…"
+    },
+    "editor": {
+      "heading": "İçeriği düzenle",
+      "title": "Başlık",
+      "bodyLabel": {
+        "text": "Metin",
+        "pdf": "PDF dosyası",
+        "video": "Video",
+        "gallery": "Fotoğraflar",
+        "instruction": "Adımlar",
+        "checklist": "Maddeler",
+        "form_template": "Form dosyası"
+      },
+      "fileLabel": {
+        "pdf": "PDF dosyası",
+        "video": "Video dosyası",
+        "form_template": "Form dosyası (PDF, Excel veya Word)"
+      },
+      "description": "Açıklama",
+      "image": "Fotoğraf",
+      "caption": "Açıklama",
+      "captionN": "{n}. fotoğrafın açıklaması",
+      "addImage": "Fotoğraf ekle",
+      "stepTitle": "Adım başlığı",
+      "stepText": "Açıklama",
+      "addStep": "Adım ekle",
+      "checkItem": "Madde",
+      "critical": "Kritik madde",
+      "addItem": "Madde ekle",
+      "items": {
+        "n": "{n}. öğe"
+      },
+      "steps": {
+        "n": "{n}. adım"
+      },
+      "moveUp": "Yukarı taşı",
+      "moveDown": "Aşağı taşı",
+      "remove": "Kaldır",
+      "saveDraft": "Taslağı kaydet",
+      "unsaved": "Kaydedilmemiş değişiklikler var.",
+      "submitHeading": "Onaya gönder",
+      "ohsNote": "Bu bir İSG içeriği: bölüm onayından sonra İSG uzmanı da onaylar.",
+      "changeNote": "Değişiklik notu",
+      "changeNoteHint": "Bu sürümde neyin değiştiğini kısaca yazın. Onaylayan ve kursiyerler bu notu görür.",
+      "requireReread": "Önceki sürümü tamamlayanlar tekrar okusun",
+      "requireRereadHint": "Önemli bir değişiklikse işaretleyin; kişilere \"tekrar oku ve onayla\" görevi verilir.",
+      "submit": "Kaydet ve onaya gönder",
+      "outcome": {
+        "published": "Bu içeriği onaylama yetkiniz olduğu için gönderdiğinizde hemen yayınlanır.",
+        "ohs_review": "Bölüm onayı sizin onayınız sayılır; İSG uzmanı onayladığında yayınlanır.",
+        "section_review": "Gönderdiğinizde sorumlu kişinin onayına gider; onaylanınca yayınlanır.",
+        "draft": "",
+        "rejected": ""
+      },
+      "toolbar": {
+        "label": "Biçimlendirme",
+        "bold": "Kalın",
+        "italic": "İtalik",
+        "h2": "Başlık",
+        "h3": "Alt başlık",
+        "bulletList": "Madde işaretli liste",
+        "orderedList": "Numaralı liste",
+        "quote": "Alıntı",
+        "undo": "Geri al",
+        "redo": "Yinele"
+      }
+    },
+    "media": {
+      "optional": "isteğe bağlı",
+      "choose": "Dosya seçin",
+      "replace": "Değiştir",
+      "remove": "Dosyayı kaldır",
+      "uploading": "Yükleniyor",
+      "uploadingPercent": "Yükleniyor: %{percent}",
+      "pages": "{count} sayfa",
+      "duration": "{minutes}:{seconds}",
+      "status": {
+        "pending_upload": "Yükleme bekleniyor",
+        "uploaded": "İşlenmeyi bekliyor",
+        "processing": "İşleniyor",
+        "ready": "Hazır",
+        "failed": "İşlenemedi; başka bir dosya deneyin"
+      }
+    },
+    "video": {
+      "error": "Video oynatılamadı. Bağlantınızı kontrol edip sayfayı yenileyin.",
+      "quality": "Kalite",
+      "auto": "Otomatik",
+      "low": "Düşük kalite ({height}p, veri tasarrufu)"
+    },
+    "viewer": {
+      "missing": "Dosya eklenmemiş.",
+      "failed": "Dosya işlenemedi.",
+      "processing": "Dosya işleniyor; birkaç dakika sonra hazır olur.",
+      "empty": "Bu içerik henüz boş.",
+      "pages": "{count} sayfa",
+      "open": "Aç",
+      "download": "İndir",
+      "imageAlt": "{n}. fotoğraf",
+      "step": "Adım {n}",
+      "critical": "Kritik"
+    },
+    "approval": {
+      "headingSection": "Bölüm onayı",
+      "headingOhs": "İSG onayı",
+      "comment": "Not",
+      "commentHint": "Reddederken gerekçe zorunludur; hazırlayan kişi bu notu görür.",
+      "approve": "Onayla",
+      "reject": "Reddet",
+      "approveConfirm": "Bu sürümü onaylıyor musunuz?"
+    },
+    "detail": {
+      "edit": "Düzenle",
+      "newVersion": "Yeni sürüm başlat",
+      "discard": "Taslağı sil",
+      "discardConfirm": "Bu taslak sürüm silinsin mi? Yayındaki sürüm değişmez.",
+      "archive": "Arşivle",
+      "archiveConfirm": "İçerik arşivlensin mi? Arşivlenen içerik yeni atamalarda kullanılamaz ve geri alınamaz.",
+      "archivedAt": "Bu içerik {date} tarihinde arşivlendi.",
+      "rejectedBy": "{name} reddetti:",
+      "waitingSection": "Bu sürüm bölüm onayı bekliyor.",
+      "waitingOhs": "Bu sürüm İSG uzmanı onayı bekliyor.",
+      "history": "Sürüm geçmişi",
+      "current": "Güncel sürüm",
+      "superseded": "Yerine yeni sürüm geçti",
+      "createdBy": "{name} · {date}",
+      "publishedAt": "Yayın: {date}",
+      "changeNote": "Değişiklik",
+      "rereadRequired": "Tamamlayanların tekrar okuması istendi.",
+      "decision": {
+        "approved": "{step}: {name} onayladı ({date})",
+        "rejected": "{step}: {name} reddetti ({date})",
+        "auto_self": "{step}: {name} gönderirken onayladı ({date})"
+      },
+      "step": {
+        "section": "Bölüm onayı",
+        "ohs": "İSG onayı"
+      }
+    },
+    "queue": {
+      "title": "Onay bekleyenler",
+      "description": "Onayınızı bekleyen içerik sürümleri. Kendi gönderdikleriniz burada görünmez.",
+      "empty": "Onayınızı bekleyen içerik yok.",
+      "submittedBy": "{name} · {date}",
+      "step": {
+        "section": "Bölüm onayı",
+        "ohs": "İSG onayı"
+      }
+    }
   }
 }
