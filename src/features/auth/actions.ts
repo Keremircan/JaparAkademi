@@ -7,6 +7,8 @@ import { applySetCookies, getRequestMeta } from "@/server/auth/request";
 import { ValidationError } from "@/server/errors";
 import { logger } from "@/server/logger";
 import { changePassword, signIn, signOut } from "@/server/services/auth";
+import { DEVICE_COOKIE, recognizeDevice } from "@/server/services/devices";
+import { cookies } from "next/headers";
 import {
   changePasswordSchema,
   signInSchema,
@@ -24,7 +26,9 @@ export async function signInAction(_prev: SignInState, formData: FormData): Prom
   });
   if (!parsed.success) return { error: "invalid_input", sicilNo: rawSicil };
 
-  const result = await signIn(parsed.data, await getRequestMeta());
+  // Kayıtlı ortak cihazda giriş her zaman ortak modda (FG-4.1)
+  const device = await recognizeDevice((await cookies()).get(DEVICE_COOKIE)?.value);
+  const result = await signIn({ ...parsed.data, sharedDevice: parsed.data.sharedDevice || !!device }, await getRequestMeta());
   if (!result.ok) {
     return { error: result.reason, lockedUntil: result.lockedUntil?.toISOString(), sicilNo: parsed.data.sicilNo };
   }

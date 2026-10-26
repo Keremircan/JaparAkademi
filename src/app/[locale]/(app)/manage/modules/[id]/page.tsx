@@ -13,6 +13,8 @@ import { ModuleForm } from "@/features/modules/components/module-form";
 import { ModuleContentsEditor, ModuleTasksEditor } from "@/features/modules/components/module-items-editor";
 import { Link } from "@/i18n/navigation";
 import { getModule } from "@/server/services/modules";
+import { listQuizQuestions } from "@/server/services/quiz";
+import { QuizEditor } from "@/features/modules/components/quiz-editor";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("modules");
@@ -34,7 +36,11 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
   if (!/^[0-9a-f-]{36}$/.test(id)) return <NotFoundView />;
   const m = await orNull(getModule(access.actor, id));
   if (!m) return <NotFoundView />;
-  const [t, tt] = await Promise.all([getTranslations("modules"), getTranslations("content.types")]);
+  const [t, tt, quiz] = await Promise.all([
+    getTranslations("modules"),
+    getTranslations("content.types"),
+    m.kind === "theory" ? listQuizQuestions(access.actor, m.id) : Promise.resolve([]),
+  ]);
 
   return (
     <section className="max-w-4xl">
@@ -79,6 +85,7 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
             }}
           />
           {m.kind === "theory" && !m.isCardModule && <ModuleContentsEditor key={m.contents.map((c) => c.id).join()} moduleId={m.id} initial={m.contents} />}
+          {m.kind === "theory" && <QuizEditor key={quiz.map((q) => q.id).join()} moduleId={m.id} initial={quiz} />}
           {m.kind === "practice" && <ModuleTasksEditor key={m.tasks.map((x) => x.id).join()} moduleId={m.id} initial={m.tasks} />}
         </div>
       ) : (

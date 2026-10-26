@@ -7,6 +7,7 @@ import { hmacNationalId, protectNationalId } from "@/server/crypto/national-id";
 import { db, type DbOrTx } from "@/server/db/client";
 import { importBatches, importRows, orgUnits, personnel, positions, users } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
+import { syncAssignmentForPerson } from "@/server/services/assignments/engine";
 import { NotFoundError, ValidationError } from "@/server/errors";
 import { insertAccount, prepareAccount } from "@/server/services/accounts";
 import { getSetting } from "@/server/services/settings";
@@ -287,6 +288,7 @@ export async function commitImport(
             : next;
         await tx.update(personnel).set(values).where(eq(personnel.userId, userId));
         await tx.update(users).set({ name: next.fullName }).where(eq(users.id, userId));
+        if (next.positionId !== current.positionId) await syncAssignmentForPerson(tx, userId, actor.userId);
         updated++;
       } else unchanged++;
       resultByRow.set(row.id, { status: changed ? "updated" : "unchanged", userId });

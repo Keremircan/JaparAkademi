@@ -1,3 +1,4 @@
+import { syncAssignmentForPerson } from "@/server/services/assignments/engine";
 import { eq } from "drizzle-orm";
 import { getAuth, SICIL_PATTERN, syntheticEmail } from "@/server/auth/auth";
 import { checkPassword } from "@/server/auth/password-policy";
@@ -82,6 +83,8 @@ export async function insertAccount(tx: Tx, prepared: PreparedAccount, grantedBy
   });
   const roles = Array.from(new Set<Role>(["personnel", ...(prepared.roles ?? [])]));
   await tx.insert(userRoles).values(roles.map((role) => ({ userId: user.id, role, grantedBy })));
+  // Yeni girişe pozisyonun planı otomatik atanır (FG-3.2)
+  await syncAssignmentForPerson(tx, user.id, grantedBy);
   return user.id;
 }
 

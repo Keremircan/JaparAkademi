@@ -45,6 +45,8 @@ export const SETTINGS = {
   "exam.theory.proctor_required": def({ schema: z.boolean(), default: true, managedBy: SYS, planOverride: true }),
   "exam.practical.pass_score": def({ schema: score, default: 80, managedBy: SYS, planOverride: true }),
   "exam.practical.max_attempts": def({ schema: positiveInt.max(20), default: 2, managedBy: SYS, planOverride: true }),
+  // Atama: hedef tarih varsayılanı = işe giriş + plan süresi / günlük eğitim süresi (iş günü; hafta sonu hariç)
+  "assignment.daily_training_minutes": def({ schema: positiveInt.max(1440), default: 420, managedBy: SYS }),
   "exam.question_pool_min_ratio": def({ schema: z.number().min(1).max(10), default: 2, managedBy: SYS }),
   "proctor.code_ttl_min": def({ schema: positiveInt.max(24 * 60), default: 120, managedBy: SYS }),
 

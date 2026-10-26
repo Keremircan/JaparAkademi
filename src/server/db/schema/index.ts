@@ -6,3 +6,4 @@ export * from "./imports";
 export * from "./system";
 export * from "./content";
 export * from "./training";
+export * from "./learning";

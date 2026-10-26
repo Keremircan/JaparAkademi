@@ -11,7 +11,16 @@ type Level = { index: number; height: number };
  * HLS video oynatıcı. Safari yerel HLS kullanır; diğer tarayıcılarda hls.js.
  * "Düşük kalite" seçimi mobil veri tasarrufu içindir (SPEC 13.2).
  */
-export function VideoPlayer({ assetId, title }: { assetId: string; title: string }) {
+export function VideoPlayer({
+  assetId,
+  title,
+  tracker,
+}: {
+  assetId: string;
+  title: string;
+  /** İzleme takibi (kursiyer): video öğesine olay dinleyicileri bağlar, temizleme fonksiyonu döner. */
+  tracker?: (video: HTMLVideoElement) => () => void;
+}) {
   const t = useTranslations("content.video");
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -51,6 +60,12 @@ export function VideoPlayer({ assetId, title }: { assetId: string; title: string
       hlsRef.current = null;
     };
   }, [src]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !tracker) return;
+    return tracker(video);
+  }, [tracker]);
 
   function changeQuality(value: string) {
     setQuality(value);

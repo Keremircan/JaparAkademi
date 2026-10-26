@@ -10,6 +10,7 @@ import { Link } from "@/i18n/navigation";
 import { can } from "@/server/authz/policy";
 import { approvalQueue } from "@/server/services/content";
 import { cardApprovalQueue } from "@/server/services/positions";
+import { listClassroomSessions } from "@/server/services/classroom";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("content.queue");
@@ -35,12 +36,35 @@ async function Content() {
     approvalQueue(access.actor),
     cardApprovalQueue(access.actor),
   ]);
+  const classroom = (await listClassroomSessions(access.actor)).pending;
   const when = (d: Date | null) => (d ? format.dateTime(d, { dateStyle: "medium", timeStyle: "short" }) : "—");
 
   return (
     <section className="max-w-4xl">
       <PageHeader title={t("title")} description={t("description")} back={{ href: "/manage", label: tNav("title") }} />
-      {queue.length === 0 && cards.length === 0 && <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p>}
+      {classroom.length > 0 && (
+        <section aria-labelledby="classroom-heading" className="mb-8">
+          <h2 id="classroom-heading" className="mb-3 text-lg font-semibold">
+            {t("classroomHeading")}
+          </h2>
+          <ul className="divide-y rounded-2xl border">
+            {classroom.map((c) => (
+              <li key={c.id}>
+                <Link href={`/manage/classroom/${c.id}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 hover:bg-muted">
+                  <span className="min-w-48 flex-1">
+                    <span className="block font-medium">{c.moduleTitle}</span>
+                    <span className="block text-sm text-muted-foreground">
+                      {c.trainerName} · {c.location}
+                    </span>
+                  </span>
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{t(c.isOhs ? "step.ohs" : "step.section")}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {queue.length === 0 && cards.length === 0 && classroom.length === 0 && <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p>}
       {cards.length > 0 && (
         <section aria-labelledby="cards-heading" className="mb-8">
           <h2 id="cards-heading" className="mb-3 text-lg font-semibold">

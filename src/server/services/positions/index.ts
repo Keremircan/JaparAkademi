@@ -26,6 +26,7 @@ import { getSetting } from "@/server/services/settings";
 import { cardOnSubmit, isEditable, onApprove, onReject, pendingStep } from "@/server/state/position-card";
 import type { VersionStatus } from "@/server/state/content";
 import { canApproveOhs, canApproveSection, canDraftContent, canUseLibrary, canViewContent, contentAccessFor, type ContentAccess } from "../content/access";
+import { assignWaitingForPosition } from "../assignments/engine";
 import { commonModulesFor, type ModuleKind } from "../modules";
 import {
   cardContentIds,
@@ -683,6 +684,8 @@ async function publishCard(tx: Tx, card: CardRow) {
     .update(positionCardVersions)
     .set({ status: "published", sections, publishedAt: new Date() })
     .where(eq(positionCardVersions.id, card.id));
+  // Kartı yayınlanmayı bekleyen yeni girişlere plan atanır (karar #49)
+  await assignWaitingForPosition(tx, card.positionId, card.submittedBy);
 }
 
 async function loadPendingCard(tx: Tx, actor: Actor, versionId: string) {

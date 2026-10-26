@@ -334,7 +334,7 @@ Kursiyer ve pratik eğitmen ekranları telefon ve tablette rahat kullanılmalıd
 | 19 | Tesis içindekiler / tahliye yoklaması | Güvenlik, İSG | Telefon | Anlık liste, "toplanma alanında" | `/security/evacuation` | 2 |
 | 20 | Raporlar ve ayarlar | İK, İSG, BT | PC | Bölüm 10 raporları, parametreler, roller, denetim kaydı | `/reports`, `/admin/settings` | 1 (temel) |
 
-Ek ekranlar: pozisyon listesi ve kart özeti (`/manage/positions`, `/manage/positions/[id]`, sürüm karşılaştırma `/manage/positions/[id]/compare`), modül kütüphanesi (`/manage/modules`), içerik sürüm karşılaştırma (`/manage/library/[id]/compare`), herkese açık sertifika doğrulama (`/verify/[token]`, Faz 1), profil ve şifre değiştirme, bildirim merkezi, KVKK aydınlatma onayı (ilk girişte).
+Ek ekranlar: eğitimi bekleyenler (`/admin/people/waiting`), ekip ilerlemesi (`/manage/team`), sınıf eğitimi kayıtları (`/manage/classroom`), okuma görevi (`/learn/reread/[taskId]`), ortak cihazlar (`/admin/devices`), pozisyon listesi ve kart özeti (`/manage/positions`, `/manage/positions/[id]`, sürüm karşılaştırma `/manage/positions/[id]/compare`), modül kütüphanesi (`/manage/modules`), içerik sürüm karşılaştırma (`/manage/library/[id]/compare`), herkese açık sertifika doğrulama (`/verify/[token]`, Faz 1), profil ve şifre değiştirme, bildirim merkezi, KVKK aydınlatma onayı (ilk girişte).
 
 **Navigasyon:** tek uygulama kabuğu kullanılır; menü kullanıcının rollerine göre oluşur. Mobilde alt sekme bar'ı, masaüstünde yan menü olur. Birden fazla rolü olan kullanıcı tüm yetkili bölümleri görür.
 
@@ -526,20 +526,20 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `position_card_reviews`: card_version_id, note, reviewed_by, reviewed_at — **değiştirilemez** ("gözden geçirdim" kayıtları; son gözden geçirme = max(yayın, son kayıt))
 - `modules`: id, kind (`theory`|`practice`|`theory_exam`|`practice_exam`), title, description, duration_min, is_ohs, remote_allowed, validity_months, owner_org_unit_id (null = ortak), common_target, common_sort_order, card_position_id (doluysa pozisyonun "Pozisyon kartı" modülü), archived_at — sürümsüz (karar #45)
 - `module_contents`: module_id, content_id, sort_order (yayındaki sürüm atama anında sabitlenir)
-- `module_quiz_questions`: module_id, quiz_question_id, sort_order
+- `quiz_questions`: id, module_id, sort_order, type (`single_choice`|`true_false`), stem, options, correct_index, explanation, archived_at — ara değerlendirme soruları modüle bağlıdır (karar #53); listeden çıkan soru arşivlenir
 - `practice_tasks`: id, module_id, title, description, is_critical, sort_order, competency_id
 - `training_plans`: id, card_version_id (1:1, kart sürümüyle birlikte sürümlenir), overrides (jsonb; plan bazında parametreler, ör. `videoWatchRatio`)
 - `plan_modules`: plan_id, module_id, sort_order, is_required, prerequisite_module_ids (yalnızca plandaki önceki modüller), settings (jsonb; sınav modülünde soru sayısı, süre, geçme notu, hak, bekleme, gözetmen — boş alan = genel parametre). Ayrı `exam_configs` tablosu yerine sınav ayarları plan modülünde tutulur; böylece ayar değişikliği de kart onayından geçer. Konu/pozisyon filtresi 1.5'te eklenir.
 - Yayınlanmış kartın planı ve plan modülleri trigger ile değiştirilemez. Ortak modüller plana yazılmaz; atama anında yaka tipine göre eklenir (karar #46).
 
 **Atama ve ilerleme**
-- `assignments`: id, user_id, plan_id, reason (`new_hire`|`position_change`|`recertification`|`extra_training`), trainer_user_id, start_date, target_date, status (`active`|`awaiting_readiness`|`awaiting_decision`|`completed`|`cancelled`), created_by
-- `assignment_modules`: assignment_id, module_id, status (`locked`|`available`|`in_progress`|`completed`|`review_required`|`waived`), pinned_content_version_ids, unlocked_at, completed_at, completed_via (`online`|`classroom`|`carried_over`)
-- `content_progress`: assignment_module_id, content_version_id, started_at, watched_seconds (bitmap/aralıklar), max_ratio, reached_end, acknowledged_at
-- `quiz_responses`: assignment_module_id, quiz_question_id, answer, is_correct, answered_at
-- `reread_tasks`: user_id, content_version_id, due_date, acknowledged_at
-- `classroom_sessions`: id, module_id, trainer_user_id, date, duration_min, location, scanned_form_asset_id, status (`draft`|`submitted`|`approved`)
-- `classroom_attendees`: session_id, user_id
+- `assignments`: id, user_id, position_id, card_version_id, plan_id, reason (`new_hire`|`position_change`|`recertification`|`extra_training`), trainer_user_id, start_date, target_date, status (`active`|`awaiting_readiness`|`awaiting_decision`|`completed`|`cancelled`), cancel_reason, cancelled_at/by, created_by — kişi başına tek açık atama (kısmi benzersiz indeks)
+- `assignment_modules`: id, assignment_id, module_id, sort_order, is_common, modül ayarlarının kopyası (kind, title, duration_min, is_ohs, remote_allowed, validity_months, settings), is_required, prerequisite_module_ids (ortak modüller sıralı; ilk plan modülü zorunlu ortakları da bekler), pinned_task_ids (pratik), status (`locked`|`available`|`in_progress`|`completed`|`review_required`|`waived`), unlocked_at, started_at, completed_at, completed_via (`online`|`classroom`|`carried_over`), carried_from_id, expires_at
+- `assignment_items` (SPEC'teki content_progress): assignment_module_id, sort_order, kind (`content`|`card_section`), content_id + content_version_id (atama anında yayındaki sürüm) veya card_version_id + section_key, started_at, watched_ranges (izlenen aralıklar, saniye), progress_ratio, reached_end_at, acknowledged_at — "okudum, anladım" sonrası **değiştirilemez**
+- `quiz_responses`: assignment_module_id, quiz_question_id, snapshot (soru, şıklar, doğru şık, açıklama — o anki metin), answer_index, is_correct, answered_at — **değiştirilemez**
+- `reread_tasks`: user_id, content_id, content_version_id, due_date, acknowledged_at — onaydan sonra **değiştirilemez**
+- `classroom_sessions`: id, module_id, trainer_user_id, session_date, duration_min, location, scanned_form_asset_id, notes, status (`draft`|`submitted`|`approved`|`rejected`), recorded_by, submitted_at, approved_at (kilit) — onay/ret `approvals` tablosunda
+- `classroom_attendees`: session_id, user_id — onaylanınca **değiştirilemez**
 
 **Sınav**
 - `questions`: id, owner_org_unit_id, is_ohs, current_version_id, archived_at
@@ -670,6 +670,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | `auth.ip_max_failures` / `auth.ip_window_min` | 20 / 15 | — | sysadmin |
 | `recert.lead_days` | 30 | — | sysadmin |
 | `reread.due_days` | 14 | — | sysadmin |
+| `assignment.daily_training_minutes` | 420 | — | sysadmin |
 | `trainer.unmarked_alert_days` | 3 | — | sysadmin |
 | `content.review_max_age_months` | 12 | — | sysadmin |
 | `upload.max_video_mb` / `pdf_mb` / `image_mb` | 2048 / 50 / 15 | — | sysadmin |
@@ -775,6 +776,15 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 46 | Ortak modüller | Sahibi olmayan modüller yaka tipine göre her planın başına otomatik eklenir (tasarımcıda kilitli görünür, plana yazılmaz). Sırayı İK (İSG modüllerinde İSG uzmanı) `common_sort_order` ile belirler |
 | 47 | Kart modülü | Her pozisyonun kaldırılamayan bir "Pozisyon kartı" teorik modülü vardır; planda ortak modüllerden sonra ilk sıradadır. 1.4'te kart bölüm bölüm okunur |
 | 48 | Sürükle-bırak | `@dnd-kit` (klavye destekli); yukarı/aşağı butonları da vardır |
+| 49 | Atama başlatma | Personel kaydedilince/aktarılınca atama otomatik oluşur (pozisyonun yayındaki kartı varsa). İK eğitmen ve hedef tarihi sonradan seçer; pratik modüller eğitmen seçilene kadar kilitli. Kartı yayında olmayan pozisyondaki kişi "Eğitimi bekleyenler"de kalır, kart yayınlanınca atanır (iş paketi 1.4) |
+| 50 | Hedef tarih varsayılanı | Başlangıç (işe giriş, geçmişte ise bugün) + toplam modül süresi / `assignment.daily_training_minutes` (420 dk) iş günü; hafta sonu hariç, resmî tatiller Faz 2 |
+| 51 | Ortak modül sırası | Zorunlu ortak modüller sırayla tamamlanır; ilk pozisyon modülü (kart) ortaklar bitince açılır |
+| 52 | İsteğe bağlı modül | Kursiyer görür ve alabilir; atamanın tamamlanmasını engellemez. Başka modülün ön koşuluysa onu kilitler |
+| 53 | Ara değerlendirme | Teorik modülü düzenleyen yazar: 0 ya da 3–5 soru (tek doğru / doğru-yanlış, açıklamalı). Onaya gitmez. Cevap, sorunun o anki metniyle saklanır |
+| 54 | Tamamlama kuralları | Video: izlenen benzersiz saniye ≥ eşik (ileri sarma sayılmaz, süre dışı aralık kırpılır). PDF: son sayfa (pdf.js). Metin/talimat/galeri/kontrol listesi/kart bölümü: sayfa sonu. Form şablonu: dosyayı açma. Ardından "Okudum, anladım" |
+| 55 | Sınıf eğitimi onayı | Kaydı eğitmen, bölüm sorumlusu, İSG uzmanı veya İK tutar; onay İSG modülünde İSG uzmanı, diğerlerinde kapsamdaki bölüm sorumlusu (ortak modülde İK). Kaydı tutan ve eğitimi veren onaylayamaz. Atamasında modül olmayan katılımcı da kayda geçer |
+| 56 | Elle eğitim başlatma | İK eğitimi gerekmeyen personel için de başlatabilir (gerekçe `extra_training`); otomatik atama yalnızca yeni girişlere |
+| 57 | Yönetici görünümü | 1.4'te bölüm sorumlusu (kapsamı) ve İK için ekip ilerleme listesi; ayrıntılı rapor ve dışa aktarma 1.8 |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

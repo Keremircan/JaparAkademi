@@ -19,6 +19,7 @@ import {
 import { withActor } from "@/server/db/with-actor";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/server/errors";
 import { isEditable, onApprove, onReject, onSubmit, pendingStep, type VersionStatus } from "@/server/state/content";
+import { createRereadTasks } from "../assignments/engine";
 import {
   canApproveOhs,
   canApproveSection,
@@ -565,8 +566,14 @@ async function assertAssetsUsable(tx: Tx, userId: string, contentId: string, typ
 // ---------------------------------------------------------------------------
 
 async function publishVersion(tx: Tx, contentId: string, versionId: string) {
-  await tx.update(contentVersions).set({ status: "published", publishedAt: new Date() }).where(eq(contentVersions.id, versionId));
+  const [v] = await tx
+    .update(contentVersions)
+    .set({ status: "published", publishedAt: new Date() })
+    .where(eq(contentVersions.id, versionId))
+    .returning({ requireReread: contentVersions.requireReread });
   await tx.update(contents).set({ currentPublishedVersionId: versionId }).where(eq(contents.id, contentId));
+  // "Tekrar oku ve onayla": önceki sürümü onaylamış herkese okuma görevi (FG-2.2)
+  if (v?.requireReread) await createRereadTasks(tx, contentId, versionId);
 }
 
 export type SubmitInput = { changeNote: string | null; requireReread: boolean };
