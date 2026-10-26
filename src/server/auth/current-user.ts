@@ -5,6 +5,7 @@ import { cache } from "react";
 import { canSeeNav, type NavKey } from "@/features/app-shell/navigation";
 import { redirect } from "@/i18n/navigation";
 import { loadSessionUser, type SessionUser } from "@/server/services/auth";
+import { pendingConsent } from "@/server/services/legal";
 import { getAuth } from "./auth";
 
 /**
@@ -20,13 +21,23 @@ export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
   return loadSessionUser(result.session.id);
 });
 
-/** Oturum zorunlu sayfalar için. Şifre değiştirmesi gereken kullanıcı şifre sayfasına yönlendirilir. */
-export async function requireUser(opts: { allowPasswordChange?: boolean } = {}): Promise<SessionUser> {
+/** İstek başına bir kez: kullanıcının onaylaması gereken KVKK metni var mı. */
+const getPendingConsent = cache((userId: string) => pendingConsent(userId));
+
+/**
+ * Oturum zorunlu sayfalar için. Sıra: giriş → şifre değiştirme (zorunluysa) → KVKK onayı (bekleyen varsa) → sayfa.
+ */
+export async function requireUser(
+  opts: { allowPasswordChange?: boolean; allowPendingConsent?: boolean } = {},
+): Promise<SessionUser> {
   const user = await getCurrentUser();
   const locale = await getLocale();
   if (!user) return redirect({ href: "/login", locale });
   if (user.mustChangePassword && !opts.allowPasswordChange) {
     return redirect({ href: "/change-password", locale });
+  }
+  if (!opts.allowPendingConsent && !opts.allowPasswordChange && (await getPendingConsent(user.userId))) {
+    return redirect({ href: "/consent", locale });
   }
   return user;
 }

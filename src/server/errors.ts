@@ -51,6 +51,19 @@ export function pgErrorCode(err: unknown): string | undefined {
   return undefined;
 }
 
+/** Benzersizlik ihlalinde (23505) ihlal edilen kısıt adını döner. */
+export function uniqueViolation(err: unknown): string | undefined {
+  let current: unknown = err;
+  for (let depth = 0; depth < 5 && current; depth++) {
+    if (typeof current === "object" && current !== null && (current as { code?: unknown }).code === "23505") {
+      const c = current as { constraint_name?: string; constraint?: string };
+      return c.constraint_name ?? c.constraint ?? "unknown";
+    }
+    current = (current as { cause?: unknown }).cause;
+  }
+  return undefined;
+}
+
 /** prevent_mutation() trigger'ının hata kodu. */
 export const IMMUTABLE_VIOLATION = "JA001";
 

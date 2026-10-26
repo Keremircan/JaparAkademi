@@ -6,6 +6,8 @@ import { signOutAction } from "@/features/auth/actions";
 import { Link } from "@/i18n/navigation";
 import { NotFoundView } from "@/components/app-shell/not-found-view";
 import { getSectionUser } from "@/server/auth/current-user";
+import { toActor } from "@/server/services/auth";
+import { getOwnPlacement } from "@/server/services/people";
 import { Suspense } from "react";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 
@@ -25,7 +27,7 @@ export default function ProfilePage() {
 async function Content() {
   const user = await getSectionUser("profile");
   if (!user) return <NotFoundView />;
-  const t = await getTranslations();
+  const [t, placement] = await Promise.all([getTranslations(), getOwnPlacement(toActor(user))]);
 
   return (
     <section className="max-w-xl">
@@ -35,6 +37,11 @@ async function Content() {
         <div className="px-5 py-4">
           <dt className="text-sm text-muted-foreground">{t("profile.sicil")}</dt>
           <dd className="mt-1 text-lg font-medium">{user.sicilNo}</dd>
+        </div>
+        <div className="px-5 py-4">
+          <dt className="text-sm text-muted-foreground">{t("profile.position")}</dt>
+          <dd className="mt-1 text-lg font-medium">{placement?.positionName ?? t("profile.noPosition")}</dd>
+          {placement?.unitPath && <dd className="text-sm text-muted-foreground">{placement.unitPath}</dd>}
         </div>
         <div className="px-5 py-4">
           <dt className="text-sm text-muted-foreground">{t("profile.roles")}</dt>
