@@ -51,7 +51,7 @@ async function Content() {
                   </span>
                 </summary>
                 <div className="border-t px-5 py-4">
-                  <AssignmentSummaryView a={a} />
+                  <AssignmentSummaryView a={a} viewer={actor} />
                 </div>
               </details>
             </li>

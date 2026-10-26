@@ -47,6 +47,8 @@ export function PlanDesigner({
   candidates,
   defaults,
   mode,
+  questionIndex = {},
+  poolMinRatio = 2,
 }: {
   positionId: string;
   initialItems: Item[];
@@ -55,6 +57,10 @@ export function PlanDesigner({
   candidates: Candidate[];
   defaults: PlanDefaults;
   mode: "full" | "ohs";
+  /** Modül → etkin soru numaraları (havuz uyarısı için; karar #59). */
+  questionIndex?: Record<string, number[]>;
+  /** `exam.question_pool_min_ratio`: havuz bu oranın altındaysa uyarı. */
+  poolMinRatio?: number;
 }) {
   const t = useTranslations("plans");
   const tk = useTranslations("modules.kinds");
@@ -132,6 +138,13 @@ export function PlanDesigner({
   }
 
   const total = [...commonModules, ...items].reduce((a, m) => a + m.durationMin, 0);
+  // Havuz: ortak teorik modüller + plandaki sınavdan önceki teorik modüller (ortaklar yaka tipine göre değişebilir; uyarı yaklaşıktır)
+  const poolFor = (index: number) => {
+    const ids = new Set<number>();
+    const moduleIds = [...commonModules.filter((c) => c.kind === "theory").map((c) => c.id), ...items.slice(0, index).filter((x) => x.kind === "theory").map((x) => x.moduleId)];
+    for (const id of moduleIds) for (const q of questionIndex[id] ?? []) ids.add(q);
+    return ids.size;
+  };
 
   return (
     <div className="flex max-w-4xl flex-col gap-6">
@@ -175,6 +188,7 @@ export function PlanDesigner({
                   editable={editable(item)}
                   movable={!item.isCardModule && (mode === "full" || item.isOhs)}
                   defaults={defaults}
+                  pool={item.kind === "theory_exam" ? { size: poolFor(i), minRatio: poolMinRatio } : null}
                   onMove={(dir) => update(arrayMove(items, i, i + dir))}
                   onRemove={() => update(items.filter((x) => x.moduleId !== item.moduleId))}
                   onChange={(patch) => change(item.moduleId, patch)}
@@ -249,6 +263,7 @@ function SortableItem({
   editable,
   movable,
   defaults,
+  pool,
   onMove,
   onRemove,
   onChange,
@@ -260,6 +275,7 @@ function SortableItem({
   editable: boolean;
   movable: boolean;
   defaults: PlanDefaults;
+  pool: { size: number; minRatio: number } | null;
   onMove: (dir: -1 | 1) => void;
   onRemove: () => void;
   onChange: (patch: Partial<Item>) => void;
@@ -309,6 +325,18 @@ function SortableItem({
             {item.isOhs && ` · ${t("ohs")}`}
           </span>
           {item.archived && <span className="block text-sm text-destructive">{t("archivedWarning")}</span>}
+          {pool !== null && (() => {
+            const needed = item.settings.questionCount ?? defaults.theory_exam.questionCount;
+            const size = pool.size;
+            if (size >= needed * pool.minRatio) return <span className="block text-sm text-muted-foreground">{t("poolOk", { pool: size })}</span>;
+            return (
+              <span role="status" className={`block text-sm ${size < needed ? "text-destructive" : "text-amber-700 dark:text-amber-400"}`}>
+                {size < needed
+                  ? t("poolInsufficient", { pool: size, needed })
+                  : t("poolSmall", { pool: size, needed, recommended: Math.ceil(needed * pool.minRatio) })}
+              </span>
+            );
+          })()}
         </span>
         {movable && (
           <div className="flex shrink-0 gap-1">

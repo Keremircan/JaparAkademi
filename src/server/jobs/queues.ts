@@ -9,6 +9,8 @@ export const QUEUES = {
   importsCleanup: "imports.cleanup",
   /** Yüklenen medyanın işlenmesi: görsel küçültme, PDF sayfa sayısı, video HLS (FG-2.1). */
   mediaProcess: "media.process",
+  /** Süresi dolan sınav denemesini verilen cevaplarla teslim eder (SPEC Bölüm 6). */
+  examTimeout: "exam.timeout",
 } as const;
 
 export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];
@@ -16,4 +18,5 @@ export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];
 /** Kuyruk ayarları: yeniden deneme ve süre sınırı. */
 export const QUEUE_OPTIONS: Partial<Record<QueueName, { retryLimit: number; retryDelay: number; expireInSeconds: number }>> = {
   [QUEUES.mediaProcess]: { retryLimit: 2, retryDelay: 30, expireInSeconds: 2 * 60 * 60 },
+  [QUEUES.examTimeout]: { retryLimit: 5, retryDelay: 30, expireInSeconds: 10 * 60 },
 };

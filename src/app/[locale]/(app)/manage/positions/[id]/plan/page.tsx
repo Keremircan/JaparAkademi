@@ -12,6 +12,8 @@ import { Link } from "@/i18n/navigation";
 import { AppError } from "@/server/errors";
 import { getEditableCard, planCandidates } from "@/server/services/positions";
 import { planDefaults } from "@/server/services/positions/plan-settings";
+import { questionIndexForModules } from "@/server/services/questions";
+import { getSettings } from "@/server/services/settings";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("positions");
@@ -37,6 +39,15 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
   });
   if (!card) return <NotFoundView />;
   const [t, candidates, defaults] = await Promise.all([getTranslations("positions"), planCandidates(access.actor, id), planDefaults()]);
+  const theoryIds = [
+    ...card.commonModules.filter((m) => m.kind === "theory").map((m) => m.id),
+    ...card.plan.items.filter((i) => i.kind === "theory").map((i) => i.moduleId),
+    ...candidates.filter((c) => c.kind === "theory").map((c) => c.id),
+  ];
+  const [questionIndex, poolSettings] = await Promise.all([
+    questionIndexForModules(access.actor, [...new Set(theoryIds)]),
+    getSettings(["exam.question_pool_min_ratio"]),
+  ]);
 
   return (
     <section>
@@ -60,6 +71,8 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
         candidates={candidates}
         defaults={defaults}
         mode={card.mode}
+        questionIndex={questionIndex}
+        poolMinRatio={poolSettings["exam.question_pool_min_ratio"]}
       />
       <p className="mt-6 text-sm text-muted-foreground">
         {t("planSubmitHint")}{" "}

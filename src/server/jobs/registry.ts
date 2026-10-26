@@ -5,6 +5,7 @@ import { db } from "@/server/db/client";
 import { logger } from "@/server/logger";
 import { cleanupStaleImports } from "@/server/services/imports";
 import { processMediaAsset } from "@/server/services/media/process";
+import { finalizeExpiredAttempt } from "@/server/services/exams";
 import { QUEUE_OPTIONS, QUEUES } from "./queues";
 
 /**
@@ -15,6 +16,11 @@ import { QUEUE_OPTIONS, QUEUES } from "./queues";
 export { QUEUES };
 
 export async function registerJobs(boss: PgBoss) {
+  // Süresi dolan sınav: verilen cevaplarla teslim (kullanıcı sayfayı kapatmış olsa da)
+  await boss.work<{ attemptId: string }>(QUEUES.examTimeout, async ([job]) => {
+    if (job) await finalizeExpiredAttempt(job.data.attemptId);
+  });
+
   await boss.work(QUEUES.heartbeat, async () => {
     await db().execute(sql`select 1`);
     logger.debug("Worker heartbeat");

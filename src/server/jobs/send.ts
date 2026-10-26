@@ -18,9 +18,9 @@ function sender(): Promise<PgBoss> {
   return globalForJobs.__akademiBoss;
 }
 
-export async function enqueue(name: QueueName, data: object): Promise<string | null> {
+export async function enqueue(name: QueueName, data: object, opts: { startAfter?: Date } = {}): Promise<string | null> {
   const boss = await sender();
-  return boss.send(name, data, QUEUE_OPTIONS[name] ?? {});
+  return boss.send(name, data, { ...(QUEUE_OPTIONS[name] ?? {}), ...opts });
 }
 
 /** Testler ve kapanış için. */

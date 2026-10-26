@@ -1,4 +1,4 @@
-import { Boxes, BriefcaseBusiness, ClipboardCheck, Library, School, Users } from "lucide-react";
+import { Boxes, BriefcaseBusiness, ClipboardCheck, FileQuestion, KeyRound, Library, School, Users } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -12,6 +12,7 @@ import { getSectionUser } from "@/server/auth/current-user";
 import { toActor } from "@/server/services/auth";
 import { approvalQueue } from "@/server/services/content";
 import { cardApprovalQueue } from "@/server/services/positions";
+import { questionApprovalQueue } from "@/server/services/questions";
 import { canUseLibrary } from "@/server/services/content/access";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -32,13 +33,14 @@ async function Content() {
   if (!user) return <NotFoundView />;
   const actor = toActor(user);
   const canApprove = can(actor, "content.approve_section") || can(actor, "content.approve_ohs");
-  const [t, queue, cardQueue] = await Promise.all([
+  const [t, queue, cardQueue, questionQueue] = await Promise.all([
     getTranslations(),
     canApprove ? approvalQueue(actor) : Promise.resolve([]),
     canApprove ? cardApprovalQueue(actor) : Promise.resolve([]),
+    canApprove ? questionApprovalQueue(actor) : Promise.resolve([]),
   ]);
   const classroom = canUseLibrary(actor) ? await listClassroomSessions(actor) : { pending: [], mine: [] };
-  const pending = queue.length + cardQueue.length;
+  const pending = queue.length + cardQueue.length + questionQueue.length;
 
   const cards = [
     { key: "approvals", href: "/manage/approvals", icon: ClipboardCheck, show: canApprove, badge: pending || null },
@@ -47,6 +49,8 @@ async function Content() {
     { key: "positions", href: "/manage/positions", icon: BriefcaseBusiness, show: canUseLibrary(actor), badge: null },
     { key: "modules", href: "/manage/modules", icon: Boxes, show: canUseLibrary(actor), badge: null },
     { key: "library", href: "/manage/library", icon: Library, show: canUseLibrary(actor), badge: null },
+    { key: "questions", href: "/manage/questions", icon: FileQuestion, show: can(actor, "questions.view"), badge: null },
+    { key: "proctor", href: "/manage/proctor", icon: KeyRound, show: can(actor, "proctor.issue_code"), badge: null },
   ] as const;
 
   return (

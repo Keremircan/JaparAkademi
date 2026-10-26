@@ -254,7 +254,9 @@ Personel ancak teorik ve pratik sınavın **ikisini de** geçerse "işe başlaya
 - **Gözetmen kodu:** gözetmen (trainer, section_manager, ohs_specialist, hr) kendi ekranında 6 haneli, süreli (varsayılan 2 saat) bir oturum kodu üretir. Kursiyer sınavı bu kodla başlatır. Gözetmen zorunluluğu plan bazında açılıp kapatılır (varsayılan: açık). Denemede gözetmen kimliği saklanır.
 - **Sesli okuma:** tarayıcının Web Speech API'si ile yapılır (veri dışarı çıkmaz). Soru ve şıklar sesli okunabilir. Kullanıldıysa denemede işaretlenir. Cihazda Türkçe ses yoksa kullanıcıya uyarı gösterilir. Eğitim odası bilgisayarlarına Türkçe ses paketi kurulmalıdır (kurulum kılavuzu).
 - **Süre dolunca** verilen cevaplarla otomatik teslim edilir. Bağlantı koparsa süre sunucuda işlemeye devam eder; cevaplar her seçimde sunucuya kaydedilir.
-- **Tüm haklarda başarısızlık:** Bölüm 3.1.
+- **Kalınca (karar #63):** sınavın ön koşulu olan en yakın teorik modüller "tekrar gerekli" olur ve aynı sabit sürümlerle yeni bir turda yeniden açılır; adımlar yeniden "okudum, anladım" ile onaylanır (ara değerlendirme tekrarlanmaz). Yeni deneme için hem bekleme süresi dolmalı hem bu modüller tamamlanmalıdır.
+- **Gözetmen kodu denemeleri (karar #62):** kod, geçerlilik süresi boyunca her sınav için kullanılabilir; gözetmen sınava giren kişi olamaz. Kursiyer başına `proctor.code_max_failures` hatalı koddan sonra `proctor.code_lock_min` dakika kilit.
+- **Tüm haklarda başarısızlık:** atama `awaiting_decision` olur (Bölüm 3.1; karar ekranı 1.7).
 - Ek hak tanınırsa gerekçe ve tanıyan kişi kaydedilir; hak sayacı yeni bir `attempt_grant` kaydıyla artar.
 
 ---
@@ -534,8 +536,8 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 
 **Atama ve ilerleme**
 - `assignments`: id, user_id, position_id, card_version_id, plan_id, reason (`new_hire`|`position_change`|`recertification`|`extra_training`), trainer_user_id, start_date, target_date, status (`active`|`awaiting_readiness`|`awaiting_decision`|`completed`|`cancelled`), cancel_reason, cancelled_at/by, created_by — kişi başına tek açık atama (kısmi benzersiz indeks)
-- `assignment_modules`: id, assignment_id, module_id, sort_order, is_common, modül ayarlarının kopyası (kind, title, duration_min, is_ohs, remote_allowed, validity_months, settings), is_required, prerequisite_module_ids (ortak modüller sıralı; ilk plan modülü zorunlu ortakları da bekler), pinned_task_ids (pratik), status (`locked`|`available`|`in_progress`|`completed`|`review_required`|`waived`), unlocked_at, started_at, completed_at, completed_via (`online`|`classroom`|`carried_over`), carried_from_id, expires_at
-- `assignment_items` (SPEC'teki content_progress): assignment_module_id, sort_order, kind (`content`|`card_section`), content_id + content_version_id (atama anında yayındaki sürüm) veya card_version_id + section_key, started_at, watched_ranges (izlenen aralıklar, saniye), progress_ratio, reached_end_at, acknowledged_at — "okudum, anladım" sonrası **değiştirilemez**
+- `assignment_modules`: id, assignment_id, module_id, sort_order, is_common, modül ayarlarının kopyası (kind, title, duration_min, is_ohs, remote_allowed, validity_months, settings), is_required, prerequisite_module_ids (ortak modüller sıralı; ilk plan modülü zorunlu ortakları da bekler), pinned_task_ids (pratik), status (`locked`|`available`|`in_progress`|`completed`|`review_required`|`waived`), round (sınavda kalınca artar), unlocked_at, started_at, completed_at, completed_via (`online`|`classroom`|`carried_over`), carried_from_id, expires_at
+- `assignment_items` (SPEC'teki content_progress): assignment_module_id, round, sort_order, kind (`content`|`card_section`), content_id + content_version_id (atama anında yayındaki sürüm) veya card_version_id + section_key, started_at, watched_ranges (izlenen aralıklar, saniye), progress_ratio, reached_end_at, acknowledged_at — "okudum, anladım" sonrası **değiştirilemez**
 - `quiz_responses`: assignment_module_id, quiz_question_id, snapshot (soru, şıklar, doğru şık, açıklama — o anki metin), answer_index, is_correct, answered_at — **değiştirilemez**
 - `reread_tasks`: user_id, content_id, content_version_id, due_date, acknowledged_at — onaydan sonra **değiştirilemez**
 - `classroom_sessions`: id, module_id, trainer_user_id, session_date, duration_min, location, scanned_form_asset_id, notes, status (`draft`|`submitted`|`approved`|`rejected`), recorded_by, submitted_at, approved_at (kilit) — onay/ret `approvals` tablosunda
@@ -543,12 +545,13 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 
 **Sınav**
 - `questions`: id, owner_org_unit_id, is_ohs, current_version_id, archived_at
-- `question_versions`: id, question_id, version, type (`single_choice`|`true_false`|`matching`*|`hotspot`*), stem, media_asset_id, options (jsonb), correct (jsonb), explanation, topic, difficulty, is_ohs_critical, status (`draft`|`ohs_review`|`active`|`retired`)
-- `question_tags`: question_id, position_id / module_id / tag_id
+- `question_versions`: id, question_id, version, type (`single_choice`|`true_false`; `matching`*|`hotspot`* Faz 2), stem, media_asset_id, options (jsonb, metin dizisi), correct_index, explanation, topic, difficulty (1–3), is_ohs_critical, status (`ohs_review`|`active`|`rejected`|`retired`), created_by — sınavda kullanılmış sürümün yalnızca durumu değişebilir, silinemez (trigger). Onay/ret `approvals` tablosunda
+- `question_modules`: question_id, module_id (en az bir teorik modül; karar #59)
 - `quiz_questions`: ara değerlendirme soruları (aynı yapı, ayrı havuz)
-- `proctor_sessions`: id, proctor_user_id, code_hash, location, created_at, expires_at
-- `exam_attempts`: id, assignment_module_id, attempt_no, proctor_session_id, started_at, deadline_at, submitted_at, submit_reason (`user`|`timeout`), score, passed, fail_reason (`score`|`ohs_critical`), ip, user_agent, tts_used, tab_leave_count — **teslimden sonra değiştirilemez**
-- `exam_attempt_items`: attempt_id, sort_order, question_version_id, option_order, answer, is_correct, answered_at
+- `proctor_sessions`: id, proctor_user_id, code_hash (HMAC), location, created_at, expires_at, revoked_at
+- `proctor_code_failures`: user_id, at — hatalı kod denemeleri (kilit sayacı) — **değiştirilemez**
+- `exam_attempts`: id, assignment_module_id, attempt_no, proctor_session_id, proctor_user_id, question_count, duration_min, pass_score (deneme anındaki kurallar), started_at, deadline_at, submitted_at, submit_reason (`user`|`timeout`), score, passed, fail_reason (`score`|`ohs_critical`), ip, user_agent, tts_used, tab_leave_count — **teslimden sonra değiştirilemez**
+- `exam_attempt_items`: attempt_id, sort_order, question_version_id, option_order (gösterilen sıra → asıl şık), answer_index (asıl şık), is_correct, answered_at — teslimden sonra **değiştirilemez**
 - `exam_attempt_events`: attempt_id, kind (`tab_hidden`|`tab_visible`|`blur`|`reconnect`), at
 - `attempt_grants`: assignment_module_id, extra_attempts, reason, granted_by, granted_at
 
@@ -663,6 +666,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | `exam.practical.max_attempts` | 2 | ✅ | sysadmin |
 | `exam.question_pool_min_ratio` | 2.0 | — | sysadmin |
 | `proctor.code_ttl_min` | 120 | — | sysadmin |
+| `proctor.code_max_failures` / `proctor.code_lock_min` | 5 / 15 | — | sysadmin |
 | `session.shared_idle_min` | 10 | — | sysadmin |
 | `session.personal_days` | 30 | — | sysadmin |
 | `auth.password_min_length` | 8 | — | sysadmin |
@@ -785,6 +789,14 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 55 | Sınıf eğitimi onayı | Kaydı eğitmen, bölüm sorumlusu, İSG uzmanı veya İK tutar; onay İSG modülünde İSG uzmanı, diğerlerinde kapsamdaki bölüm sorumlusu (ortak modülde İK). Kaydı tutan ve eğitimi veren onaylayamaz. Atamasında modül olmayan katılımcı da kayda geçer |
 | 56 | Elle eğitim başlatma | İK eğitimi gerekmeyen personel için de başlatabilir (gerekçe `extra_training`); otomatik atama yalnızca yeni girişlere |
 | 57 | Yönetici görünümü | 1.4'te bölüm sorumlusu (kapsamı) ve İK için ekip ilerleme listesi; ayrıntılı rapor ve dışa aktarma 1.8 |
+| 58 | Soru sahipliği | Soru bir birime (kapsamdaki bölüm sorumlusu düzenler) ya da ortak İSG sorusu olarak İSG uzmanına aittir. İSG uzmanı birimlerin İSG sorularını da düzenler. İK yalnızca okur; eğitmen soru bankasını görmez |
+| 59 | Soru havuzu | Her soru en az bir teorik modüle bağlanır. Sınav havuzu, atamada sınavdan önce gelen teorik modüllerin (ortak modüller dahil) etkin sorularıdır. Havuz < soru sayısı × `exam.question_pool_min_ratio` ise plan tasarımcısında uyarı (engellemez); havuz < soru sayısı ise sınav başlamaz |
+| 60 | Konu | Serbest metin; mevcut konular öneri olarak gösterilir. Çekim konulara dengeli dağıtılır |
+| 61 | Soru sürümü ve onay | Sınavda kullanılmamış soru yerinde düzenlenir; kullanılmış soru düzenlenince yeni sürüm açılır. İSG ve "İSG kritik" sorular İSG uzmanı onayıyla etkinleşir (onaya kadar önceki etkin sürüm kullanılır); İSG uzmanının kendi sorusu doğrudan etkindir. Kimse kendi sorusunu onaylamaz |
+| 62 | Gözetmen kodu | Kod geçerlilik süresince her sınav için geçerlidir; denemeye gözetmen kimliği yazılır; gözetmen sınava giren kişi olamaz. Kursiyer başına 5 hatalı koddan sonra 15 dk kilit (parametre) |
+| 63 | Kalınan sınav | İlgili teorik modüller "tekrar gerekli" olur; adımlar aynı sabit sürümlerle yeni turda yeniden açılır ve "okudum, anladım" yeniden istenir (ara değerlendirme tekrarlanmaz). Yeni deneme için bekleme süresi ve tekrar modülleri birlikte gerekir. Haklar bitince atama `awaiting_decision` (karar ekranı 1.7) |
+| 64 | Excel'den soru | Sütunlar: Soru, Tip, A–E, Doğru, Konu, Zorluk, İSG kritik, Modül, Açıklama. Modül adları seçilen birimde büyük/küçük harf ve Türkçe karakterden bağımsız eşleşir. Önce önizleme, sonra aktarım |
+| 65 | Sınav sonrası görünürlük | Kursiyer puan, sonuç ve konu özetini görür; sorular ve doğru cevaplar gösterilmez. Eğitmen, bölüm sorumlusu ve İK ayrıca sekme çıkışlarını, sesli okuma kullanımını ve gözetmeni görür |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

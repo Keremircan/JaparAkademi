@@ -104,6 +104,8 @@ export const assignmentModules = pgTable(
     /** Pratik modülde atama anındaki görevler (1.6). */
     pinnedTaskIds: uuid().array().notNull().default(sql`'{}'::uuid[]`),
     status: assignmentModuleStatus().notNull().default("locked"),
+    /** Tekrar turu: sınavda kalınca "tekrar gerekli" olan modül yeni turda adımları yeniden açar (karar #63). */
+    round: integer().notNull().default(0),
     unlockedAt: tstz("unlocked_at"),
     startedAt: tstz("started_at"),
     completedAt: tstz("completed_at"),
@@ -136,6 +138,8 @@ export const assignmentItems = pgTable(
       .notNull()
       .references(() => assignmentModules.id, { onDelete: "restrict" }),
     sortOrder: integer().notNull(),
+    /** Modülün hangi turuna ait (assignment_modules.round) */
+    round: integer().notNull().default(0),
     kind: assignmentItemKind().notNull(),
     contentId: uuid().references(() => contents.id, { onDelete: "restrict" }),
     contentVersionId: uuid().references(() => contentVersions.id, { onDelete: "restrict" }),
