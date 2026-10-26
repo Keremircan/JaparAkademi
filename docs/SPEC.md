@@ -225,7 +225,7 @@ Her pozisyon için aynı yapıda bir kart doldurulur. Yazılım bu alanları for
 | 13 | Eğitim planı | Teorik modüller, pratik görevler, sınavlar, süreler | Evet | Plan (Bölüm 4.3) |
 
 - Kartın akışı içerikle aynıdır (Bölüm 4.2). **9. bölüm önceki sürüme göre değiştiyse (ilk sürümde her zaman) İSG uzmanı onayı gerekir.**
-- Her kart sürümünde sürüm no, hazırlayan, onaylayanlar, yayın tarihi ve **son gözden geçirme tarihi** tutulur. Değişiklik yapmadan "gözden geçirdim" kaydı da son gözden geçirme tarihini günceller. Bu tarih 12 aydan eskiyse kart "içerik güncellik" raporuna düşer.
+- Her kart sürümünde sürüm no, hazırlayan, onaylayanlar, yayın tarihi ve **son gözden geçirme tarihi** tutulur. Değişiklik yapmadan "gözden geçirdim" kaydı (kapsamdaki bölüm sorumlusu; değiştirilemez `position_card_reviews` kaydı) da son gözden geçirme tarihini günceller. Bu tarih 12 aydan eskiyse kart "içerik güncellik" raporuna düşer.
 - Kart, kursiyere teorik eğitimde bölüm bölüm okunacak içerik olarak sunulur (her bölüm ayrı tamamlama adımıdır).
 
 ---
@@ -334,7 +334,7 @@ Kursiyer ve pratik eğitmen ekranları telefon ve tablette rahat kullanılmalıd
 | 19 | Tesis içindekiler / tahliye yoklaması | Güvenlik, İSG | Telefon | Anlık liste, "toplanma alanında" | `/security/evacuation` | 2 |
 | 20 | Raporlar ve ayarlar | İK, İSG, BT | PC | Bölüm 10 raporları, parametreler, roller, denetim kaydı | `/reports`, `/admin/settings` | 1 (temel) |
 
-Ek ekranlar: herkese açık sertifika doğrulama (`/verify/[token]`, Faz 1), profil ve şifre değiştirme, bildirim merkezi, KVKK aydınlatma onayı (ilk girişte).
+Ek ekranlar: pozisyon listesi ve kart özeti (`/manage/positions`, `/manage/positions/[id]`, sürüm karşılaştırma `/manage/positions/[id]/compare`), modül kütüphanesi (`/manage/modules`), içerik sürüm karşılaştırma (`/manage/library/[id]/compare`), herkese açık sertifika doğrulama (`/verify/[token]`, Faz 1), profil ve şifre değiştirme, bildirim merkezi, KVKK aydınlatma onayı (ilk girişte).
 
 **Navigasyon:** tek uygulama kabuğu kullanılır; menü kullanıcının rollerine göre oluşur. Mobilde alt sekme bar'ı, masaüstünde yan menü olur. Birden fazla rolü olan kullanıcı tüm yetkili bölümleri görür.
 
@@ -522,14 +522,15 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `approvals`: id, subject_type (`content_version`|`position_card_version`|`question_version`|`classroom_session`), subject_id, step (`section`|`ohs`), decision (`approved`|`rejected`|`auto_self`), comment, decided_by, decided_at — **değiştirilemez**
 
 **Pozisyon kartı ve plan**
-- `position_card_versions`: id, position_id, version, status (içerikle aynı), sections (jsonb, 1–12; Zod şemalı), ohs_section_changed, change_note, created_by, published_at, last_reviewed_at, last_reviewed_by
-- `modules`: id, kind (`theory`|`practice`|`theory_exam`|`practice_exam`), title, duration_min, is_ohs, remote_allowed, validity_months, is_common, common_target, owner_org_unit_id
+- `position_card_versions`: id, position_id, version, status (içerikle aynı), sections (jsonb, 2–12; Zod şemalı; yayında 1. bölüm künye kopyası eklenir), ohs_section_changed, change_note, created_by, submitted_by/at, published_at (kilit)
+- `position_card_reviews`: card_version_id, note, reviewed_by, reviewed_at — **değiştirilemez** ("gözden geçirdim" kayıtları; son gözden geçirme = max(yayın, son kayıt))
+- `modules`: id, kind (`theory`|`practice`|`theory_exam`|`practice_exam`), title, description, duration_min, is_ohs, remote_allowed, validity_months, owner_org_unit_id (null = ortak), common_target, common_sort_order, card_position_id (doluysa pozisyonun "Pozisyon kartı" modülü), archived_at — sürümsüz (karar #45)
 - `module_contents`: module_id, content_id, sort_order (yayındaki sürüm atama anında sabitlenir)
 - `module_quiz_questions`: module_id, quiz_question_id, sort_order
 - `practice_tasks`: id, module_id, title, description, is_critical, sort_order, competency_id
-- `exam_configs`: module_id, question_count, duration_min, pass_score, max_attempts, cooldown_hours, proctor_required, topic_filter, position_filter (null alanlar = global parametre)
-- `training_plans`: id, position_card_version_id, version
-- `plan_modules`: plan_id, module_id, sort_order, is_required, prerequisite_module_ids
+- `training_plans`: id, card_version_id (1:1, kart sürümüyle birlikte sürümlenir), overrides (jsonb; plan bazında parametreler, ör. `videoWatchRatio`)
+- `plan_modules`: plan_id, module_id, sort_order, is_required, prerequisite_module_ids (yalnızca plandaki önceki modüller), settings (jsonb; sınav modülünde soru sayısı, süre, geçme notu, hak, bekleme, gözetmen — boş alan = genel parametre). Ayrı `exam_configs` tablosu yerine sınav ayarları plan modülünde tutulur; böylece ayar değişikliği de kart onayından geçer. Konu/pozisyon filtresi 1.5'te eklenir.
+- Yayınlanmış kartın planı ve plan modülleri trigger ile değiştirilemez. Ortak modüller plana yazılmaz; atama anında yaka tipine göre eklenir (karar #46).
 
 **Atama ve ilerleme**
 - `assignments`: id, user_id, plan_id, reason (`new_hire`|`position_change`|`recertification`|`extra_training`), trainer_user_id, start_date, target_date, status (`active`|`awaiting_readiness`|`awaiting_decision`|`completed`|`cancelled`), created_by
@@ -767,6 +768,13 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 39 | Taslak yetkisi | Bölüm sorumlusu kapsamında, eğitmen kendi biriminde, İK ortak içerikte, İSG uzmanı her İSG içeriğinde taslak hazırlar |
 | 40 | Arşiv | İçeriği onaylayabilen arşivler (birim içeriğinde kapsamdaki bölüm sorumlusu, ortakta İK, İSG içeriğinde ayrıca İSG uzmanı). Arşivden geri alma yok |
 | 41 | PDF gösterimi | Kursiyer ekranında pdf.js ile sayfa içinde (1.4); 1.2'de sayfa sayısı saklanır, yönetim ekranında yeni sekmede açılır |
+| 42 | Künye (kart 1. bölüm) | Pozisyondan salt okunur gösterilir (İK `/admin/org`'dan değiştirir); yayın anında kart sürümüne kopyalanır (iş paketi 1.3) |
+| 43 | Kart/plan taslak yetkisi | Bölüm sorumlusu (kapsam) ve eğitmen (kendi birimi) tüm kartı; İSG uzmanı yalnızca 9. bölümü ve plandaki İSG modüllerini düzenler. İK ve İSG uzmanı tüm kartları okur. Kart onayı: 1. adım kapsamdaki bölüm sorumlusu; İSG uzmanı kartı tek başına yayınlayamaz |
+| 44 | Plan değişikliği | Plan kartın 13. bölümüdür; değişiklik yeni kart sürümü açar ve aynı onaydan geçer. Mevcut atamalar etkilenmez |
+| 45 | Modül sürümü | Modüller sürümsüz; ayar, içerik listesi ve görevler serbestçe düzenlenir, yeni atamalara yansır (atama anında sabitlenir — 1.4). Kullanılmış görev silinmez, arşivlenir |
+| 46 | Ortak modüller | Sahibi olmayan modüller yaka tipine göre her planın başına otomatik eklenir (tasarımcıda kilitli görünür, plana yazılmaz). Sırayı İK (İSG modüllerinde İSG uzmanı) `common_sort_order` ile belirler |
+| 47 | Kart modülü | Her pozisyonun kaldırılamayan bir "Pozisyon kartı" teorik modülü vardır; planda ortak modüllerden sonra ilk sıradadır. 1.4'te kart bölüm bölüm okunur |
+| 48 | Sürükle-bırak | `@dnd-kit` (klavye destekli); yukarı/aşağı butonları da vardır |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

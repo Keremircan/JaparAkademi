@@ -78,6 +78,8 @@ Yeni bir özelliğe, tabloya veya ekrana başlamadan önce SPEC.md'nin ilgili b�
 - İçerik kütüphanesi: erişim kuralları `src/server/services/content/access.ts` (SQL karşılığı `visibilityFilter`), yayın akışı `src/server/state/content.ts`. Gövde şemaları `services/content/body.ts` (taslak gevşek, onaya gönderim katı). Sayfalar `libraryAccess()` ile korunur.
 - Medya: tarayıcı imzalı URL ile doğrudan Garage'a yükler (64 MB üstü 16 MB'lık parçalar) → `completeUpload` → `media.process` kuyruğu → worker (`services/media/process.ts`). Dosyalar istemciye yalnızca `/api/media/...` üzerinden (yetki + imzalı yönlendirme) verilir.
 - Kuyruklar `src/server/jobs/queues.ts`'te tanımlanır ve `db:migrate` sırasında oluşturulur; uygulama iş göndermek için `enqueue()` (`jobs/send.ts`), işleyiciler `jobs/registry.ts`.
+- Pozisyon kartı ve plan: `src/server/services/positions/` (servis, `card-schema.ts` bölüm şeması + zorunlu alan kontrolü, `plan-settings.ts` plan bazında parametreler — `SETTINGS` şemalarıyla doğrulanır). Durum makinesi `src/server/state/position-card.ts`. Modüller `src/server/services/modules.ts`. Yetki içerik erişim kurallarını kullanır (`content/access.ts`).
+- Sürüm karşılaştırma: `src/lib/diff.ts` (LCS; satır ve kelime farkı) + `features/positions/components/diff-view.tsx`.
 - Server Action'a istemci nesnesi gönderirken düz nesne olmalı: TipTap `getJSON()` prototipsiz nesne üretir, `JSON.parse(JSON.stringify(...))` ile düzleştirilir.
 
 ## Komutlar

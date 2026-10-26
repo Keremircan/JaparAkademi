@@ -1,4 +1,4 @@
-import { ClipboardCheck, Library } from "lucide-react";
+import { Boxes, BriefcaseBusiness, ClipboardCheck, Library } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -10,6 +10,7 @@ import { can } from "@/server/authz/policy";
 import { getSectionUser } from "@/server/auth/current-user";
 import { toActor } from "@/server/services/auth";
 import { approvalQueue } from "@/server/services/content";
+import { cardApprovalQueue } from "@/server/services/positions";
 import { canUseLibrary } from "@/server/services/content/access";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -30,11 +31,18 @@ async function Content() {
   if (!user) return <NotFoundView />;
   const actor = toActor(user);
   const canApprove = can(actor, "content.approve_section") || can(actor, "content.approve_ohs");
-  const [t, queue] = await Promise.all([getTranslations(), canApprove ? approvalQueue(actor) : Promise.resolve([])]);
+  const [t, queue, cardQueue] = await Promise.all([
+    getTranslations(),
+    canApprove ? approvalQueue(actor) : Promise.resolve([]),
+    canApprove ? cardApprovalQueue(actor) : Promise.resolve([]),
+  ]);
+  const pending = queue.length + cardQueue.length;
 
   const cards = [
+    { key: "approvals", href: "/manage/approvals", icon: ClipboardCheck, show: canApprove, badge: pending || null },
+    { key: "positions", href: "/manage/positions", icon: BriefcaseBusiness, show: canUseLibrary(actor), badge: null },
+    { key: "modules", href: "/manage/modules", icon: Boxes, show: canUseLibrary(actor), badge: null },
     { key: "library", href: "/manage/library", icon: Library, show: canUseLibrary(actor), badge: null },
-    { key: "approvals", href: "/manage/approvals", icon: ClipboardCheck, show: canApprove, badge: queue.length || null },
   ] as const;
 
   return (

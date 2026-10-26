@@ -1,8 +1,8 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Actor } from "@/server/authz/actor";
 import { assertUser } from "@/server/authz/policy";
 import { db } from "@/server/db/client";
-import { contents, contentVersionAssets, contentVersions, mediaAssets } from "@/server/db/schema";
+import { contents, contentVersionAssets, contentVersions, mediaAssets, positionCardVersions, positions } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/server/errors";
 import { enqueue } from "@/server/jobs/send";
@@ -173,7 +173,7 @@ export async function myAssetStatus(actor: Actor, assetId: string): Promise<Asse
 
 /**
  * Medyaya erişim: yükleyen kişi ya da medyanın kullanıldığı bir içeriği görebilen kişi.
- * (1.4'te eğitim ataması olan kursiyerler eklenecek.)
+ * Pozisyon kartındaki iş akışı şeması da kartı görebilenlere açıktır. (1.4'te kursiyerler eklenecek.)
  */
 export async function getAssetForViewer(actor: Actor, assetId: string) {
   assertUser(actor);
@@ -187,7 +187,13 @@ export async function getAssetForViewer(actor: Actor, assetId: string) {
     .innerJoin(contentVersions, eq(contentVersions.id, contentVersionAssets.contentVersionId))
     .innerJoin(contents, eq(contents.id, contentVersions.contentId))
     .where(eq(contentVersionAssets.assetId, assetId));
-  if (refs.length === 0) return null;
+  // Pozisyon kartındaki iş akışı şeması (4. bölüm)
+  const cards = await db()
+    .selectDistinct({ ownerOrgUnitId: positions.orgUnitId })
+    .from(positionCardVersions)
+    .innerJoin(positions, eq(positions.id, positionCardVersions.positionId))
+    .where(sql`${positionCardVersions.sections} -> 'workflow' ->> 'diagramAssetId' = ${assetId}`);
+  if (refs.length === 0 && cards.length === 0) return null;
   const access = await contentAccessFor(actor);
-  return refs.some((r) => canViewContent(access, r)) ? asset : null;
+  return [...refs, ...cards.map((c) => ({ ...c, isOhs: false }))].some((r) => canViewContent(access, r)) ? asset : null;
 }

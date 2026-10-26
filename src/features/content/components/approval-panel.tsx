@@ -7,10 +7,18 @@ import { Field } from "@/components/forms/field";
 import { FormError } from "@/components/forms/form-error";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { approveVersionAction, rejectVersionAction } from "../actions";
+import type { ActionResult } from "@/features/shared/action-result";
 
-/** Onay/ret paneli. Ret gerekçesi zorunludur (FG-2.3). */
-export function ApprovalPanel({ versionId, step }: { versionId: string; step: "section" | "ohs" }) {
+/** Onay/ret paneli (içerik ve pozisyon kartı). Ret gerekçesi zorunludur (FG-2.3). */
+export function ApprovalPanel({
+  step,
+  approve,
+  reject,
+}: {
+  step: "section" | "ohs";
+  approve: (comment: string) => Promise<ActionResult>;
+  reject: (comment: string) => Promise<ActionResult>;
+}) {
   const t = useTranslations("content.approval");
   const [comment, setComment] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +29,7 @@ export function ApprovalPanel({ versionId, step }: { versionId: string; step: "s
     if (kind === "reject" && comment.trim().length < 3) return setError("reject_comment_required");
     if (kind === "approve" && !window.confirm(t("approveConfirm"))) return;
     startTransition(async () => {
-      const r = kind === "approve" ? await approveVersionAction(versionId, comment) : await rejectVersionAction(versionId, comment);
+      const r = kind === "approve" ? await approve(comment) : await reject(comment);
       if (!r.ok) setError(r.error);
     });
   };

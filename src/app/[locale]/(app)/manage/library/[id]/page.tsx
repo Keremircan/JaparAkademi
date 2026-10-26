@@ -1,4 +1,4 @@
-import { Archive, FilePlus2, Pencil, Trash2 } from "lucide-react";
+import { Archive, FilePlus2, GitCompare, Pencil, Trash2 } from "lucide-react";
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -8,7 +8,7 @@ import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 import { ActionButton } from "@/components/forms/action-button";
 import { Button } from "@/components/ui/button";
 import { orNull } from "@/features/admin/guard";
-import { archiveContentAction, discardDraftAction, newVersionAction } from "@/features/content/actions";
+import { approveVersionAction, archiveContentAction, discardDraftAction, newVersionAction, rejectVersionAction } from "@/features/content/actions";
 import { ApprovalPanel } from "@/features/content/components/approval-panel";
 import { ContentRenderer } from "@/features/content/components/content-renderer";
 import { StatusBadge } from "@/features/content/components/status-badge";
@@ -60,6 +60,7 @@ async function Content({
   ]);
   const step = pendingStep(latest.status);
   const dt = (d: Date) => format.dateTime(d, { dateStyle: "medium", timeStyle: "short" });
+  const prev = (version: number) => content.versions.find((x) => x.version === version - 1);
   const lastRejection = [...content.approvals].reverse().find((a) => a.versionId === latest.id && a.decision === "rejected");
 
   return (
@@ -148,7 +149,7 @@ async function Content({
 
       {content.can.approve && step && (
         <div className="mb-8">
-          <ApprovalPanel versionId={latest.id} step={step} />
+          <ApprovalPanel step={step} approve={approveVersionAction.bind(null, latest.id)} reject={rejectVersionAction.bind(null, latest.id)} />
         </div>
       )}
 
@@ -174,6 +175,15 @@ async function Content({
                   </span>
                   {v.isCurrent && <span className="text-sm text-muted-foreground">{t("current")}</span>}
                   {!v.isCurrent && v.publishedAt && <span className="text-sm text-muted-foreground">{t("superseded")}</span>}
+                  {prev(v.version) && (
+                    <Link
+                      href={`/manage/library/${id}/compare?from=${prev(v.version)!.id}&to=${v.id}`}
+                      className="ms-auto inline-flex min-h-12 items-center gap-1 text-sm underline-offset-4 hover:underline"
+                    >
+                      <GitCompare aria-hidden="true" className="size-4" />
+                      {t("compareWith", { version: v.version - 1 })}
+                    </Link>
+                  )}
                 </div>
                 <p className="text-sm text-muted-foreground">
                   {t("createdBy", { name: v.createdByName, date: dt(v.createdAt) })}

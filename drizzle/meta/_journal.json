@@ -64,6 +64,20 @@
       "when": 1793005095203,
       "tag": "0008_content_triggers",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793016659601,
+      "tag": "0009_training_plans",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793016665315,
+      "tag": "0010_training_triggers",
+      "breakpoints": true
     }
   ]
 }
