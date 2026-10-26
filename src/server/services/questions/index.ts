@@ -4,7 +4,7 @@ import type { Actor } from "@/server/authz/actor";
 import { assertCan, assertNotSelf, assertUser, can, hasRole } from "@/server/authz/policy";
 import { inOrgScope, orgScopeFor, type OrgScope } from "@/server/authz/scope";
 import { db, type DbOrTx, type Tx } from "@/server/db/client";
-import { approvals, examAttemptItems, mediaAssets, modules, orgUnits, questionModules, questions, questionVersions, users } from "@/server/db/schema";
+import { approvals, assignmentModules, assignments, examAttemptItems, examAttempts, mediaAssets, modules, orgUnits, questionModules, questions, questionVersions, users } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/server/errors";
 
@@ -532,4 +532,32 @@ export async function questionIndexForModules(actor: Actor, moduleIds: string[])
     (out[r.moduleId] ??= []).push(numbers.get(r.questionId)!);
   }
   return out;
+}
+
+/**
+ * Soru görseli erişimi: soruyu görebilen yönetici (bankada) ya da görselin çıktığı açık sınav denemesindeki kursiyer.
+ * Teslimden sonra kursiyer görseli göremez (sorular gösterilmez; karar #65).
+ */
+export async function canViewQuestionAsset(actor: Actor, assetId: string): Promise<boolean> {
+  if (actor.kind === "system") return true;
+  const owners = await db()
+    .selectDistinct({ ownerOrgUnitId: questions.ownerOrgUnitId, isOhs: questions.isOhs })
+    .from(questionVersions)
+    .innerJoin(questions, eq(questions.id, questionVersions.questionId))
+    .where(eq(questionVersions.mediaAssetId, assetId));
+  if (owners.length === 0) return false;
+  if (can(actor, "questions.view")) {
+    const a = await accessFor(actor);
+    if (owners.some((o) => canView(a, o))) return true;
+  }
+  const [open] = await db()
+    .select({ id: examAttemptItems.id })
+    .from(examAttemptItems)
+    .innerJoin(questionVersions, eq(questionVersions.id, examAttemptItems.questionVersionId))
+    .innerJoin(examAttempts, eq(examAttempts.id, examAttemptItems.attemptId))
+    .innerJoin(assignmentModules, eq(assignmentModules.id, examAttempts.assignmentModuleId))
+    .innerJoin(assignments, eq(assignments.id, assignmentModules.assignmentId))
+    .where(and(eq(questionVersions.mediaAssetId, assetId), eq(assignments.userId, actor.userId), isNull(examAttempts.submittedAt)))
+    .limit(1);
+  return !!open;
 }

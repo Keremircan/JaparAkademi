@@ -271,7 +271,17 @@
     "exam_cooldown": "Bekleme süresi dolmadan yeni sınava başlayamazsınız.",
     "exam_pool_insufficient": "Bu sınav için yeterli soru yok. Eğitmeninize bildirin.",
     "exam_submitted": "Bu sınav teslim edildi.",
-    "exam_time_over": "Sınav süresi doldu; cevaplarınız teslim edildi."
+    "exam_time_over": "Sınav süresi doldu; cevaplarınız teslim edildi.",
+    "practice_level_skip": "Seviye atlanamaz; görevi bir üst seviyeye işaretleyin.",
+    "practice_level_invalid": "Görev zaten bu seviyede.",
+    "practice_reason_required": "Seviyeyi düşürmek için gerekçe yazın.",
+    "practice_module_closed": "Bu pratik modül işaretlemeye açık değil.",
+    "too_many_photos": "En fazla 6 fotoğraf ekleyebilirsiniz.",
+    "practical_no_criteria": "Bu sınav için değerlendirilecek pratik görev yok.",
+    "practical_not_draft": "Bu form imzalanmış; artık değiştirilemez.",
+    "practical_incomplete": "İmzalamadan önce bütün kriterleri işaretleyin.",
+    "practical_not_awaiting": "Bu form 2. imza beklemiyor.",
+    "signature_invalid": "İmza okunamadı. Lütfen imzayı yeniden çizin."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -573,6 +583,10 @@
       "proctor": {
         "title": "Gözetmen kodu",
         "description": "Sınava başlamak için kursiyerlere verilen kısa süreli kod."
+      },
+      "practice": {
+        "title": "Pratik değerlendirme",
+        "description": "Kapsamınızdaki kursiyerlerin pratik görevleri ve pratik sınavları."
       }
     },
     "pendingCount": "{count} kayıt onay bekliyor"
@@ -829,7 +843,9 @@
       "cardsHeading": "Pozisyon kartları",
       "contentsHeading": "İçerikler",
       "classroomHeading": "Sınıf eğitimi kayıtları",
-      "questionsHeading": "İSG onayı bekleyen sorular"
+      "questionsHeading": "İSG onayı bekleyen sorular",
+      "practicalHeading": "2. imzanızı bekleyen pratik sınavlar",
+      "practicalScore": "{score} puan · {passed, select, yes {geçti} other {kaldı}}"
     }
   },
   "modules": {
@@ -1255,11 +1271,6 @@
       "doneClassroom": "Bu modül sınıf eğitimiyle tamamlandı.",
       "back": "Eğitimlerime dön",
       "classroomOnly": "Bu İSG modülü yalnızca yüz yüze sınıf eğitimiyle tamamlanır. İçerikleri inceleyebilirsiniz; tamamlama eğitim kaydı onaylanınca yapılır.",
-      "placeholder": {
-        "practice": "Pratik eğitim görevlerinizi pratik eğitmeniniz işaretler. Bu ekran bir sonraki güncellemede açılacak.",
-        "theory_exam": "Teorik sınav bir sonraki güncellemede açılacak. Sınava gözetmen koduyla başlayacaksınız.",
-        "practice_exam": "Pratik sınav bir sonraki güncellemede açılacak."
-      },
       "stepsNav": "Adımlar",
       "stepDone": "Tamamlandı",
       "stepOf": "Adım {n}/{total}",
@@ -1299,7 +1310,8 @@
       "start": "Sesli oku",
       "stop": "Durdur",
       "noVoice": "Bu cihazda Türkçe ses bulunamadı; okuma başka bir dilde olabilir."
-    }
+    },
+    "practiceLink": "Pratik görevlerim"
   },
   "assignments": {
     "heading": "Eğitim",
@@ -1627,6 +1639,196 @@
       "noProctor": "Gözetmensiz",
       "tabLeaves": "{count, plural, =0 {sekme çıkışı yok} other {# sekme çıkışı}}",
       "tts": "sesli okuma kullandı"
+    }
+  },
+  "practice": {
+    "markTitle": "Pratik görev işaretleme",
+    "backTrainer": "Eğitmen paneli",
+    "critical": "Kritik",
+    "levels": {
+      "demonstrated": "Usta gösterdi",
+      "supervised": "Gözetiminde yaptı",
+      "independent": "Tek başına yaptı",
+      "none": "Başlanmadı"
+    },
+    "markAs": "İşaretle: {level}",
+    "lower": "Seviyeyi düşür",
+    "lowerTo": "Yeni seviye",
+    "choose": "Seçin",
+    "reason": "Gerekçe (zorunlu)",
+    "note": "Not (isteğe bağlı)",
+    "photo": "Fotoğraf",
+    "confirmUp": "Kaydet: {level}",
+    "confirmDown": "Seviyeyi düşür",
+    "cancel": "Vazgeç",
+    "history": "Geçmiş ({count})",
+    "lowered": "düşürüldü",
+    "examFail": "Pratik sınavda yapamadı",
+    "openPhoto": "Fotoğrafı aç",
+    "progress": "{total} görevden {done} tanesi \"tek başına yaptı\"",
+    "moduleDone": "Modül tamamlandı",
+    "reviewRequired": "Pratik sınavdan sonra tekrar gerekli",
+    "readOnly": "Bu kursiyerin görevlerini görüntülüyorsunuz; işaretleme yetkiniz yok.",
+    "notOpen": "Bu modül henüz açılmadı ya da kapandı.",
+    "signature": {
+      "empty": "{label}: imza alanı boş",
+      "signed": "{label}: imza çizildi",
+      "hint": "Parmağınızla veya kalemle imzalayın.",
+      "clear": "Temizle"
+    },
+    "photos": {
+      "remove": "{name} fotoğrafını kaldır"
+    },
+    "panel": {
+      "description": "Kursiyerlerinizin pratik görevlerini işaretleyin ve pratik sınavlarını değerlendirin.",
+      "proctor": "Gözetmen kodu",
+      "evaluate": "Pratik değerlendirme",
+      "empty": "Değerlendirmenizi bekleyen kursiyer yok.",
+      "independentOf": "{done} / {total} görev tek başına",
+      "moduleStatus": {
+        "locked": "Henüz açılmadı",
+        "available": "Başlanabilir",
+        "in_progress": "Sürüyor",
+        "completed": "Tamamlandı",
+        "review_required": "Tekrar gerekli",
+        "waived": "Muaf"
+      },
+      "formStatus": {
+        "draft": "Değerlendirme taslağı açık",
+        "awaiting_second_signature": "Bölüm sorumlusu imzası bekleniyor",
+        "final": "Kesinleşti",
+        "returned": "Geri gönderildi"
+      },
+      "viewTasks": "Görevleri gör",
+      "markTasks": "Görevleri işaretle",
+      "continueExam": "Değerlendirmeye devam et",
+      "viewExam": "Formu gör",
+      "startExam": "Pratik sınavı başlat"
+    },
+    "mine": {
+      "title": "Pratik görevlerim",
+      "description": "Görevlerinizi eğitmeniniz işaretler: usta gösterdi → gözetiminde yaptı → tek başına yaptı. Hepsi \"tek başına\" olunca pratik sınav açılır.",
+      "empty": "Pratik göreviniz yok.",
+      "locked": "Bu modül, önceki adımlar bitince ve eğitmeniniz atanınca açılır.",
+      "progress": "{total} görevden {done} tanesi \"tek başına yaptı\""
+    },
+    "exam": {
+      "heading": "Pratik sınav",
+      "passScore": "Geçme notu: {score}",
+      "attempts": "Kalan hak: {left} (kullanılan: {used})",
+      "notes": {
+        "criteria": "Her pratik görev bir kriterdir; eğitmeniniz \"Yapabildi\" ya da \"Yapamadı\" olarak işaretler.",
+        "critical": "Kritik görevlerden biri \"Yapamadı\" ise puandan bağımsız olarak sınav başarısız sayılır.",
+        "signatures": "Formu siz, eğitmeniniz ve bölüm sorumlunuz imzalar.",
+        "fail": "Kalırsanız yapamadığınız görevler tekrar çalışılır; görevler yeniden \"tek başına\" olunca yeni hak açılır."
+      },
+      "open": {
+        "draft": "Eğitmeniniz değerlendirmeyi sürdürüyor.",
+        "awaiting_second_signature": "Değerlendirme imzalandı; bölüm sorumlusunun imzası bekleniyor."
+      },
+      "block": {
+        "locked": "Pratik sınav, bütün pratik görevleriniz \"tek başına yaptı\" olunca açılır.",
+        "completed": "Pratik sınavı geçtiniz.",
+        "no_attempts": "Sınav hakkınız kalmadı. Kararı yöneticiniz verecek; size bilgi verilecek.",
+        "no_criteria": "Bu sınav için değerlendirilecek görev yok. Eğitmeninize bildirin."
+      },
+      "ready": "Sınava hazırsınız. Değerlendirmeyi eğitmeniniz başlatacak.",
+      "history": "Değerlendirmeler",
+      "attemptN": "{n}. deneme",
+      "score": "{score} puan",
+      "passed": "başarılı",
+      "failed": "başarısız",
+      "status": {
+        "draft": "Taslak",
+        "awaiting_second_signature": "2. imza bekleniyor",
+        "final": "Kesinleşti",
+        "returned": "Geri gönderildi"
+      }
+    },
+    "form": {
+      "title": "Pratik değerlendirme formu",
+      "subtitle": "{name} · {n}. deneme",
+      "backLearn": "Eğitimlerim",
+      "backTrainer": "Eğitmen paneli",
+      "progress": "{total} kriterden {answered} tanesi işaretlendi",
+      "saving": "Kaydediliyor…",
+      "saved": "Taslak kaydedildi",
+      "critical": "Kritik",
+      "pass": "Yapabildi",
+      "fail": "Yapamadı",
+      "criterionNote": "Not (isteğe bağlı)",
+      "generalNote": "Genel not (isteğe bağlı)",
+      "photos": "Fotoğraf",
+      "toSign": "İmzaya geç",
+      "discard": "Taslağı sil",
+      "discardConfirm": "Taslak silinsin mi? Bu deneme sayılmaz.",
+      "completeFirst": "İmzaya geçmek için bütün kriterleri işaretleyin.",
+      "scorePreview": "{score} puan",
+      "willPass": "Geçme notuna ulaştı.",
+      "willFailCritical": "Kritik görevlerden biri yapılamadı; sınav başarısız sayılacak.",
+      "willFail": "Geçme notunun ({passScore}) altında; sınav başarısız sayılacak.",
+      "signIntro": "Önce kursiyer, sonra siz imzalayın. İmzadan sonra form değiştirilemez ve bölüm sorumlusunun 2. imzasına gider.",
+      "traineeSignature": "Kursiyer imzası: {name}",
+      "trainerSignature": "Değerlendiren imzası: {name}",
+      "submitSigned": "İmzala ve gönder",
+      "backToForm": "Forma dön"
+    },
+    "second": {
+      "title": "2. imza",
+      "intro": "Değerlendirmeyi inceleyin. İmzaladığınızda sonuç kesinleşir. Eksik veya hatalı bulursanız gerekçeyle geri gönderin; geri gönderilen deneme hak saymaz.",
+      "signature": "Bölüm sorumlusu imzası: {name}",
+      "sign": "İmzala ve kesinleştir",
+      "return": "Geri gönder",
+      "reason": "Geri gönderme gerekçesi",
+      "confirmReturn": "Geri gönder",
+      "cancel": "Vazgeç"
+    },
+    "result": {
+      "status": {
+        "draft": "Taslak",
+        "awaiting_second_signature": "2. imza bekleniyor",
+        "final": "Kesinleşti",
+        "returned": "Geri gönderildi"
+      },
+      "evaluator": "Değerlendiren: {name}",
+      "returned": "{name} geri gönderdi: {reason}",
+      "score": "{score} puan",
+      "passed": "Başarılı",
+      "failed": "Başarısız",
+      "passScore": "Geçme notu: {score}",
+      "critical": "Kritik görevlerden en az biri yapılamadı.",
+      "awaitingNote": "Sonuç, bölüm sorumlusu imzalayınca kesinleşir.",
+      "criteria": "Kriterler",
+      "criticalTask": "Kritik görev",
+      "results": {
+        "pass": "Yapabildi",
+        "fail": "Yapamadı",
+        "none": "İşaretlenmedi"
+      },
+      "note": "Genel not",
+      "photos": "Fotoğraflar",
+      "openPhoto": "Fotoğrafı aç",
+      "signatures": "İmzalar",
+      "signatureOf": "{name} imzası",
+      "roles": {
+        "trainee": "Kursiyer",
+        "trainer": "Değerlendiren (1. imza)",
+        "manager": "Bölüm sorumlusu (2. imza)"
+      }
+    },
+    "list": {
+      "title": "Pratik sınav formları",
+      "attemptN": "{title} · {n}. deneme",
+      "evaluator": "Değerlendiren: {name}",
+      "score": "{score} puan",
+      "passed": "başarılı",
+      "failed": "başarısız",
+      "status": {
+        "draft": "Taslak",
+        "awaiting_second_signature": "2. imza bekleniyor",
+        "final": "Kesinleşti",
+        "returned": "Geri gönderildi"
+      }
     }
   }
 }

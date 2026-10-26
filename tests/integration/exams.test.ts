@@ -2,12 +2,13 @@ import ExcelJS from "exceljs";
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { db } from "@/server/db/client";
-import { examAttempts, questionVersions } from "@/server/db/schema";
+import { examAttempts, mediaAssets, questionVersions } from "@/server/db/schema";
 import { isImmutableViolation } from "@/server/errors";
 import { myLearning } from "@/server/services/assignments";
 import { acknowledgeItem, learnModule, reportReachedEnd } from "@/server/services/assignments/learner";
 import { answerExam, attemptsForAssignment, examInfo, getAttempt, recordExamEvent, startExam, submitExam } from "@/server/services/exams";
 import { issueProctorCode } from "@/server/services/exams/proctor";
+import { getAssetForViewer } from "@/server/services/media";
 import { createModule, setModuleContents } from "@/server/services/modules";
 import {
   approveQuestionVersion,
@@ -266,6 +267,30 @@ describe("FG-6.1 teorik sınav", () => {
     await owner()`update exam_attempts set deadline_at = now() - interval '1 minute' where id = ${attemptId}`;
     await owner()`alter table exam_attempts enable trigger user`;
     expect(await getAttempt(u.actor, attemptId)).toMatchObject({ state: "submitted", submitReason: "timeout", passed: true });
+  });
+
+  it("soru görseli: açık denemedeki kursiyer ve soruyu gören yönetici görür; teslimden sonra kursiyer, eğitmen ve başkası göremez", async () => {
+    const p = await seedContentPeople();
+    const s = await examSetup(p, { proctorRequired: false });
+    const [asset] = await db()
+      .insert(mediaAssets)
+      .values({ kind: "image", status: "ready", objectKey: "media/test.png", mime: "image/png", size: 10, originalName: "soru.png", createdBy: p.smUretim.userId })
+      .returning({ id: mediaAssets.id });
+    await owner()`update question_versions set media_asset_id = ${asset!.id}`;
+    const { u, examAm } = await traineeReady(p, s);
+    const other = await createTestUser({});
+    const sees = async (actor: Parameters<typeof getAssetForViewer>[0]) => !!(await getAssetForViewer(actor, asset!.id));
+
+    expect(await sees(u.actor)).toBe(false);
+    const { attemptId } = await startExam(u.actor, examAm, { code: null, ip: null, userAgent: null });
+    expect(await sees(u.actor)).toBe(true);
+    expect(await sees(other.actor)).toBe(false);
+    expect(await sees(p.trainerPres.actor)).toBe(false);
+    expect(await sees(p.hr.actor)).toBe(true);
+    expect(await sees(p.smKalite.actor)).toBe(false);
+    await answerAll(u, attemptId, true);
+    await submitExam(u.actor, attemptId);
+    expect(await sees(u.actor)).toBe(false);
   });
 
   it("Bölüm 6: havuz soru sayısından azsa sınav başlamaz", async () => {

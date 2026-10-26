@@ -11,6 +11,8 @@ import { can } from "@/server/authz/policy";
 import { approvalQueue } from "@/server/services/content";
 import { cardApprovalQueue } from "@/server/services/positions";
 import { questionApprovalQueue } from "@/server/services/questions";
+import { secondSignatureQueue } from "@/server/services/practice";
+import { hasRole } from "@/server/authz/policy";
 import { listClassroomSessions } from "@/server/services/classroom";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -28,7 +30,7 @@ export default function Page() {
 
 async function Content() {
   const access = await libraryAccess();
-  if (!access || !(can(access.actor, "content.approve_section") || can(access.actor, "content.approve_ohs"))) return <NotFoundView />;
+  if (!access || !(can(access.actor, "content.approve_section") || can(access.actor, "content.approve_ohs") || hasRole(access.actor, "section_manager"))) return <NotFoundView />;
   const [t, tt, tNav, format, queue, cards, questionQueue] = await Promise.all([
     getTranslations("content.queue"),
     getTranslations("content"),
@@ -38,6 +40,7 @@ async function Content() {
     cardApprovalQueue(access.actor),
     questionApprovalQueue(access.actor),
   ]);
+  const secondSign = await secondSignatureQueue(access.actor);
   const classroom = (await listClassroomSessions(access.actor)).pending;
   const when = (d: Date | null) => (d ? format.dateTime(d, { dateStyle: "medium", timeStyle: "short" }) : "—");
 
@@ -66,7 +69,7 @@ async function Content() {
           </ul>
         </section>
       )}
-      {queue.length === 0 && cards.length === 0 && classroom.length === 0 && questionQueue.length === 0 && <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p>}
+      {queue.length === 0 && cards.length === 0 && classroom.length === 0 && questionQueue.length === 0 && secondSign.length === 0 && <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p>}
       {cards.length > 0 && (
         <section aria-labelledby="cards-heading" className="mb-8">
           <h2 id="cards-heading" className="mb-3 text-lg font-semibold">
@@ -86,6 +89,28 @@ async function Content() {
                     {c.changeNote && <span className="mt-1 block text-sm">{c.changeNote}</span>}
                   </span>
                   <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{t(`step.${c.step}`)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {secondSign.length > 0 && (
+        <section aria-labelledby="practical-heading" className="mb-8">
+          <h2 id="practical-heading" className="mb-3 text-lg font-semibold">
+            {t("practicalHeading")}
+          </h2>
+          <ul className="divide-y rounded-2xl border">
+            {secondSign.map((x) => (
+              <li key={x.id}>
+                <Link href={`/trainer/evaluations/${x.id}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 hover:bg-muted">
+                  <span className="min-w-48 flex-1">
+                    <span className="block font-medium">
+                      {x.traineeName} <span className="font-normal text-muted-foreground">· {x.title}</span>
+                    </span>
+                    <span className="block text-sm text-muted-foreground">{t("submittedBy", { name: x.evaluatorName, date: when(x.submittedAt) })}</span>
+                  </span>
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{t("practicalScore", { score: x.score ?? 0, passed: x.passed ? "yes" : "no" })}</span>
                 </Link>
               </li>
             ))}

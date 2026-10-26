@@ -194,7 +194,14 @@ export async function getAssetForViewer(actor: Actor, assetId: string) {
     .from(positionCardVersions)
     .innerJoin(positions, eq(positions.id, positionCardVersions.positionId))
     .where(sql`${positionCardVersions.sections} -> 'workflow' ->> 'diagramAssetId' = ${assetId}`);
-  if (refs.length === 0 && cards.length === 0) return null;
+  if (refs.length === 0 && cards.length === 0) {
+    // Soru bankası görseli (bağımlılık döngüsü olmasın diye geç yüklenir)
+    const { canViewQuestionAsset } = await import("../questions");
+    if (await canViewQuestionAsset(actor, assetId)) return asset;
+    // Pratik işaretleme/sınav fotoğrafı ve imza görseli
+    const { canViewPracticeAsset } = await import("../practice");
+    return (await canViewPracticeAsset(actor, assetId)) ? asset : null;
+  }
   const access = await contentAccessFor(actor);
   if ([...refs, ...cards.map((c) => ({ ...c, isOhs: false }))].some((r) => canViewContent(access, r))) return asset;
   // Kursiyer: kendi atamasındaki veya okuma görevindeki içerik sürümleri (FG-4.1)
