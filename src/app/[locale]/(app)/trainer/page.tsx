@@ -56,7 +56,7 @@ async function Content() {
                   <span className={`text-sm font-medium ${a.overdue ? "text-destructive" : ""}`}>%{a.progress}</span>
                 </summary>
                 <div className="border-t px-5 py-4">
-                  <AssignmentSummaryView a={a} />
+                  <AssignmentSummaryView a={a} viewer={toActor(user)} />
                 </div>
               </details>
             </li>

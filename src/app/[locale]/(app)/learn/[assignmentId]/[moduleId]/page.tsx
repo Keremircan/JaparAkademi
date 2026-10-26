@@ -9,12 +9,14 @@ import { ContentRenderer } from "@/features/content/components/content-renderer"
 import { QuizPanel } from "@/features/learning/components/quiz-panel";
 import { ReadAloud } from "@/features/learning/components/read-aloud";
 import { StepTracker } from "@/features/learning/components/step-tracker";
+import { ExamPanel } from "@/features/exams/components/exam-panel";
 import { CardView } from "@/features/positions/components/card-view";
 import { Link } from "@/i18n/navigation";
 import { requireUser } from "@/server/auth/current-user";
 import { AppError } from "@/server/errors";
 import { toActor } from "@/server/services/auth";
 import { learnModuleByIds, type LearnItem } from "@/server/services/assignments/learner";
+import { examInfo } from "@/server/services/exams";
 import { assetsInfo } from "@/server/services/media";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -79,8 +81,17 @@ async function Content({
         </p>
       )}
 
-      {m.kind !== "theory" ? (
-        <p className="rounded-2xl border p-5">{t(`module.placeholder.${m.kind}`)}</p>
+      {m.status === "review_required" && (
+        <p role="status" className="flex gap-2 rounded-2xl border border-amber-500/40 bg-amber-500/5 p-4">
+          <Info aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
+          {t("module.reviewRequired")}
+        </p>
+      )}
+
+      {m.kind === "theory_exam" ? (
+        <ExamPanel info={await examInfo(toActor(user), m.assignmentModuleId)} />
+      ) : m.kind !== "theory" ? (
+        <p className="rounded-2xl border p-5">{t(`module.placeholder.${m.kind as "practice"}`)}</p>
       ) : (
         <>
           {m.items.length > 1 && (

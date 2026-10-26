@@ -48,7 +48,7 @@ async function ownItem(tx: Tx, actor: Actor & { kind: "user" }, itemId: string) 
   const [item] = await tx.select().from(assignmentItems).where(eq(assignmentItems.id, itemId)).limit(1).for("update");
   if (!item) throw new NotFoundError("assignment_item");
   const { am, a } = await ownModule(tx, actor, item.assignmentModuleId);
-  if (a.status === "cancelled" || !WORKING.includes(am.status)) throw new ValidationError("module_locked");
+  if (a.status === "cancelled" || !WORKING.includes(am.status) || item.round !== am.round) throw new ValidationError("module_locked");
   return { item, am, a };
 }
 
@@ -103,7 +103,12 @@ export async function learnModule(actor: Actor, assignmentModuleId: string): Pro
   const { am, a } = await ownModule(db(), actor, assignmentModuleId);
   if (am.status === "locked") throw new ValidationError("module_locked");
 
-  const items = await db().select().from(assignmentItems).where(eq(assignmentItems.assignmentModuleId, am.id)).orderBy(asc(assignmentItems.sortOrder));
+  // Yalnızca modülün geçerli turunun adımları (sınavda kalınca yeni tur açılır)
+  const items = await db()
+    .select()
+    .from(assignmentItems)
+    .where(and(eq(assignmentItems.assignmentModuleId, am.id), eq(assignmentItems.round, am.round)))
+    .orderBy(asc(assignmentItems.sortOrder));
   const versionIds = items.map((i) => i.contentVersionId).filter((x): x is string => !!x);
   const locales = versionIds.length
     ? await db()
@@ -290,7 +295,10 @@ export async function answerQuiz(
     const [q] = await tx.select().from(quizQuestions).where(and(eq(quizQuestions.id, questionId), eq(quizQuestions.moduleId, am.moduleId))).limit(1);
     if (!q || q.archivedAt) throw new NotFoundError("quiz_question");
     if (!Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex >= q.options.length) throw new ValidationError("invalid_input");
-    const items = await tx.select({ ack: assignmentItems.acknowledgedAt }).from(assignmentItems).where(eq(assignmentItems.assignmentModuleId, am.id));
+    const items = await tx
+      .select({ ack: assignmentItems.acknowledgedAt })
+      .from(assignmentItems)
+      .where(and(eq(assignmentItems.assignmentModuleId, am.id), eq(assignmentItems.round, am.round)));
     if (items.some((i) => !i.ack)) throw new ValidationError("quiz_locked");
     const [existing] = await tx
       .select({ id: quizResponses.id })

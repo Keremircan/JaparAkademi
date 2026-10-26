@@ -49,6 +49,9 @@ export const SETTINGS = {
   "assignment.daily_training_minutes": def({ schema: positiveInt.max(1440), default: 420, managedBy: SYS }),
   "exam.question_pool_min_ratio": def({ schema: z.number().min(1).max(10), default: 2, managedBy: SYS }),
   "proctor.code_ttl_min": def({ schema: positiveInt.max(24 * 60), default: 120, managedBy: SYS }),
+  // Hatalı gözetmen kodu: kursiyer başına sınır ve kilit süresi (karar #62)
+  "proctor.code_max_failures": def({ schema: positiveInt.max(50), default: 5, managedBy: SYS }),
+  "proctor.code_lock_min": def({ schema: positiveInt.max(1440), default: 15, managedBy: SYS }),
 
   // Oturum ve kimlik doğrulama
   "session.shared_idle_min": def({ schema: positiveInt.max(240), default: 10, managedBy: SYS }),

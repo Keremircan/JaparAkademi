@@ -97,6 +97,7 @@ async function summarize(conn: DbOrTx, ids: string[]): Promise<AssignmentSummary
       done: sql<number>`count(${assignmentItems.acknowledgedAt})::int`,
     })
     .from(assignmentItems)
+    .innerJoin(assignmentModules, and(eq(assignmentModules.id, assignmentItems.assignmentModuleId), eq(assignmentModules.round, assignmentItems.round)))
     .where(inArray(assignmentItems.assignmentModuleId, mods.length ? mods.map((m) => m.id) : ["00000000-0000-0000-0000-000000000000"]))
     .groupBy(assignmentItems.assignmentModuleId);
   const counts = new Map(itemCounts.map((c) => [c.id, c]));
@@ -157,7 +158,7 @@ async function summarize(conn: DbOrTx, ids: string[]): Promise<AssignmentSummary
   });
 }
 
-async function canViewPerson(actor: Actor, userId: string, conn: DbOrTx = db()): Promise<boolean> {
+export async function canViewPerson(actor: Actor, userId: string, conn: DbOrTx = db()): Promise<boolean> {
   if (actor.kind === "system") return true;
   if (actor.userId === userId) return true;
   if (hasRole(actor, "hr")) return true;

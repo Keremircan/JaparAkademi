@@ -253,7 +253,25 @@
     "scanned_form_required": "Onaya göndermeden önce taranmış katılım formunu ekleyin.",
     "attendees_required": "En az bir katılımcı ekleyin.",
     "classroom_not_pending": "Bu kayıt onay beklemiyor.",
-    "device_name_invalid": "Cihaz adı 2–100 karakter olmalı."
+    "device_name_invalid": "Cihaz adı 2–100 karakter olmalı.",
+    "question_stem_invalid": "Soru metni 5–2000 karakter olmalı.",
+    "question_options_invalid": "2–5 şık yazın; şıklar boş veya aynı olamaz.",
+    "question_correct_invalid": "Doğru şıkkı işaretleyin.",
+    "question_topic_invalid": "Konuyu yazın (en fazla 100 karakter).",
+    "question_difficulty_invalid": "Zorluk seviyesini seçin.",
+    "question_modules_required": "Soruyu en az bir teorik modüle bağlayın.",
+    "question_modules_invalid": "Seçilen modüllerden biri bulunamadı veya teorik modül değil.",
+    "question_owner_required": "Sorunun ait olduğu birimi seçin.",
+    "question_archived": "Bu soru arşivlenmiş.",
+    "proctor_code_required": "Sınava başlamak için gözetmen kodunu girin.",
+    "proctor_code_invalid": "Gözetmen kodu geçersiz veya süresi dolmuş. Gözetmeninizden yeni kod isteyin.",
+    "proctor_code_locked": "Çok sayıda hatalı kod girdiniz. Bir süre sonra tekrar deneyin veya gözetmeninize başvurun.",
+    "proctor_code_unavailable": "Şu anda kod üretilemedi. Lütfen tekrar deneyin.",
+    "exam_no_attempts": "Sınav hakkınız kalmadı. Kararı yöneticiniz verecek.",
+    "exam_cooldown": "Bekleme süresi dolmadan yeni sınava başlayamazsınız.",
+    "exam_pool_insufficient": "Bu sınav için yeterli soru yok. Eğitmeninize bildirin.",
+    "exam_submitted": "Bu sınav teslim edildi.",
+    "exam_time_over": "Sınav süresi doldu; cevaplarınız teslim edildi."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -547,6 +565,14 @@
       "classroom": {
         "title": "Sınıf eğitimi",
         "description": "Yüz yüze eğitim kayıtları ve onayları."
+      },
+      "questions": {
+        "title": "Soru bankası",
+        "description": "Teorik sınav soruları, İSG onayı ve Excel'den aktarma."
+      },
+      "proctor": {
+        "title": "Gözetmen kodu",
+        "description": "Sınava başlamak için kursiyerlere verilen kısa süreli kod."
       }
     },
     "pendingCount": "{count} kayıt onay bekliyor"
@@ -802,7 +828,8 @@
       },
       "cardsHeading": "Pozisyon kartları",
       "contentsHeading": "İçerikler",
-      "classroomHeading": "Sınıf eğitimi kayıtları"
+      "classroomHeading": "Sınıf eğitimi kayıtları",
+      "questionsHeading": "İSG onayı bekleyen sorular"
     }
   },
   "modules": {
@@ -1141,7 +1168,10 @@
     "remove": "{title}: plandan çıkar",
     "required": "Zorunlu",
     "prerequisites": "Ön koşullar",
-    "examSettings": "Sınav ayarları (boş = genel parametre)"
+    "examSettings": "Sınav ayarları (boş = genel parametre)",
+    "poolOk": "Soru havuzu: {pool} soru",
+    "poolSmall": "Soru havuzu küçük: {pool} soru var, sınav {needed} soru soruyor. Denemelerde aynı sorular tekrar gelir; en az {recommended} soru önerilir.",
+    "poolInsufficient": "Soru havuzu yetersiz: {pool} soru var, sınav {needed} soru soruyor. Soru eklenmeden sınav başlatılamaz."
   },
   "positions": {
     "title": "Pozisyon kartları",
@@ -1233,7 +1263,8 @@
       "stepsNav": "Adımlar",
       "stepDone": "Tamamlandı",
       "stepOf": "Adım {n}/{total}",
-      "finishing": "Tüm adımları tamamladınız."
+      "finishing": "Tüm adımları tamamladınız.",
+      "reviewRequired": "Sınav sonucuna göre bu modülü tekrar etmeniz gerekiyor. Adımları yeniden tamamlayıp \"Okudum, anladım\" ile onaylayın."
     },
     "step": {
       "watched": "İzlenen kısım",
@@ -1392,5 +1423,210 @@
     "revoked": "İptal edildi",
     "revokeConfirm": "Cihaz kaydı iptal edilsin mi?",
     "revoke": "İptal et"
+  },
+  "questions": {
+    "title": "Soru bankası",
+    "description": "Teorik sınav soruları. Sorular modüllere bağlanır; sınav, plandaki önceki modüllerin sorularından çekilir.",
+    "new": "Yeni soru",
+    "import": "Excel'den aktar",
+    "importIntro": "Şablonu indirin, soruları doldurun ve yükleyin. Önce önizleme gösterilir; onayladığınızda geçerli satırlar eklenir. İSG soruları İSG uzmanı onayına gider.",
+    "search": "Soru metninde ara",
+    "module": "Modül",
+    "all": "Tümü",
+    "topic": "Konu",
+    "status": "Durum",
+    "statusAll": "Tüm durumlar",
+    "statusFilter": {
+      "active": "Etkin",
+      "pending": "Onay bekleyen",
+      "archived": "Arşivlenmiş"
+    },
+    "total": "{count} soru",
+    "empty": "Soru bulunamadı.",
+    "ohs": "İSG",
+    "critical": "İSG kritik",
+    "pending": "Onay bekliyor",
+    "inactive": "Etkin değil",
+    "archived": "Arşivlendi",
+    "detailTitle": "Soru ayrıntısı",
+    "archiveConfirm": "Soru arşivlensin mi? Arşivlenen soru yeni sınavlarda çıkmaz; geçmiş sınav kayıtları korunur.",
+    "archiveButton": "Arşivle",
+    "archivedNote": "Bu soru arşivlenmiş; yeni sınavlarda çıkmaz.",
+    "pendingNote": "Sürüm {version} İSG uzmanı onayı bekliyor. Onaylanana kadar sınavlarda önceki etkin sürüm kullanılır.",
+    "rejectedBy": "Son sürüm {name} tarafından reddedildi:",
+    "correct": "doğru",
+    "versions": "Sürümler",
+    "versionN": "Sürüm {version}",
+    "versionStatus": {
+      "ohs_review": "İSG onayı bekliyor",
+      "active": "Etkin",
+      "rejected": "Reddedildi",
+      "retired": "Eski sürüm"
+    },
+    "used": "Sınavlarda kullanıldı",
+    "decision": {
+      "approved": "{name} onayladı · {date}",
+      "rejected": "{name} reddetti · {date}",
+      "auto_self": "İSG uzmanı {name} yazdı; doğrudan etkin · {date}"
+    },
+    "form": {
+      "owner": "Ait olduğu birim",
+      "choose": "Seçin",
+      "commonOhs": "Ortak İSG sorusu (tüm birimler)",
+      "common": "Ortak",
+      "isOhs": "İSG sorusu (İSG uzmanı onayı gerekir)",
+      "type": "Soru tipi",
+      "singleChoice": "Çoktan seçmeli",
+      "trueFalse": "Doğru / Yanlış",
+      "stem": "Soru metni",
+      "image": "Görsel",
+      "options": "Şıklar (doğru olanı işaretleyin)",
+      "markCorrect": "{letter} şıkkı doğru",
+      "optionN": "{letter} şıkkı",
+      "removeOption": "{letter} şıkkını kaldır",
+      "addOption": "Şık ekle",
+      "topic": "Konu",
+      "topicHint": "Sınavda sorular konulara dengeli dağıtılır. Var olan bir konuyu seçebilir veya yeni yazabilirsiniz.",
+      "difficulty": "Zorluk",
+      "difficulties": {
+        "1": "Kolay",
+        "2": "Orta",
+        "3": "Zor"
+      },
+      "ohsCritical": "İSG kritik soru",
+      "ohsCriticalHint": "Bu soru yanlış cevaplanırsa puandan bağımsız olarak sınav başarısız sayılır. İSG uzmanı onayı gerekir.",
+      "explanation": "Açıklama (isteğe bağlı)",
+      "explanationHint": "Yalnızca yöneticiler görür; kursiyere gösterilmez.",
+      "modules": "Bağlı modüller",
+      "modulesHint": "Soru, bu modüllerden sonra gelen sınavlarda çıkar.",
+      "filterModules": "Modül ara",
+      "approvalNote": "Bu soru kaydedildiğinde İSG uzmanı onayına gider; onaylanana kadar sınavlarda çıkmaz.",
+      "savedPending": "Kaydedildi. İSG uzmanı onayından sonra etkin olacak."
+    },
+    "importer": {
+      "owner": "Ait olduğu birim",
+      "choose": "Seçin",
+      "common": "Ortak İSG soruları",
+      "isOhs": "İSG soruları (İSG uzmanı onayı gerekir)",
+      "template": "Şablonu indir",
+      "file": "Excel dosyası (.xlsx)",
+      "checking": "Kontrol ediliyor…",
+      "preview": "Önizle",
+      "previewHeading": "{valid} geçerli, {invalid} hatalı satır",
+      "row": "Satır",
+      "stem": "Soru",
+      "result": "Sonuç",
+      "ok": "Geçerli",
+      "rowErrors": {
+        "stem_missing": "Soru metni yok veya çok kısa.",
+        "type_invalid": "Tip \"Çoktan seçmeli\" veya \"Doğru/Yanlış\" olmalı.",
+        "options_missing": "En az iki şık gerekli.",
+        "options_duplicate": "Aynı şık iki kez yazılmış.",
+        "correct_invalid": "Doğru sütunu A–E (Doğru/Yanlış için \"Doğru\" veya \"Yanlış\") olmalı ve dolu bir şıkkı göstermeli.",
+        "topic_missing": "Konu yok.",
+        "difficulty_invalid": "Zorluk \"Kolay\", \"Orta\" veya \"Zor\" (ya da 1–3) olmalı.",
+        "critical_invalid": "İSG kritik sütunu \"Evet\" veya \"Hayır\" olmalı.",
+        "module_missing": "Modül yazılmamış.",
+        "module_not_found": "Modül bu birimde bulunamadı."
+      },
+      "done": "{created} soru eklendi ({pending} tanesi İSG onayı bekliyor), {skipped} satır atlandı.",
+      "commit": "{count} soruyu ekle"
+    }
+  },
+  "exams": {
+    "title": "Teorik sınav",
+    "start": {
+      "heading": "Teorik sınav",
+      "rules": {
+        "questions": "{count} soru",
+        "duration": "Süre: {minutes} dakika",
+        "passScore": "Geçme notu: {score}",
+        "attempts": "Kalan hak: {left} (kullanılan: {used})"
+      },
+      "notes": {
+        "oneAtATime": "Sorular tek tek gösterilir; sorular arasında geri dönebilirsiniz.",
+        "autosave": "Her cevap anında kaydedilir. Bağlantınız koparsa kaldığınız yerden devam edersiniz; süre işlemeye devam eder.",
+        "tabLeave": "Sınav sırasında başka uygulamaya veya sekmeye geçmeniz kaydedilir.",
+        "ohsCritical": "\"İSG kritik\" sorulardan biri yanlışsa puandan bağımsız olarak sınav başarısız sayılır.",
+        "proctor": "Sınava gözetmeninizin vereceği 6 haneli kodla başlarsınız."
+      },
+      "last": "Son deneme: {score} puan, {passed, select, yes {başarılı} other {başarısız}}.",
+      "viewResult": "Sonucu gör",
+      "block": {
+        "locked": "Sınav, önceki modülleri tamamladığınızda açılır.",
+        "cooldown": "Yeni deneme {date} tarihinden sonra açılacak. Bu sürede tekrar gereken modülleri tamamlayın.",
+        "no_attempts": "Sınav hakkınız kalmadı. Kararı yöneticiniz verecek; size bilgi verilecek.",
+        "pool_insufficient": "Bu sınav için yeterli soru yok. Eğitmeninize bildirin.",
+        "completed": "Sınavı geçtiniz."
+      },
+      "code": "Gözetmen kodu",
+      "codeHint": "Gözetmeninizden 6 haneli kodu isteyin.",
+      "start": "Sınavı başlat",
+      "resume": "Sınava devam et"
+    },
+    "runner": {
+      "timeLeft": "Kalan süre {time}",
+      "questionsNav": "Sorular",
+      "goTo": "{n}. soru, {state}",
+      "unanswered": "cevaplanmadı",
+      "answered": "cevaplandı",
+      "questionN": "Soru {n} / {total}",
+      "readAloud": "Sesli oku",
+      "saving": "Kaydediliyor…",
+      "saved": "Cevabınız kaydedildi.",
+      "prev": "Önceki",
+      "next": "Sonraki",
+      "submit": "Sınavı bitir",
+      "confirm": "Sınavı bitirmek istiyor musunuz? Teslimden sonra cevaplar değiştirilemez.",
+      "confirmUnanswered": "{count} soru cevapsız. Yine de sınavı bitirmek istiyor musunuz? Teslimden sonra cevaplar değiştirilemez."
+    },
+    "result": {
+      "score": "{score} puan",
+      "passed": "Başarılı",
+      "failed": "Başarısız",
+      "passScore": "Geçme notu: {score}",
+      "ohsCritical": "İSG kritik sorulardan en az biri yanlış cevaplandı.",
+      "timeout": "Süre dolduğu için sınav otomatik teslim edildi.",
+      "topics": "Konulara göre sonuç",
+      "topicScore": "{correct} / {total}",
+      "noAnswers": "Sınav güvenliği için sorular ve doğru cevaplar gösterilmez.",
+      "retryAfter": "Kalan hakkınız: {left}. Tekrar gereken modülleri tamamladıktan sonra {date} tarihinden itibaren yeniden sınava girebilirsiniz.",
+      "retry": "Kalan hakkınız: {left}. Tekrar gereken modülleri tamamladıktan sonra yeniden sınava girebilirsiniz.",
+      "noAttempts": "Sınav hakkınız kalmadı. Kararı yöneticiniz verecek; size bilgi verilecek.",
+      "back": "Eğitimime dön",
+      "sharedLogout": "Ortak cihaz: {seconds} saniye sonra oturumunuz kapanacak.",
+      "logoutNow": "Şimdi çıkış yap"
+    },
+    "proctor": {
+      "title": "Gözetmen kodu",
+      "description": "Kursiyer sınava sizin vereceğiniz kodla başlar. Kod kısa süre geçerlidir; sınav kaydına gözetmen olarak siz yazılırsınız.",
+      "intro": "Kod üretin ve sınav başında kursiyere söyleyin. Kod bu ekranda yalnızca bir kez gösterilir.",
+      "codeLabel": "Gözetmen kodu",
+      "expiresIn": "{minutes, plural, =0 {1 dakikadan az kaldı} other {# dakika geçerli}}",
+      "shareHint": "Kodu kursiyere sözlü söyleyin; yazılı paylaşmayın.",
+      "location": "Yer (isteğe bağlı)",
+      "locationPlaceholder": "Ör. Eğitim salonu 2",
+      "issue": "Kod üret",
+      "newCode": "Yeni kod üret",
+      "active": "Geçerli kodlarınız",
+      "noLocation": "Yer belirtilmedi",
+      "until": "{time} saatine kadar geçerli",
+      "revoke": "Geçersiz kıl",
+      "revokeConfirm": "Bu kod geçersiz kılınsın mı? Başlamış sınavlar etkilenmez."
+    },
+    "attempts": {
+      "title": "Teorik sınav denemeleri",
+      "attemptN": "{title} · {n}. deneme",
+      "score": "{score} puan",
+      "passed": "başarılı",
+      "failed": "başarısız",
+      "failedCritical": "başarısız (İSG kritik)",
+      "inProgress": "Sürüyor",
+      "timeout": "süre doldu",
+      "proctor": "Gözetmen: {name}",
+      "noProctor": "Gözetmensiz",
+      "tabLeaves": "{count, plural, =0 {sekme çıkışı yok} other {# sekme çıkışı}}",
+      "tts": "sesli okuma kullandı"
+    }
   }
 }

@@ -123,7 +123,7 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
           <div className="flex flex-col gap-4 rounded-2xl border px-5 py-4">
             {open ? (
               <>
-                <AssignmentSummaryView a={open} />
+                <AssignmentSummaryView a={open} viewer={access.actor} />
                 <AssignmentControls
                   mode="edit"
                   assignmentId={open.id}
@@ -144,7 +144,7 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
                 <summary className="min-h-12 cursor-pointer content-center">{ta("history", { count: past.length })}</summary>
                 <div className="flex flex-col gap-6 pt-3">
                   {past.map((a) => (
-                    <AssignmentSummaryView key={a.id} a={a} showModules={false} />
+                    <AssignmentSummaryView key={a.id} a={a} showModules={false} viewer={access.actor} />
                   ))}
                 </div>
               </details>

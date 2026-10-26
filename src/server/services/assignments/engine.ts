@@ -217,6 +217,39 @@ export async function refreshAssignment(tx: Tx, assignmentId: string): Promise<v
   }
 }
 
+/**
+ * Modülü "tekrar gerekli" yapar (sınavda kalınca — SPEC 3.1, karar #63): yeni tur açılır, adımlar aynı
+ * sabitlenmiş içerik sürümleriyle yeniden eklenir ve yeniden "okudum, anladım" istenir. Ara değerlendirme tekrarlanmaz.
+ */
+export async function reopenModule(tx: Tx, assignmentModuleId: string): Promise<void> {
+  const [am] = await tx.select().from(assignmentModules).where(eq(assignmentModules.id, assignmentModuleId)).limit(1);
+  if (!am || am.kind !== "theory") return;
+  const nextRound = am.round + 1;
+  const previous = await tx
+    .select()
+    .from(assignmentItems)
+    .where(and(eq(assignmentItems.assignmentModuleId, am.id), eq(assignmentItems.round, am.round)))
+    .orderBy(asc(assignmentItems.sortOrder));
+  await tx
+    .update(assignmentModules)
+    .set({ status: "review_required", round: nextRound, completedAt: null, completedVia: null, expiresAt: null })
+    .where(eq(assignmentModules.id, am.id));
+  if (previous.length) {
+    await tx.insert(assignmentItems).values(
+      previous.map((p) => ({
+        assignmentModuleId: am.id,
+        round: nextRound,
+        sortOrder: p.sortOrder,
+        kind: p.kind,
+        contentId: p.contentId,
+        contentVersionId: p.contentVersionId,
+        cardVersionId: p.cardVersionId,
+        sectionKey: p.sectionKey,
+      })),
+    );
+  }
+}
+
 function addMonths(date: Date, months: number): Date {
   const d = new Date(date);
   d.setMonth(d.getMonth() + months);
@@ -247,7 +280,10 @@ export async function completeModule(tx: Tx, assignmentModuleId: string, via: "o
 export async function tryCompleteTheory(tx: Tx, assignmentModuleId: string): Promise<boolean> {
   const [am] = await tx.select().from(assignmentModules).where(eq(assignmentModules.id, assignmentModuleId)).limit(1);
   if (!am || am.kind !== "theory" || isDone(am.status) || !am.remoteAllowed) return false;
-  const items = await tx.select({ ack: assignmentItems.acknowledgedAt }).from(assignmentItems).where(eq(assignmentItems.assignmentModuleId, am.id));
+  const items = await tx
+    .select({ ack: assignmentItems.acknowledgedAt })
+    .from(assignmentItems)
+    .where(and(eq(assignmentItems.assignmentModuleId, am.id), eq(assignmentItems.round, am.round)));
   if (items.some((i) => !i.ack)) return false;
   if (!(await quizComplete(tx, am.id, am.moduleId))) return false;
   await completeModule(tx, am.id, "online");

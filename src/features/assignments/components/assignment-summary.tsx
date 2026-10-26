@@ -1,9 +1,11 @@
 import { getFormatter, getTranslations } from "next-intl/server";
+import { ExamAttemptList } from "@/features/exams/components/attempt-list";
 import { ModuleList } from "@/features/learning/components/module-list";
+import type { Actor } from "@/server/authz/actor";
 import type { AssignmentSummary } from "@/server/services/assignments";
 
 /** Atama özeti (yönetici görünümü): durum, ilerleme, hedef tarih, eğitmen ve modüller. */
-export async function AssignmentSummaryView({ a, showModules = true }: { a: AssignmentSummary; showModules?: boolean }) {
+export async function AssignmentSummaryView({ a, showModules = true, viewer }: { a: AssignmentSummary; showModules?: boolean; viewer?: Actor }) {
   const [t, format] = await Promise.all([getTranslations("assignments"), getFormatter()]);
   const date = (d: string) => format.dateTime(new Date(`${d}T12:00:00`), { dateStyle: "medium" });
   return (
@@ -29,6 +31,7 @@ export async function AssignmentSummaryView({ a, showModules = true }: { a: Assi
         {a.cancelReason && <p className="text-sm">{t("cancelled", { reason: a.cancelReason })}</p>}
       </div>
       {showModules && <ModuleList assignment={a} linkable={false} />}
+      {viewer && <ExamAttemptList actor={viewer} assignmentId={a.id} />}
     </div>
   );
 }

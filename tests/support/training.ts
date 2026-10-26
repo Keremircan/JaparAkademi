@@ -28,7 +28,13 @@ export async function publishedText(actor: UserActor, unit: string | null, title
 }
 
 /** Pozisyonun kartını verilen modüllerle (sırayla, her biri öncekine bağlı) yayınlar. */
-export async function publishCard(p: People, positionId: string, moduleIds: string[], manager: UserActor = p.smUretim.actor) {
+export async function publishCard(
+  p: People,
+  positionId: string,
+  moduleIds: string[],
+  manager: UserActor = p.smUretim.actor,
+  settings: Record<string, object> = {},
+) {
   await createCard(manager, positionId);
   await saveCardSections(manager, positionId, fullCardSections());
   const card = await getEditableCard(manager, positionId);
@@ -36,7 +42,7 @@ export async function publishCard(p: People, positionId: string, moduleIds: stri
   const ids = [cm, ...moduleIds];
   await savePlan(manager, positionId, {
     overrides: {},
-    items: ids.map((moduleId, i) => ({ moduleId, isRequired: true, prerequisiteModuleIds: i ? [ids[i - 1]!] : [], settings: {} })),
+    items: ids.map((moduleId, i) => ({ moduleId, isRequired: true, prerequisiteModuleIds: i ? [ids[i - 1]!] : [], settings: settings[moduleId] ?? {} })),
   });
   await submitCard(manager, positionId, { changeNote: null });
   const [q] = await cardApprovalQueue(p.ohs.actor);

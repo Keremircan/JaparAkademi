@@ -26,9 +26,10 @@ import { createAccount } from "../src/server/services/accounts";
 import { createContent, createTag, saveDraft, submitForApproval } from "../src/server/services/content";
 import { createDraft, publishText } from "../src/server/services/legal";
 import { createModule, saveTasks, setModuleContents } from "../src/server/services/modules";
+import { approveQuestionVersion, createQuestion, questionApprovalQueue } from "../src/server/services/questions";
 import { saveQuizQuestions } from "../src/server/services/quiz";
 import { syncAssignmentForPerson } from "../src/server/services/assignments/engine";
-import { assignments as assignmentsTable } from "../src/server/db/schema";
+import { assignments as assignmentsTable, questions as questionsTable } from "../src/server/db/schema";
 import { approveCard, cardApprovalQueue, createCard, getEditableCard, saveCardSections, savePlan, submitCard } from "../src/server/services/positions";
 import { createOrgUnit, createPosition } from "../src/server/services/org";
 
@@ -380,7 +381,7 @@ async function seedTraining() {
     items: [
       item(cardModule, null),
       item(theory.id, cardModule),
-      item(exam.id, theory.id, { questionCount: 20 }),
+      item(exam.id, theory.id, { questionCount: 10 }),
       item(practice.id, exam.id),
       item(practiceExam.id, practice.id),
     ],
@@ -389,6 +390,64 @@ async function seedTraining() {
   const [pending] = await cardApprovalQueue(ohs);
   if (pending) await approveCard(ohs, pending.versionId);
   console.log("✓ Pozisyon kartı: Pres Operatörü (yayında)");
+}
+
+// ---- Soru bankası örneği ----
+
+type SeedQuestion = [stem: string, options: string[], correct: number, topic: string, difficulty: 1 | 2 | 3, critical?: boolean];
+
+const PRES_QUESTIONS: SeedQuestion[] = [
+  ["Pres çalışırken elleriniz nerede olmalıdır?", ["İki el kumandasında", "Kalıp alanında", "Sac üzerinde", "Cebinizde"], 0, "Güvenli çalışma", 1, true],
+  ["Işık perdesi arızalıyken pres çalıştırılabilir.", ["Doğru", "Yanlış"], 1, "Güvenli çalışma", 1, true],
+  ["İki el kumandası köprülenebilir mi?", ["Hiçbir koşulda köprülenmez", "Seri üretimde köprülenebilir", "Usta izin verirse köprülenebilir"], 0, "Güvenli çalışma", 2, true],
+  ["Kalıp değişiminden önce ilk yapılması gereken nedir?", ["Ana şalteri kapatıp kişisel kilit takmak", "Kalıbı yağlamak", "Üretim raporunu doldurmak"], 0, "Kilitleme ve etiketleme", 2],
+  ["Kişisel kilidin anahtarı kimde kalır?", ["Kilidi takan kişide", "Vardiya şefinde", "Bakım ekibinde"], 0, "Kilitleme ve etiketleme", 2],
+  ["Kilitleme sonrasında makinenin enerjisiz olduğu nasıl doğrulanır?", ["Çalıştırma butonuna basılarak denenir", "Gözle bakılır", "Doğrulama gerekmez"], 0, "Kilitleme ve etiketleme", 3],
+  ["Vardiya başı kontrolünde ilk bakılması gereken nedir?", ["Acil durdurma butonu", "Masa düzeni", "Kasa sayısı"], 0, "Vardiya başı kontrol", 1],
+  ["Vardiya başı kontrol listesi kimin tarafından doldurulur?", ["Presi çalıştıracak operatör", "Kalite teknisyeni", "İK"], 0, "Vardiya başı kontrol", 1],
+  ["Kontrolde hidrolik kaçak görürseniz ne yaparsınız?", ["Presi çalıştırmaz, vardiya şefine bildiririm", "Üretime devam ederim", "Kaçağı bezle silerim"], 0, "Vardiya başı kontrol", 2],
+  ["İlk parça onayı alınmadan seri üretime geçilebilir.", ["Doğru", "Yanlış"], 1, "Kalite", 1],
+  ["Kalıpta çapak oluşmasının yaygın nedeni nedir?", ["Sac yağlamasının unutulması", "Fazla aydınlatma", "Düşük ortam sıcaklığı"], 0, "Kalite", 2],
+  ["Hurda parçalar nereye kaydedilir?", ["Vardiya hurda ve fire kaydına", "Hiçbir yere", "Kişisel deftere"], 0, "Kalite", 1],
+  ["Pres hattında hangi kişisel koruyucu donanım zorunludur?", ["Kesilmeye dayanıklı eldiven, kulak koruyucu, çelik burunlu ayakkabı", "Yalnızca baret", "Hiçbiri"], 0, "Kişisel koruyucu donanım", 1],
+  ["Kulak koruyucu hangi riske karşı kullanılır?", ["Gürültü", "Toz", "Kimyasal sıçrama"], 0, "Kişisel koruyucu donanım", 1],
+];
+
+const OHS_QUESTIONS: SeedQuestion[] = [
+  ["Acil durumda ilk yapmanız gereken nedir?", ["Acil stop butonuna basmak", "Kaçmak", "Fotoğraf çekmek"], 0, "Acil durum", 1, true],
+  ["Yangın alarmı çaldığında nereye gidilir?", ["Toplanma alanına", "Soyunma odasına", "Yemekhaneye"], 0, "Acil durum", 1],
+  ["İş kazası veya ramak kala olay kime bildirilir?", ["Amire ve İSG uzmanına", "Kimseye", "Yalnızca arkadaşlarıma"], 0, "Bildirim", 1],
+  ["Ramak kala olaylar da bildirilmelidir.", ["Doğru", "Yanlış"], 0, "Bildirim", 1],
+  ["Yaya yolu çizgileri ne için kullanılır?", ["Forklift ve yaya trafiğini ayırmak için", "Süsleme için", "Malzeme istiflemek için"], 0, "Genel kurallar", 1],
+  ["Tesiste sigara nerede içilebilir?", ["Yalnızca belirlenmiş alanlarda", "Her yerde", "Makine başında"], 0, "Genel kurallar", 1],
+];
+
+async function seedQuestions() {
+  const [any] = await db().select({ id: questionsTable.id }).from(questionsTable).limit(1);
+  if (any) return;
+  const manager = await demoActor("1003", ["section_manager"]);
+  const ohs = await demoActor("1004", ["ohs_specialist"]);
+  const pres = await unitId("PRES");
+  const [theory] = await db().select({ id: modules.id }).from(modules).where(eq(modules.title, "Pres hattı temel eğitimi")).limit(1);
+  const [common] = await db().select({ id: modules.id }).from(modules).where(eq(modules.title, "Genel İSG eğitimi")).limit(1);
+  if (!manager || !ohs || !pres || !theory || !common) return;
+  const input = ([stem, options, correctIndex, topic, difficulty, critical]: SeedQuestion, moduleId: string) => ({
+    type: options.length === 2 && options[0] === "Doğru" ? ("true_false" as const) : ("single_choice" as const),
+    stem,
+    options,
+    correctIndex,
+    topic,
+    difficulty,
+    isOhsCritical: !!critical,
+    explanation: null,
+    mediaAssetId: null,
+    moduleIds: [moduleId],
+  });
+  // Bölüm sorumlusunun yazdığı İSG kritik sorular İSG uzmanı onayına gider; demo için onaylanır
+  for (const q of PRES_QUESTIONS) await createQuestion(manager, { ...input(q, theory.id), ownerOrgUnitId: pres, isOhs: false });
+  for (const q of OHS_QUESTIONS) await createQuestion(ohs, { ...input(q, common.id), ownerOrgUnitId: null, isOhs: true });
+  for (const p of await questionApprovalQueue(ohs)) await approveQuestionVersion(ohs, p.versionId);
+  console.log(`✓ Soru bankası: ${PRES_QUESTIONS.length} pres + ${OHS_QUESTIONS.length} ortak İSG sorusu`);
 }
 
 // ---- Eğitim ataması örneği ----
@@ -454,6 +513,7 @@ async function main() {
   if (cfg.SEED_DEMO_PASSWORD) {
     await seedContent();
     await seedTraining();
+    await seedQuestions();
     await seedLearning();
   }
 }

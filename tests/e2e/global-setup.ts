@@ -11,6 +11,9 @@ import { setSectionManagerScopes } from "../../src/server/services/roles";
 import { createModule, saveTasks, setModuleContents } from "../../src/server/services/modules";
 import { createContent, saveDraft, submitForApproval } from "../../src/server/services/content";
 import { saveQuizQuestions } from "../../src/server/services/quiz";
+import { createQuestion } from "../../src/server/services/questions";
+import { myLearning } from "../../src/server/services/assignments";
+import { acknowledgeItem, learnModule, reportReachedEnd } from "../../src/server/services/assignments/learner";
 import { approveCard, cardApprovalQueue, createCard, getEditableCard, saveCardSections, savePlan, submitCard } from "../../src/server/services/positions";
 import { fullCardSections, textBody } from "../support/content";
 import { buildPeopleXlsx } from "../support/xlsx";
@@ -114,6 +117,56 @@ export default async function globalSetup() {
       sicilNo: `E2E-${suffix}-KUR${p}`, fullName: "Deneme Kursiyer", password: E2E_PASSWORD, mustChangePassword: false,
       positionId: learnPos.id, trainingRequired: true,
     });
+
+    // Teorik sınav akışı (1.5): teorik modül + gözetmenli sınav; kursiyerin teorik adımları önceden tamamlanır
+    const examPos = await createPosition(sys, { orgUnitId: section.id, name: `E2E Sınav Pozisyonu ${p}`, code: `E2E-SNV-${suffix}-${p}`.toUpperCase(), collarType: "blue" });
+    const examTheory = await createModule(smActor, {
+      kind: "theory", title: `E2E Sınav teorisi ${p}`, description: null, durationMin: 30, isOhs: false, remoteAllowed: true,
+      validityMonths: null, ownerOrgUnitId: section.id, commonTarget: null, commonSortOrder: null,
+    });
+    await setModuleContents(smActor, examTheory.id, [contentId]);
+    const examModule = await createModule(smActor, {
+      kind: "theory_exam", title: `E2E Teorik sınav ${p}`, description: null, durationMin: 10, isOhs: false, remoteAllowed: true,
+      validityMonths: null, ownerOrgUnitId: section.id, commonTarget: null, commonSortOrder: null,
+    });
+    for (let i = 1; i <= 4; i++) {
+      await createQuestion(smActor, {
+        type: "single_choice", stem: `E2E sınav sorusu ${i}`, options: ["Doğru cevap", `Yanlış cevap ${i}a`, `Yanlış cevap ${i}b`], correctIndex: 0,
+        explanation: null, topic: i % 2 ? "Hat güvenliği" : "Kalite", difficulty: 1, isOhsCritical: false, mediaAssetId: null,
+        moduleIds: [examTheory.id], ownerOrgUnitId: section.id, isOhs: false,
+      });
+    }
+    await createCard(smActor, examPos.id);
+    await saveCardSections(smActor, examPos.id, fullCardSections());
+    const examCard = await getEditableCard(smActor, examPos.id);
+    const examCardModule = examCard.plan.items.find((i) => i.isCardModule)!.moduleId;
+    await savePlan(smActor, examPos.id, {
+      overrides: {},
+      items: [
+        { moduleId: examCardModule, isRequired: true, prerequisiteModuleIds: [], settings: {} },
+        { moduleId: examTheory.id, isRequired: true, prerequisiteModuleIds: [examCardModule], settings: {} },
+        {
+          moduleId: examModule.id, isRequired: true, prerequisiteModuleIds: [examTheory.id],
+          settings: { questionCount: 4, durationMin: 10, passScore: 75, maxAttempts: 2, cooldownHours: 0, proctorRequired: true },
+        },
+      ],
+    });
+    await submitCard(smActor, examPos.id, { changeNote: null });
+    const pendingExamCard = (await cardApprovalQueue(ohsActor)).find((q) => q.positionId === examPos.id);
+    if (pendingExamCard) await approveCard(ohsActor, pendingExamCard.versionId);
+    const examTrainee = await createAccount(sys, {
+      sicilNo: `E2E-${suffix}-SNV${p}`, fullName: `Deneme Sınav Kursiyeri ${p}`, password: E2E_PASSWORD, mustChangePassword: false,
+      positionId: examPos.id, trainingRequired: true,
+    });
+    const traineeActor = { kind: "user" as const, userId: examTrainee.userId, roles: ["personnel" as const] };
+    // Sınavdan önceki tüm teorik modüller (ortak modüller dahil) sırayla tamamlanır
+    const theoryModules = (await myLearning(traineeActor)).current!.modules.filter((m) => m.kind === "theory");
+    for (const am of theoryModules) {
+      for (const item of (await learnModule(traineeActor, am.id)).items) {
+        await reportReachedEnd(traineeActor, item.id);
+        await acknowledgeItem(traineeActor, item.id);
+      }
+    }
   }
 
   await mkdir(path.dirname(E2E_IMPORT_FILE), { recursive: true });
