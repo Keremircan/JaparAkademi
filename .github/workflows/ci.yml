@@ -27,6 +27,9 @@ jobs:
       - name: Bağımlılıklar
         run: npm ci
 
+      - name: ffmpeg (video HLS testleri)
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
       - name: Ortam dosyası (.env.example + CI gizli değerleri)
         run: |
           cp .env.example .env

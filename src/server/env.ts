@@ -19,6 +19,8 @@ const serverEnvSchema = z.object({
   DATABASE_URL: postgresUrl,
   BETTER_AUTH_SECRET: z.string().min(32, "en az 32 karakter olmalı"),
   S3_ENDPOINT: z.url(),
+  /** Tarayıcının eriştiği depolama adresi (ters vekil arkasında); boşsa S3_ENDPOINT. */
+  S3_PUBLIC_ENDPOINT: z.preprocess((v) => (v === "" ? undefined : v), z.url().optional()),
   S3_REGION: z.string().min(1),
   S3_ACCESS_KEY_ID: z.string().min(1),
   S3_SECRET_ACCESS_KEY: z.string().min(1),

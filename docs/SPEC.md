@@ -140,7 +140,7 @@ Ziyaretçi bilgilendirmeyi tamamlayıp kuralları onaylamadan ziyaretçi kartı 
 
 ### 4.2 İçerik Kütüphanesi
 - **FG-2.1** İçerik tipleri: `text` (zengin metin sayfası), `pdf`, `video`, `gallery` (görsel/fotoğraf galerisi), `instruction` (adım adım, fotoğraflı talimat), `checklist` (kontrol listesi), `form_template` (ör. vardiya raporu örneği).
-- **FG-2.2** Her içerik sürümlüdür: kim, ne zaman, ne değiştirdi (değişiklik notu zorunlu). Yayınlanan sürüm değiştirilemez; düzenleme yeni taslak sürüm açar. Yeni sürümde "tekrar oku ve onayla" seçimlidir (Bölüm 3.4).
+- **FG-2.2** Her içerik sürümlüdür: kim, ne zaman, ne değiştirdi (değişiklik notu 2. sürümden itibaren zorunlu). Yayınlanan sürüm değiştirilemez; düzenleme yeni taslak sürüm açar. Yeni sürümde "tekrar oku ve onayla" seçimlidir (Bölüm 3.4).
 - **FG-2.3** Yayın akışı:
   ```
   draft ──gönder──▶ section_review ──onay──▶ (İSG ise) ohs_review ──onay──▶ published ──▶ archived
@@ -151,7 +151,7 @@ Ziyaretçi bilgilendirmeyi tamamlayıp kuralları onaylamadan ziyaretçi kartı 
   - Ortak, İSG dışı içerikte 1. adım onayını İK verir.
   - İSG içeriğinde (`is_ohs = true`) İSG uzmanı onayı her zaman ayrıca gerekir. İSG uzmanının kendi hazırladığı İSG içeriği tek adımda yayınlanır.
   - Ret gerekçesi zorunludur. Tüm onay ve retler değiştirilemez `approvals` kayıtlarıdır.
-- **FG-2.4** Etiketler: makine, bölüm, risk, vardiya (etiket türleri genişletilebilir). Başlık, metin ve etiketlerde Türkçe tam metin araması yapılır (PostgreSQL `tsvector`, `turkish` sözlüğü + `unaccent`).
+- **FG-2.4** Etiketler: makine, bölüm, risk, vardiya (etiket türleri genişletilebilir; taslak hazırlayan bu türlere yeni etiket ekleyebilir). Başlık, metin ve etiketlerde Türkçe tam metin araması yapılır (PostgreSQL `tsvector`): `turkish` sözlüğü aksanlı metinde kök eşleşmesi (güvenliği → güvenlik), `simple` + `unaccent` aksan/büyük harf farkı olmadan önek eşleşmesi sağlar; ikisi birleştirilir.
 - **FG-2.5** Çoklu dil altyapısı: her içerik sürümü dil bazında (`tr`, `en`) tutulur. İlk sürümde personel içerikleri Türkçedir. Ziyaretçi bilgilendirmesinde İngilizce zorunludur (Faz 2).
 - **Video:** yüklenen video arka plan işinde ffmpeg ile HLS'e (360p + 720p) dönüştürülür ve Garage'da (S3 uyumlu depolama) saklanır. Oynatıcı bağlantı hızına göre kaliteyi otomatik seçer; kullanıcı da elle "düşük kalite" seçebilir.
 - **Dosya limitleri (parametre):** video 2 GB, PDF 50 MB, görsel 15 MB (yüklemede WebP'ye dönüştürülür, en fazla 2000 px).
@@ -451,7 +451,8 @@ Kanallar: **uygulama içi** (her zaman), **web push** (PWA, Faz 2) ve **e-posta*
 - Faz 3: Microsoft 365 (Entra ID) ile tek oturum; sicil no ↔ M365 hesabı eşleştirmesi.
 
 ### 11.5 Dosyalar ve Medya
-- Tüm dosyalar Garage'daki private bucket'ta (`akademi-private`, önekler: `media/`, `documents/`, `signatures/` …) tutulur, istemciye 5 dk geçerli imzalı URL verilir. HLS segmentleri için yetki, `/api/media` üzerinden imzalı manifest ile sağlanır.
+- Tüm dosyalar Garage'daki private bucket'ta (`akademi-private`, önekler: `media/`, `documents/`, `signatures/` …) tutulur, istemciye 5 dk geçerli imzalı URL verilir (`/api/media/<id>/<file|download|image|thumb|poster>` yetki kontrolünden sonra yönlendirir). HLS için `/api/media/<id>/hls/*.m3u8` her istekte yetki kontrolü yapıp oynatma listesini imzalı segment URL'leriyle yeniden yazar. **İstisna:** segment URL'leri max(1 saat, video süresi × 2) geçerlidir; aksi halde uzun videolarda oynatma ortasında süre dolar.
+- Tarayıcıya verilen imzalı URL'ler `S3_PUBLIC_ENDPOINT` adresini kullanır (boşsa `S3_ENDPOINT`); bucket CORS'u yalnızca `APP_URL`'e izin verir.
 - Yükleme: istemciden doğrudan Garage'a imzalı PUT (çok parçalı yükleme). Yükleme tamamlanınca worker işi tetiklenir (video dönüştürme, görsel küçültme, PDF sayfa sayısı).
 - Görsellerde EXIF konum verisi silinir.
 
@@ -760,6 +761,12 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 33 | Pozisyonsuz personel | İzinli (ör. BT), ekranda uyarı gösterilir; Excel aktarımında pozisyon zorunlu |
 | 34 | Geçici şifre | 8 haneli rastgele rakam (politikadan geçer). Saklanmaz; yalnızca oluşturma/sıfırlama/aktarım anında ekranda ve PDF fişte (A4'te 8 fiş) bir kez verilir |
 | 35 | Excel eşleştirme | Departman ad/kod, pozisyon ad (departman ve bölümlerinde) veya kodla; büyük/küçük harf ve Türkçe karakter farkı yok sayılır. Aynı adda iki pozisyon varsa kod istenir. En fazla 2 MB / 5.000 satır |
+| 36 | Zengin metin düzenleyici | TipTap; yalnızca kalın, italik, H2/H3, listeler, alıntı. Gövde JSON saklanır, HTML enjekte edilmeden React ile gösterilir (iş paketi 1.2) |
+| 37 | Etiket ekleme | Taslak hazırlayabilen herkes 4 sabit türe (makine, bölüm, risk, vardiya) yeni etiket ekleyebilir |
+| 38 | Kütüphane görünürlüğü | İK ve İSG uzmanı tümünü; bölüm sorumlusu kapsamını + ortak içeriği; eğitmen kendi birimini (pozisyonunun birimi ve departmanı) + ortak içeriği görür. Sistem yöneticisi kütüphaneyi görmez; personel içeriği yalnızca atama üzerinden görür (1.4) |
+| 39 | Taslak yetkisi | Bölüm sorumlusu kapsamında, eğitmen kendi biriminde, İK ortak içerikte, İSG uzmanı her İSG içeriğinde taslak hazırlar |
+| 40 | Arşiv | İçeriği onaylayabilen arşivler (birim içeriğinde kapsamdaki bölüm sorumlusu, ortakta İK, İSG içeriğinde ayrıca İSG uzmanı). Arşivden geri alma yok |
+| 41 | PDF gösterimi | Kursiyer ekranında pdf.js ile sayfa içinde (1.4); 1.2'de sayfa sayısı saklanır, yönetim ekranında yeni sekmede açılır |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

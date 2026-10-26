@@ -131,3 +131,24 @@
     @apply font-sans;
   }
 }
+/* Zengin metin düzenleyici (TipTap) içeriği; görüntüleyici aynı biçimi sınıflarla verir */
+@layer components {
+  .rich-text h2 {
+    @apply mt-3 text-xl font-semibold;
+  }
+  .rich-text h3 {
+    @apply mt-2 text-lg font-semibold;
+  }
+  .rich-text ul {
+    @apply list-disc ps-6;
+  }
+  .rich-text ol {
+    @apply list-decimal ps-6;
+  }
+  .rich-text blockquote {
+    @apply border-s-4 border-primary/40 bg-muted/50 px-4 py-2;
+  }
+  .rich-text li > p {
+    @apply inline;
+  }
+}

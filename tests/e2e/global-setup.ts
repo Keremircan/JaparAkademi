@@ -7,6 +7,7 @@ import { legalTexts } from "../../src/server/db/schema";
 import { createAccount } from "../../src/server/services/accounts";
 import { createDraft, publishText } from "../../src/server/services/legal";
 import { createOrgUnit, createPosition } from "../../src/server/services/org";
+import { setSectionManagerScopes } from "../../src/server/services/roles";
 import { buildPeopleXlsx } from "../support/xlsx";
 
 /**
@@ -33,6 +34,10 @@ export default async function globalSetup() {
   await createPosition(sys, { orgUnitId: dept.id, name: "E2E Operatör", code: `E2E-OP-${suffix}`, collarType: "blue" });
   process.env.E2E_DEPARTMENT = `E2E Departman ${suffix}`;
 
+  // İçerik akışı (1.2): bölüm, bu bölümde pozisyonu olan eğitmen, kapsamı bu departman olan bölüm sorumlusu, İSG uzmanı
+  const section = await createOrgUnit(sys, { kind: "section", parentId: dept.id, name: "E2E Hat", code: `E2E-HAT-${suffix}` });
+  const sectionPos = await createPosition(sys, { orgUnitId: section.id, name: "E2E Hat Ustası", code: `E2E-USTA-${suffix}`, collarType: "blue" });
+
   for (const project of ["mobile", "desktop"]) {
     const p = project[0];
     // İlk giriş akışı kullanıcısı (şifre değiştirme zorunlu)
@@ -51,6 +56,14 @@ export default async function globalSetup() {
       roles: ["hr"],
       mustChangePassword: false,
     });
+  }
+
+  for (const project of ["mobile", "desktop"]) {
+    const p = project[0];
+    await createAccount(sys, { sicilNo: `E2E-${suffix}-TR${p}`, fullName: "Deneme Eğitmen", password: E2E_PASSWORD, roles: ["trainer"], positionId: sectionPos.id, mustChangePassword: false });
+    const sm = await createAccount(sys, { sicilNo: `E2E-${suffix}-SM${p}`, fullName: "Deneme Bölüm Sorumlusu", password: E2E_PASSWORD, roles: ["section_manager"], mustChangePassword: false });
+    await setSectionManagerScopes(sys, sm.userId, [dept.id]);
+    await createAccount(sys, { sicilNo: `E2E-${suffix}-OHS${p}`, fullName: "Deneme İSG Uzmanı", password: E2E_PASSWORD, roles: ["ohs_specialist"], mustChangePassword: false });
   }
 
   await mkdir(path.dirname(E2E_IMPORT_FILE), { recursive: true });

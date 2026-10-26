@@ -14,7 +14,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { key: "home", href: "/", roles: "all" },
   { key: "learn", href: "/learn", roles: "all" },
   { key: "trainer", href: "/trainer", roles: ["trainer"] },
-  { key: "manage", href: "/manage", roles: ["section_manager", "ohs_specialist", "hr"] },
+  { key: "manage", href: "/manage", roles: ["trainer", "section_manager", "ohs_specialist", "hr"] },
   { key: "reports", href: "/reports", roles: PERMISSIONS["reports.view"] },
   { key: "security", href: "/security", roles: ["security"] },
   { key: "admin", href: "/admin", roles: ["hr", "sysadmin"] },

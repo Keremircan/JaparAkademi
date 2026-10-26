@@ -2,6 +2,7 @@
 
 ## Gereksinimler
 - **Node.js 24+** (npm 11)
+- **ffmpeg** (video HLS dönüştürme; worker ve entegrasyon testleri kullanır). Windows: `winget install Gyan.FFmpeg`. Yeni açılan terminallerde PATH'e girer; girmezse `.env` içinde `FFMPEG_PATH` / `FFPROBE_PATH` tam yolunu verin (ör. `C:/Users/<kullanıcı>/AppData/Local/Microsoft/WinGet/Links/ffmpeg.exe`). ffmpeg yoksa video testi atlanır.
 - **Docker Desktop** (Windows'ta WSL 2 altyapısıyla). Lisans notu: 250'den fazla çalışan veya 10 M$ üzeri gelirli şirketlerde ticari kullanım ücretlidir; gerekirse Rancher Desktop veya WSL içinde Docker Engine aynı şekilde çalışır.
 - En az ~10 GB boş disk (imajlar, veritabanı ve Playwright tarayıcısı).
 
@@ -14,6 +15,7 @@ cp .env.example .env
 - `BETTER_AUTH_SECRET`: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
 - `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY`: örnek değerler yerelde kullanılabilir; farklı istenirse `GK` + 24 hex / 64 hex karakter.
 - `SEED_ADMIN_PASSWORD`, `SEED_DEMO_PASSWORD`: en az 8 karakter, yaygın olmayan şifreler.
+- `S3_PUBLIC_ENDPOINT`: yerelde boş bırakın (tarayıcı da `S3_ENDPOINT`'e erişir). Production'da tarayıcının eriştiği genel depolama adresi.
 - `NATIONAL_ID_ENC_KEYS`: `node -e "console.log('1:'+require('crypto').randomBytes(32).toString('base64'))"`
 - `NATIONAL_ID_HMAC_KEY`: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
   (Bu iki anahtar kaybolursa şifreli TC numaraları çözülemez; production'da ayrıca yedeklenmelidir.)
@@ -26,7 +28,7 @@ npm run db:migrate       # geliştirme veritabanı
 npm run db:migrate -- --test
 npm run db:seed          # sistem yöneticisi + demo kullanıcılar
 npm run dev              # http://localhost:3000
-npm run worker:dev       # ayrı terminalde (arka plan işleri)
+npm run worker:dev       # ayrı terminalde (arka plan işleri; medya işleme bunsuz "İşlenmeyi bekliyor"da kalır)
 ```
 
 ## Demo kullanıcılar (yalnızca geliştirme)

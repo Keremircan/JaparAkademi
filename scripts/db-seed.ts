@@ -5,6 +5,7 @@
  *      · örnek organizasyon ağacı ve pozisyonlar (Üretim → Pres Hattı → Pres Operatörü vb.)
  *      · her rol için bir demo kullanıcı (SEED_DEMO_PASSWORD, şifre değiştirme zorunlu değil) ve pozisyonları
  *      · "TASLAK" işaretli KVKK aydınlatma metni (gerçek metin hukuktan gelene kadar)
+ *      · örnek etiketler ve içerikler (yayında, onay bekleyen; demo kullanıcılar adına)
  *
  * Parametreler veritabanına yazılmaz; kayıt yoksa kodda tanımlı varsayılan kullanılır (SPEC Bölüm 14).
  * Kullanım: npm run db:seed
@@ -12,13 +13,15 @@
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { systemActor } from "../src/server/authz/actor";
+import type { UserActor } from "../src/server/authz/actor";
 import type { Role } from "../src/server/authz/roles";
 import { closeDb, db } from "../src/server/db/client";
-import { legalTexts, orgUnits, personnel, positions, roleScopes, users } from "../src/server/db/schema";
+import { contents, legalTexts, orgUnits, personnel, positions, roleScopes, tagTypes, users } from "../src/server/db/schema";
 import { withActor } from "../src/server/db/with-actor";
 import { parseEnv } from "../src/server/env";
 import { ValidationError } from "../src/server/errors";
 import { createAccount } from "../src/server/services/accounts";
+import { createContent, createTag, saveDraft, submitForApproval } from "../src/server/services/content";
 import { createDraft, publishText } from "../src/server/services/legal";
 import { createOrgUnit, createPosition } from "../src/server/services/org";
 
@@ -184,6 +187,105 @@ async function seedLegal() {
   console.log("✓ KVKK aydınlatma metni (TASLAK) yayınlandı");
 }
 
+// ---- İçerik kütüphanesi örnekleri ----
+
+const p = (text: string) => ({ type: "paragraph", content: [{ type: "text", text }] });
+const bullets = (items: string[]) => ({
+  type: "bulletList",
+  content: items.map((text) => ({ type: "listItem", content: [p(text)] })),
+});
+
+async function demoActor(sicilNo: string, roles: Role[]): Promise<UserActor | null> {
+  const id = await userIdBySicil(sicilNo);
+  return id ? { kind: "user", userId: id, roles: ["personnel", ...roles] } : null;
+}
+
+async function seedContent() {
+  const [any] = await db().select({ id: contents.id }).from(contents).limit(1);
+  if (any) return;
+  const manager = await demoActor("1003", ["section_manager"]);
+  const trainer = await demoActor("1002", ["trainer"]);
+  const ohs = await demoActor("1004", ["ohs_specialist"]);
+  const pres = await unitId("PRES");
+  if (!manager || !trainer || !ohs || !pres) return;
+
+  const types = Object.fromEntries((await db().select().from(tagTypes)).map((t) => [t.key, t.id]));
+  const tag = async (type: string, name: string) => (await createTag(manager, { tagTypeId: types[type]!, name })).id;
+  const hidrolik = await tag("machine", "Hidrolik pres");
+  const sikisma = await tag("risk", "Sıkışma");
+  const gurultu = await tag("risk", "Gürültü");
+  const gece = await tag("shift", "Gece vardiyası");
+  const presTag = await tag("section", "Pres Hattı");
+
+  const make = async (
+    who: UserActor,
+    input: Parameters<typeof createContent>[1],
+    body: Record<string, unknown>,
+    tagIds: string[],
+  ) => {
+    const { id } = await createContent(who, input);
+    await saveDraft(who, id, { title: input.title, body, tagIds });
+    const { status } = await submitForApproval(who, id, { changeNote: null, requireReread: false });
+    console.log(`✓ İçerik: ${input.title} (${status})`);
+  };
+
+  await make(
+    manager,
+    { type: "text", title: "Pres hattında güvenli çalışma", ownerOrgUnitId: pres, commonTarget: null, isOhs: false },
+    {
+      doc: {
+        type: "doc",
+        content: [
+          { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Temel kurallar" }] },
+          p("Pres hattında çalışırken iki el kumandası her zaman kullanılır; kumanda köprülenmez veya bağlanmaz."),
+          bullets(["Işık perdesi devre dışıyken pres çalıştırılmaz.", "Kalıp alanına el sokulmadan önce makine durdurulur.", "Kulaklık ve iş eldiveni takılır."]),
+        ],
+      },
+    },
+    [hidrolik, sikisma, presTag],
+  );
+  await make(
+    manager,
+    { type: "checklist", title: "Vardiya başı pres kontrolü", ownerOrgUnitId: pres, commonTarget: null, isOhs: false },
+    {
+      items: [
+        { text: "Acil durdurma butonu çalışıyor", critical: true },
+        { text: "Işık perdesi test edildi", critical: true },
+        { text: "Hidrolik yağ seviyesi uygun", critical: false },
+        { text: "Çalışma alanı temiz ve düzenli", critical: false },
+      ],
+    },
+    [hidrolik, gece, presTag],
+  );
+  await make(
+    trainer,
+    { type: "instruction", title: "Kalıp değişimi", ownerOrgUnitId: pres, commonTarget: null, isOhs: false },
+    {
+      steps: [
+        { title: "Presi durdurun ve kilitleyin", text: "Ana şalteri kapatıp kendi kilidinizi takın." },
+        { title: "Eski kalıbı sökün", text: "Bağlantı cıvatalarını sırayla gevşetin." },
+        { title: "Yeni kalıbı yerleştirin", text: "Merkezleme pimlerinin oturduğunu kontrol edin." },
+        { title: "Deneme baskısı yapın", text: "İlk parçayı vardiya şefine onaylatın." },
+      ],
+    },
+    [hidrolik, sikisma, presTag],
+  );
+  await make(
+    ohs,
+    { type: "text", title: "Genel İSG kuralları", ownerOrgUnitId: null, commonTarget: "all", isOhs: true },
+    {
+      doc: {
+        type: "doc",
+        content: [
+          p("JAPAR tesislerinde herkes kişisel koruyucu donanım kurallarına uyar."),
+          bullets(["Acil durumda en yakın toplanma alanına gidin.", "Yangın söndürücülerin önü kapatılmaz.", "Kaza ve ramak kala olaylarını hemen bildirin."]),
+        ],
+      },
+    },
+    [gurultu],
+  );
+}
+
 async function main() {
   await ensure({
     sicilNo: cfg.SEED_ADMIN_SICIL,
@@ -212,6 +314,7 @@ async function main() {
     }
   }
   await seedLegal();
+  if (cfg.SEED_DEMO_PASSWORD) await seedContent();
 }
 
 main()
