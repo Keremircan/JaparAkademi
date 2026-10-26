@@ -13,7 +13,7 @@ jobs:
   verify:
     name: Lint, tip, test, build, e2e
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
       CI: "true"
     steps:
@@ -27,8 +27,17 @@ jobs:
       - name: Bağımlılıklar
         run: npm ci
 
+      # Yalnızca ffmpeg ve zorunlu bağımlılıkları (önerilen paketler — grafik sürücüleri, ses verileri — kurulmaz).
+      # Kurulum takılırsa CI'ı durdurmaz: ffmpeg yoksa video testi atlanır.
       - name: ffmpeg (video HLS testleri)
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+        timeout-minutes: 8
+        continue-on-error: true
+        run: |
+          echo 'set man-db/auto-update false' | sudo debconf-communicate >/dev/null
+          sudo rm -f /var/lib/man-db/auto-update
+          sudo apt-get update -o Acquire::Retries=3
+          sudo apt-get install -y --no-install-recommends -o Acquire::Retries=3 ffmpeg
+          ffmpeg -version | head -1
 
       - name: Ortam dosyası (.env.example + CI gizli değerleri)
         run: |
