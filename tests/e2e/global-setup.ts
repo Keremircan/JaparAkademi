@@ -8,6 +8,9 @@ import { createAccount } from "../../src/server/services/accounts";
 import { createDraft, publishText } from "../../src/server/services/legal";
 import { createOrgUnit, createPosition } from "../../src/server/services/org";
 import { setSectionManagerScopes } from "../../src/server/services/roles";
+import { createModule, saveTasks } from "../../src/server/services/modules";
+import { createCard, saveCardSections } from "../../src/server/services/positions";
+import { fullCardSections } from "../support/content";
 import { buildPeopleXlsx } from "../support/xlsx";
 
 /**
@@ -63,6 +66,16 @@ export default async function globalSetup() {
     await createAccount(sys, { sicilNo: `E2E-${suffix}-TR${p}`, fullName: "Deneme Eğitmen", password: E2E_PASSWORD, roles: ["trainer"], positionId: sectionPos.id, mustChangePassword: false });
     const sm = await createAccount(sys, { sicilNo: `E2E-${suffix}-SM${p}`, fullName: "Deneme Bölüm Sorumlusu", password: E2E_PASSWORD, roles: ["section_manager"], mustChangePassword: false });
     await setSectionManagerScopes(sys, sm.userId, [dept.id]);
+    // Kart ve plan akışı (1.3): taslak kart (bölümleri dolu) ve eklenecek pratik modül
+    const smActor = { kind: "user" as const, userId: sm.userId, roles: ["personnel" as const, "section_manager" as const] };
+    const cardPos = await createPosition(sys, { orgUnitId: section.id, name: `E2E Kart Pozisyonu ${p}`, code: `E2E-KART-${suffix}-${p}`.toUpperCase(), collarType: "blue" });
+    await createCard(smActor, cardPos.id);
+    await saveCardSections(smActor, cardPos.id, fullCardSections());
+    const practice = await createModule(smActor, {
+      kind: "practice", title: `E2E Pratik ${p}`, description: null, durationMin: 60, isOhs: false, remoteAllowed: true,
+      validityMonths: null, ownerOrgUnitId: section.id, commonTarget: null, commonSortOrder: null,
+    });
+    await saveTasks(smActor, practice.id, [{ title: "Görev bir", description: null, isCritical: true }]);
     await createAccount(sys, { sicilNo: `E2E-${suffix}-OHS${p}`, fullName: "Deneme İSG Uzmanı", password: E2E_PASSWORD, roles: ["ohs_specialist"], mustChangePassword: false });
   }
 

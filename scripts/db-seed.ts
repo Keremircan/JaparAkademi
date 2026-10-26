@@ -6,6 +6,7 @@
  *      · her rol için bir demo kullanıcı (SEED_DEMO_PASSWORD, şifre değiştirme zorunlu değil) ve pozisyonları
  *      · "TASLAK" işaretli KVKK aydınlatma metni (gerçek metin hukuktan gelene kadar)
  *      · örnek etiketler ve içerikler (yayında, onay bekleyen; demo kullanıcılar adına)
+ *      · modüller (ortak İSG + Pres Operatörü modülleri) ve yayında Pres Operatörü kartı/planı
  *
  * Parametreler veritabanına yazılmaz; kayıt yoksa kodda tanımlı varsayılan kullanılır (SPEC Bölüm 14).
  * Kullanım: npm run db:seed
@@ -16,13 +17,15 @@ import { systemActor } from "../src/server/authz/actor";
 import type { UserActor } from "../src/server/authz/actor";
 import type { Role } from "../src/server/authz/roles";
 import { closeDb, db } from "../src/server/db/client";
-import { contents, legalTexts, orgUnits, personnel, positions, roleScopes, tagTypes, users } from "../src/server/db/schema";
+import { contents, legalTexts, modules, orgUnits, personnel, positions, roleScopes, tagTypes, users } from "../src/server/db/schema";
 import { withActor } from "../src/server/db/with-actor";
 import { parseEnv } from "../src/server/env";
 import { ValidationError } from "../src/server/errors";
 import { createAccount } from "../src/server/services/accounts";
 import { createContent, createTag, saveDraft, submitForApproval } from "../src/server/services/content";
 import { createDraft, publishText } from "../src/server/services/legal";
+import { createModule, saveTasks, setModuleContents } from "../src/server/services/modules";
+import { approveCard, cardApprovalQueue, createCard, getEditableCard, saveCardSections, savePlan, submitCard } from "../src/server/services/positions";
 import { createOrgUnit, createPosition } from "../src/server/services/org";
 
 const cfg = parseEnv(
@@ -286,6 +289,104 @@ async function seedContent() {
   );
 }
 
+// ---- Modüller ve pozisyon kartı örneği ----
+
+async function contentId(title: string) {
+  const [row] = await db().select({ id: contents.id }).from(contents).where(eq(contents.title, title)).limit(1);
+  return row?.id;
+}
+
+async function seedTraining() {
+  const [any] = await db().select({ id: modules.id }).from(modules).limit(1);
+  if (any) return;
+  const manager = await demoActor("1003", ["section_manager"]);
+  const ohs = await demoActor("1004", ["ohs_specialist"]);
+  const pres = await unitId("PRES");
+  const presOp = await positionId("PRES-OP");
+  const genelIsg = await contentId("Genel İSG kuralları");
+  const presSafe = await contentId("Pres hattında güvenli çalışma");
+  const presCheck = await contentId("Vardiya başı pres kontrolü");
+  if (!manager || !ohs || !pres || !presOp || !genelIsg || !presSafe || !presCheck) return;
+
+  const base = { description: null, isOhs: false, remoteAllowed: true, validityMonths: null, commonTarget: null, commonSortOrder: null };
+  const common = await createModule(ohs, { ...base, kind: "theory", title: "Genel İSG eğitimi", durationMin: 120, isOhs: true, validityMonths: 12, ownerOrgUnitId: null, commonTarget: "all", commonSortOrder: 1 });
+  await setModuleContents(ohs, common.id, [genelIsg]);
+  const theory = await createModule(manager, { ...base, kind: "theory", title: "Pres hattı temel eğitimi", durationMin: 90, ownerOrgUnitId: pres });
+  await setModuleContents(manager, theory.id, [presSafe, presCheck]);
+  const exam = await createModule(manager, { ...base, kind: "theory_exam", title: "Pres operatörü teorik sınavı", durationMin: 30, ownerOrgUnitId: pres });
+  const practice = await createModule(manager, { ...base, kind: "practice", title: "Pres operatörü pratik eğitimi", durationMin: 2400, ownerOrgUnitId: pres });
+  await saveTasks(manager, practice.id, [
+    { title: "Vardiya başı kontrol listesini uygulama", description: null, isCritical: true },
+    { title: "Kalıp bağlama ve ayar", description: "Usta gözetiminde merkezleme kontrolü", isCritical: true },
+    { title: "İlk parça onayı alma", description: null, isCritical: false },
+    { title: "Hurda ve fire kaydı", description: null, isCritical: false },
+  ]);
+  const practiceExam = await createModule(manager, { ...base, kind: "practice_exam", title: "Pres operatörü pratik sınavı", durationMin: 120, ownerOrgUnitId: pres });
+  console.log("✓ Modüller: ortak İSG + Pres Operatörü (4)");
+
+  await createCard(manager, presOp);
+  await saveCardSections(manager, presOp, {
+    purpose: "Pres hattında iş güvenliği ve kalite kurallarına uyarak sac parçaların üretimini yapmak.",
+    duties: [
+      { text: "Presi vardiya planına göre çalıştırmak", frequency: "continuous" },
+      { text: "Vardiya başı kontrol listesini uygulamak", frequency: "daily" },
+      { text: "Kalıp değişiminde kalıpçıya yardım etmek", frequency: "weekly" },
+    ],
+    workflow: {
+      steps: [
+        { input: "İş emri ve sac rulo", process: "Malzemeyi beslemeye yerleştir", output: "Beslenen sac" },
+        { input: "Beslenen sac", process: "Presi iki el kumandasıyla çalıştır", output: "Parça" },
+        { input: "Parça", process: "Göz kontrolü yap, kasaya diz", output: "Sevke hazır parça" },
+      ],
+    },
+    routines: [
+      { time: "08:00", days: ["mon", "tue", "wed", "thu", "fri"], text: "Vardiya başı kontrol" },
+      { time: "16:45", days: ["mon", "tue", "wed", "thu", "fri"], text: "Vardiya raporunu doldur" },
+    ],
+    reporting: [{ report: "Vardiya üretim raporu", recipient: "Vardiya şefi", frequency: "Her vardiya sonu", format: "Kağıt form" }],
+    equipment: [
+      { name: "400 t hidrolik pres", kind: "machine" },
+      { name: "Kalıp anahtar takımı", kind: "tool" },
+    ],
+    critical: [
+      { kind: "forbidden", text: "Işık perdesini veya iki el kumandasını asla köprüleme" },
+      { kind: "quality", text: "İlk parça onayı alınmadan seri üretime geçme" },
+      { kind: "error", text: "Sac yağlamasını unutmak kalıpta çapak oluşturur" },
+    ],
+    ohs: {
+      risks: [{ text: "Uzuv sıkışması" }, { text: "Gürültü" }],
+      ppe: [{ text: "Kesilmeye dayanıklı eldiven" }, { text: "Kulak koruyucu" }, { text: "Çelik burunlu ayakkabı" }],
+      instructions: [{ text: "Pres güvenli çalışma talimatı" }],
+      loto: "Kalıp değişimi ve bakımda ana şalter kapatılır, kişisel kilit takılır.",
+      emergency: "Acil stop butonuna basın, vardiya şefine haber verin, toplanma alanına gidin.",
+      contentIds: [genelIsg],
+    },
+    competencies: [{ text: "Forklift ehliyeti (tercihen)" }],
+    kpis: [{ text: "Vardiya başına hurda oranı < %2" }],
+    contacts: [
+      { situation: "Makine arızası", contact: "Bakım teknisyeni" },
+      { situation: "Kalite sorunu", contact: "Kalite kontrol teknisyeni" },
+    ],
+  });
+  const card = await getEditableCard(manager, presOp);
+  const cardModule = card.plan.items.find((i) => i.isCardModule)!.moduleId;
+  const item = (moduleId: string, prev: string | null, settings = {}) => ({ moduleId, isRequired: true, prerequisiteModuleIds: prev ? [prev] : [], settings });
+  await savePlan(manager, presOp, {
+    overrides: {},
+    items: [
+      item(cardModule, null),
+      item(theory.id, cardModule),
+      item(exam.id, theory.id, { questionCount: 20 }),
+      item(practice.id, exam.id),
+      item(practiceExam.id, practice.id),
+    ],
+  });
+  await submitCard(manager, presOp, { changeNote: null });
+  const [pending] = await cardApprovalQueue(ohs);
+  if (pending) await approveCard(ohs, pending.versionId);
+  console.log("✓ Pozisyon kartı: Pres Operatörü (yayında)");
+}
+
 async function main() {
   await ensure({
     sicilNo: cfg.SEED_ADMIN_SICIL,
@@ -314,7 +415,10 @@ async function main() {
     }
   }
   await seedLegal();
-  if (cfg.SEED_DEMO_PASSWORD) await seedContent();
+  if (cfg.SEED_DEMO_PASSWORD) {
+    await seedContent();
+    await seedTraining();
+  }
 }
 
 main()

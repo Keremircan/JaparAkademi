@@ -97,7 +97,7 @@
     },
     "manage": {
       "title": "Yönetim",
-      "description": "İçerik kütüphanesi ve onay bekleyen içerikler. Pozisyon kartları ve soru bankası sonraki iş paketlerinde eklenecek."
+      "description": "Onay bekleyenler, pozisyon kartları ve eğitim planları, modüller ve içerik kütüphanesi."
     },
     "reports": {
       "title": "Raporlar",
@@ -206,7 +206,29 @@
     "reject_comment_required": "Reddetmek için gerekçe yazın.",
     "comment_too_long": "Not çok uzun.",
     "cannot_discard": "Bu sürüm silinemez.",
-    "org_unit_invalid": "Seçilen birim bulunamadı veya pasif."
+    "org_unit_invalid": "Seçilen birim bulunamadı veya pasif.",
+    "duration_invalid": "Süre 1 dakikadan az olamaz.",
+    "validity_invalid": "Geçerlilik 1–240 ay arasında olmalı.",
+    "too_many_items": "Çok fazla madde var.",
+    "module_kind_invalid": "Bu işlem bu modül türünde yapılamaz.",
+    "content_invalid": "Seçilen içerik bulunamadı, yayında değil veya bu alanda kullanılamaz.",
+    "task_title_invalid": "Görev adı 2–200 karakter olmalı.",
+    "task_invalid": "Görev bulunamadı. Sayfayı yenileyin.",
+    "module_archived": "Modül arşivlenmiş.",
+    "sections_invalid": "Kart alanlarından biri geçersiz. Değerleri kontrol edin.",
+    "card_exists": "Bu pozisyonun kartı zaten var.",
+    "plan_duplicate_module": "Bir modül planda bir kez yer alabilir.",
+    "module_invalid": "Seçilen modül bu plana eklenemez.",
+    "plan_card_module_required": "Pozisyon kartı modülü plandan çıkarılamaz.",
+    "plan_common_module": "Ortak modüller plana otomatik eklenir; elle eklenemez.",
+    "plan_prerequisite_invalid": "Ön koşul yalnızca plandaki önceki bir modül olabilir.",
+    "plan_settings_invalid": "Plan parametrelerinden biri geçersiz.",
+    "card_incomplete": "Zorunlu bölümler eksik. Aşağıdaki bölümleri doldurun:",
+    "plan_empty": "Eğitim planına en az bir modül ekleyin.",
+    "plan_archived_module": "Planda arşivlenmiş modül var; çıkarın.",
+    "plan_module_empty": "Plandaki bir teorik modülde içerik veya pratik modülde görev yok.",
+    "plan_practice_exam_order": "Pratik sınavdan önce en az bir pratik modül olmalı.",
+    "card_not_published": "Yayında kart yok."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -478,10 +500,18 @@
       },
       "approvals": {
         "title": "Onay bekleyenler",
-        "description": "Onayınızı bekleyen içerik sürümleri."
+        "description": "Onayınızı bekleyen içerik ve pozisyon kartı sürümleri."
+      },
+      "positions": {
+        "title": "Pozisyon kartları ve planlar",
+        "description": "Pozisyon kartı (13 bölüm), eğitim planı, sürümler ve gözden geçirme."
+      },
+      "modules": {
+        "title": "Modül kütüphanesi",
+        "description": "Teorik, pratik ve sınav modülleri; ortak modüller."
       }
     },
-    "pendingCount": "{count} içerik onay bekliyor"
+    "pendingCount": "{count} kayıt onay bekliyor"
   },
   "content": {
     "common": "Ortak içerik",
@@ -720,17 +750,379 @@
       "step": {
         "section": "Bölüm onayı",
         "ohs": "İSG onayı"
-      }
+      },
+      "compareWith": "Sürüm {version} ile karşılaştır"
     },
     "queue": {
       "title": "Onay bekleyenler",
-      "description": "Onayınızı bekleyen içerik sürümleri. Kendi gönderdikleriniz burada görünmez.",
+      "description": "Onayınızı bekleyen içerik ve pozisyon kartı sürümleri. Kendi gönderdikleriniz burada görünmez.",
       "empty": "Onayınızı bekleyen içerik yok.",
       "submittedBy": "{name} · {date}",
       "step": {
         "section": "Bölüm onayı",
         "ohs": "İSG onayı"
+      },
+      "cardsHeading": "Pozisyon kartları",
+      "contentsHeading": "İçerikler"
+    }
+  },
+  "modules": {
+    "title": "Modül kütüphanesi",
+    "description": "Planlarda kullanılan modüller. Değişiklikler yalnızca yeni atamalara yansır.",
+    "new": "Yeni modül",
+    "newIntro": "Önce türü ve sahibini seçin; içerik veya görevleri sonraki adımda eklersiniz.",
+    "search": "Ara",
+    "kind": "Tür",
+    "all": "Tümü",
+    "scope": "Kapsam",
+    "scopeCommon": "Ortak modüller",
+    "scopeUnit": "Birim modülleri",
+    "empty": "Modül bulunamadı.",
+    "minutes": "{n} dk",
+    "commonFor": "Ortak ({target})",
+    "targets": {
+      "all": "tüm personel",
+      "blue": "mavi yaka",
+      "white": "beyaz yaka"
+    },
+    "taskCount": "{n} görev",
+    "contentCount": "{n} içerik",
+    "cardModule": "Pozisyon kartı",
+    "ohs": "İSG",
+    "classroomOnly": "Yalnızca sınıf eğitimi",
+    "validity": "{n} ay geçerli",
+    "noValidity": "Süresiz",
+    "yes": "Evet",
+    "showActive": "Arşivlenmemiş modülleri göster",
+    "showArchived": "Arşivlenmiş modülleri göster",
+    "usedInPlans": "{n, plural, =0 {Hiçbir planda yok} other {# kart sürümünün planında}}",
+    "archive": "Arşivle",
+    "archiveConfirm": "Modül arşivlensin mi? Yeni planlara eklenemez; mevcut planlar ve atamalar etkilenmez.",
+    "archivedNote": "Bu modül arşivlenmiş.",
+    "changeNote": "Bu modül planlarda kullanılıyor. Değişiklikler mevcut atamaları etkilemez; yeni atamalar güncel hâli kullanır.",
+    "cardModuleNote": "Bu modül pozisyonun kartını kursiyere bölüm bölüm okutur. İçeriği karttan gelir; burada yalnızca süre ve ayarlar düzenlenir.",
+    "kinds": {
+      "theory": {
+        "label": "Teorik",
+        "hint": "İçerik kütüphanesinden içerikler okunur/izlenir."
+      },
+      "practice": {
+        "label": "Pratik",
+        "hint": "Görev listesi; eğitmen her görevi işaretler."
+      },
+      "theory_exam": {
+        "label": "Teorik sınav",
+        "hint": "Soru bankasından süreli, otomatik puanlı sınav."
+      },
+      "practice_exam": {
+        "label": "Pratik sınav",
+        "hint": "Görevlerden türeyen değerlendirme formu."
       }
+    },
+    "form": {
+      "kind": "Modül türü",
+      "owner": "Sahibi",
+      "ownerHint": "Ortak modüller yaka tipine göre her plana otomatik eklenir.",
+      "choose": "Seçin",
+      "common": "Ortak modül (tüm şirket)",
+      "title": "Başlık",
+      "description": "Açıklama",
+      "durationMin": "Süre (dakika)",
+      "validityMonths": "Geçerlilik (ay)",
+      "validityHint": "Boş bırakılırsa süresizdir. Süre dolmadan tekrar eğitim açılır (Faz 2).",
+      "commonTarget": "Hedef kitle",
+      "target": {
+        "all": "Tüm personel",
+        "blue": "Yalnızca mavi yaka",
+        "white": "Yalnızca beyaz yaka"
+      },
+      "commonSortOrder": "Ortak modül sırası",
+      "commonSortOrderHint": "Küçük sayı önce gelir.",
+      "isOhs": "İSG modülü",
+      "isOhsHint": "İSG modüllerinde \"uzaktan verilebilir\" kararını İSG uzmanı verir.",
+      "remoteAllowed": "Uzaktan (çevrim içi) verilebilir",
+      "remoteHint": "Kapalıysa modül yalnızca sınıf eğitimi kaydıyla tamamlanır.",
+      "remoteLocked": "Bu İSG modülünde bu ayarı yalnızca İSG uzmanı değiştirebilir.",
+      "create": "Oluştur"
+    },
+    "picker": {
+      "label": "İçerik ara",
+      "placeholder": "Başlık",
+      "search": "Ara",
+      "empty": "Eklenebilecek yayında içerik bulunamadı.",
+      "common": "Ortak",
+      "add": "Ekle"
+    },
+    "items": {
+      "moveUp": "{item}: yukarı taşı",
+      "moveDown": "{item}: aşağı taşı",
+      "remove": "{item}: kaldır",
+      "contentsHeading": "İçerikler",
+      "contentsEmpty": "Henüz içerik eklenmedi. Yalnızca yayındaki içerikler eklenebilir.",
+      "contentUnavailable": "Arşivlenmiş veya yayında değil",
+      "tasksHeading": "Pratik görevler",
+      "tasksHint": "Önerilen: pozisyon başına 10–30 görev. Kritik görev pratik sınavda \"yapamadı\" ise sınav kalır. Listeden çıkarılan görev arşivlenir.",
+      "taskN": "{n}. görev",
+      "taskTitle": "Görev adı",
+      "taskDescription": "Açıklama",
+      "taskCritical": "Kritik görev",
+      "addTask": "Görev ekle",
+      "critical": "Kritik"
+    }
+  },
+  "cards": {
+    "sections": {
+      "identity": {
+        "title": "Künye",
+        "hint": "Pozisyon bilgileri organizasyon yapısından gelir; değişiklik için İK'ya başvurun. Yayın anında karta kopyalanır."
+      },
+      "purpose": {
+        "title": "Amaç",
+        "hint": "Pozisyonun var olma nedeni (1–2 cümle)."
+      },
+      "duties": {
+        "title": "Görev ve sorumluluklar",
+        "hint": "Madde madde görevler ve sıklıkları."
+      },
+      "workflow": {
+        "title": "İş akışı",
+        "hint": "Adım adım girdi → işlem → çıktı; varsa akış şeması görseli."
+      },
+      "routines": {
+        "title": "Günlük/haftalık rutinler",
+        "hint": "Saatli rutin listesi."
+      },
+      "reporting": {
+        "title": "Raporlama",
+        "hint": "Hangi rapor, kime, ne sıklıkla, hangi format; örnek dolu form bağlanabilir."
+      },
+      "equipment": {
+        "title": "Ekipman ve sistemler",
+        "hint": "Makine, el aleti, yazılım ve formlar."
+      },
+      "critical": {
+        "title": "Kritik noktalar",
+        "hint": "Sık yapılan hatalar, kalite kritik noktalar, \"asla yapma\" listesi."
+      },
+      "ohs": {
+        "title": "İSG",
+        "hint": "Riskler, zorunlu KKD, talimatlar, LOTO ve acil durum görevleri. Bu bölüm değişirse İSG uzmanı onayı gerekir."
+      },
+      "competencies": {
+        "title": "Yetkinlik gereksinimi",
+        "hint": "Belge, ehliyet, mesleki yeterlilik."
+      },
+      "kpis": {
+        "title": "Performans göstergeleri",
+        "hint": "Değerlendirme ölçütleri."
+      },
+      "contacts": {
+        "title": "İletişim",
+        "hint": "Hangi durumda kime başvurulur."
+      },
+      "plan": {
+        "title": "Eğitim planı",
+        "hint": ""
+      }
+    },
+    "identity": {
+      "position": "Pozisyon",
+      "department": "Departman",
+      "unit": "Bölüm",
+      "supervisor": "Bağlı olduğu amir",
+      "deputy": "Vekil",
+      "collar": "Yaka tipi",
+      "shift": "Vardiya düzeni",
+      "collars": {
+        "blue": "Mavi yaka",
+        "white": "Beyaz yaka"
+      }
+    },
+    "frequency": {
+      "continuous": "Sürekli",
+      "daily": "Günlük",
+      "weekly": "Haftalık",
+      "monthly": "Aylık"
+    },
+    "days": {
+      "mon": {
+        "short": "Pzt",
+        "long": "Pazartesi"
+      },
+      "tue": {
+        "short": "Sal",
+        "long": "Salı"
+      },
+      "wed": {
+        "short": "Çar",
+        "long": "Çarşamba"
+      },
+      "thu": {
+        "short": "Per",
+        "long": "Perşembe"
+      },
+      "fri": {
+        "short": "Cum",
+        "long": "Cuma"
+      },
+      "sat": {
+        "short": "Cmt",
+        "long": "Cumartesi"
+      },
+      "sun": {
+        "short": "Paz",
+        "long": "Pazar"
+      }
+    },
+    "equipmentKinds": {
+      "machine": "Makine",
+      "tool": "El aleti",
+      "software": "Yazılım",
+      "form": "Form"
+    },
+    "criticalKinds": {
+      "error": "Sık hata",
+      "quality": "Kalite kritik",
+      "forbidden": "Asla yapma"
+    },
+    "view": {
+      "empty": "Doldurulmadı."
+    },
+    "editor": {
+      "moveUp": "{item}: yukarı taşı",
+      "moveDown": "{item}: aşağı taşı",
+      "remove": "{item}: kaldır",
+      "ohsMode": "İSG uzmanı olarak yalnızca 9. bölümü (İSG) değiştirebilirsiniz; diğer bölümler salt okunurdur.",
+      "chars": "{n} / {max} karakter",
+      "itemN": "{n}. madde",
+      "addDuty": "Görev ekle",
+      "duty": "Görev",
+      "frequency": "Sıklık",
+      "stepN": "{n}. adım",
+      "addStep": "Adım ekle",
+      "input": "Girdi",
+      "process": "İşlem",
+      "output": "Çıktı",
+      "diagram": "Akış şeması görseli",
+      "addRoutine": "Rutin ekle",
+      "time": "Saat",
+      "routine": "Rutin",
+      "days": "Günler",
+      "addReport": "Rapor ekle",
+      "report": "Rapor",
+      "recipient": "Kime",
+      "reportFrequency": "Sıklık",
+      "format": "Format / sistem",
+      "sample": "Örnek form",
+      "unlink": "Bağlantıyı kaldır",
+      "linkSample": "Örnek dolu form bağla (form şablonu içeriği)",
+      "addEquipment": "Ekipman ekle",
+      "equipmentName": "Ad",
+      "kind": "Tür",
+      "addCritical": "Kritik nokta ekle",
+      "description": "Açıklama",
+      "risks": "Riskler",
+      "ppe": "Zorunlu KKD",
+      "instructions": "Talimatlar",
+      "addRisk": "Risk ekle",
+      "addPpe": "KKD ekle",
+      "addInstruction": "Talimat ekle",
+      "loto": "LOTO (kilitleme-etiketleme)",
+      "emergency": "Acil durum görevleri",
+      "ohsContents": "İlgili İSG içerikleri",
+      "addItem": "Madde ekle",
+      "addContact": "Kişi/durum ekle",
+      "situation": "Durum",
+      "contact": "Başvurulacak pozisyon/kişi",
+      "save": "Kartı kaydet",
+      "unsaved": "Kaydedilmemiş değişiklikler var.",
+      "submitHeading": "Onaya gönder",
+      "submitHint": "Kart ve eğitim planı birlikte onaya gider. Bölüm onayından sonra, 9. bölüm değiştiyse (ilk sürümde her zaman) İSG uzmanı da onaylar.",
+      "changeNote": "Değişiklik notu",
+      "submit": "Kaydet ve onaya gönder"
+    }
+  },
+  "plans": {
+    "total": "Toplam süre: {hours} sa {minutes} dk",
+    "commonAuto": "Otomatik",
+    "minutes": "{n} dk",
+    "optional": "İsteğe bağlı",
+    "ohs": "İSG",
+    "archived": "Arşivlenmiş",
+    "after": "Ön koşul: {list}",
+    "settings": {
+      "questionCount": "Soru sayısı",
+      "durationMin": "Süre (dk)",
+      "passScore": "Geçme notu",
+      "maxAttempts": "Hak",
+      "cooldownHours": "Bekleme (saat)",
+      "proctorRequired": "Gözetmen gerekli"
+    },
+    "yes": "Evet",
+    "no": "Hayır",
+    "videoRatio": "Video izleme eşiği: %{percent}",
+    "ohsMode": "İSG uzmanı olarak yalnızca İSG modüllerini ekleyip çıkarabilir ve düzenleyebilirsiniz.",
+    "commonHeading": "Ortak modüller",
+    "commonHint": "Yaka tipine uyan ortak modüller her planın başına otomatik eklenir; sırasını İK ve İSG uzmanı belirler.",
+    "modulesHeading": "Pozisyon modülleri",
+    "dragHint": "Sıralamak için tutamağı sürükleyin veya yukarı/aşağı butonlarını kullanın. Ön koşul varsayılan olarak bir önceki modüldür.",
+    "addModule": "Modül ekle",
+    "choose": "Modül seçin",
+    "noCandidates": "Eklenebilecek modül yok (Modül kütüphanesinden oluşturun)",
+    "add": "Ekle",
+    "overridesHeading": "Plan parametreleri",
+    "videoRatioLabel": "Video izleme eşiği (%)",
+    "defaultValue": "Varsayılan: {value}",
+    "save": "Planı kaydet",
+    "unsaved": "Kaydedilmemiş değişiklikler var.",
+    "dragHandle": "{title}: sürükleyerek taşı",
+    "cardModule": "kaldırılamaz",
+    "archivedWarning": "Bu modül arşivlenmiş; plandan çıkarın.",
+    "moveUp": "{title}: yukarı taşı",
+    "moveDown": "{title}: aşağı taşı",
+    "remove": "{title}: plandan çıkar",
+    "required": "Zorunlu",
+    "prerequisites": "Ön koşullar",
+    "examSettings": "Sınav ayarları (boş = genel parametre)"
+  },
+  "positions": {
+    "title": "Pozisyon kartları",
+    "description": "Pozisyon kartı ve eğitim planı birlikte sürümlenir ve onaylanır.",
+    "empty": "Görüntüleyebileceğiniz pozisyon yok.",
+    "lastReviewed": "Son gözden geçirme: {date}",
+    "noCard": "Kart yok",
+    "stale": "Güncelliği eski",
+    "staleLong": "Gözden geçirme süresi geçti; kartı inceleyip \"Gözden geçirdim\" deyin veya yeni sürüm açın.",
+    "create": "Kart oluştur",
+    "editCard": "Kartı düzenle",
+    "editPlan": "Planı düzenle",
+    "newVersion": "Yeni sürüm başlat",
+    "review": "Gözden geçirdim",
+    "reviewConfirm": "Kartı değişiklik gerektirmeden gözden geçirdiğinizi kaydedelim mi?",
+    "noCardYet": "Bu pozisyonun henüz kartı yok. \"Kart oluştur\" ile başlayın.",
+    "noCardReadonly": "Bu pozisyonun henüz kartı yok.",
+    "ohsReason": "9. bölüm (İSG) değiştiği veya ilk sürüm olduğu için İSG uzmanı onayı gerekiyor.",
+    "cardTitle": "Pozisyon kartı",
+    "versionN": "Sürüm {version}",
+    "compareWith": "Sürüm {version} ile karşılaştır",
+    "reviewedBy": "{name} gözden geçirdi ({date})",
+    "planSubmitHint": "Plan kartla birlikte onaya gönderilir.",
+    "goSubmit": "Onaya gönder"
+  },
+  "compare": {
+    "title": "Sürüm karşılaştırma",
+    "heading": "Sürüm {from} → Sürüm {to}",
+    "empty": "Boş",
+    "added": "Eklendi",
+    "removed": "Çıkarıldı",
+    "changedCount": "{count, plural, one {# bölüm değişti} other {# bölüm değişti}}",
+    "noChanges": "Değişiklik yok.",
+    "changed": "Değişti",
+    "unchanged": "Aynı",
+    "content": {
+      "title": "Başlık",
+      "body": "İçerik",
+      "files": "Dosyalar"
     }
   }
 }

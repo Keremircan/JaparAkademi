@@ -35,3 +35,20 @@ export async function seedContentPeople() {
 export const textBody = (s: string) => ({
   doc: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: s }] }] },
 });
+
+/** Zorunlu bölümleri dolu bir pozisyon kartı. */
+export function fullCardSections(ohsRisk = "Sıkışma") {
+  return {
+    purpose: "Pres hattında güvenli ve kaliteli üretim yapmak.",
+    duties: [{ text: "Presi çalıştırmak", frequency: "continuous" }],
+    workflow: { steps: [{ input: "Sac", process: "Basma", output: "Parça" }] },
+    routines: [{ time: "08:00", days: ["mon", "tue"], text: "Vardiya başı kontrol" }],
+    reporting: [{ report: "Vardiya raporu", recipient: "Vardiya şefi", frequency: "Vardiya sonu", format: "Kağıt form" }],
+    equipment: [{ name: "Hidrolik pres", kind: "machine" }],
+    critical: [{ kind: "forbidden", text: "Işık perdesini köprüleme" }],
+    ohs: { risks: [{ text: ohsRisk }], ppe: [{ text: "Eldiven" }], instructions: [], loto: "", emergency: "Acil stop butonuna basın.", contentIds: [] },
+    competencies: [],
+    kpis: [],
+    contacts: [{ situation: "Arıza", contact: "Bakım" }],
+  };
+}

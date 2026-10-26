@@ -78,6 +78,9 @@ Terminali ve editörü yeniden açın.
 ### npm "install scripts not covered by allowScripts" uyarısı
 npm 11 paket kurulum betiklerini onay olmadan çalıştırmaz. `@swc/core` onaylıdır (`package.json` → `allowScripts`). Diğerleri (esbuild, unrs-resolver vb.) betiksiz çalışıyor; sorun çıkarsa `npm install-scripts approve <paket>` ile onaylanır.
 
+### `npm run dev`: "Unexpected non-whitespace character after JSON"
+Production derlemesinden (`npm run build`) sonra geliştirme sunucusu `.next` önbelleğini okuyamayabilir. `.next` klasörünü silip `npm run dev`'i yeniden başlatın.
+
 ### Garage'ı sıfırlamak
 ```bash
 docker compose -f docker/compose.yml down -v   # TÜM yerel veriler silinir (veritabanı dahil)
