@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   // Not: Docker image'ı için `output: "standalone"` iş paketi 1.8'de eklenecek (next start ile uyumsuz)
   poweredByHeader: false,
+  // Node'da doğrudan çalışan paketler (PDF ve Excel); sunucu paketine gömülmez
+  serverExternalPackages: ["@react-pdf/renderer", "exceljs"],
+  experimental: {
+    serverActions: {
+      // Excel aktarımı en fazla 2 MB (FG-1.4); form alanlarıyla birlikte pay bırakılır
+      bodySizeLimit: "3mb",
+    },
+  },
   turbopack: {
     rules: {
       "*.css": {

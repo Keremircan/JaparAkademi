@@ -63,6 +63,18 @@ Yeni bir özelliğe, tabloya veya ekrana başlamadan önce SPEC.md'nin ilgili b�
 - Oturum: `requireUser()` / `getSectionUser(key)` (`src/server/auth/current-user.ts`). Yetkisiz bölümde `notFound()` değil `<NotFoundView />` döndürülür (Suspense içinde notFound akıştan sonra çalışmıyor).
 - Better Auth'un HTTP rotası yoktur; kimlik işlemleri `src/server/services/auth.ts` + Server Action. Çerezler `applySetCookies` ile yazılır.
 - Base UI `Button`'ı bağlantı olarak kullanırken `nativeButton={false}` + `render={<Link …/>}`.
+- Oturum sırası `requireUser()` içinde: giriş → şifre değiştirme (`mustChangePassword`) → KVKK onayı (`/consent`) → sayfa.
+- Mutasyon sonrası aynı sayfada kalınıyorsa `refresh()` (`next/cache`), başka sayfaya gidiliyorsa next-intl `redirect`.
+
+### Uygulama kalıpları
+- Server Action: Zod ile ayrıştır → `actionUser()` → `runAction(() => servis(...))` → `ActionResult` (`src/features/shared/action-result.ts`). Hata kodu arayüzde `errors.<kod>` ile gösterilir (`<FormError />`).
+- Tek tık eylemler `<ActionButton action={eylem.bind(null, id)} />`, formlar `useActionState`.
+- Yönetim sayfaları: `adminAccess("<yetki>")` null ise `<NotFoundView />`; servis `NotFoundError`'u `orNull()` ile 404 görünümüne çevrilir.
+- Kapsam: `orgScopeFor(actor)` / `isPersonInScope()` (`src/server/authz/scope.ts`). İK ve sysadmin tüm ağacı görür.
+- TC kimlik no yalnızca `src/server/crypto/national-id.ts` ile işlenir (`protectNationalId`, `decryptNationalId`); tam TC görüntüleme `data_access_log`'a yazılır.
+- Kişiye verilen tek seferlik çıktılar (geçici şifre PDF'i) sunucuda saklanmaz; eylem sonucu base64 döner, istemci `downloadBase64` ile indirir.
+- PDF: `@react-pdf/renderer` + `src/server/pdf/fonts/Geist-Regular.ttf` (Türkçe karakter); Excel: `exceljs`. İkisi de `serverExternalPackages`'ta.
+- Metinler `messages/tr.json`'da; `en.json`'da olmayan anahtar Türkçeye düşer (`src/i18n/request.ts`).
 
 ## Komutlar
 Kurulum ayrıntıları: `docs/runbooks/local-dev.md`.

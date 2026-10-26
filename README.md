@@ -8,7 +8,7 @@ JAPAR'a yeni başlayan personel için pozisyon bazlı eğitim, sınav ve yetkinl
 - Yerel kurulum: [docs/runbooks/local-dev.md](docs/runbooks/local-dev.md)
 
 ## Durum
-Faz 1, iş paketi 1.0 (teknik temel) tamamlandı: sicil no + şifre ile giriş, rol bazlı uygulama kabuğu, denetim kaydı ve değiştirilemezlik altyapısı, parametreler, worker, depolama (Garage), PWA kabuğu, testler ve CI. Sıradaki: 1.1 Organizasyon ve personel.
+Faz 1 iş paketleri 1.0 (teknik temel) ve 1.1 (organizasyon ve personel: org ağacı, pozisyonlar, personel kaydı, Excel aktarımı, TC şifreleme, roller ve kapsam, KVKK onayı) tamamlandı. Sıradaki: 1.2 İçerik kütüphanesi.
 
 ## Hızlı başlangıç
 ```bash

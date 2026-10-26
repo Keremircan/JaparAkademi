@@ -6,7 +6,23 @@
   "common": {
     "loading": "Yükleniyor…",
     "comingSoon": "Bu bölüm sonraki iş paketlerinde açılacak.",
-    "skipToContent": "İçeriğe geç"
+    "skipToContent": "İçeriğe geç",
+    "save": "Kaydet",
+    "saving": "Kaydediliyor…",
+    "cancel": "Vazgeç",
+    "back": "Geri",
+    "edit": "Düzenle",
+    "yes": "Evet",
+    "no": "Hayır",
+    "none": "—",
+    "optional": "isteğe bağlı",
+    "saved": "Kaydedildi.",
+    "confirm": "Onayla",
+    "close": "Kapat",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "pageOf": "Sayfa {page} / {pages}",
+    "download": "İndir"
   },
   "nav": {
     "mainMenu": "Ana menü",
@@ -93,7 +109,7 @@
     },
     "admin": {
       "title": "Sistem",
-      "description": "Organizasyon yapısı, personel, roller ve parametreler burada olacak."
+      "description": "Organizasyon yapısı, personel, roller ve KVKK metinleri."
     },
     "more": {
       "title": "Tüm bölümler"
@@ -104,7 +120,10 @@
     "sicil": "Sicil no",
     "roles": "Rolleriniz",
     "changePassword": "Şifre değiştir",
-    "sharedDevice": "Bu oturum ortak cihaz modunda açıldı."
+    "sharedDevice": "Bu oturum ortak cihaz modunda açıldı.",
+    "position": "Pozisyon",
+    "department": "Departman / bölüm",
+    "noPosition": "Pozisyon atanmamış"
   },
   "roles": {
     "personnel": "Personel",
@@ -126,11 +145,307 @@
   },
   "errors": {
     "forbidden": "Bu işlem için yetkiniz yok.",
-    "unexpected": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin."
+    "unexpected": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.",
+    "not_found": "Kayıt bulunamadı.",
+    "invalid_input": "Girilen bilgileri kontrol edin.",
+    "invalid_name": "Ad en az 2 karakter olmalı.",
+    "invalid_code": "Kod 2–24 karakter; büyük harf, rakam ve tire olmalı.",
+    "code_taken": "Bu kod kullanılıyor.",
+    "name_taken": "Bu ad aynı yerde kullanılıyor.",
+    "parent_required": "Bağlı olduğu departmanı seçin.",
+    "parent_must_be_department": "Bölüm yalnızca bir departmanın altına eklenebilir.",
+    "parent_inactive": "Bağlı olduğu departman pasif.",
+    "has_active_children": "Altında aktif bölüm var; önce onları pasife alın.",
+    "has_active_positions": "Altında aktif pozisyon var; önce onları pasife alın.",
+    "org_unit_inactive": "Birim pasif.",
+    "self_reference": "Pozisyon kendisine bağlanamaz.",
+    "has_active_personnel": "Bu pozisyonda çalışan personel var.",
+    "position_inactive": "Pozisyon pasif.",
+    "invalid_sicil": "Sicil no geçersiz (harf, rakam ve tire).",
+    "invalid_full_name": "Ad soyad en az 2 karakter olmalı.",
+    "sicil_taken": "Bu sicil numarası kayıtlı.",
+    "national_id_invalid": "TC kimlik numarası geçersiz.",
+    "national_id_taken": "Bu TC kimlik numarası başka bir personele kayıtlı.",
+    "cannot_deactivate_self": "Kendi hesabınızı pasife alamazsınız.",
+    "end_date_required": "Ayrılış tarihini girin.",
+    "cannot_reset_self": "Kendi şifrenizi Profil sayfasından değiştirin.",
+    "cannot_remove_own_sysadmin": "Kendi sistem yöneticisi rolünüzü kaldıramazsınız.",
+    "last_sysadmin": "Son aktif sistem yöneticisinin rolü kaldırılamaz.",
+    "not_section_manager": "Kişinin bölüm sorumlusu rolü yok.",
+    "file_empty": "Dosya boş.",
+    "file_too_large": "Dosya 2 MB'den büyük.",
+    "file_unreadable": "Dosya okunamadı. Excel (.xlsx) dosyası yükleyin.",
+    "missing_columns": "Eksik sütunlar: {columns}",
+    "too_many_rows": "Dosyada 5.000'den fazla satır var; bölerek yükleyin.",
+    "no_rows": "Dosyada veri satırı yok.",
+    "import_not_pending": "Bu aktarım artık işlem beklemiyor.",
+    "no_valid_rows": "Aktarılacak geçerli satır yok.",
+    "invalid_title": "Başlık en az 3 karakter olmalı.",
+    "invalid_body": "Metin çok kısa.",
+    "draft_exists": "Yayınlanmamış bir taslak zaten var.",
+    "already_published": "Yayınlanmış metin değiştirilemez.",
+    "legal_text_outdated": "Metin güncellendi; sayfayı yenileyip tekrar onaylayın."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
     "description": "Aradığınız sayfa yok ya da bu sayfayı görme yetkiniz yok.",
     "home": "Ana sayfaya dön"
+  },
+  "admin": {
+    "cards": {
+      "org": {
+        "title": "Organizasyon yapısı",
+        "description": "Departman, bölüm ve pozisyonlar"
+      },
+      "people": {
+        "title": "Personel",
+        "description": "Personel kayıtları, Excel aktarımı, şifre sıfırlama"
+      },
+      "legal": {
+        "title": "KVKK aydınlatma metni",
+        "description": "Personelin ilk girişte onayladığı metin"
+      }
+    },
+    "org": {
+      "title": "Organizasyon yapısı",
+      "intro": "Departman → bölüm → pozisyon. Silme yoktur; kullanılmayan birimler pasife alınır.",
+      "addDepartment": "Departman ekle",
+      "addSection": "Bölüm ekle",
+      "addPosition": "Pozisyon ekle",
+      "deactivate": "Pasife al",
+      "activate": "Aktifleştir",
+      "inactive": "Pasif",
+      "empty": "Henüz departman yok. İlk departmanı ekleyin.",
+      "noPositions": "Pozisyon yok",
+      "activePersonnel": "{count} kişi",
+      "code": "Kod",
+      "kind": {
+        "department": "Departman",
+        "section": "Bölüm"
+      },
+      "collar": {
+        "blue": "Mavi yaka",
+        "white": "Beyaz yaka"
+      },
+      "positionStatus": {
+        "active": "Aktif",
+        "passive": "Pasif"
+      },
+      "unitForm": {
+        "newDepartment": "Yeni departman",
+        "newSection": "Yeni bölüm",
+        "edit": "Birimi düzenle",
+        "parent": "Bağlı olduğu departman",
+        "name": "Ad",
+        "code": "Kod",
+        "codeHint": "Büyük harf ve rakam, ör. URETIM. Türkçe karakterler otomatik çevrilir."
+      },
+      "positionForm": {
+        "new": "Yeni pozisyon",
+        "edit": "Pozisyonu düzenle",
+        "orgUnit": "Bağlı olduğu birim",
+        "name": "Pozisyon adı",
+        "code": "Pozisyon kodu",
+        "collarType": "Yaka tipi",
+        "shiftPattern": "Vardiya düzeni",
+        "shiftHint": "ör. 3 vardiya, gündüz",
+        "supervisor": "Bağlı olduğu amir pozisyonu",
+        "deputy": "Vekil pozisyonu",
+        "none": "Seçilmedi"
+      }
+    },
+    "people": {
+      "title": "Personel",
+      "add": "Yeni personel",
+      "importButton": "Excel'den aktar",
+      "import": {
+        "title": "Excel'den personel aktarımı",
+        "intro": "Şablonu indirip doldurun. Kayıtlar sicil numarasına göre eklenir veya güncellenir; bilinmeyen departman/pozisyon içeren satırlar aktarılmaz.",
+        "downloadTemplate": "Şablonu indir",
+        "mode": "Bu dosyadaki kişiler",
+        "modes": {
+          "existing_staff": {
+            "label": "Mevcut personel",
+            "description": "Zaten çalışan kişiler. Eğitim planı atanmaz."
+          },
+          "new_hires": {
+            "label": "Yeni işe girenler",
+            "description": "Yeni hesaplara eğitim planı atanacak."
+          }
+        },
+        "file": "Excel dosyası (.xlsx, en fazla 2 MB, 5.000 satır)",
+        "upload": "Yükle ve kontrol et",
+        "uploading": "Kontrol ediliyor…",
+        "previewTitle": "Önizleme",
+        "summary": "{total} satır: {valid} geçerli, {errors} hatalı",
+        "newCount": "{count} yeni hesap",
+        "updateCount": "{count} güncelleme",
+        "row": "Satır",
+        "action": "İşlem",
+        "actionNew": "Yeni",
+        "actionUpdate": "Güncelle",
+        "commit": "Geçerli satırları aktar",
+        "committing": "Aktarılıyor… Büyük dosyalarda birkaç dakika sürebilir.",
+        "cancel": "Aktarımı iptal et",
+        "commitNotice": "Hatalı satırlar aktarılmaz. Yeni hesapların geçici şifreleri bir kez PDF olarak indirilir; PDF yeniden üretilemez.",
+        "committedTitle": "Aktarım tamamlandı",
+        "committedSummary": "{created} yeni hesap, {updated} güncellendi, {unchanged} değişmedi.",
+        "pdfDownloaded": "Geçici şifre fişleri indirildi. Bu sayfayı kapatınca PDF yeniden alınamaz; kaybolan şifre için kişi bazında sıfırlama yapın.",
+        "downloadAgain": "PDF'i tekrar indir",
+        "cancelledTitle": "Aktarım iptal edildi",
+        "alreadyCommitted": "Bu aktarım daha önce tamamlandı.",
+        "expired": "Bu aktarım iptal edilmiş ya da süresi dolmuş.",
+        "statuses": {
+          "valid": "Geçerli",
+          "error": "Hatalı",
+          "created": "Oluşturuldu",
+          "updated": "Güncellendi",
+          "unchanged": "Değişmedi"
+        },
+        "rowErrors": {
+          "sicil_missing": "Sicil no boş",
+          "sicil_invalid": "Sicil no geçersiz (harf, rakam ve tire)",
+          "sicil_duplicate_in_file": "Sicil no dosyada birden fazla",
+          "name_missing": "Ad soyad boş",
+          "department_missing": "Departman boş",
+          "department_not_found": "Departman bulunamadı",
+          "department_inactive": "Departman pasif",
+          "position_missing": "Pozisyon boş",
+          "position_not_found": "Pozisyon bu departmanda bulunamadı",
+          "position_ambiguous": "Aynı adda birden fazla pozisyon var; pozisyon kodunu yazın",
+          "position_inactive": "Pozisyon pasif",
+          "hire_date_missing": "İşe giriş tarihi boş",
+          "hire_date_invalid": "İşe giriş tarihi geçersiz (gg.aa.yyyy)",
+          "collar_missing": "Yaka tipi boş",
+          "collar_invalid": "Yaka tipi Mavi veya Beyaz olmalı",
+          "collar_mismatch": "Yaka tipi pozisyonunkiyle uyuşmuyor",
+          "national_id_invalid": "TC kimlik no geçersiz",
+          "national_id_duplicate_in_file": "TC kimlik no dosyada birden fazla",
+          "national_id_taken": "TC kimlik no başka bir personele kayıtlı",
+          "phone_invalid": "Telefon geçersiz",
+          "email_invalid": "E-posta geçersiz"
+        }
+      },
+      "search": "Ara",
+      "searchPlaceholder": "Sicil no veya ad",
+      "statusFilter": "Durum",
+      "statusAll": "Tümü",
+      "statusCurrent": "Çalışanlar",
+      "status": {
+        "active": "Aktif",
+        "passive": "Pasif",
+        "terminated": "Ayrıldı"
+      },
+      "columns": {
+        "sicil": "Sicil",
+        "name": "Ad soyad",
+        "position": "Pozisyon",
+        "unit": "Departman / bölüm",
+        "status": "Durum",
+        "nationalId": "TC"
+      },
+      "empty": "Kayıt bulunamadı.",
+      "total": "{count} kişi",
+      "locked": "Kilitli",
+      "mustChange": "İlk giriş bekleniyor",
+      "form": {
+        "new": "Yeni personel",
+        "edit": "Bilgileri düzenle",
+        "sicil": "Sicil no",
+        "sicilHint": "Giriş kimliğidir; sonradan değiştirilemez.",
+        "fullName": "Ad soyad",
+        "position": "Pozisyon",
+        "noPosition": "Pozisyonsuz",
+        "noPositionWarning": "Pozisyonu olmayan personele eğitim planı atanamaz.",
+        "nationalId": "TC kimlik no",
+        "nationalIdHint": "11 hane. Düzenlemede boş bırakılırsa mevcut değer korunur.",
+        "phone": "Telefon",
+        "email": "E-posta",
+        "employmentType": "İstihdam tipi",
+        "employmentTypes": {
+          "employee": "Çalışan",
+          "intern": "Stajyer"
+        },
+        "hireDate": "İşe giriş tarihi",
+        "trainingRequired": "Yeni işe giren (eğitim planı atanacak)",
+        "trainingRequiredHint": "Mevcut personel için işaretlemeyin."
+      },
+      "created": {
+        "title": "Personel oluşturuldu",
+        "description": "Geçici şifre yalnızca şimdi gösterilir. Kişiye iletin; ilk girişte yeni şifre belirlemesi istenecek.",
+        "tempPassword": "Geçici şifre",
+        "printSlip": "Şifre fişini indir (PDF)",
+        "toDetail": "Personel kaydına git"
+      },
+      "detail": {
+        "info": "Kişi bilgileri",
+        "nationalId": "TC kimlik no",
+        "reveal": "Tamamını göster",
+        "revealNotice": "Görüntüleme kaydedilir (KVKK).",
+        "noNationalId": "Girilmemiş",
+        "account": "Hesap",
+        "lastLogin": "Son giriş",
+        "never": "Hiç giriş yapmadı",
+        "sourceLabel": "Kayıt kaynağı",
+        "source": {
+          "excel": "Excel aktarımı",
+          "manual": "Elle girildi",
+          "hr_sync": "İK senkronu"
+        },
+        "resetPassword": "Şifre sıfırla",
+        "resetConfirm": "Yeni geçici şifre üretilecek, açık oturumlar kapanacak. Devam edilsin mi?",
+        "resetDone": "Yeni geçici şifre",
+        "statusTitle": "Durum",
+        "setPassive": "Pasife al",
+        "setActive": "Aktifleştir",
+        "terminate": "İşten ayrıldı olarak işaretle",
+        "endDate": "Ayrılış tarihi",
+        "statusNotice": "Pasif veya ayrılan personelin açık oturumları kapanır ve giriş yapamaz.",
+        "roles": "Roller",
+        "manageRoles": "Rolleri düzenle",
+        "scopes": "Bölüm sorumlusu kapsamı"
+      },
+      "slip": {
+        "title": "Geçici giriş şifresi",
+        "sicil": "Sicil no",
+        "position": "Pozisyon",
+        "password": "Geçici şifre",
+        "instructions": "İlk girişte yeni şifre belirlemeniz istenecek. Bu kâğıdı kimseyle paylaşmayın.",
+        "issuedAt": "Düzenlenme: {date}"
+      }
+    },
+    "roles": {
+      "title": "Roller ve kapsam",
+      "intro": "Rolleri yalnızca sistem yöneticisi atar. Personel rolü herkeste vardır.",
+      "roles": "Roller",
+      "scopes": "Bölüm sorumlusu kapsamı",
+      "scopesHint": "Seçilen departmanın altındaki tüm bölümler de kapsama girer.",
+      "noScopes": "Kapsam atanmamış: bölüm sorumlusu hiçbir ekibi göremez.",
+      "scopesNeedRole": "Kapsam atamak için önce Bölüm sorumlusu rolünü kaydedin.",
+      "saveRoles": "Rolleri kaydet",
+      "saveScopes": "Kapsamı kaydet"
+    },
+    "legal": {
+      "title": "KVKK aydınlatma metni",
+      "intro": "Yayınlanan metin değiştirilemez. Yeni sürüm yayınlanınca tüm personel bir sonraki girişte yeniden onaylar.",
+      "newDraft": "Yeni sürüm hazırla",
+      "version": "Sürüm {version}",
+      "draft": "Taslak",
+      "published": "Yayınlandı: {date}",
+      "current": "Güncel",
+      "titleField": "Başlık",
+      "body": "Metin",
+      "bodyHint": "Hukuk/KVKK sorumlusunun onayladığı metni yapıştırın. Paragraflar boş satırla ayrılır.",
+      "publish": "Yayınla",
+      "publishConfirm": "Yayınlanan metin değiştirilemez ve tüm personelden yeniden onay istenir. Yayınlansın mı?",
+      "empty": "Henüz metin yok. Yayınlanmış metin yokken onay istenmez."
+    }
+  },
+  "consent": {
+    "title": "Kişisel verilerin korunması",
+    "intro": "Devam etmeden önce aşağıdaki aydınlatma metnini okuyup onaylayın.",
+    "accept": "Okudum, onaylıyorum",
+    "accepting": "Kaydediliyor…",
+    "version": "Sürüm {version}"
   }
 }

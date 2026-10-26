@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { E2E_NEW_PASSWORD, E2E_PASSWORD } from "./global-setup";
+import { acceptConsentIfAsked, changePassword, login } from "./helpers";
 
 function sicilFor(projectName: string) {
   return `E2E-${process.env.E2E_SUFFIX}-${projectName[0]}`;
@@ -12,30 +13,21 @@ test("oturum yokken korumalı sayfa giriş sayfasına yönlendirir", async ({ pa
 });
 
 test("yanlış şifrede genel hata mesajı gösterilir", async ({ page }, testInfo) => {
-  await page.goto("/login");
-  await page.getByLabel("Sicil no").fill(sicilFor(testInfo.project.name));
-  await page.getByLabel("Şifre", { exact: true }).fill("yanlis-sifre");
-  await page.getByRole("button", { name: "Giriş yap" }).click();
+  await login(page, sicilFor(testInfo.project.name), "yanlis-sifre");
   // Next'in rota duyurucusu da role="alert" taşır; mesaj metniyle süzülür
   await expect(page.getByRole("alert").filter({ hasText: "Sicil no veya şifre hatalı." })).toBeVisible();
 });
 
-test("ilk giriş → şifre değiştir → rol menüsü → çıkış", async ({ page }, testInfo) => {
-  const sicil = sicilFor(testInfo.project.name);
-
-  await page.goto("/login");
-  await page.getByLabel("Sicil no").fill(sicil);
-  await page.getByLabel("Şifre", { exact: true }).fill(E2E_PASSWORD);
-  await page.getByRole("checkbox", { name: /Ortak cihaz/ }).click();
-  await page.getByRole("button", { name: "Giriş yap" }).click();
-
-  // İlk girişte şifre değiştirme zorunlu
-  await expect(page).toHaveURL(/\/change-password$/);
+test("ilk giriş → şifre değiştir → KVKK onayı → rol menüsü → çıkış", async ({ page }, testInfo) => {
+  await login(page, sicilFor(testInfo.project.name), E2E_PASSWORD, { sharedDevice: true });
   await expect(page.getByText("İlk girişiniz olduğu için")).toBeVisible();
-  await page.getByLabel("Mevcut şifre").fill(E2E_PASSWORD);
-  await page.getByLabel("Yeni şifre", { exact: true }).fill(E2E_NEW_PASSWORD);
-  await page.getByLabel("Yeni şifre (tekrar)").fill(E2E_NEW_PASSWORD);
-  await page.getByRole("button", { name: "Şifreyi değiştir" }).click();
+  await changePassword(page, E2E_PASSWORD, E2E_NEW_PASSWORD);
+
+  // KVKK aydınlatma metni onaylanmadan uygulamaya girilmez
+  await expect(page).toHaveURL(/\/consent$/);
+  await page.goto("/trainer");
+  await expect(page).toHaveURL(/\/consent$/);
+  await acceptConsentIfAsked(page);
 
   // Ana sayfa ve rollere göre menü (eğitmen + İK; güvenlik yok)
   await expect(page.getByRole("heading", { name: "Merhaba, Deneme Kullanıcı" })).toBeVisible();

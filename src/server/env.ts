@@ -23,6 +23,10 @@ const serverEnvSchema = z.object({
   S3_ACCESS_KEY_ID: z.string().min(1),
   S3_SECRET_ACCESS_KEY: z.string().min(1),
   S3_BUCKET_PRIVATE: z.string().min(3),
+  NATIONAL_ID_ENC_KEYS: z
+    .string()
+    .regex(/^\d+:[A-Za-z0-9+/=]+(,\d+:[A-Za-z0-9+/=]+)*$/, '"<sürüm>:<base64>" biçiminde olmalı'),
+  NATIONAL_ID_HMAC_KEY: z.string().min(32),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

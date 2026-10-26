@@ -502,12 +502,13 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 
 ### 12.1 Varlıklar
 **Organizasyon ve kişiler**
-- `org_units`: id, parent_id, kind (`department`|`section`), name, code (unique), responsible_user_id, is_active
+- `org_units`: id, parent_id, kind (`department`|`section`), name, code (unique, büyük harf ASCII), responsible_user_id, is_active — iki seviye: departmanın üst düğümü yok, bölümün üst düğümü bir departman (veritabanı kısıtı); aynı üst düğümde ad benzersiz
 - `positions`: id, org_unit_id, name, code (unique), supervisor_position_id, deputy_position_id, collar_type (`blue`|`white`), shift_pattern, status (`active`|`passive`)
 - `users` (Better Auth: `user`, `session`, `account`, `verification`)
-- `personnel`: user_id (PK), sicil_no (unique), full_name, national_id_enc (AES-256-GCM), national_id_hmac, national_id_masked, phone, email, position_id, employment_type (`employee`|`intern`), hire_date, end_date, status (`active`|`passive`|`terminated`), source (`excel`|`manual`|`hr_sync`), must_change_password
+- `personnel`: user_id (PK), sicil_no (unique, değiştirilemez), full_name, national_id_enc (AES-256-GCM, `v<anahtar sürümü>:<base64>`), national_id_hmac (unique), national_id_masked, phone, email, position_id (boş olabilir: pozisyonsuz personele eğitim atanamaz), employment_type (`employee`|`intern`), hire_date, end_date (ayrılanda zorunlu), status (`active`|`passive`|`terminated`), source (`excel`|`manual`|`hr_sync`), training_required (yeni işe giren → 1.4'te plan atanır), must_change_password
 - `user_roles`: user_id, role, granted_by, granted_at
-- `role_scopes`: user_id, role (`section_manager`), org_unit_id
+- `role_scopes`: user_id, role (yalnızca `section_manager`, veritabanı kısıtı), org_unit_id
+- `data_access_log`: id, at, actor_id, subject_user_id, field (ör. `national_id`), request_id — **değiştirilemez** (tam TC görüntüleme kaydı)
 - `login_attempts`: id, at, sicil_input, user_id, ip, user_agent, result — **değiştirilemez** (güvenlik kaydı)
 - `devices`: id, kind (`shared_pc`|`kiosk`), name, token_hash, registered_by, revoked_at
 
@@ -572,10 +573,10 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 
 **Ortak**
 - `settings`: key, value (jsonb), updated_by, updated_at. Tüm parametreler Bölüm 14'teki anahtarlarla tutulur ve Zod ile doğrulanır.
-- `legal_texts`: kind (`kvkk_personnel`|`kvkk_visitor`|`visitor_rules`), locale, version, body, published_at
+- `legal_texts`: kind (`kvkk_personnel`|`kvkk_visitor`|`visitor_rules`), locale, version, title, body, published_at — yayınlanınca değiştirilemez; aynı anda tek taslak
 - `consents`: subject (user_id | visitor_id), legal_text_id, accepted_at, ip, user_agent
 - `notifications`, `notification_prefs`, `push_subscriptions` (F2), `email_outbox`
-- `import_batches`, `import_rows` (Excel aktarım sonuçları ve satır hataları)
+- `import_batches` (dosya, mod: `existing_staff`|`new_hires`, durum, sayılar), `import_rows` (normalleştirilmiş satır; TC yalnızca korumalı hâliyle; onaylanınca değiştirilemez). Onaylanmamış aktarımların satırları 24 saat sonra silinir (worker işi `imports.cleanup`)
 - `corrections`: target_table, target_id, field, old_value, new_value, reason, created_by, created_at
 - `audit_log`: id, at, actor_id, request_id, table_name, record_id, action, old_data, new_data — **append-only**
 
@@ -751,6 +752,14 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 25 | SMS | Hiçbir fazda kullanılmayacak (maliyet) |
 | 26 | QR doğrulama | Herkese açık sayfa: maskeli ad + kapsam + geçerlilik + durum |
 | 27 | Dosya depolama | Garage (S3 uyumlu). MinIO topluluk imajları artık dağıtılmıyor (iş paketi 1.0'da karar verildi) |
+| 28 | Yaka tipi | Pozisyonda tutulur. Excel'deki yaka tipi pozisyonunkiyle uyuşmazsa satır hatalıdır (iş paketi 1.1) |
+| 29 | Yeni giriş / mevcut personel | Aktarım sihirbazında seçilir ve kişi bazında `training_required` alanına yazılır; elle kayıtta onay kutusudur. Mevcut kişinin değeri yeniden aktarımla değişmez |
+| 30 | Rol atama | Yalnızca sistem yöneticisi. Kişi kendi sysadmin rolünü kaldıramaz; son aktif sysadmin'in rolü kaldırılamaz |
+| 31 | Org ağacı derinliği | İki seviye: departman → bölüm; pozisyon ikisinden birine bağlı |
+| 32 | KVKK metni yönetimi | İK. Yeni sürüm yayınlanınca herkes bir sonraki girişte yeniden onaylar; giriş sırası: şifre değiştirme → KVKK onayı → uygulama |
+| 33 | Pozisyonsuz personel | İzinli (ör. BT), ekranda uyarı gösterilir; Excel aktarımında pozisyon zorunlu |
+| 34 | Geçici şifre | 8 haneli rastgele rakam (politikadan geçer). Saklanmaz; yalnızca oluşturma/sıfırlama/aktarım anında ekranda ve PDF fişte (A4'te 8 fiş) bir kez verilir |
+| 35 | Excel eşleştirme | Departman ad/kod, pozisyon ad (departman ve bölümlerinde) veya kodla; büyük/küçük harf ve Türkçe karakter farkı yok sayılır. Aynı adda iki pozisyon varsa kod istenir. En fazla 2 MB / 5.000 satır |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

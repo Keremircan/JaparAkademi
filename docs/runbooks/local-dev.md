@@ -14,6 +14,9 @@ cp .env.example .env
 - `BETTER_AUTH_SECRET`: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
 - `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY`: örnek değerler yerelde kullanılabilir; farklı istenirse `GK` + 24 hex / 64 hex karakter.
 - `SEED_ADMIN_PASSWORD`, `SEED_DEMO_PASSWORD`: en az 8 karakter, yaygın olmayan şifreler.
+- `NATIONAL_ID_ENC_KEYS`: `node -e "console.log('1:'+require('crypto').randomBytes(32).toString('base64'))"`
+- `NATIONAL_ID_HMAC_KEY`: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
+  (Bu iki anahtar kaybolursa şifreli TC numaraları çözülemez; production'da ayrıca yedeklenmelidir.)
 
 Ardından:
 ```bash
@@ -29,15 +32,17 @@ npm run worker:dev       # ayrı terminalde (arka plan işleri)
 ## Demo kullanıcılar (yalnızca geliştirme)
 Şifre: `.env` içindeki `SEED_DEMO_PASSWORD`.
 
-| Sicil | Ad | Roller |
-|---|---|---|
-| 1001 | Ayşe Yılmaz | personel |
-| 1002 | Mehmet Usta | pratik eğitmen |
-| 1003 | Fatma Demir | bölüm sorumlusu |
-| 1004 | Can Öztürk | İSG uzmanı |
-| 1005 | Elif Şahin | İK |
-| 1006 | Murat Kaya | güvenlik |
-| 1007 | Zeynep Çelik | eğitmen + bölüm sorumlusu + İSG + İK |
+| Sicil | Ad | Roller | Pozisyon |
+|---|---|---|---|
+| 1001 | Ayşe Yılmaz | personel (yeni işe giren) | Pres Operatörü |
+| 1002 | Mehmet Usta | pratik eğitmen | Vardiya Şefi |
+| 1003 | Fatma Demir | bölüm sorumlusu (kapsam: Üretim) | Üretim Müdürü |
+| 1004 | Can Öztürk | İSG uzmanı | İSG Uzmanı |
+| 1005 | Elif Şahin | İK | İK Uzmanı |
+| 1006 | Murat Kaya | güvenlik | Güvenlik Görevlisi |
+| 1007 | Zeynep Çelik | eğitmen + bölüm sorumlusu + İSG + İK | İK Uzmanı |
+
+Seed ayrıca örnek organizasyon ağacını (Üretim → Pres Hattı / Montaj, Kalite, İK, İSG, Güvenlik, BT) ve "TASLAK" işaretli bir KVKK aydınlatma metni yayınlar; bu yüzden her kullanıcıdan ilk girişte onay istenir.
 
 Sistem yöneticisi: `SEED_ADMIN_SICIL` / `SEED_ADMIN_PASSWORD` (ilk girişte şifre değiştirmek zorunlu).
 

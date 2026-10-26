@@ -22,6 +22,27 @@
       "when": 1792961827707,
       "tag": "0002_core_triggers",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792998042326,
+      "tag": "0003_org_people_legal",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792998044431,
+      "tag": "0004_org_people_triggers",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792999701781,
+      "tag": "0005_prevent_mutation_unlocked_delete",
+      "breakpoints": true
     }
   ]
 }
