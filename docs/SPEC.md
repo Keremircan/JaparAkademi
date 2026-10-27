@@ -336,7 +336,7 @@ Kursiyer ve pratik eğitmen ekranları telefon ve tablette rahat kullanılmalıd
 | 19 | Tesis içindekiler / tahliye yoklaması | Güvenlik, İSG | Telefon | Anlık liste, "toplanma alanında" | `/security/evacuation` | 2 |
 | 20 | Raporlar ve ayarlar | İK, İSG, BT | PC | Bölüm 10 raporları, parametreler, roller, denetim kaydı | `/reports`, `/admin/settings` | 1 (temel) |
 
-Ek ekranlar: eğitimi bekleyenler (`/admin/people/waiting`), ekip ilerlemesi (`/manage/team`), sınıf eğitimi kayıtları (`/manage/classroom`), okuma görevi (`/learn/reread/[taskId]`), ortak cihazlar (`/admin/devices`), pozisyon listesi ve kart özeti (`/manage/positions`, `/manage/positions/[id]`, sürüm karşılaştırma `/manage/positions/[id]/compare`), modül kütüphanesi (`/manage/modules`), içerik sürüm karşılaştırma (`/manage/library/[id]/compare`), herkese açık sertifika doğrulama (`/verify/[token]`, Faz 1), sertifika şablonu / imza yetkilileri (`/admin/certificates`), profil ve şifre değiştirme, bildirim merkezi, KVKK aydınlatma onayı (ilk girişte).
+Ek ekranlar: eğitimi bekleyenler (`/admin/people/waiting`), ekip ilerlemesi (`/manage/team`), sınıf eğitimi kayıtları (`/manage/classroom`), okuma görevi (`/learn/reread/[taskId]`), ortak cihazlar (`/admin/devices`), pozisyon listesi ve kart özeti (`/manage/positions`, `/manage/positions/[id]`, sürüm karşılaştırma `/manage/positions/[id]/compare`), modül kütüphanesi (`/manage/modules`), içerik sürüm karşılaştırma (`/manage/library/[id]/compare`), herkese açık sertifika doğrulama (`/verify/[token]`, Faz 1), sertifika şablonu / imza yetkilileri (`/admin/certificates`), şifremi unuttum ve yeni şifre (`/forgot-password`, `/reset-password/[token]`), profil ve şifre değiştirme, bildirim merkezi, KVKK aydınlatma onayı (ilk girişte).
 
 **Navigasyon:** tek uygulama kabuğu kullanılır; menü kullanıcının rollerine göre oluşur. Mobilde alt sekme bar'ı, masaüstünde yan menü olur. Birden fazla rolü olan kullanıcı tüm yetkili bölümleri görür.
 
@@ -580,7 +580,10 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `settings`: key, value (jsonb), updated_by, updated_at. Tüm parametreler Bölüm 14'teki anahtarlarla tutulur ve Zod ile doğrulanır.
 - `legal_texts`: kind (`kvkk_personnel`|`kvkk_visitor`|`visitor_rules`), locale, version, title, body, published_at — yayınlanınca değiştirilemez; aynı anda tek taslak
 - `consents`: subject (user_id | visitor_id), legal_text_id, accepted_at, ip, user_agent
-- `notifications`, `notification_prefs`, `push_subscriptions` (F2), `email_outbox`
+- `notifications`: user_id, kind (olay türü), subject_key (konu; aynı konu için okunmamış tek bildirim), params (jsonb; metin gösterimde mesaj dosyasından üretilir), link (uygulama içi yol), read_at
+- `email_outbox`: notification_id, kind, to_address, subject, body_text, body_html, status (`pending`|`sent`|`failed`|`skipped`), attempts, last_error, next_attempt_at, sent_at — adres ve gövde denetim kaydına maskeli yazılır
+- `password_reset_tokens`: user_id, token_hash (SHA-256; token saklanmaz), expires_at, used_at, ip
+- `notification_prefs`, `push_subscriptions` (F2)
 - `import_batches` (dosya, mod: `existing_staff`|`new_hires`, durum, sayılar), `import_rows` (normalleştirilmiş satır; TC yalnızca korumalı hâliyle; onaylanınca değiştirilemez). Onaylanmamış aktarımların satırları 24 saat sonra silinir (worker işi `imports.cleanup`)
 - `corrections`: target_table, target_id, field, old_value, new_value, reason, created_by, created_at
 - `audit_log`: id, at, actor_id, request_id, table_name, record_id, action, old_data, new_data — **append-only**
@@ -670,6 +673,10 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | `certificate.signatories` | [] (en fazla 3: ad, unvan, taranmış imza) | — | İK, sysadmin |
 | `verify.ip_max_requests` / `verify.ip_window_min` | 60 / 1 | — | sysadmin |
 | `decision.extra_attempts_default` | 1 | — | sysadmin |
+| `notify.email_events` | sınav sonucu ve sistem alarmı dışındaki bütün olaylar | — | sysadmin |
+| `notify.retention_days` | 180 | — | sysadmin |
+| `mail.max_attempts` | 5 | — | sysadmin |
+| `auth.reset_link_minutes` / `auth.reset_max_per_hour` | 60 / 3 | — | sysadmin |
 | `session.shared_idle_min` | 10 | — | sysadmin |
 | `session.personal_days` | 30 | — | sysadmin |
 | `auth.password_min_length` | 8 | — | sysadmin |
@@ -721,7 +728,9 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | **1.5 Soru bankası ve teorik sınav** | Soru bankası (Excel içe aktarma dahil), İSG soru onayı, gözetmen kodu, sınav motoru (çekim, karıştırma, süre, otomatik kayıt, puanlama), hak/bekleme, sesli okuma, sekme olayları |
 | **1.6 Pratik eğitim ve sınav** | Görev listeleri, eğitmen paneli, işaretleme (not/foto), pratik sınav formu, imzalar (çizim), iki imza akışı |
 | **1.7 Onay ve sertifika** | İşe başlama onayı/ret, karar bekleyen akışı, sertifika ve katılım belgesi PDF, QR doğrulama sayfası, sertifika iptali |
-| **1.8 Rapor, bildirim, pilot** | Faz 1 raporları (xlsx/PDF), uygulama içi bildirim + Graph e-posta, denetim kaydı ekranı, yedekleme/geri dönüş runbook'u, seed içerik, kullanıcı ve yönetici kılavuzu, pilot |
+| **1.8a Bildirim ve e-posta** | Uygulama içi bildirim, Graph e-posta (outbox + worker), bildirim merkezi, e-postayla şifre sıfırlama |
+| **1.8b Raporlar ve denetim** | Faz 1 raporları (xlsx/PDF), denetim kaydı ekranı, KVKK kişi verisi dışa aktarma |
+| **1.8c Yayına hazırlık ve pilot** | Üretim Docker imajları (app, worker, caddy), yedekleme/geri dönüş runbook'u ve betikleri, seed içerik, kullanıcı ve yönetici kılavuzu, pilot |
 
 ### 16.3 Genel Kabul (her faz)
 - İlgili her FG maddesi için test senaryosu yazılmış ve geçmiş olmalı.
@@ -817,6 +826,14 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 80 | Doğrulama sayfası | Giriş istemez; maskeli ad ("Ahmet Y***"), belge türü, kapsam, belge no, tarihler, durum. TC ve sicil no gösterilmez. Token 128 bit. IP başına hız sınırı (`verify.ip_*`) |
 | 81 | İptal | İK, gerekçe zorunlu; iptal kaydı değiştirilemez. Kimse kendi belgesini iptal edemez |
 | 82 | Yetkinlik tabloları | `competencies` ve `competency_grants` Faz 1'de kurulur; ekran ve kullanım Faz 3 |
+| 83 | 1.8 bölünmesi | 1.8 üç alt pakete bölündü: 1.8a bildirim ve e-posta, 1.8b raporlar ve denetim, 1.8c yayına hazırlık ve pilot |
+| 84 | Bildirim olayları | Kursiyer: eğitim açıldı, teorik sınav açıldı, sınav sonucu, belge hazır. Eğitmen: yeni kursiyer, pratik sınav başlatılabilir. Bölüm sorumlusu: onay bekleyen içerik/kart, pratik sınav 2. imza, işe başlama onayı. İK + kapsamdaki sorumlu (+ İSG modülünde İSG uzmanı): tüm haklarda başarısız. İSG uzmanı: onay bekleyen İSG içeriği/kartı/sorusu. Sistem yöneticisi: e-posta hatası |
+| 85 | Kanal | Uygulama içi bildirim her zaman yazılır; e-posta `notify.email_events` türlerinde ve kişinin e-postası varsa gider. Varsayılan: sınav sonucu ve sistem alarmı yalnızca uygulama içi |
+| 86 | E-posta içeriği | Puan, sonuç veya kişisel ayrıntı içermez; olay türüne göre genel başlık + uygulama bağlantısı |
+| 87 | Gönderim | Bildirim olayla aynı transaction'da yazılır; e-posta `email_outbox` üzerinden worker ile (dakikada bir) gönderilir, üstel beklemeyle `mail.max_attempts` kez denenir; kalıcı hatada sistem yöneticisine uygulama içi alarm. Geliştirme/testte `MAIL_TRANSPORT=log` (gönderilmez, konu loga yazılır); canlı ortamda `graph` |
+| 88 | E-postayla şifre sıfırlama | Girişte "Şifremi unuttum" → sicil no. E-postası kayıtlı aktif personele tek kullanımlık, `auth.reset_link_minutes` geçerli bağlantı; ekran mesajı her durumda aynı; sicil ve IP başına saatlik sınır; sıfırlanınca bütün oturumlar kapanır. E-postası olmayan İK'ya başvurur |
+| 89 | Bildirim görünürlüğü | Bildirimi yalnızca alıcısı görür ve açar; bağlantı uygulama içi yoldur, yetki gidilen ekranda yeniden kontrol edilir |
+| 90 | Tekrar ve saklama | Aynı kişiye aynı konu için okunmamış tek bildirim; yeni olay mevcut bildirimi tazeler (e-posta tekrar gitmez). Konu kapanınca (onay, ret, karar, 2. imza) bekleyen bildirimler herkes için okundu sayılır. Bildirimler `notify.retention_days` sonra silinir |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

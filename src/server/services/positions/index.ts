@@ -39,6 +39,7 @@ import {
   type StoredCard,
 } from "./card-schema";
 import { parseModuleSettings, parsePlanOverrides } from "./plan-settings";
+import { notifyApprovalPending, resolveNotifications } from "../notifications";
 
 /**
  * Pozisyon kartı ve eğitim planı (SPEC Bölüm 5, 4.3). Plan, kart sürümünün parçasıdır (karar #44):
@@ -672,6 +673,16 @@ export async function submitCard(actor: Actor, positionId: string, input: { chan
       await tx.insert(approvals).values({ subjectType: "position_card_version", subjectId: latest.id, step, decision: "auto_self", decidedBy: actor.userId, decidedAt: now });
     }
     if (result.status === "published") await publishCard(tx, latest);
+    else {
+      await notifyApprovalPending(tx, {
+        type: "card",
+        step: result.status === "ohs_review" ? "ohs" : "section",
+        ownerOrgUnitId: position.orgUnitId,
+        subjectKey: `card:${latest.id}`,
+        title: position.name,
+        submittedBy: actor.userId,
+      });
+    }
     return { status: result.status };
   });
 }
@@ -713,8 +724,13 @@ export async function approveCard(actor: Actor, versionId: string, comment?: str
       decidedBy: actor.userId,
     });
     const next = onApprove(card.status, card.ohsSectionChanged);
+    await resolveNotifications(tx, `card:${card.id}`);
     if (next === "published") await publishCard(tx, card);
-    else await tx.update(positionCardVersions).set({ status: next }).where(eq(positionCardVersions.id, card.id));
+    else {
+      await tx.update(positionCardVersions).set({ status: next }).where(eq(positionCardVersions.id, card.id));
+      const [pos] = await tx.select({ name: positions.name, orgUnitId: positions.orgUnitId }).from(positions).where(eq(positions.id, card.positionId)).limit(1);
+      await notifyApprovalPending(tx, { type: "card", step: "ohs", ownerOrgUnitId: pos?.orgUnitId ?? null, subjectKey: `card:${card.id}`, title: pos?.name ?? "", submittedBy: card.submittedBy });
+    }
     return { status: next };
   });
 }
@@ -727,6 +743,7 @@ export async function rejectCard(actor: Actor, versionId: string, comment: strin
   await withActor(actor, async (tx) => {
     const { card, step } = await loadPendingCard(tx, actor, versionId);
     await tx.insert(approvals).values({ subjectType: "position_card_version", subjectId: card.id, step, decision: "rejected", comment: reason, decidedBy: actor.userId });
+    await resolveNotifications(tx, `card:${card.id}`);
     await tx.update(positionCardVersions).set({ status: onReject(card.status) }).where(eq(positionCardVersions.id, card.id));
   });
 }

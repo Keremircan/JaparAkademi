@@ -7,6 +7,9 @@ import { cleanupStaleImports } from "@/server/services/imports";
 import { processMediaAsset } from "@/server/services/media/process";
 import { finalizeExpiredAttempt } from "@/server/services/exams";
 import { renderCertificate } from "@/server/services/certificates/render";
+import { dispatchEmails } from "@/server/services/notifications/dispatch";
+import { purgeOldNotifications } from "@/server/services/notifications";
+import { env } from "@/server/env";
 import { QUEUE_OPTIONS, QUEUES } from "./queues";
 
 /**
@@ -26,6 +29,19 @@ export async function registerJobs(boss: PgBoss) {
   await boss.work<{ certificateId: string }>(QUEUES.certificateRender, { batchSize: 1 }, async ([job]) => {
     if (job) await renderCertificate(job.data.certificateId);
   });
+
+  // E-posta kuyruğu (dakikada bir) ve bildirim saklama süresi (her gece)
+  if (env().MAIL_TRANSPORT === "log") logger.warn("MAIL_TRANSPORT=log: e-postalar gönderilmiyor, yalnızca loga yazılıyor");
+  await boss.work(QUEUES.mailDispatch, { batchSize: 1 }, async () => {
+    const r = await dispatchEmails();
+    if (r.sent || r.failed) logger.info(r, "E-posta kuyruğu işlendi");
+  });
+  await boss.schedule(QUEUES.mailDispatch, "* * * * *", null, { tz: "Europe/Istanbul" });
+  await boss.work(QUEUES.notificationsPurge, async () => {
+    const n = await purgeOldNotifications(systemActor("worker:notifications.purge"));
+    if (n > 0) logger.info({ notifications: n }, "Eski bildirimler silindi");
+  });
+  await boss.schedule(QUEUES.notificationsPurge, "30 3 * * *", null, { tz: "Europe/Istanbul" });
 
   await boss.work(QUEUES.heartbeat, async () => {
     await db().execute(sql`select 1`);

@@ -21,6 +21,7 @@ import { isDone } from "@/server/state/assignment";
 import { attemptsLeft, cooldownUntil, drawQuestions, scoreAttempt, shuffle, topicSummary } from "@/server/state/exam";
 import { canViewPerson } from "../assignments";
 import { completeModule, refreshAssignment, reopenModule } from "../assignments/engine";
+import { notify, notifyAllAttemptsFailed } from "../notifications";
 import { planDefaults } from "../positions/plan-settings";
 import { poolForModules, poolModuleIds } from "../questions";
 import { verifyProctorCode } from "./proctor";
@@ -363,6 +364,9 @@ async function finalize(tx: Tx, at: AttemptRow, reason: "user" | "timeout"): Pro
 
   const [am] = await tx.select().from(assignmentModules).where(eq(assignmentModules.id, at.assignmentModuleId)).limit(1);
   if (!am) return;
+  const [owner] = await tx.select({ userId: assignments.userId }).from(assignments).where(eq(assignments.id, am.assignmentId)).limit(1);
+  // Bildirim: sınav sonucu (kursiyer; yalnızca uygulama içi — karar #85)
+  await notify(tx, { kind: "exam_result", userIds: [owner?.userId], subjectKey: `attempt:${at.id}`, link: `/exam/${at.id}`, params: { title: am.title } });
   if (result.passed) {
     await completeModule(tx, am.id, "online");
     return;
@@ -389,6 +393,7 @@ async function finalize(tx: Tx, at: AttemptRow, reason: "user" | "timeout"): Pro
   const { attempts, extra } = await attemptStats(tx, am);
   if (attemptsLeft(rules.maxAttempts, extra, attempts.length) <= 0) {
     await tx.update(assignments).set({ status: "awaiting_decision" }).where(and(eq(assignments.id, am.assignmentId), eq(assignments.status, "active")));
+    if (owner) await notifyAllAttemptsFailed(tx, { assignmentId: am.assignmentId, traineeUserId: owner.userId, examTitle: am.title, isOhs: am.isOhs });
     return;
   }
   await refreshAssignment(tx, am.assignmentId);

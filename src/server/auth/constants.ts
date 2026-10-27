@@ -5,4 +5,4 @@
 export const AUTH_COOKIE_PREFIX = "akademi";
 
 /** Oturum gerektirmeyen yollar (dil öneki olmadan). */
-export const PUBLIC_PATHS = ["/login", "/verify", "/~offline"] as const;
+export const PUBLIC_PATHS = ["/login", "/verify", "/forgot-password", "/reset-password", "/~offline"] as const;

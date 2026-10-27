@@ -47,7 +47,8 @@
       "sharedDeviceHint": "İşlem yapılmazsa oturum kısa süre sonra kendiliğinden kapanır.",
       "submit": "Giriş yap",
       "submitting": "Giriş yapılıyor…",
-      "help": "Şifrenizi unuttuysanız İK ile görüşün."
+      "help": "Şifrenizi unuttuysanız İK ile görüşün.",
+      "forgot": "Şifremi unuttum"
     },
     "errors": {
       "invalid_input": "Sicil no ve şifrenizi girin.",
@@ -80,7 +81,29 @@
       "mismatch": "Yeni şifreler birbiriyle aynı değil.",
       "current_password_invalid": "Mevcut şifre hatalı."
     },
-    "signOut": "Çıkış yap"
+    "signOut": "Çıkış yap",
+    "reset": {
+      "forgotTitle": "Şifremi unuttum",
+      "forgotIntro": "Sicil numaranızı girin. E-posta adresiniz kayıtlıysa şifre yenileme bağlantısı gönderilir.",
+      "sicil": "Sicil no",
+      "send": "Bağlantı gönder",
+      "sending": "Gönderiliyor…",
+      "sent": "İsteğiniz alındı. E-posta adresiniz kayıtlıysa birkaç dakika içinde bir bağlantı gelecek.",
+      "noEmail": "E-posta adresiniz kayıtlı değilse şifrenizi İK yeniler.",
+      "backToLogin": "Girişe dön",
+      "resetTitle": "Yeni şifre belirleyin",
+      "submit": "Şifreyi kaydet",
+      "done": "Şifreniz değiştirildi. Yeni şifrenizle giriş yapabilirsiniz.",
+      "toLogin": "Giriş yap",
+      "invalid": "Bu bağlantı geçersiz ya da süresi dolmuş.",
+      "again": "Yeni bağlantı iste",
+      "email": {
+        "subject": "Şifre yenileme bağlantınız",
+        "body": "Şifrenizi yenilemek için aşağıdaki bağlantıyı kullanın. Bağlantı {minutes} dakika geçerlidir ve bir kez kullanılabilir. Bu isteği siz yapmadıysanız bu e-postayı dikkate almayın.",
+        "open": "Şifremi yenile",
+        "footer": "Bu e-posta JAPAR Akademi tarafından otomatik gönderilmiştir."
+      }
+    }
   },
   "home": {
     "greeting": "Merhaba, {name}",
@@ -288,7 +311,8 @@
     "decision_exam_invalid": "Ek hak verilecek sınavı seçin.",
     "module_not_completed": "Belge yalnızca tamamlanmış modül için düzenlenebilir.",
     "certificate_revoked": "Bu belge zaten iptal edilmiş.",
-    "signatories_invalid": "Her imza yetkilisi için ad ve unvan yazın (en fazla 3 kişi)."
+    "signatories_invalid": "Her imza yetkilisi için ad ve unvan yazın (en fazla 3 kişi).",
+    "reset_link_invalid": "Bu bağlantı geçersiz ya da süresi dolmuş. Yeni bir bağlantı isteyin."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -2028,5 +2052,47 @@
       "add": "İmza yetkilisi ekle",
       "hint": "En fazla 3 imza yetkilisi eklenebilir. İmza görseli şeffaf arka planlı PNG olursa belgede daha iyi görünür."
     }
+  },
+  "notifications": {
+    "title": "Bildirimler",
+    "description": "Size ait bildirimler. Bir bildirime dokununca ilgili ekran açılır.",
+    "bell": "Bildirimler",
+    "bellUnread": "Bildirimler ({count} okunmamış)",
+    "markAll": "Hepsini okundu işaretle",
+    "empty": "Bildiriminiz yok.",
+    "unread": "Okunmamış",
+    "kinds": {
+      "assignment_started": "Eğitim planınız hazır. İlk adımınıza başlayabilirsiniz.",
+      "exam_available": "\"{title}\" sınavına girebilirsiniz.",
+      "exam_result": "\"{title}\" sonucunuz açıklandı.",
+      "certificate_ready": "\"{title}\" belgeniz hazır.",
+      "trainee_assigned": "{name} size kursiyer olarak atandı.",
+      "practical_exam_available": "{name} için \"{title}\" başlatılabilir.",
+      "approval_pending": "{type, select, question {İSG onayı bekleyen sorular var.} card {Onayınızı bekleyen pozisyon kartı: {title}} other {Onayınızı bekleyen içerik: {title}}}",
+      "second_signature_pending": "{name} için pratik sınav formu 2. imzanızı bekliyor.",
+      "readiness_pending": "{name} işe başlama onayınızı bekliyor.",
+      "all_attempts_failed": "{name}, \"{title}\" sınav haklarının hepsini kullandı. Karar bekleniyor.",
+      "email_failed": "Bazı e-postalar gönderilemedi. E-posta ayarlarını ve kayıtları kontrol edin."
+    },
+    "email": {
+      "app": "JAPAR Akademi",
+      "body": "Ayrıntıları görmek için JAPAR Akademi'ye giriş yapın.",
+      "open": "JAPAR Akademi'de aç",
+      "footer": "Bu e-posta JAPAR Akademi tarafından otomatik gönderilmiştir. Bildirim ayrıntıları güvenlik nedeniyle e-postada yer almaz.",
+      "kinds": {
+        "assignment_started": "Eğitim planınız hazır",
+        "exam_available": "Sınavınız açıldı",
+        "exam_result": "Sınav sonucunuz açıklandı",
+        "certificate_ready": "Belgeniz hazır",
+        "trainee_assigned": "Size yeni bir kursiyer atandı",
+        "practical_exam_available": "Bir pratik sınav başlatılabilir",
+        "approval_pending": "Onayınızı bekleyen bir kayıt var",
+        "second_signature_pending": "2. imzanızı bekleyen bir pratik sınav var",
+        "readiness_pending": "İşe başlama onayınızı bekleyen bir personel var",
+        "all_attempts_failed": "Kararınızı bekleyen bir personel var",
+        "email_failed": "E-posta gönderim hatası"
+      }
+    },
+    "pagination": "Bildirim sayfaları"
   }
 }

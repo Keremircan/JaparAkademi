@@ -19,7 +19,7 @@ import {
 import { withActor } from "@/server/db/with-actor";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/server/errors";
 import { lockReason, nextModule, type ModuleKind, type ModuleStatus } from "@/server/state/assignment";
-import { createAssignment, OPEN_STATUSES, refreshAssignment, today } from "./engine";
+import { OPEN_STATUSES, createAssignment, notifyTrainer, refreshAssignment, today } from "./engine";
 
 /**
  * Eğitim atamaları (SPEC 4.3): görünümler ve İK işlemleri.
@@ -327,6 +327,7 @@ export async function updateAssignment(actor: Actor, assignmentId: string, input
     if (input.trainerUserId) await assertTrainer(tx, input.trainerUserId, a.userId);
     await tx.update(assignments).set({ trainerUserId: input.trainerUserId, targetDate: input.targetDate }).where(eq(assignments.id, a.id));
     await refreshAssignment(tx, a.id);
+    if (input.trainerUserId && input.trainerUserId !== a.trainerUserId) await notifyTrainer(tx, a.id, input.trainerUserId, a.userId);
   });
 }
 

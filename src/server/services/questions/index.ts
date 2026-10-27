@@ -7,6 +7,7 @@ import { db, type DbOrTx, type Tx } from "@/server/db/client";
 import { approvals, assignmentModules, assignments, examAttemptItems, examAttempts, mediaAssets, modules, orgUnits, questionModules, questions, questionVersions, users } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/server/errors";
+import { notifyApprovalPending, resolveNotifications } from "../notifications";
 
 /**
  * Soru bankası (SPEC Bölüm 6, FG-6.1). Görme: bölüm sorumlusu (kapsamı + ortak İSG soruları), İSG uzmanı ve İK (tümü).
@@ -147,6 +148,7 @@ export async function createQuestion(
       .values({ ...versionValues(v), questionId: q!.id, version: 1, status: pending ? "ohs_review" : "active", createdBy: actor.userId })
       .returning({ id: questionVersions.id });
     if (!pending) await tx.update(questions).set({ currentVersionId: ver!.id }).where(eq(questions.id, q!.id));
+    else await notifyQuestionPending(tx, actor.userId);
     await setModules(tx, q!.id, v.moduleIds);
     return { id: q!.id, status: pending ? "ohs_review" : "active" };
   });
@@ -173,6 +175,7 @@ export async function updateQuestion(actor: Actor, questionId: string, input: Qu
     if (latest && (latest.status === "ohs_review" || latest.status === "rejected")) {
       await tx.update(questionVersions).set({ ...versionValues(v), status, createdBy: actor.userId }).where(eq(questionVersions.id, latest.id));
       if (!pending) await activate(tx, q, latest.id);
+      else await notifyQuestionPending(tx, actor.userId);
       return { status };
     }
     if (latest && latest.status === "active" && !pending && !(await isUsed(tx, latest.id))) {
@@ -184,8 +187,14 @@ export async function updateQuestion(actor: Actor, questionId: string, input: Qu
       .values({ ...versionValues(v), questionId: q.id, version: (latest?.version ?? 0) + 1, status, createdBy: actor.userId })
       .returning({ id: questionVersions.id });
     if (!pending) await activate(tx, q, created!.id);
+    else await notifyQuestionPending(tx, actor.userId);
     return { status };
   });
+}
+
+/** İSG onayı bekleyen sorular için tek bildirim (Excel aktarımında yüzlerce bildirim oluşmasın). */
+async function notifyQuestionPending(tx: Tx, submittedBy: string) {
+  await notifyApprovalPending(tx, { type: "question", step: "ohs", ownerOrgUnitId: null, subjectKey: "questions:ohs_review", title: "", submittedBy });
 }
 
 async function loadPending(tx: Tx, actor: Actor & { kind: "user" }, versionId: string) {
@@ -204,6 +213,7 @@ export async function approveQuestionVersion(actor: Actor, versionId: string): P
     const { q, ver } = await loadPending(tx, actor, versionId);
     await tx.insert(approvals).values({ subjectType: "question_version", subjectId: ver.id, step: "ohs", decision: "approved", decidedBy: actor.userId });
     await activate(tx, q, ver.id);
+    await resolveQuestionsIfDone(tx);
   });
 }
 
@@ -216,7 +226,14 @@ export async function rejectQuestionVersion(actor: Actor, versionId: string, com
     const { ver } = await loadPending(tx, actor, versionId);
     await tx.insert(approvals).values({ subjectType: "question_version", subjectId: ver.id, step: "ohs", decision: "rejected", comment: reason, decidedBy: actor.userId });
     await tx.update(questionVersions).set({ status: "rejected" }).where(eq(questionVersions.id, ver.id));
+    await resolveQuestionsIfDone(tx);
   });
+}
+
+/** Onay bekleyen soru kalmayınca "İSG onayı bekleyen sorular" bildirimi kapanır. */
+async function resolveQuestionsIfDone(tx: Tx) {
+  const [left] = await tx.select({ id: questionVersions.id }).from(questionVersions).where(eq(questionVersions.status, "ohs_review")).limit(1);
+  if (!left) await resolveNotifications(tx, "questions:ohs_review");
 }
 
 export async function archiveQuestion(actor: Actor, questionId: string): Promise<void> {
