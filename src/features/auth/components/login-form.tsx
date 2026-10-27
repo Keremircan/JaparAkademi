@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Link } from "@/i18n/navigation";
 import { signInAction } from "../actions";
 import type { SignInState } from "../schemas";
 import { PasswordInput } from "./password-input";
@@ -80,6 +81,9 @@ export function LoginForm() {
         {pending ? t("login.submitting") : t("login.submit")}
       </Button>
 
+      <Link href="/forgot-password" className="inline-flex min-h-12 items-center justify-center underline underline-offset-4">
+        {t("login.forgot")}
+      </Link>
       <p className="text-center text-sm text-muted-foreground">{t("login.help")}</p>
     </form>
   );

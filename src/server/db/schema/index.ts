@@ -10,3 +10,4 @@ export * from "./learning";
 export * from "./exam";
 export * from "./practice";
 export * from "./certification";
+export * from "./notifications";

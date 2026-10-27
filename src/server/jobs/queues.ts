@@ -13,6 +13,10 @@ export const QUEUES = {
   examTimeout: "exam.timeout",
   /** Sertifika / katılım belgesi PDF'i (FG-7.2). Kayıt düzenlendiği transaction'dan önce işlenirse yeniden denenir. */
   certificateRender: "certificate.render",
+  /** E-posta kuyruğunu gönderir (dakikada bir; SPEC 10.2). */
+  mailDispatch: "mail.dispatch",
+  /** Saklama süresi dolan bildirimleri siler (günlük). */
+  notificationsPurge: "notifications.purge",
 } as const;
 
 export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];

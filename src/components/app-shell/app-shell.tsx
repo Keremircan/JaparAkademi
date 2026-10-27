@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import { Bell, LogOut } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,8 @@ type Props = {
   items: ShellNavItem[];
   tabs: ShellNavItem[];
   hasMore: boolean;
+  /** Okunmamış bildirim sayısı (SPEC 10.2). */
+  unread: number;
   children: ReactNode;
 };
 
@@ -28,7 +30,7 @@ function isActive(pathname: string, href: string) {
  * Uygulama kabuğu: masaüstünde yan menü, mobilde üst başlık + alt sekme bar'ı.
  * Menü öğeleri sunucuda kullanıcının rollerine göre hesaplanıp gelir.
  */
-export function AppShell({ fullName, items, tabs, hasMore, children }: Props) {
+export function AppShell({ fullName, items, tabs, hasMore, unread, children }: Props) {
   const t = useTranslations();
   const pathname = usePathname();
   const moreActive = hasMore && !tabs.some((tab) => isActive(pathname, tab.href));
@@ -44,7 +46,10 @@ export function AppShell({ fullName, items, tabs, hasMore, children }: Props) {
 
       {/* Masaüstü yan menü */}
       <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r bg-sidebar lg:flex">
-        <div className="px-6 py-5 text-lg font-semibold">{t("app.name")}</div>
+        <div className="flex items-center justify-between gap-2 py-3 ps-6 pe-3">
+          <span className="text-lg font-semibold">{t("app.name")}</span>
+          <BellLink unread={unread} active={isActive(pathname, "/notifications")} />
+        </div>
         <nav aria-label={t("nav.mainMenu")} className="flex-1 px-3">
           <ul className="flex flex-col gap-1">
             {items.map((item) => {
@@ -81,7 +86,8 @@ export function AppShell({ fullName, items, tabs, hasMore, children }: Props) {
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Mobil üst başlık */}
         <header className="sticky top-0 z-20 flex min-h-14 items-center border-b bg-background/95 px-4 pt-[env(safe-area-inset-top)] backdrop-blur lg:hidden">
-          <span className="text-lg font-semibold">{t("app.name")}</span>
+          <span className="flex-1 text-lg font-semibold">{t("app.name")}</span>
+          <BellLink unread={unread} active={isActive(pathname, "/notifications")} />
         </header>
 
         <main id="main" className="flex-1 px-4 py-6 pb-28 lg:px-10 lg:py-10 lg:pb-10">
@@ -130,5 +136,25 @@ function TabLink({
         <span className="truncate">{label}</span>
       </Link>
     </li>
+  );
+}
+
+/** Bildirim zili: ikon + okunmamış sayısı (ekran okuyucu için metinle). */
+function BellLink({ unread, active }: { unread: number; active: boolean }) {
+  const t = useTranslations("notifications");
+  return (
+    <Link
+      href="/notifications"
+      aria-current={active ? "page" : undefined}
+      aria-label={unread ? t("bellUnread", { count: unread }) : t("bell")}
+      className="relative flex size-12 items-center justify-center rounded-lg hover:bg-muted aria-[current=page]:bg-muted"
+    >
+      <Bell aria-hidden="true" className="size-6" />
+      {unread > 0 && (
+        <span aria-hidden="true" className="absolute top-1.5 right-1.5 min-w-5 rounded-full bg-destructive px-1 text-center text-xs font-semibold leading-5 text-white">
+          {unread > 99 ? "99+" : unread}
+        </span>
+      )}
+    </Link>
   );
 }

@@ -27,7 +27,8 @@ async function finishSteps(page: Page) {
 }
 
 test("FG-3.2 / FG-4.2 / FG-4.3 yeni giren kursiyer modülleri sırayla tamamlar ve ara değerlendirmeyi cevaplar", async ({ page }, testInfo) => {
-  test.setTimeout(180_000);
+  // Bütün modülleri arayüzden yürür (ortak İSG modülü dahil); yavaş makinede 3 dk yetmeyebiliyor
+  test.setTimeout(300_000);
   const p = testInfo.project.name[0];
   const ours = `E2E Hat eğitimi ${p}`;
   await login(page, sicil("KUR", testInfo.project.name), E2E_PASSWORD);

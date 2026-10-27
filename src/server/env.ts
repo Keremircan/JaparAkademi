@@ -29,7 +29,17 @@ const serverEnvSchema = z.object({
     .string()
     .regex(/^\d+:[A-Za-z0-9+/=]+(,\d+:[A-Za-z0-9+/=]+)*$/, '"<sürüm>:<base64>" biçiminde olmalı'),
   NATIONAL_ID_HMAC_KEY: z.string().min(32),
-});
+  /** E-posta: geliştirme/testte "log" (gönderilmez, loga yazılır); canlı ortamda "graph" (karar #87; worker uyarır). */
+  MAIL_TRANSPORT: z.enum(["log", "graph"]).default("log"),
+  GRAPH_TENANT_ID: z.preprocess((v) => (v === "" ? undefined : v), z.string().optional()),
+  GRAPH_CLIENT_ID: z.preprocess((v) => (v === "" ? undefined : v), z.string().optional()),
+  GRAPH_CLIENT_SECRET: z.preprocess((v) => (v === "" ? undefined : v), z.string().optional()),
+  /** Gönderen posta kutusu (M365 kiracısında Mail.Send izni verilmiş adres). */
+  MAIL_FROM: z.preprocess((v) => (v === "" ? undefined : v), z.email().optional()),
+}).refine(
+  (e) => e.MAIL_TRANSPORT !== "graph" || (!!e.GRAPH_TENANT_ID && !!e.GRAPH_CLIENT_ID && !!e.GRAPH_CLIENT_SECRET && !!e.MAIL_FROM),
+  { message: "MAIL_TRANSPORT=graph için GRAPH_TENANT_ID, GRAPH_CLIENT_ID, GRAPH_CLIENT_SECRET ve MAIL_FROM zorunlu", path: ["MAIL_TRANSPORT"] },
+);
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
 

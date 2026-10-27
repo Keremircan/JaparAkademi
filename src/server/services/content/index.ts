@@ -32,6 +32,7 @@ import {
   type ContentRef,
 } from "./access";
 import { ASSET_KIND_FOR_TYPE, bodyAssetIds, bodyText, parseBody, type ContentBody, type ContentType } from "./body";
+import { notifyApprovalPending, resolveNotifications } from "../notifications";
 
 /**
  * İçerik kütüphanesi (SPEC 4.2, FG-2.1–2.5).
@@ -639,6 +640,16 @@ export async function submitForApproval(actor: Actor, contentId: string, input: 
       });
     }
     if (result.status === "published") await publishVersion(tx, contentId, latest.id);
+    else {
+      await notifyApprovalPending(tx, {
+        type: "content",
+        step: result.status === "ohs_review" ? "ohs" : "section",
+        ownerOrgUnitId: content.ownerOrgUnitId,
+        subjectKey: `content:${latest.id}`,
+        title: content.title,
+        submittedBy: actor.userId,
+      });
+    }
     return { status: result.status };
   });
 }
@@ -669,8 +680,12 @@ export async function approveVersion(actor: Actor, versionId: string, comment?: 
       decidedBy: actor.userId,
     });
     const next = onApprove(version.status, content.isOhs);
+    await resolveNotifications(tx, `content:${version.id}`);
     if (next === "published") await publishVersion(tx, content.id, version.id);
-    else await tx.update(contentVersions).set({ status: next }).where(eq(contentVersions.id, version.id));
+    else {
+      await tx.update(contentVersions).set({ status: next }).where(eq(contentVersions.id, version.id));
+      await notifyApprovalPending(tx, { type: "content", step: "ohs", ownerOrgUnitId: content.ownerOrgUnitId, subjectKey: `content:${version.id}`, title: content.title, submittedBy: version.submittedBy });
+    }
     return { status: next };
   });
 }
@@ -682,6 +697,7 @@ export async function rejectVersion(actor: Actor, versionId: string, comment: st
   if (reason.length > 2000) throw new ValidationError("comment_too_long");
   await withActor(actor, async (tx) => {
     const { version, step } = await loadPendingVersion(tx, actor, versionId);
+    await resolveNotifications(tx, `content:${version.id}`);
     await tx.insert(approvals).values({
       subjectType: "content_version",
       subjectId: version.id,

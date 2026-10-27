@@ -10,6 +10,7 @@ import { renderCertificatePdf, type CertificatePdfData } from "@/server/pdf/cert
 import { documentNo } from "@/server/state/certification";
 import { getObjectBuffer, uploadBuffer } from "@/server/storage/client";
 import messages from "../../../../messages/tr.json";
+import { notify } from "../notifications";
 import { getSettings } from "../settings";
 
 /**
@@ -89,5 +90,6 @@ export async function renderCertificate(certificateId: string): Promise<void> {
       .values({ kind: "pdf", status: "ready", objectKey: key, mime: "application/pdf", size: pdf.length, originalName: `${no}.pdf`, pageCount: 1, createdBy: c.issuedBy ?? c.userId })
       .returning({ id: mediaAssets.id });
     await tx.update(certificates).set({ pdfAssetId: asset!.id }).where(eq(certificates.id, c.id));
+    await notify(tx, { kind: "certificate_ready", userIds: [c.userId], subjectKey: `certificate:${c.id}`, link: "/learn", params: { title: c.title } });
   });
 }

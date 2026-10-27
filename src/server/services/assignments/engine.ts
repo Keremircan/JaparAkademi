@@ -17,12 +17,14 @@ import {
   quizResponses,
   rereadTasks,
   trainingPlans,
+  users,
 } from "@/server/db/schema";
 import { addDays, defaultTargetDate, maxDate, todayIn } from "@/lib/dates";
 import { getSettings } from "@/server/services/settings";
 import { CARD_SECTION_KEYS, parseCardSections } from "@/server/services/positions/card-schema";
 import { allRequiredDone, isDone, unlockable, type ModuleKind } from "@/server/state/assignment";
 import { commonModulesFor } from "../modules";
+import { notify, sectionManagersForPerson } from "../notifications";
 
 /**
  * Atama motoru: servislerin transaction'ı içinde çalışan iç işlemler (yetki kontrolü çağıranda).
@@ -179,7 +181,16 @@ export async function createAssignment(tx: Tx, input: CreateAssignmentInput): Pr
     if (r.m.kind === "theory" && !from) await pinItems(tx, am!.id, r.m, plan);
   }
   await refreshAssignment(tx, assignmentId);
+  // Bildirim (SPEC 10.2): kursiyere yeni eğitim, eğitmene yeni kursiyer
+  await notify(tx, { kind: "assignment_started", userIds: [input.userId], subjectKey: `assignment:${assignmentId}`, link: "/learn" });
+  if (input.trainerUserId) await notifyTrainer(tx, assignmentId, input.trainerUserId, input.userId);
   return assignmentId;
+}
+
+/** Eğitmene yeni kursiyer bildirimi (atama açılınca ya da eğitmen değişince). */
+export async function notifyTrainer(tx: Tx, assignmentId: string, trainerUserId: string, traineeUserId: string): Promise<void> {
+  const [u] = await tx.select({ name: users.name }).from(users).where(eq(users.id, traineeUserId)).limit(1);
+  await notify(tx, { kind: "trainee_assigned", userIds: [trainerUserId], subjectKey: `trainee:${assignmentId}`, link: "/trainer", params: { name: u?.name ?? "" }, exclude: [traineeUserId] });
 }
 
 /** Teorik modülün adımlarını sabitler: kart modülünde kart bölümleri, diğerlerinde yayındaki içerik sürümleri. */
@@ -210,10 +221,28 @@ export async function refreshAssignment(tx: Tx, assignmentId: string): Promise<v
   const toUnlock = unlockable(mods, !!a.trainerUserId);
   if (toUnlock.length) {
     await tx.update(assignmentModules).set({ status: "available", unlockedAt: new Date() }).where(inArray(assignmentModules.id, toUnlock));
+    // Bildirim: teorik sınav açıldı (kursiyer), pratik sınav başlatılabilir (eğitmen)
+    for (const m of mods.filter((x) => toUnlock.includes(x.id))) {
+      if (m.kind === "theory_exam") {
+        await notify(tx, { kind: "exam_available", userIds: [a.userId], subjectKey: `exam:${m.id}`, link: `/learn/${a.id}/${m.moduleId}`, params: { title: m.title } });
+      } else if (m.kind === "practice_exam" && a.trainerUserId) {
+        const [u] = await tx.select({ name: users.name }).from(users).where(eq(users.id, a.userId)).limit(1);
+        await notify(tx, { kind: "practical_exam_available", userIds: [a.trainerUserId], subjectKey: `practical:${m.id}`, link: "/trainer", params: { name: u?.name ?? "", title: m.title }, exclude: [a.userId] });
+      }
+    }
   }
   // Tüm zorunlu modüller bitince işe başlama onayı beklenir (1.7)
   if (a.status === "active" && allRequiredDone(mods)) {
     await tx.update(assignments).set({ status: "awaiting_readiness" }).where(eq(assignments.id, assignmentId));
+    const [u] = await tx.select({ name: users.name }).from(users).where(eq(users.id, a.userId)).limit(1);
+    await notify(tx, {
+      kind: "readiness_pending",
+      userIds: await sectionManagersForPerson(tx, a.userId),
+      subjectKey: `readiness:${a.id}`,
+      link: `/manage/readiness/${a.id}`,
+      params: { name: u?.name ?? "" },
+      exclude: [a.userId],
+    });
   }
 }
 

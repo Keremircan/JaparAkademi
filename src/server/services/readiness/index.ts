@@ -25,6 +25,7 @@ import { currentLevels } from "@/server/state/practice";
 import { refreshAssignment, reopenModule } from "../assignments/engine";
 import { issuePositionCertificate } from "../certificates";
 import { planDefaults } from "../positions/plan-settings";
+import { resolveNotifications } from "../notifications";
 import { getSettings } from "../settings";
 
 /**
@@ -279,6 +280,7 @@ export async function approveReadiness(actor: Actor, assignmentId: string, comme
     if (!(await canDecideReadiness(actor, a, tx))) throw new ForbiddenError("readiness.decide");
     if (a.status !== "awaiting_readiness") throw new ValidationError("readiness_not_pending");
     await tx.insert(readinessDecisions).values({ assignmentId: a.id, decision: "approved", comment: cleanText(comment, false), decidedBy: actor.userId });
+    await resolveNotifications(tx, `readiness:${a.id}`);
     await tx.update(assignments).set({ status: "completed" }).where(eq(assignments.id, a.id));
     return { certificateId: await issuePositionCertificate(tx, { assignmentId: a.id, approvedBy: actor.userId }) };
   });
@@ -295,6 +297,7 @@ export async function rejectReadiness(actor: Actor, assignmentId: string, input:
     if (!(await canDecideReadiness(actor, a, tx))) throw new ForbiddenError("readiness.decide");
     if (a.status !== "awaiting_readiness") throw new ValidationError("readiness_not_pending");
     await reopenForReview(tx, actor, a, input.reopenModuleIds, comment);
+    await resolveNotifications(tx, `readiness:${a.id}`);
     await tx.insert(readinessDecisions).values({ assignmentId: a.id, decision: "rejected", comment, reopenModuleIds: [...new Set(input.reopenModuleIds)], decidedBy: actor.userId });
     await tx.update(assignments).set({ status: "active" }).where(eq(assignments.id, a.id));
     await refreshAssignment(tx, a.id);
@@ -321,6 +324,7 @@ export async function decideProcess(actor: Actor, assignmentId: string, input: P
     if (!(await canDecideProcess(actor, a, tx))) throw new ForbiddenError("process.decide");
     if (a.status !== "awaiting_decision") throw new ValidationError("decision_not_pending");
     const mods = await tx.select().from(assignmentModules).where(eq(assignmentModules.assignmentId, a.id));
+    await resolveNotifications(tx, `decision:${a.id}`);
 
     if (input.decision === "end_process") {
       await tx.insert(decisionRecords).values({ assignmentId: a.id, decision: "end_process", reason, decidedBy: actor.userId });

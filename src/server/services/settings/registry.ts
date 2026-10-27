@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { Role } from "@/server/authz/roles";
+import { DEFAULT_EMAIL_EVENTS, NOTIFICATION_KINDS } from "@/server/state/notifications";
 
 /**
  * Parametre kaydı (SPEC Bölüm 14). Kodda eşik/süre sabit yazılmaz; buradan okunur.
@@ -71,6 +72,13 @@ export const SETTINGS = {
   "verify.ip_max_requests": def({ schema: positiveInt.max(10_000), default: 60, managedBy: SYS }),
   "verify.ip_window_min": def({ schema: positiveInt.max(24 * 60), default: 1, managedBy: SYS }),
   "decision.extra_attempts_default": def({ schema: positiveInt.max(10), default: 1, managedBy: SYS }),
+
+  // Bildirim ve e-posta (SPEC 10.2, iş paketi 1.8a)
+  "notify.email_events": def({ schema: z.array(z.enum(NOTIFICATION_KINDS)), default: DEFAULT_EMAIL_EVENTS, managedBy: SYS }),
+  "notify.retention_days": def({ schema: positiveInt.max(3650), default: 180, managedBy: SYS }),
+  "mail.max_attempts": def({ schema: positiveInt.max(20), default: 5, managedBy: SYS }),
+  "auth.reset_link_minutes": def({ schema: positiveInt.max(24 * 60), default: 60, managedBy: SYS }),
+  "auth.reset_max_per_hour": def({ schema: positiveInt.max(100), default: 3, managedBy: SYS }),
 
   // Süre ve hatırlatmalar
   "recert.lead_days": def({ schema: positiveInt.max(365), default: 30, managedBy: SYS }),

@@ -141,6 +141,20 @@
       "when": 1793084953679,
       "tag": "0019_certificate_issuer",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793091204925,
+      "tag": "0020_notifications",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1793091206810,
+      "tag": "0021_notifications_triggers",
+      "breakpoints": true
     }
   ]
 }

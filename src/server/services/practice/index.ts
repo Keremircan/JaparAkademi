@@ -25,6 +25,7 @@ import { attemptsLeft } from "@/server/state/exam";
 import { checkMark, currentLevels, allIndependent, lowerLevels, nextLevel, scorePractical, type PracticeLevel } from "@/server/state/practice";
 import { canViewPerson } from "../assignments";
 import { completeModule, refreshAssignment } from "../assignments/engine";
+import { notify, notifyAllAttemptsFailed, resolveNotifications, sectionManagersForPerson } from "../notifications";
 import { planDefaults } from "../positions/plan-settings";
 import { createSignature, subjectHash, uploadSignatureImage } from "../signatures";
 
@@ -623,6 +624,16 @@ export async function signPracticalExam(
         status: "awaiting_second_signature",
       })
       .where(eq(practicalExamResults.id, r.id));
+    // Bildirim: kapsamdaki bölüm sorumlularına 2. imza (değerlendiren ve kursiyer hariç)
+    const [u] = await tx.select({ name: users.name }).from(users).where(eq(users.id, a.userId)).limit(1);
+    await notify(tx, {
+      kind: "second_signature_pending",
+      userIds: await sectionManagersForPerson(tx, a.userId),
+      subjectKey: `practical:${r.id}`,
+      link: `/trainer/evaluations/${r.id}`,
+      params: { name: u?.name ?? "" },
+      exclude: [a.userId, actor.userId],
+    });
   });
 }
 
@@ -647,6 +658,7 @@ export async function secondSignPracticalExam(actor: Actor, id: string, input: {
       .update(practicalExamResults)
       .set({ managerUserId: actor.userId, managerSignatureId: sig, status: "final", finalizedAt: new Date() })
       .where(eq(practicalExamResults.id, r.id));
+    await resolveNotifications(tx, `practical:${r.id}`, "second_signature_pending");
     await applyResult(tx, actor, { ...r, status: "final" }, am);
   });
 }
@@ -663,6 +675,7 @@ export async function returnPracticalExam(actor: Actor, id: string, reason: stri
       .update(practicalExamResults)
       .set({ managerUserId: actor.userId, returnReason: text, status: "returned", finalizedAt: new Date() })
       .where(eq(practicalExamResults.id, r.id));
+    await resolveNotifications(tx, `practical:${r.id}`, "second_signature_pending");
   });
 }
 
@@ -671,6 +684,8 @@ export async function returnPracticalExam(actor: Actor, id: string, reason: stri
  * "gözetiminde yapar"a düşer, ilgili pratik modüller "tekrar gerekli" olur, sınav kilitlenir; haklar bittiyse atama karar bekler.
  */
 async function applyResult(tx: Tx, actor: UserActor, r: ResultRow, am: ModuleRow): Promise<void> {
+  const [owner] = await tx.select({ userId: assignments.userId }).from(assignments).where(eq(assignments.id, am.assignmentId)).limit(1);
+  await notify(tx, { kind: "exam_result", userIds: [owner?.userId], subjectKey: `practical:${r.id}`, link: `/trainer/evaluations/${r.id}`, params: { title: am.title } });
   if (r.passed) {
     await completeModule(tx, am.id, "online");
     return;
@@ -705,6 +720,7 @@ async function applyResult(tx: Tx, actor: UserActor, r: ResultRow, am: ModuleRow
   const { final, extra } = await practicalStats(tx, am);
   if (attemptsLeft(rules.maxAttempts, extra, final.length) <= 0) {
     await tx.update(assignments).set({ status: "awaiting_decision" }).where(and(eq(assignments.id, am.assignmentId), eq(assignments.status, "active")));
+    if (owner) await notifyAllAttemptsFailed(tx, { assignmentId: am.assignmentId, traineeUserId: owner.userId, examTitle: am.title, isOhs: am.isOhs });
     return;
   }
   await refreshAssignment(tx, am.assignmentId);
