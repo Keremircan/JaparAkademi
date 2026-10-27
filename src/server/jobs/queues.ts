@@ -11,6 +11,8 @@ export const QUEUES = {
   mediaProcess: "media.process",
   /** Süresi dolan sınav denemesini verilen cevaplarla teslim eder (SPEC Bölüm 6). */
   examTimeout: "exam.timeout",
+  /** Sertifika / katılım belgesi PDF'i (FG-7.2). Kayıt düzenlendiği transaction'dan önce işlenirse yeniden denenir. */
+  certificateRender: "certificate.render",
 } as const;
 
 export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];
@@ -19,4 +21,5 @@ export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];
 export const QUEUE_OPTIONS: Partial<Record<QueueName, { retryLimit: number; retryDelay: number; expireInSeconds: number }>> = {
   [QUEUES.mediaProcess]: { retryLimit: 2, retryDelay: 30, expireInSeconds: 2 * 60 * 60 },
   [QUEUES.examTimeout]: { retryLimit: 5, retryDelay: 30, expireInSeconds: 10 * 60 },
+  [QUEUES.certificateRender]: { retryLimit: 5, retryDelay: 10, expireInSeconds: 10 * 60 },
 };

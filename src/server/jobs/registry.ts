@@ -6,6 +6,7 @@ import { logger } from "@/server/logger";
 import { cleanupStaleImports } from "@/server/services/imports";
 import { processMediaAsset } from "@/server/services/media/process";
 import { finalizeExpiredAttempt } from "@/server/services/exams";
+import { renderCertificate } from "@/server/services/certificates/render";
 import { QUEUE_OPTIONS, QUEUES } from "./queues";
 
 /**
@@ -19,6 +20,11 @@ export async function registerJobs(boss: PgBoss) {
   // Süresi dolan sınav: verilen cevaplarla teslim (kullanıcı sayfayı kapatmış olsa da)
   await boss.work<{ attemptId: string }>(QUEUES.examTimeout, async ([job]) => {
     if (job) await finalizeExpiredAttempt(job.data.attemptId);
+  });
+
+  // Sertifika / katılım belgesi PDF'i (FG-7.2)
+  await boss.work<{ certificateId: string }>(QUEUES.certificateRender, { batchSize: 1 }, async ([job]) => {
+    if (job) await renderCertificate(job.data.certificateId);
   });
 
   await boss.work(QUEUES.heartbeat, async () => {

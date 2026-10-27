@@ -107,7 +107,7 @@ export type PracticeMarkView = {
   direction: "up" | "down";
   note: string | null;
   photoAssetIds: string[];
-  source: "trainer" | "exam_fail";
+  source: "trainer" | "exam_fail" | "readiness";
   markedByName: string;
   markedAt: Date;
 };

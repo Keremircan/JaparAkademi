@@ -200,7 +200,10 @@ export async function getAssetForViewer(actor: Actor, assetId: string) {
     if (await canViewQuestionAsset(actor, assetId)) return asset;
     // Pratik işaretleme/sınav fotoğrafı ve imza görseli
     const { canViewPracticeAsset } = await import("../practice");
-    return (await canViewPracticeAsset(actor, assetId)) ? asset : null;
+    if (await canViewPracticeAsset(actor, assetId)) return asset;
+    // Sertifika PDF'i: kişiyi görebilenler (FG-7.2)
+    const { canViewCertificateAsset } = await import("../certificates");
+    return (await canViewCertificateAsset(actor, assetId)) ? asset : null;
   }
   const access = await contentAccessFor(actor);
   if ([...refs, ...cards.map((c) => ({ ...c, isOhs: false }))].some((r) => canViewContent(access, r))) return asset;

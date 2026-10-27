@@ -62,6 +62,16 @@ export const SETTINGS = {
   "auth.ip_max_failures": def({ schema: positiveInt.max(1000), default: 20, managedBy: SYS }),
   "auth.ip_window_min": def({ schema: positiveInt.max(24 * 60), default: 15, managedBy: SYS }),
 
+  // Sertifika ve doğrulama (FG-7.2, iş paketi 1.7)
+  "certificate.signatories": def({
+    schema: z.array(z.object({ name: z.string().min(2).max(100), title: z.string().min(2).max(100), signatureAssetId: z.uuid().nullable() })).max(3),
+    default: [],
+    managedBy: ["hr", "sysadmin"],
+  }),
+  "verify.ip_max_requests": def({ schema: positiveInt.max(10_000), default: 60, managedBy: SYS }),
+  "verify.ip_window_min": def({ schema: positiveInt.max(24 * 60), default: 1, managedBy: SYS }),
+  "decision.extra_attempts_default": def({ schema: positiveInt.max(10), default: 1, managedBy: SYS }),
+
   // Süre ve hatırlatmalar
   "recert.lead_days": def({ schema: positiveInt.max(365), default: 30, managedBy: SYS }),
   "reread.due_days": def({ schema: positiveInt.max(365), default: 14, managedBy: SYS }),

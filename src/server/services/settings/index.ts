@@ -1,6 +1,6 @@
 import { inArray } from "drizzle-orm";
 import type { Actor } from "@/server/authz/actor";
-import { assertCan, hasAnyRole } from "@/server/authz/policy";
+import { hasAnyRole } from "@/server/authz/policy";
 import { db, type DbOrTx } from "@/server/db/client";
 import { settings } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
@@ -55,9 +55,8 @@ export async function setSetting<K extends SettingKey>(
   value: SettingValue<K>,
 ): Promise<void> {
   const def = SETTINGS[key];
-  const permission = def.managedBy.includes("ohs_specialist") ? "settings.manage_ohs" : "settings.manage";
-  assertCan(actor, permission);
-  if (actor.kind === "user" && !hasAnyRole(actor, def.managedBy)) throw new ForbiddenError(permission);
+  // Yetki parametrenin kendi rol listesidir (managedBy): ör. İSG parametreleri İSG uzmanı, imza yetkilileri İK
+  if (actor.kind === "user" && !hasAnyRole(actor, def.managedBy)) throw new ForbiddenError("settings.manage");
 
   const parsed = def.schema.safeParse(value);
   if (!parsed.success) throw new ValidationError("invalid_setting", parsed.error.issues);

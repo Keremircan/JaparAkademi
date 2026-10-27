@@ -270,6 +270,11 @@ export async function completeModule(tx: Tx, assignmentModuleId: string, via: "o
       expiresAt: am.validityMonths ? addMonths(now, am.validityMonths) : null,
     })
     .where(eq(assignmentModules.id, am.id));
+  // İSG eğitimi tamamlanınca katılım belgesi otomatik düzenlenir (yasal eğitim kaydı; karar #77)
+  if (am.isOhs) {
+    const { issueAttendance } = await import("../certificates");
+    await issueAttendance(tx, { assignmentModuleId: am.id, issuedBy: null });
+  }
   await refreshAssignment(tx, am.assignmentId);
 }
 

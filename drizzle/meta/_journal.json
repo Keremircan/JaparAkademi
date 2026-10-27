@@ -120,6 +120,27 @@
       "when": 1793038592923,
       "tag": "0016_practice_triggers",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1793084898633,
+      "tag": "0017_certification",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1793084901034,
+      "tag": "0018_certification_triggers",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1793084953679,
+      "tag": "0019_certificate_issuer",
+      "breakpoints": true
     }
   ]
 }
