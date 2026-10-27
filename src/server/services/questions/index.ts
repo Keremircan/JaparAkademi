@@ -578,3 +578,10 @@ export async function canViewQuestionAsset(actor: Actor, assetId: string): Promi
     .limit(1);
   return !!open;
 }
+
+/** Raporlar için soru görünürlük süzgeci (karar #93): soru bankasını göremeyen hiçbir soru metnini görmez. */
+export async function questionViewFilter(actor: Actor): Promise<(q: { ownerOrgUnitId: string | null; isOhs: boolean }) => boolean> {
+  if (!can(actor, "questions.view")) return () => false;
+  const a = await accessFor(actor);
+  return (q) => canView(a, q);
+}

@@ -35,8 +35,8 @@ jobs:
         run: |
           echo 'set man-db/auto-update false' | sudo debconf-communicate >/dev/null
           sudo rm -f /var/lib/man-db/auto-update
-          sudo apt-get update -o Acquire::Retries=3
-          sudo apt-get install -y --no-install-recommends -o Acquire::Retries=3 ffmpeg
+          sudo apt-get update -o Acquire::Retries=3 -o DPkg::Lock::Timeout=300
+          sudo apt-get install -y --no-install-recommends -o Acquire::Retries=3 -o DPkg::Lock::Timeout=300 ffmpeg
           ffmpeg -version | head -1
 
       - name: Ortam dosyası (.env.example + CI gizli değerleri)
@@ -80,8 +80,12 @@ jobs:
       - name: Build
         run: npm run build
 
+      # ffmpeg adımı süre sınırına takılırsa arka planda kalan apt-get dpkg kilidini tutabilir;
+      # Playwright'ın sistem paketlerini kurmadan önce kilit boşalana kadar beklenir (en çok 10 dk).
       - name: Playwright tarayıcısı
-        run: npx playwright install --with-deps chromium
+        run: |
+          timeout 600 bash -c 'while sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock >/dev/null 2>&1; do echo "apt kilidi bekleniyor..."; sleep 5; done' || echo "apt kilidi 10 dk içinde boşalmadı; kurulum yine de deneniyor"
+          npx playwright install --with-deps chromium
 
       - name: Uçtan uca testler
         run: npm run test:e2e

@@ -80,6 +80,9 @@ export const SETTINGS = {
   "auth.reset_link_minutes": def({ schema: positiveInt.max(24 * 60), default: 60, managedBy: SYS }),
   "auth.reset_max_per_hour": def({ schema: positiveInt.max(100), default: 3, managedBy: SYS }),
 
+  // Raporlar (SPEC 10.1, karar #96)
+  "reports.max_rows": def({ schema: positiveInt.max(100_000), default: 10_000, managedBy: SYS }),
+
   // Süre ve hatırlatmalar
   "recert.lead_days": def({ schema: positiveInt.max(365), default: 30, managedBy: SYS }),
   "reread.due_days": def({ schema: positiveInt.max(365), default: 14, managedBy: SYS }),

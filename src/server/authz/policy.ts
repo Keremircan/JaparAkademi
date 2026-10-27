@@ -43,6 +43,13 @@ export const PERMISSIONS = {
   "classroom.record": ["trainer", "section_manager", "ohs_specialist", "hr"],
   // Raporlar
   "reports.view": ["section_manager", "ohs_specialist", "hr", "security", "sysadmin"],
+  // Faz 1 raporları (SPEC 10.1, karar #91): eğitim ve sınav İK + bölüm sorumlusu (kapsam), İSG defteri İSG + İK, işe başlama süresi İK
+  "reports.training": ["section_manager", "hr"],
+  "reports.exams": ["section_manager", "hr"],
+  "reports.ohs": ["ohs_specialist", "hr"],
+  "reports.onboarding": ["hr"],
+  // KVKK kişi verisi dışa aktarma (SPEC 13.3, karar #99)
+  "people.export_personal": ["hr"],
   // Ziyaretçi (Faz 2)
   "visitors.manage": ["security"],
 } as const satisfies Record<string, readonly Role[]>;

@@ -19,16 +19,17 @@ async function finishSteps(page: Page) {
     await expect(ack).toBeEnabled();
     await ack.click();
     // Sonraki adıma geçilmesini (ya da modülün bitmesini) bekle
+    // allTextContents beklemez: modül tamamlanıp başlık kaybolursa textContent sonsuza kadar beklerdi (yarış)
     await expect(async () => {
-      const moved = (await heading.count()) === 0 || (await heading.first().textContent()) !== before;
+      const texts = await heading.allTextContents();
+      const moved = texts.length === 0 || texts[0] !== before;
       expect(moved || (await done.isVisible()) || (await quiz.isVisible())).toBe(true);
-    }).toPass();
+    }).toPass({ timeout: 30_000 });
   }
 }
 
 test("FG-3.2 / FG-4.2 / FG-4.3 yeni giren kursiyer modülleri sırayla tamamlar ve ara değerlendirmeyi cevaplar", async ({ page }, testInfo) => {
-  // Bütün modülleri arayüzden yürür (ortak İSG modülü dahil); yavaş makinede 3 dk yetmeyebiliyor
-  test.setTimeout(300_000);
+  test.setTimeout(240_000);
   const p = testInfo.project.name[0];
   const ours = `E2E Hat eğitimi ${p}`;
   await login(page, sicil("KUR", testInfo.project.name), E2E_PASSWORD);

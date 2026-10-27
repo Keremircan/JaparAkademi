@@ -312,7 +312,9 @@
     "module_not_completed": "Belge yalnızca tamamlanmış modül için düzenlenebilir.",
     "certificate_revoked": "Bu belge zaten iptal edilmiş.",
     "signatories_invalid": "Her imza yetkilisi için ad ve unvan yazın (en fazla 3 kişi).",
-    "reset_link_invalid": "Bu bağlantı geçersiz ya da süresi dolmuş. Yeni bir bağlantı isteyin."
+    "reset_link_invalid": "Bu bağlantı geçersiz ya da süresi dolmuş. Yeni bir bağlantı isteyin.",
+    "report_range_invalid": "Başlangıç tarihi bitiş tarihinden sonra olamaz.",
+    "report_too_large": "Rapor satır sınırını aşıyor. Tarih aralığını ya da birim/pozisyon filtresini daraltın."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -340,6 +342,10 @@
       "certificates": {
         "title": "Sertifika şablonu",
         "description": "Belgelerde yer alan imza yetkilileri ve taranmış imzaları."
+      },
+      "audit": {
+        "title": "Denetim kaydı",
+        "description": "Kim, ne zaman, hangi kaydı değiştirdi; eski ve yeni değerler."
       }
     },
     "org": {
@@ -2094,5 +2100,214 @@
       }
     },
     "pagination": "Bildirim sayfaları"
+  },
+  "reports": {
+    "intro": "Raporlar yetkinize ve kapsamınıza göre süzülür. Ekranda önizleyebilir, Excel ya da PDF olarak indirebilirsiniz; her indirme kayda geçer.",
+    "kinds": {
+      "training": {
+        "title": "Eğitim ilerleme",
+        "description": "Personel bazında atanan ve tamamlanan modüller, hedef tarihi geçenler.",
+        "file": "egitim-ilerleme",
+        "tables": {
+          "people": "Eğitim ilerleme"
+        }
+      },
+      "exams": {
+        "title": "Sınav sonuçları",
+        "description": "Teorik ve pratik sınav denemeleri, puanlar; en çok yanlış yapılan sorular.",
+        "file": "sinav-sonuclari",
+        "tables": {
+          "attempts": "Sınav denemeleri",
+          "wrongQuestions": "En çok yanlış yapılan sorular"
+        }
+      },
+      "ohs": {
+        "title": "İSG eğitim kayıt defteri",
+        "description": "İSG eğitimleri (konu, tarih, süre, eğitimci, geçerlilik, yöntem) ve kişi başı yıllık saat.",
+        "file": "isg-egitim-kayit-defteri",
+        "tables": {
+          "records": "İSG eğitim kayıtları",
+          "hours": "Kişi başı İSG saati"
+        }
+      },
+      "onboarding": {
+        "title": "İşe başlama süresi",
+        "description": "İşe girişten \"işe başlayabilir\" onayına kadar geçen gün, pozisyon bazında.",
+        "file": "ise-baslama-suresi",
+        "tables": {
+          "positions": "Pozisyon bazında",
+          "people": "Kişi bazında"
+        }
+      }
+    },
+    "columns": {
+      "sicil": "Sicil no",
+      "name": "Ad soyad",
+      "unit": "Birim",
+      "position": "Pozisyon",
+      "status": "Durum",
+      "startDate": "Başlangıç",
+      "targetDate": "Hedef tarih",
+      "modulesTotal": "Zorunlu modül",
+      "modulesDone": "Tamamlanan",
+      "progress": "İlerleme",
+      "overdue": "Hedef geçti",
+      "trainer": "Eğitmen",
+      "exam": "Sınav",
+      "examType": "Tür",
+      "attemptNo": "Deneme",
+      "date": "Tarih",
+      "score": "Puan",
+      "result": "Sonuç",
+      "failReason": "Kalma nedeni",
+      "question": "Soru",
+      "topic": "Konu",
+      "asked": "Soruldu",
+      "wrong": "Yanlış",
+      "wrongRate": "Yanlış oranı",
+      "hours": "Süre (saat)",
+      "validUntil": "Geçerlilik",
+      "method": "Yöntem",
+      "totalHours": "Toplam saat",
+      "requiredHours": "Asgari saat",
+      "met": "Karşılandı",
+      "count": "Kişi",
+      "avgDays": "Ortalama gün",
+      "medianDays": "Ortanca gün",
+      "minDays": "En az gün",
+      "maxDays": "En çok gün",
+      "hireDate": "İşe giriş",
+      "approvedAt": "Onay tarihi",
+      "days": "Gün"
+    },
+    "values": {
+      "yes": "Evet",
+      "no": "Hayır",
+      "result": {
+        "passed": "Geçti",
+        "failed": "Kaldı"
+      },
+      "status": {
+        "active": "Sürüyor",
+        "awaiting_readiness": "Onay bekliyor",
+        "awaiting_decision": "Karar bekliyor",
+        "completed": "Tamamlandı",
+        "cancelled": "İptal edildi"
+      },
+      "examType": {
+        "theory": "Teorik",
+        "practical": "Pratik"
+      },
+      "failReason": {
+        "score": "Puan",
+        "ohs_critical": "İSG kritik soru",
+        "critical": "Kritik görev"
+      },
+      "method": {
+        "online": "Uzaktan",
+        "classroom": "Yüz yüze",
+        "carried_over": "Önceki eğitim"
+      }
+    },
+    "meta": {
+      "range": "Dönem: {from} – {to}",
+      "generated": "Oluşturulma: {date}",
+      "sheet": "Bilgi"
+    },
+    "warnings": {
+      "hazard_class_assumed": "Tehlike sınıfı ayarlanmamış; asgari saat \"tehlikeli\" sınıfına göre hesaplandı. İSG uzmanı tehlike sınıfını ayarlamalıdır."
+    },
+    "filters": {
+      "from": "Başlangıç",
+      "to": "Bitiş",
+      "unit": "Birim",
+      "position": "Pozisyon",
+      "all": "Tümü",
+      "apply": "Uygula"
+    },
+    "export": {
+      "xlsx": "Excel indir",
+      "pdf": "PDF indir"
+    },
+    "preview": "Önizleme: {shown} / {total} satır",
+    "truncated": "Satır sınırı aşıldı; indirmek için filtreyi daraltın.",
+    "empty": "Bu filtreyle kayıt yok.",
+    "back": "Raporlar",
+    "none": "Görebileceğiniz rapor yok."
+  },
+  "audit": {
+    "title": "Denetim kaydı",
+    "description": "Bütün iş tablolarındaki ekleme, değişiklik ve silmeler. Hassas alanlar maskeli tutulur. Bu ekran salt okunurdur.",
+    "filters": {
+      "table": "Tablo",
+      "all": "Tümü",
+      "record": "Kayıt kimliği",
+      "actor": "İşlemi yapan (kullanıcı kimliği)",
+      "from": "Başlangıç",
+      "to": "Bitiş",
+      "apply": "Uygula"
+    },
+    "actions": {
+      "INSERT": "Ekleme",
+      "UPDATE": "Değişiklik",
+      "DELETE": "Silme"
+    },
+    "system": "Sistem",
+    "field": "Alan",
+    "old": "Eski",
+    "new": "Yeni",
+    "noChanges": "Değişen alan yok.",
+    "empty": "Kayıt bulunamadı.",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "record": "Kayıt: {id}"
+  },
+  "personalExport": {
+    "button": "Kişi verisini dışa aktar",
+    "note": "KVKK kapsamında kişinin sistemdeki kişisel verilerini Excel olarak indirir. TC maskeli yer alır; dışa aktarma kayda geçer.",
+    "file": "kisi-verisi",
+    "sheets": {
+      "identity": "Kimlik ve iletişim",
+      "roles": "Roller",
+      "training": "Eğitimler",
+      "exams": "Sınavlar",
+      "certificates": "Belgeler",
+      "consents": "KVKK onayları"
+    },
+    "columns": {
+      "sicil": "Sicil no",
+      "fullName": "Ad soyad",
+      "nationalId": "TC kimlik no (maskeli)",
+      "phone": "Telefon",
+      "email": "E-posta",
+      "unit": "Birim",
+      "position": "Pozisyon",
+      "employmentType": "İstihdam tipi",
+      "hireDate": "İşe giriş",
+      "endDate": "Ayrılış",
+      "status": "Durum",
+      "role": "Rol",
+      "assignmentStart": "Eğitim başlangıcı",
+      "assignmentStatus": "Eğitim durumu",
+      "module": "Modül",
+      "moduleStatus": "Modül durumu",
+      "completedAt": "Tamamlanma",
+      "method": "Yöntem",
+      "validUntil": "Geçerlilik",
+      "exam": "Sınav",
+      "examType": "Tür",
+      "attemptNo": "Deneme",
+      "date": "Tarih",
+      "score": "Puan",
+      "result": "Sonuç",
+      "documentNo": "Belge no",
+      "certificate": "Belge",
+      "issuedAt": "Düzenlenme",
+      "expiresAt": "Geçerlilik bitişi",
+      "certificateStatus": "Durum",
+      "legalText": "Metin",
+      "version": "Sürüm",
+      "acceptedAt": "Onay tarihi"
+    }
   }
 }
