@@ -1,0 +1,36 @@
+# HTTPS (Let's Encrypt) ve güvenlik başlıkları (SPEC 13.1, karar #105).
+# APP_DOMAIN: uygulama; FILES_DOMAIN: dosya deposu (imzalı URL'ler tarayıcıdan buraya gelir — karar #101).
+{
+	email {$ACME_EMAIL}
+}
+
+(security) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
+
+{$APP_DOMAIN} {
+	import security
+	encode zstd gzip
+	header {
+		X-Frame-Options "DENY"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+		# Next.js satır içi başlangıç betikleri için 'unsafe-inline' (nonce'lu CSP önbelleği bozar); dış kaynak yok
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://{$FILES_DOMAIN}; media-src 'self' blob: https://{$FILES_DOMAIN}; connect-src 'self' https://{$FILES_DOMAIN}; font-src 'self' data:; worker-src 'self' blob:; frame-src 'self' https://{$FILES_DOMAIN}; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+	}
+	reverse_proxy app:3000
+}
+
+{$FILES_DOMAIN} {
+	import security
+	header X-Frame-Options "SAMEORIGIN"
+	# Yükleme: büyük videolar parçalı gelir (16 MB parçalar)
+	request_body {
+		max_size 64MB
+	}
+	reverse_proxy garage:3900
+}

@@ -1,0 +1,8 @@
+[
+  {
+    "advisory": "GHSA-mrhx-c7xc-m3w5",
+    "package": "zod (@serwist/build, @serwist/turbopack içinde)",
+    "reason": "Düzeltme yok. Zod yalnızca service worker derleme yapılandırmasını doğrular; kullanıcı girdisi bu doğrulamaya ulaşmaz. Uygulamanın kendi zod sürümü düzeltilmiş sürümdür.",
+    "reviewed": "2026-10-27"
+  }
+]

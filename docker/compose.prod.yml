@@ -1,0 +1,130 @@
+# Üretim ortamı (SPEC 11.1, 13.1; karar #100–108). Türkiye'deki Linux VM'de çalışır.
+#   cp docker/.env.production.example docker/.env.production   (değerleri doldurun; repoya girmez)
+#   docker compose -f docker/compose.prod.yml --env-file docker/.env.production pull
+#   docker compose -f docker/compose.prod.yml --env-file docker/.env.production up -d
+# Ayrıntılar: docs/runbooks/deploy.md
+name: japar-akademi-prod
+
+x-app-env: &app-env
+  env_file: .env.production
+  environment:
+    APP_URL: https://${APP_DOMAIN}
+    DATABASE_URL: postgres://akademi_app:${AKADEMI_APP_PASSWORD}@postgres:5432/akademi
+    DATABASE_OWNER_URL: postgres://akademi_owner:${AKADEMI_OWNER_PASSWORD}@postgres:5432/akademi
+    S3_ENDPOINT: http://garage:3900
+    S3_PUBLIC_ENDPOINT: https://${FILES_DOMAIN}
+    GARAGE_ADMIN_URL: http://garage:3903
+
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: "20m"
+      max-file: "10"
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:?}
+      AKADEMI_OWNER_PASSWORD: ${AKADEMI_OWNER_PASSWORD:?}
+      AKADEMI_APP_PASSWORD: ${AKADEMI_APP_PASSWORD:?}
+      TZ: Europe/Istanbul
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init-prod:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d akademi"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    <<: *logging
+
+  garage:
+    image: dxflrs/garage:v2.1.0
+    restart: unless-stopped
+    environment:
+      GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET:?}
+      GARAGE_ADMIN_TOKEN: ${GARAGE_ADMIN_TOKEN:?}
+      GARAGE_METRICS_TOKEN: ${GARAGE_METRICS_TOKEN:?}
+    volumes:
+      - ./garage/garage.toml:/etc/garage.toml:ro
+      - garage-meta:/var/lib/garage/meta
+      - garage-data:/var/lib/garage/data
+    <<: *logging
+
+  # Tek seferlik: depolama düzeni/bucket ve veritabanı migration'ları (uygulama açılmadan önce)
+  migrate:
+    image: ${WORKER_IMAGE:?}
+    <<: [*app-env, *logging]
+    command: ["sh", "-c", "node_modules/.bin/tsx scripts/storage-init.ts && node_modules/.bin/tsx scripts/db-migrate.ts"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      garage:
+        condition: service_started
+    restart: "no"
+
+  app:
+    image: ${APP_IMAGE:?}
+    restart: unless-stopped
+    <<: [*app-env, *logging]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  worker:
+    image: ${WORKER_IMAGE:?}
+    restart: unless-stopped
+    <<: [*app-env, *logging]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?}
+      FILES_DOMAIN: ${FILES_DOMAIN:?}
+      ACME_EMAIL: ${ACME_EMAIL:?}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - app
+      - garage
+    <<: *logging
+
+  # Gece yedeği (karar #103): veritabanı + dosya deposu, age ile şifreli; yerel diske ve (varsa) uzak S3'e
+  backup:
+    build:
+      context: ./backup
+    restart: unless-stopped
+    env_file: .env.production
+    environment:
+      PGHOST: postgres
+      PGUSER: postgres
+      PGPASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:?}
+      PGDATABASE: akademi
+      S3_ENDPOINT: http://garage:3900
+      TZ: Europe/Istanbul
+    volumes:
+      - ${BACKUP_DIR:-./backups}:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+    <<: *logging
+
+volumes:
+  pgdata:
+  garage-meta:
+  garage-data:
+  caddy-data:
+  caddy-config:

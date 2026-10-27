@@ -90,6 +90,10 @@ Yeni bir özelliğe, tabloya veya ekrana başlamadan önce SPEC.md'nin ilgili b�
 - Bildirim `services/notifications/` (`notify(tx, …)` olayla aynı transaction'da; alıcı yardımcıları `usersWithRole`, `sectionManagersForUnit/ForPerson`; onay kuyruğu için `notifyApprovalPending`; konu kapanınca `resolveNotifications`). Metin yalnızca tür + parametre olarak saklanır, `notifications.kinds.<tür>` ile gösterilir. E-posta `email_outbox` → `dispatch.ts` (worker, `mail.dispatch`) → `src/server/mail` (Graph ya da `MAIL_TRANSPORT=log`). E-postayla şifre sıfırlama `services/password-reset.ts`.
 - Raporlar `services/reports/` (`runReport` yetki + kapsam; sonuç sütun anahtarı + ham değer; `format.ts` ekran/Excel/PDF ortak hücre biçimi; `export.ts` Excel/PDF + `report_exports` kaydı; indirme `/api/reports/[kind]`). Denetim ekranı `services/audit.ts`, KVKK dışa aktarma `services/personal-export.ts`. Saf hesaplar `src/server/state/reports.ts`.
 - Yeni kuyruk eklenince `npm run db:migrate` yeniden çalıştırılır (kuyruklar migrate sırasında oluşturulur).
+- Worker esbuild ile `dist/worker.mjs` (ESM) olarak derlenir (`scripts/build-worker.mjs`); tsx CJS modu @react-pdf'i yükleyemez. Tek seferlik PDF denemeleri için geçici bir Vitest testi kullanın.
+- Oturum/ortam okuyan sunucu kodu önce istek verisini okur (`await headers()` / `connection()`), sonra env'e veya veritabanına dokunur; aksi halde Docker derlemesindeki prerender env doğrulamasında düşer.
+- Üretim: `docker/Dockerfile` (`app` standalone + `worker` hedefleri), `docker/compose.prod.yml` (`migrate`, `app`, `worker`, `postgres`, `garage`, `caddy`, `backup`), `docker/caddy/Caddyfile` (güvenlik başlıkları, CSP), `docker/backup/` (age + rclone crypt). App imajı serwist rotası için esbuild/serwist paketlerini ve `src/app/sw.ts`'i kopyalar; bunlara dokunan değişiklikte imajı deneyin. Runbook'lar `docs/runbooks/deploy.md`, `restore.md`.
+- CI bağımlılık taraması `scripts/audit-check.mjs`: yüksek/kritik bulgu ya düzeltilir ya da gerekçesiyle `audit-allowlist.json`'a yazılır.
 - Turlar: sınavda kalınca `reopenModule` teorik modülün `round` değerini artırıp adımlarını yeni tura kopyalar. Adım okuyan/sayan her sorgu `assignment_items.round = assignment_modules.round` koşulunu kullanır.
 - Next `cacheComponents` önceki sayfaları gizli tutabilir: e2e testlerinde aynı kimlikli öğeler çoğalabilir, görünür olanı seçin (`filter({ visible: true })`). Adım bileşenleri gibi durum tutan istemci bileşenlerine `key` verin.
 - Sürüm karşılaştırma: `src/lib/diff.ts` (LCS; satır ve kelime farkı) + `features/positions/components/diff-view.tsx`.
@@ -103,9 +107,11 @@ Kurulum ayrıntıları: `docs/runbooks/local-dev.md`.
 - `npm run db:reset` — YEREL veritabanını boşaltıp yeniden kurar (`-- --test` ile test veritabanı)
 - `npm run db:seed` — sistem yöneticisi + (geliştirmede) her rol için demo kullanıcı
 - `npm run db:generate` — şemadan yeni migration üretir
-- `npm run dev` / `npm run build` / `npm run start` / `npm run worker` (`worker:dev` izlemeli)
+- `npm run dev` / `npm run build` / `npm run start` / `npm run worker` (`worker:dev` izlemeli, `worker:build` yalnızca derler)
 - `npm run lint` / `npm run typecheck` / `npm test` (birim) / `npm run test:integration` (gerçek test DB) / `npm run test:e2e` (Playwright, mobil + masaüstü)
 - `npm run icons` — PWA ikonlarını üretir
+- `node scripts/audit-check.mjs` — üretim bağımlılıklarının güvenlik taraması (CI ile aynı)
+- Üretim yığını: `docker compose -f docker/compose.prod.yml --env-file docker/.env.production …` (bkz. `docs/runbooks/deploy.md`)
 - Bu Windows makinesinde Next/SWC için `SWC_NATIVE_BINDING_CACHE` kullanıcı ortam değişkeni gerekir (runbook'a bakın).
 
 ## Çalışma şekli

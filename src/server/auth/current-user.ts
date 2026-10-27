@@ -13,8 +13,10 @@ import { getAuth } from "./auth";
  * "use cache: private" kullanılmaz: loadSessionUser son görülme zamanını yazar ve süresi dolan oturumu kapatır.
  */
 export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
+  // Önce istek başlıkları: sayfa derlemede (prerender) burada dinamik olur; ortam değişkenine erişilmez
+  const requestHeaders = await headers();
   const result = await getAuth().api.getSession({
-    headers: await headers(),
+    headers: requestHeaders,
     query: { disableRefresh: true },
   });
   if (!result) return null;
