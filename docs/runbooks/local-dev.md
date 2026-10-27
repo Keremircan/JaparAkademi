@@ -28,7 +28,8 @@ npm run db:migrate       # geliştirme veritabanı
 npm run db:migrate -- --test
 npm run db:seed          # sistem yöneticisi + demo kullanıcılar
 npm run dev              # http://localhost:3000
-npm run worker:dev       # ayrı terminalde (arka plan işleri; medya işleme bunsuz "İşlenmeyi bekliyor"da kalır)
+npm run worker:dev       # ayrı terminalde (arka plan işleri; medya işleme, sertifika PDF'i, e-posta bunsuz bekler)
+                         # worker esbuild ile dist/worker.mjs'e derlenip Node ile çalışır (değişiklikte yeniden başlar)
 ```
 
 ## Demo kullanıcılar (yalnızca geliştirme)

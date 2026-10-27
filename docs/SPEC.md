@@ -401,7 +401,7 @@ Kanallar: **uygulama içi** (her zaman), **web push** (PWA, Faz 2) ve **e-posta*
 | i18n | next-intl (`tr` varsayılan, `en`; URL'de `tr` öneki yok) |
 | Test | Vitest (birim + entegrasyon, gerçek Postgres konteyneri), Playwright (mobil + masaüstü) |
 | Barındırma | Türkiye'de Linux VM, Docker Compose: `app`, `worker`, `postgres`, `garage`, `caddy` (HTTPS, Let's Encrypt) |
-| Gözlemlenebilirlik | Yapılandırılmış JSON loglar (pino), self-hosted hata takibi (GlitchTip, Sentry SDK uyumlu), iş hatası alarmı e-postası |
+| Gözlemlenebilirlik | Yapılandırılmış JSON loglar (pino), iş hatası alarmı (uygulama içi bildirim). Self-hosted hata takibi (GlitchTip) pilot sonrası (karar #104) |
 
 ### 11.2 Mimari
 ```
@@ -622,8 +622,8 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 | Güvenlik | HTTPS (HSTS), CSP, rol bazlı yetki (Bölüm 11.3), tüm değişiklikler denetim kaydında, private depolama + imzalı URL, şifre politikası + kilit, gizli anahtarlar `.env` dosyasında (repo dışı), bağımlılık güvenlik taraması CI'da |
 | Yedekleme | Günlük `pg_dump` + Garage bucket aynalama (S3 senkronu). Yedekler ayrı bir depolamada (Türkiye) ve şifreli tutulur. **Üç ayda bir geri dönüş testi** (runbook: `docs/runbooks/restore.md`) |
 | Barındırma | Veriler Türkiye'de. Yurt dışı servis kullanılmaz (tek istisna: kurumun M365 kiracısı, yalnızca e-posta) |
-| Dağıtım | Docker image'ları CI'da üretilir. Sunucuda `docker compose pull && up`. Migration'lar dağıtım adımında otomatik çalışır. Staging → production |
-| CI | GitHub Actions: lint, typecheck, unit + entegrasyon testleri (Postgres servisiyle), migration kontrolü, build, Playwright smoke |
+| Dağıtım | Docker image'ları CI'da üretilir (GHCR). Sunucuda `docker compose pull && up` (`docker/compose.prod.yml`, runbook: `docs/runbooks/deploy.md`). Migration'lar dağıtım adımında `migrate` servisiyle otomatik çalışır. Staging → production |
+| CI | GitHub Actions: bağımlılık taraması, lint, typecheck, unit + entegrasyon testleri (Postgres servisiyle), migration kontrolü, build, worker derlemesi, Playwright, imaj derleme |
 
 ### 13.2 Test Gereksinimleri
 - **Kaynak doküman kuralı:** Bölüm 4'teki her FG maddesi için en az bir test senaryosu yazılır. Testler `FG-x.y` etiketiyle adlandırılır.
@@ -845,6 +845,15 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 97 | Dışa aktarma kaydı | Her dışa aktarma değiştirilemez `report_exports` kaydına yazılır (kim, rapor, filtreler, satır, biçim) |
 | 98 | Denetim ekranı | Sistem yöneticisi, salt okunur; tablo, kayıt, işlemi yapan ve tarih filtresi; yalnızca değişen alanlar eski → yeni. Maskeli alanlar maskeli görünür |
 | 99 | KVKK kişi verisi dışa aktarma | İK, kişi sayfasından Excel: kimlik ve iletişim (TC maskeli), roller, eğitimler, sınav özetleri (soru/cevap yok), belgeler, KVKK onayları. Her dışa aktarma `data_access_log`'a yazılır; İK kendi verisini bu yolla indiremez |
+| 100 | Üretim imajları | Tek `docker/Dockerfile`: `app` hedefi (Next standalone, yalnızca Docker derlemesinde `NEXT_OUTPUT=standalone`) ve `worker` hedefi (ffmpeg). Worker esbuild ile tek ESM dosyasına derlenir (`dist/worker.mjs`; tsx @react-pdf'i yükleyemiyor). Tek seferlik `migrate` servisi depo düzenini ve migration'ları worker imajıyla çalıştırır; app ve worker onun başarısını bekler |
+| 101 | Dosya alan adı | Garage, Caddy üzerinden ayrı alt alan adında (`FILES_DOMAIN`) yayınlanır; imzalı URL'ler bu adrese üretilir |
+| 102 | İmaj deposu | İmajlar CI'da derlenir; `main`'e gönderimde GHCR'ye `latest` ve commit etiketiyle itilir (yalnızca kod, kişisel veri yok). Geri alma = önceki commit etiketi |
+| 103 | Yedekleme | `backup` servisi her gece 02:30: `pg_dump` (custom) → `age` ile şifreli; dosya deposu rclone crypt ile şifreli artımlı kopya. Günlük 30 gün, aylık 12 ay. İsteğe bağlı `BACKUP_REMOTE` (Türkiye) uzak kopya. Açma anahtarları sunucuda değil kasada |
+| 104 | Hata takibi | GlitchTip pilot sonrasına ertelendi. Pilotta pino JSON loglar, Docker log döndürme (10 × 20 MB) ve uygulama içi e-posta hatası alarmı |
+| 105 | Güvenlik başlıkları | Caddy ekler: HSTS, nosniff, Referrer-Policy, X-Frame-Options DENY, Permissions-Policy, CSP (`script/style 'self' 'unsafe-inline'`, görsel/medya/bağlantı/çerçeve için `FILES_DOMAIN`; nonce yok). CI'da `npm audit --omit=dev` yüksek/kritik bulguda başarısız olur; düzeltmesi olmayan incelenmiş istisnalar gerekçesiyle `audit-allowlist.json`'da |
+| 106 | Kılavuzlar | Markdown, `docs/guides/` (kullanıcı ve yönetici), Türkçe, "siz" hitabı; ekran görüntüleri pilotta gerçek veriyle eklenir |
+| 107 | Üretim seed | Üretimde yalnızca sistem yöneticisi; demo kullanıcılar yalnızca `SEED_DEMO_PASSWORD` tanımlıysa. Pilot hazırlığı `docs/pilot/pilot-kontrol-listesi.md` (Bölüm 18) |
+| 108 | Geri dönüş testi | İlk test yerelde üretim compose ile yapıldı ve `docs/runbooks/restore.md`'ye yazıldı; sonraki test sunucu ortamında |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:
@@ -857,7 +866,7 @@ Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken 
 7. Pozisyon kartında 9. bölüm (İSG) değiştiyse kart İSG onayına gider.
 8. Stajyer, ziyaretçi değil `intern` istihdam tipli personeldir.
 9. Tahliye listesi Faz 2'de yalnızca ziyaretçi ve taşeronları içerir; personel PDKS entegrasyonuyla Faz 3'te eklenir.
-10. Hata takibi self-hosted GlitchTip ile yapılır (veri Türkiye'de kalır).
+10. Hata takibi self-hosted GlitchTip ile yapılır (veri Türkiye'de kalır). Pilot sonrasına ertelendi (karar #104).
 11. Personel eğitim kayıtlarının saklama süresi iş ilişkisi bitişi + 15 yıl olarak varsayıldı (**hukuk teyidi gerekli**).
 
 ---

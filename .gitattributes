@@ -1,0 +1,3 @@
+# Konteynerde çalışan betikler ve yapılandırmalar her zaman LF (Windows checkout CRLF yapmasın)
+*.sh text eol=lf
+docker/** text eol=lf

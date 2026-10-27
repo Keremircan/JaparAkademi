@@ -21,15 +21,18 @@ export function PdfViewer({ assetId, title, onLastPage }: { assetId: string; tit
 
   useEffect(() => {
     let cancelled = false;
-    let loaded: PDFDocumentProxy | null = null;
+    // pdfjs 6: belge ve worker bağlantısı yükleme görevi üzerinden kapatılır
+    let task: { destroy(): Promise<void> } | null = null;
     (async () => {
       try {
         const pdfjs = await import("pdfjs-dist");
         if (!pdfjs.GlobalWorkerOptions.workerPort) {
           pdfjs.GlobalWorkerOptions.workerPort = new Worker(new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url), { type: "module" });
         }
-        loaded = await pdfjs.getDocument({ url: `/api/media/${assetId}/file` }).promise;
-        if (cancelled) return void loaded.destroy();
+        const loading = pdfjs.getDocument({ url: `/api/media/${assetId}/file` });
+        task = loading;
+        const loaded = await loading.promise;
+        if (cancelled) return void loading.destroy();
         setDoc(loaded);
       } catch {
         if (!cancelled) setFailed(true);
@@ -37,7 +40,7 @@ export function PdfViewer({ assetId, title, onLastPage }: { assetId: string; tit
     })();
     return () => {
       cancelled = true;
-      void loaded?.destroy();
+      void task?.destroy();
     };
   }, [assetId]);
 

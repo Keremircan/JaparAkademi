@@ -48,3 +48,12 @@ next-env.d.ts
 /playwright-report/
 /test-results/
 /blob-report/
+
+# Üretim ortam dosyası ve yerel yedekler
+docker/.env.production
+docker/backups/
+backups/
+!docker/.env.production.example
+
+# Derlenmiş worker
+/dist/

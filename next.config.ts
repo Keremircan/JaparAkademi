@@ -7,7 +7,8 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
-  // Not: Docker image'ı için `output: "standalone"` iş paketi 1.8'de eklenecek (next start ile uyumsuz)
+  // Docker imajında bağımsız sunucu çıktısı (yalnızca imaj derlemesinde; yerel `next start` etkilenmez — karar #100)
+  output: process.env.NEXT_OUTPUT === "standalone" ? "standalone" : undefined,
   poweredByHeader: false,
   // Node'da doğrudan çalışan paketler (PDF ve Excel); sunucu paketine gömülmez
   serverExternalPackages: ["@react-pdf/renderer", "exceljs"],
