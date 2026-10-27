@@ -556,9 +556,9 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `attempt_grants`: assignment_module_id, extra_attempts, reason, granted_by, granted_at
 
 **Pratik**
-- `practice_marks`: id, assignment_module_id, practice_task_id, level (`demonstrated`|`supervised`|`independent`), direction (`up`|`down`), note, photo_asset_ids, marked_by, marked_at — **değiştirilemez**
-- `practical_exam_results`: id, assignment_module_id, attempt_no, criteria (jsonb: görev, puan / yapabildi, not), score, passed, fail_reason, trainer_signature_id, manager_signature_id, trainee_signature_id, photo_asset_ids, status (`awaiting_second_signature`|`final`)
-- `signatures`: id, signer_user_id / visitor_id, subject_type, subject_id, subject_hash, image_asset_id, signed_at, ip, user_agent — **değiştirilemez**
+- `practice_marks`: id, assignment_module_id, practice_task_id, level (`demonstrated`|`supervised`|`independent`), direction (`up`|`down`), note (düşürmede gerekçe), photo_asset_ids, source (`trainer`|`exam_fail`), exam_result_id, marked_by, marked_at — **değiştirilemez**; görevin güncel seviyesi son kayıttır
+- `practical_exam_results`: id, assignment_module_id, attempt_no, status (`draft`|`awaiting_second_signature`|`final`|`returned`), criteria (jsonb: görev kimliği, başlık kopyası, kritik mi, `pass`|`fail`, not), pass_score, score, passed, fail_reason (`score`|`critical`), photo_asset_ids, note, evaluator_id, trainee_signature_id, trainer_signature_id, submitted_at (1. imza: değerlendirme kilitlenir), manager_user_id, manager_signature_id, return_reason, finalized_at (kilit) — taslak silinebilir; 1. imzadan sonra yalnızca 2. imza/geri gönderme alanları değişir (trigger)
+- `signatures`: id, signer_user_id (Faz 2: visitor_id), captured_by (imzanın alındığı oturum), subject_type, subject_id, role (`trainee`|`trainer`|`manager`), subject_hash (kanonik JSON'un SHA-256'sı), image_asset_id (PNG, `signatures/`), signed_at, ip, user_agent — **değiştirilemez**
 
 **Onay, sertifika, yetkinlik**
 - `readiness_decisions`: assignment_id, decision (`approved`|`rejected`), comment, reopen_module_ids, decided_by, decided_at — **değiştirilemez**
@@ -797,6 +797,14 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 63 | Kalınan sınav | İlgili teorik modüller "tekrar gerekli" olur; adımlar aynı sabit sürümlerle yeni turda yeniden açılır ve "okudum, anladım" yeniden istenir (ara değerlendirme tekrarlanmaz). Yeni deneme için bekleme süresi ve tekrar modülleri birlikte gerekir. Haklar bitince atama `awaiting_decision` (karar ekranı 1.7) |
 | 64 | Excel'den soru | Sütunlar: Soru, Tip, A–E, Doğru, Konu, Zorluk, İSG kritik, Modül, Açıklama. Modül adları seçilen birimde büyük/küçük harf ve Türkçe karakterden bağımsız eşleşir. Önce önizleme, sonra aktarım |
 | 65 | Sınav sonrası görünürlük | Kursiyer puan, sonuç ve konu özetini görür; sorular ve doğru cevaplar gösterilmez. Eğitmen, bölüm sorumlusu ve İK ayrıca sekme çıkışlarını, sesli okuma kullanımını ve gözetmeni görür |
+| 66 | Pratik değerlendiren | Atamada seçilen eğitmen ve kişiyi kapsamında tutan bölüm sorumlusu görevleri işaretler ve pratik sınavın 1. imzasını atar; 2. imzayı kapsamdaki bölüm sorumlusu atar. 1. imzayı atan 2. imzayı atamaz; kimse kendi kaydını işaretleyemez. Bölüm sorumlusu değerlendirmeyi eğitmen paneli (`/trainer`) üzerinden yapar |
+| 67 | Seviye sırası | Her işaretleme bir üst seviyeye geçirir (gösterdi → gözetiminde yaptı → tek başına yaptı); atlama yok, aynı gün art arda girilebilir. Düşürme herhangi bir alt seviyeye, gerekçeyle |
+| 68 | Zorunlu görevler | Faz 1'de pratik modülün bütün görevleri zorunludur; hepsi "tek başına yaptı" olunca modül tamamlanır ve pratik sınav açılır (FG-5.3) |
+| 69 | Sınav kriterleri | Atamada sınavdan önce gelen pratik modüllerin sabit görevleri; başlıklar forma kopyalanır |
+| 70 | Pratik puanı | Her kriter Yapabildi/Yapamadı + isteğe bağlı not. Puan = yapabildi / toplam × 100, geçme notu `exam.practical.pass_score`. Kritik görev "Yapamadı" ise puandan bağımsız kalır. 0–N puan ölçeği Faz 2 |
+| 71 | Form ve imza akışı | Form sunucuda taslak olarak kaydedilir. Kursiyer değerlendirenin cihazında imzalar (imza kursiyer adına, alındığı oturum ayrıca yazılır). Değerlendiren imzalayınca kriterler kilitlenir. Bölüm sorumlusu imzalayıp kesinleştirir ya da gerekçeyle geri gönderir; geri gönderilen deneme hak saymaz, yeni form gerekir |
+| 72 | Pratik sınavda kalma | "Yapamadı" görevleri sistem kaydıyla "gözetiminde yapar"a düşer, ilgili pratik modüller "tekrar gerekli" olur, sınav kilitlenir. Görevler yeniden "tek başına" olunca yeni hak açılır. Haklar (`exam.practical.max_attempts`) bitince atama `awaiting_decision` |
+| 73 | Pratik fotoğrafları | Mevcut görsel yükleme kullanılır (işaretleme ve form başına en fazla 6). Fotoğraf ve imza görsellerini kursiyer, eğitmeni, kapsamdaki bölüm sorumlusu ve İK görür |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

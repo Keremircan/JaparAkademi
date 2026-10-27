@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpenCheck, GraduationCap } from "lucide-react";
+import { ArrowRight, BookOpenCheck, GraduationCap, ListChecks } from "lucide-react";
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -95,6 +95,13 @@ async function Content() {
               </Button>
             </div>
           ) : null}
+
+          {a.modules.some((m) => m.kind === "practice" && m.status !== "locked") && (
+            <Button variant="outline" size="lg" className="self-start" nativeButton={false} render={<Link href="/learn/practice" />}>
+              <ListChecks aria-hidden="true" />
+              {t("practiceLink")}
+            </Button>
+          )}
 
           <section aria-labelledby="modules-heading" className="flex flex-col gap-3">
             <h2 id="modules-heading" className="text-lg font-semibold">

@@ -10,6 +10,8 @@ import { QuizPanel } from "@/features/learning/components/quiz-panel";
 import { ReadAloud } from "@/features/learning/components/read-aloud";
 import { StepTracker } from "@/features/learning/components/step-tracker";
 import { ExamPanel } from "@/features/exams/components/exam-panel";
+import { PracticalPanel } from "@/features/practice/components/practical-panel";
+import { PracticeTasks } from "@/features/practice/components/practice-tasks";
 import { CardView } from "@/features/positions/components/card-view";
 import { Link } from "@/i18n/navigation";
 import { requireUser } from "@/server/auth/current-user";
@@ -17,6 +19,7 @@ import { AppError } from "@/server/errors";
 import { toActor } from "@/server/services/auth";
 import { learnModuleByIds, type LearnItem } from "@/server/services/assignments/learner";
 import { examInfo } from "@/server/services/exams";
+import { practicalExamInfo, practiceModule } from "@/server/services/practice";
 import { assetsInfo } from "@/server/services/media";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -90,8 +93,10 @@ async function Content({
 
       {m.kind === "theory_exam" ? (
         <ExamPanel info={await examInfo(toActor(user), m.assignmentModuleId)} />
-      ) : m.kind !== "theory" ? (
-        <p className="rounded-2xl border p-5">{t(`module.placeholder.${m.kind as "practice"}`)}</p>
+      ) : m.kind === "practice" ? (
+        <PracticeSection assignmentModuleId={m.assignmentModuleId} actor={toActor(user)} />
+      ) : m.kind === "practice_exam" ? (
+        <PracticalPanel info={await practicalExamInfo(toActor(user), m.assignmentModuleId)} />
       ) : (
         <>
           {m.items.length > 1 && (
@@ -184,5 +189,19 @@ async function StepBody({ item, m }: { item: LearnItem; m: Awaited<ReturnType<ty
         <ContentRenderer type={item.contentType!} title={item.title} body={item.body ?? {}} assets={assets} />
       </div>
     </StepTracker>
+  );
+}
+
+/** Pratik modül: görevler ve seviyeler (salt okunur; işaretlemeyi eğitmen yapar). */
+async function PracticeSection({ assignmentModuleId, actor }: { assignmentModuleId: string; actor: ReturnType<typeof toActor> }) {
+  const t = await getTranslations("practice.mine");
+  const view = await practiceModule(actor, assignmentModuleId);
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-muted-foreground" role="status">
+        {view.status === "locked" ? t("locked") : t("progress", { done: view.independent, total: view.tasks.length })}
+      </p>
+      <PracticeTasks assignmentModuleId={view.assignmentModuleId} tasks={view.tasks} canMark={false} />
+    </div>
   );
 }

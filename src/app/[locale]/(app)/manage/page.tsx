@@ -1,4 +1,4 @@
-import { Boxes, BriefcaseBusiness, ClipboardCheck, FileQuestion, KeyRound, Library, School, Users } from "lucide-react";
+import { Boxes, BriefcaseBusiness, ClipboardCheck, FileQuestion, KeyRound, Library, ListChecks, School, Users } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -6,13 +6,14 @@ import { NotFoundView } from "@/components/app-shell/not-found-view";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 import { Link } from "@/i18n/navigation";
-import { can, hasAnyRole } from "@/server/authz/policy";
+import { can, hasAnyRole, hasRole } from "@/server/authz/policy";
 import { listClassroomSessions } from "@/server/services/classroom";
 import { getSectionUser } from "@/server/auth/current-user";
 import { toActor } from "@/server/services/auth";
 import { approvalQueue } from "@/server/services/content";
 import { cardApprovalQueue } from "@/server/services/positions";
 import { questionApprovalQueue } from "@/server/services/questions";
+import { secondSignatureQueue } from "@/server/services/practice";
 import { canUseLibrary } from "@/server/services/content/access";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -39,11 +40,13 @@ async function Content() {
     canApprove ? cardApprovalQueue(actor) : Promise.resolve([]),
     canApprove ? questionApprovalQueue(actor) : Promise.resolve([]),
   ]);
+  const secondSign = hasRole(actor, "section_manager") ? await secondSignatureQueue(actor) : [];
   const classroom = canUseLibrary(actor) ? await listClassroomSessions(actor) : { pending: [], mine: [] };
-  const pending = queue.length + cardQueue.length + questionQueue.length;
+  const pending = queue.length + cardQueue.length + questionQueue.length + secondSign.length;
 
   const cards = [
-    { key: "approvals", href: "/manage/approvals", icon: ClipboardCheck, show: canApprove, badge: pending || null },
+    { key: "approvals", href: "/manage/approvals", icon: ClipboardCheck, show: canApprove || secondSign.length > 0, badge: pending || null },
+    { key: "practice", href: "/trainer", icon: ListChecks, show: hasRole(actor, "section_manager"), badge: null },
     { key: "team", href: "/manage/team", icon: Users, show: hasAnyRole(actor, ["section_manager", "hr"]), badge: null },
     { key: "classroom", href: "/manage/classroom", icon: School, show: canUseLibrary(actor), badge: classroom.pending.length || null },
     { key: "positions", href: "/manage/positions", icon: BriefcaseBusiness, show: canUseLibrary(actor), badge: null },

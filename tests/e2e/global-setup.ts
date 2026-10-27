@@ -12,7 +12,7 @@ import { createModule, saveTasks, setModuleContents } from "../../src/server/ser
 import { createContent, saveDraft, submitForApproval } from "../../src/server/services/content";
 import { saveQuizQuestions } from "../../src/server/services/quiz";
 import { createQuestion } from "../../src/server/services/questions";
-import { myLearning } from "../../src/server/services/assignments";
+import { myLearning, updateAssignment } from "../../src/server/services/assignments";
 import { acknowledgeItem, learnModule, reportReachedEnd } from "../../src/server/services/assignments/learner";
 import { approveCard, cardApprovalQueue, createCard, getEditableCard, saveCardSections, savePlan, submitCard } from "../../src/server/services/positions";
 import { fullCardSections, textBody } from "../support/content";
@@ -68,7 +68,7 @@ export default async function globalSetup() {
 
   for (const project of ["mobile", "desktop"]) {
     const p = project[0];
-    await createAccount(sys, { sicilNo: `E2E-${suffix}-TR${p}`, fullName: "Deneme Eğitmen", password: E2E_PASSWORD, roles: ["trainer"], positionId: sectionPos.id, mustChangePassword: false });
+    const trainerAccount = await createAccount(sys, { sicilNo: `E2E-${suffix}-TR${p}`, fullName: "Deneme Eğitmen", password: E2E_PASSWORD, roles: ["trainer"], positionId: sectionPos.id, mustChangePassword: false });
     const sm = await createAccount(sys, { sicilNo: `E2E-${suffix}-SM${p}`, fullName: "Deneme Bölüm Sorumlusu", password: E2E_PASSWORD, roles: ["section_manager"], mustChangePassword: false });
     await setSectionManagerScopes(sys, sm.userId, [dept.id]);
     // Kart ve plan akışı (1.3): taslak kart (bölümleri dolu) ve eklenecek pratik modül
@@ -167,6 +167,50 @@ export default async function globalSetup() {
         await acknowledgeItem(traineeActor, item.id);
       }
     }
+
+    // Pratik eğitim akışı (1.6): kart + pratik modül (2 görev) + pratik sınav; kartı tamam, eğitmeni atanmış kursiyer
+    const pracPos = await createPosition(sys, { orgUnitId: section.id, name: `E2E Pratik Pozisyonu ${p}`, code: `E2E-PRA-${suffix}-${p}`.toUpperCase(), collarType: "blue" });
+    const pracModule = await createModule(smActor, {
+      kind: "practice", title: `E2E Hat pratiği ${p}`, description: null, durationMin: 60, isOhs: false, remoteAllowed: true,
+      validityMonths: null, ownerOrgUnitId: section.id, commonTarget: null, commonSortOrder: null,
+    });
+    await saveTasks(smActor, pracModule.id, [
+      { title: "E2E kalıp bağlama", description: null, isCritical: true },
+      { title: "E2E ilk parça onayı", description: null, isCritical: false },
+    ]);
+    const pracExam = await createModule(smActor, {
+      kind: "practice_exam", title: `E2E Pratik sınav ${p}`, description: null, durationMin: 60, isOhs: false, remoteAllowed: true,
+      validityMonths: null, ownerOrgUnitId: section.id, commonTarget: null, commonSortOrder: null,
+    });
+    await createCard(smActor, pracPos.id);
+    await saveCardSections(smActor, pracPos.id, fullCardSections());
+    const pracCard = await getEditableCard(smActor, pracPos.id);
+    const pracCardModule = pracCard.plan.items.find((i) => i.isCardModule)!.moduleId;
+    await savePlan(smActor, pracPos.id, {
+      overrides: {},
+      items: [
+        { moduleId: pracCardModule, isRequired: true, prerequisiteModuleIds: [], settings: {} },
+        { moduleId: pracModule.id, isRequired: true, prerequisiteModuleIds: [pracCardModule], settings: {} },
+        { moduleId: pracExam.id, isRequired: true, prerequisiteModuleIds: [pracModule.id], settings: {} },
+      ],
+    });
+    await submitCard(smActor, pracPos.id, { changeNote: null });
+    const pendingPracCard = (await cardApprovalQueue(ohsActor)).find((q) => q.positionId === pracPos.id);
+    if (pendingPracCard) await approveCard(ohsActor, pendingPracCard.versionId);
+    const pracTrainee = await createAccount(sys, {
+      sicilNo: `E2E-${suffix}-PRA${p}`, fullName: `Deneme Pratik Kursiyeri ${p}`, password: E2E_PASSWORD, mustChangePassword: false,
+      positionId: pracPos.id, trainingRequired: true,
+    });
+    const pracActor = { kind: "user" as const, userId: pracTrainee.userId, roles: ["personnel" as const] };
+    for (const am of (await myLearning(pracActor)).current!.modules.filter((m) => m.kind === "theory")) {
+      for (const item of (await learnModule(pracActor, am.id)).items) {
+        await reportReachedEnd(pracActor, item.id);
+        await acknowledgeItem(pracActor, item.id);
+      }
+    }
+    const hrAccount = await createAccount(sys, { sicilNo: `E2E-${suffix}-HRP${p}`, fullName: "Deneme İK Atama", password: E2E_PASSWORD, roles: ["hr"], mustChangePassword: false });
+    const hrActor = { kind: "user" as const, userId: hrAccount.userId, roles: ["personnel" as const, "hr" as const] };
+    await updateAssignment(hrActor, (await myLearning(pracActor)).current!.id, { trainerUserId: trainerAccount.userId, targetDate: null });
   }
 
   await mkdir(path.dirname(E2E_IMPORT_FILE), { recursive: true });

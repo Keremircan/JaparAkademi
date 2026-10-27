@@ -1,6 +1,7 @@
 import { getFormatter, getTranslations } from "next-intl/server";
 import { ExamAttemptList } from "@/features/exams/components/attempt-list";
 import { ModuleList } from "@/features/learning/components/module-list";
+import { PracticalList } from "@/features/practice/components/practical-list";
 import type { Actor } from "@/server/authz/actor";
 import type { AssignmentSummary } from "@/server/services/assignments";
 
@@ -32,6 +33,7 @@ export async function AssignmentSummaryView({ a, showModules = true, viewer }: {
       </div>
       {showModules && <ModuleList assignment={a} linkable={false} />}
       {viewer && <ExamAttemptList actor={viewer} assignmentId={a.id} />}
+      {viewer && <PracticalList actor={viewer} assignmentId={a.id} />}
     </div>
   );
 }
