@@ -34,6 +34,12 @@ export const PERMISSIONS = {
   "practice.mark": ["trainer", "section_manager"],
   "practice.second_signature": ["section_manager"],
   "readiness.decide": ["section_manager"],
+  // Tüm haklar bitince karar (SPEC 3.1, karar #76) ve sertifika (FG-7.2)
+  "process.decide": ["section_manager", "hr"],
+  "certificates.issue": ["section_manager", "hr"],
+  "certificates.revoke": ["hr"],
+  // Belge şablonu: imza yetkilileri (karar #79)
+  "certificates.template": ["hr", "sysadmin"],
   "classroom.record": ["trainer", "section_manager", "ohs_specialist", "hr"],
   // Raporlar
   "reports.view": ["section_manager", "ohs_specialist", "hr", "security", "sysadmin"],

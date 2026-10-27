@@ -10,6 +10,8 @@ import { Link } from "@/i18n/navigation";
 import { getSectionUser } from "@/server/auth/current-user";
 import { toActor } from "@/server/services/auth";
 import { myLearning } from "@/server/services/assignments";
+import { myCertificates } from "@/server/services/certificates";
+import { CertificateList } from "@/features/certification/components/certificate-list";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("sections.learn");
@@ -28,7 +30,13 @@ export default function LearnPage() {
 async function Content() {
   const user = await getSectionUser("learn");
   if (!user) return <NotFoundView />;
-  const [t, ts, format, data] = await Promise.all([getTranslations("learn"), getTranslations("sections.learn"), getFormatter(), myLearning(toActor(user))]);
+  const [t, ts, format, data, certs] = await Promise.all([
+    getTranslations("learn"),
+    getTranslations("sections.learn"),
+    getFormatter(),
+    myLearning(toActor(user)),
+    myCertificates(toActor(user)),
+  ]);
   const a = data.current;
   const next = a?.modules.find((m) => m.id === a.nextModuleId);
   const date = (d: string) => format.dateTime(new Date(`${d}T12:00:00`), { dateStyle: "long" });
@@ -85,6 +93,10 @@ async function Content() {
             <p role="status" className="rounded-2xl border border-emerald-600/40 bg-emerald-500/10 p-5 text-lg">
               {t("allDone")}
             </p>
+          ) : a.status === "awaiting_decision" ? (
+            <p role="status" className="rounded-2xl border border-amber-500/40 bg-amber-500/5 p-5 text-lg">
+              {t("awaitingDecision")}
+            </p>
           ) : next ? (
             <div className="flex flex-col gap-3 rounded-2xl border-2 border-primary p-5">
               <p className="text-sm font-medium uppercase tracking-wide text-primary">{t("nextStep")}</p>
@@ -110,6 +122,15 @@ async function Content() {
             <ModuleList assignment={a} linkable />
           </section>
         </>
+      )}
+
+      {certs.length > 0 && (
+        <section aria-labelledby="certs-heading" className="flex flex-col gap-3">
+          <h2 id="certs-heading" className="text-lg font-semibold">
+            {t("certificatesHeading")}
+          </h2>
+          <CertificateList items={certs} />
+        </section>
       )}
     </section>
   );

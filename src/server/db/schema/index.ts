@@ -9,3 +9,4 @@ export * from "./training";
 export * from "./learning";
 export * from "./exam";
 export * from "./practice";
+export * from "./certification";

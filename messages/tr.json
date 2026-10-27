@@ -281,7 +281,14 @@
     "practical_not_draft": "Bu form imzalanmış; artık değiştirilemez.",
     "practical_incomplete": "İmzalamadan önce bütün kriterleri işaretleyin.",
     "practical_not_awaiting": "Bu form 2. imza beklemiyor.",
-    "signature_invalid": "İmza okunamadı. Lütfen imzayı yeniden çizin."
+    "signature_invalid": "İmza okunamadı. Lütfen imzayı yeniden çizin.",
+    "readiness_not_pending": "Bu kişi işe başlama onayı beklemiyor.",
+    "reopen_modules_invalid": "Tekrar açılacak en az bir tamamlanmış modül seçin.",
+    "decision_not_pending": "Bu kişi için karar beklenmiyor.",
+    "decision_exam_invalid": "Ek hak verilecek sınavı seçin.",
+    "module_not_completed": "Belge yalnızca tamamlanmış modül için düzenlenebilir.",
+    "certificate_revoked": "Bu belge zaten iptal edilmiş.",
+    "signatories_invalid": "Her imza yetkilisi için ad ve unvan yazın (en fazla 3 kişi)."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -305,6 +312,10 @@
       "devices": {
         "title": "Ortak cihazlar",
         "description": "Eğitim odası bilgisayarları ve tabletler."
+      },
+      "certificates": {
+        "title": "Sertifika şablonu",
+        "description": "Belgelerde yer alan imza yetkilileri ve taranmış imzaları."
       }
     },
     "org": {
@@ -845,7 +856,9 @@
       "classroomHeading": "Sınıf eğitimi kayıtları",
       "questionsHeading": "İSG onayı bekleyen sorular",
       "practicalHeading": "2. imzanızı bekleyen pratik sınavlar",
-      "practicalScore": "{score} puan · {passed, select, yes {geçti} other {kaldı}}"
+      "practicalScore": "{score} puan · {passed, select, yes {geçti} other {kaldı}}",
+      "readinessHeading": "İşe başlama onayı bekleyenler",
+      "decisionsHeading": "Karar bekleyenler (tüm haklar kullanıldı)"
     }
   },
   "modules": {
@@ -1311,7 +1324,9 @@
       "stop": "Durdur",
       "noVoice": "Bu cihazda Türkçe ses bulunamadı; okuma başka bir dilde olabilir."
     },
-    "practiceLink": "Pratik görevlerim"
+    "practiceLink": "Pratik görevlerim",
+    "awaitingDecision": "Sınav haklarınız doldu. Süreçle ilgili kararı İK ve bölüm sorumlunuz verecek; size bilgi verilecek.",
+    "certificatesHeading": "Sertifikalarım"
   },
   "assignments": {
     "heading": "Eğitim",
@@ -1829,6 +1844,189 @@
         "final": "Kesinleşti",
         "returned": "Geri gönderildi"
       }
+    },
+    "readinessReopen": "İşe başlama kararıyla tekrar açıldı"
+  },
+  "readiness": {
+    "title": "İşe başlama onayı",
+    "status": {
+      "active": "Eğitim sürüyor",
+      "awaiting_readiness": "İşe başlama onayı bekliyor",
+      "awaiting_decision": "Tüm haklar kullanıldı; karar bekliyor",
+      "completed": "Tamamlandı (işe başlayabilir)",
+      "cancelled": "Süreç kapatıldı"
+    },
+    "trainer": "Eğitmen: {name}",
+    "modules": "Eğitim planı ve sonuçlar",
+    "ohs": "İSG",
+    "kinds": {
+      "theory": "Teorik",
+      "practice": "Pratik",
+      "theory_exam": "Teorik sınav",
+      "practice_exam": "Pratik sınav"
+    },
+    "moduleStatus": {
+      "locked": "Kilitli",
+      "available": "Başlanabilir",
+      "in_progress": "Sürüyor",
+      "completed": "Tamamlandı",
+      "review_required": "Tekrar gerekli",
+      "waived": "Muaf"
+    },
+    "via": {
+      "online": "çevrim içi",
+      "classroom": "sınıf eğitimi",
+      "carried_over": "önceki eğitimden"
+    },
+    "validUntil": "{date} tarihine kadar geçerli",
+    "attemptsLeft": "{count, plural, =0 {hak kalmadı} other {# hak kaldı}}",
+    "issueAttendance": "Katılım belgesi düzenle",
+    "history": "Karar geçmişi",
+    "decisions": {
+      "approved": "İşe başlama onaylandı",
+      "rejected": "İşe başlama reddedildi",
+      "extra_attempt": "Ek sınav hakkı verildi",
+      "extra_training": "Ek eğitim atandı",
+      "end_process": "Süreç sonlandırıldı"
+    },
+    "modulesList": "Modüller: {list}",
+    "certificates": "Belgeler",
+    "panel": {
+      "title": "Karar",
+      "approve": "İşe başlayabilir",
+      "reject": "Reddet",
+      "reopen": "Tekrar açılacak modüller",
+      "commentOptional": "Not (isteğe bağlı)",
+      "reason": "Ret gerekçesi (zorunlu)",
+      "approveNote": "Onaylayınca eğitim tamamlanır ve pozisyon yetkinlik sertifikası düzenlenir.",
+      "rejectNote": "Seçilen modüller tekrar açılır; sınavda hakkı kalmayan kişiye 1 ek hak yazılır. Kişi tamamlayınca yeniden onayınıza gelir.",
+      "confirmApprove": "Onayla ve sertifika düzenle",
+      "confirmReject": "Reddet ve modülleri aç"
+    },
+    "process": {
+      "title": "Süreç kararı",
+      "intro": "Kişi sınav haklarının hepsini kullandı. Sistem kimseyi otomatik reddetmez; kararı siz verirsiniz. Her karar gerekçesiyle kaydedilir ve değiştirilemez.",
+      "options": {
+        "extra_attempt": {
+          "label": "Ek hak tanı",
+          "hint": "Seçilen sınava ek deneme hakkı verilir. Kalınca açılan modüller önce tamamlanmalıdır."
+        },
+        "extra_training": {
+          "label": "Ek eğitim ata",
+          "hint": "Seçilen modüller tekrar açılır ve kalınan sınava 1 ek hak verilir."
+        },
+        "end_process": {
+          "label": "Süreci sonlandır",
+          "hint": "Eğitim ataması kapatılır. Personel kaydı değişmez; işten çıkarma gibi kararlar sistem dışında verilir."
+        }
+      },
+      "exam": "Sınav",
+      "extraAttempts": "Ek hak",
+      "reopen": "Tekrar açılacak modüller",
+      "reason": "Gerekçe (zorunlu)",
+      "endConfirm": "Eğitim süreci sonlandırılsın mı? Bu karar geri alınamaz.",
+      "confirm": {
+        "extra_attempt": "Ek hak ver",
+        "extra_training": "Ek eğitim ata",
+        "end_process": "Süreci sonlandır"
+      }
+    }
+  },
+  "certificates": {
+    "pdf": {
+      "heading": {
+        "position_competency": "Pozisyon Yetkinlik Sertifikası",
+        "attendance": "Eğitim Katılım Belgesi"
+      },
+      "intro": {
+        "position_competency": "Aşağıda bilgileri yer alan çalışan, {scope} pozisyonunun teorik ve pratik eğitimlerini tamamlamış, sınavlarını başarıyla vermiş ve işe başlamaya yetkin bulunmuştur.",
+        "attendance": "Aşağıda bilgileri yer alan çalışan, \"{scope}\" eğitimine katılmış ve eğitimi tamamlamıştır."
+      },
+      "sicil": "Sicil no",
+      "position": "Pozisyon",
+      "unit": "Birim",
+      "issuedAt": "Düzenlenme tarihi",
+      "expiresAt": "Geçerlilik",
+      "unlimited": "Süresiz",
+      "approver": "Onaylayan",
+      "issuer": "Düzenleyen",
+      "table": {
+        "module": "Eğitim konusu",
+        "duration": "Süre",
+        "date": "Tarih",
+        "method": "Yöntem",
+        "trainer": "Eğitimci"
+      },
+      "ohs": "İSG",
+      "minutes": "{n} dk",
+      "methods": {
+        "online": "Uzaktan",
+        "classroom": "Yüz yüze",
+        "carried_over": "Önceki eğitim"
+      },
+      "theoryScore": "Teorik sınav puanı: {score}",
+      "practicalScore": "Pratik sınav puanı: {score}",
+      "verifyLabel": "Belgenin geçerliliğini QR kodu okutarak ya da bu adresten doğrulayabilirsiniz:"
+    },
+    "verify": {
+      "title": "Belge doğrulama",
+      "rateLimited": "Çok fazla doğrulama isteği gönderildi. Lütfen biraz sonra tekrar deneyin.",
+      "notFound": "Bu bağlantıya ait bir belge bulunamadı.",
+      "state": {
+        "valid": "Geçerli belge",
+        "expired": "Süresi dolmuş belge",
+        "revoked": "İptal edilmiş belge"
+      },
+      "name": "Ad soyad",
+      "kind": "Belge türü",
+      "kinds": {
+        "position_competency": "Pozisyon yetkinlik sertifikası",
+        "attendance": "Eğitim katılım belgesi"
+      },
+      "scope": "Kapsam",
+      "documentNo": "Belge no",
+      "issuedAt": "Düzenlenme tarihi",
+      "expiresAt": "Geçerlilik bitişi",
+      "unlimited": "Süresiz",
+      "privacy": "Kişisel verilerin korunması için ad kısaltılarak gösterilir; kimlik ve sicil numarası gösterilmez."
+    },
+    "list": {
+      "title": "Sertifikalar ve belgeler",
+      "empty": "Henüz belge yok.",
+      "kinds": {
+        "position_competency": "Pozisyon yetkinlik sertifikası",
+        "attendance": "Katılım belgesi"
+      },
+      "issued": "{date} tarihinde düzenlendi",
+      "expires": "{date} tarihine kadar geçerli",
+      "unlimited": "süresiz",
+      "revokedReason": "İptal gerekçesi: {reason}",
+      "state": {
+        "valid": "Geçerli",
+        "expired": "Süresi doldu",
+        "revoked": "İptal edildi"
+      },
+      "download": "PDF indir",
+      "preparing": "Belge hazırlanıyor…",
+      "openReview": "Karar ekranını aç"
+    },
+    "revoke": {
+      "open": "İptal et",
+      "reason": "İptal gerekçesi (zorunlu)",
+      "note": "İptal geri alınamaz. Doğrulama sayfası belgeyi \"iptal edildi\" olarak gösterir.",
+      "confirm": "Belgeyi iptal et",
+      "cancel": "Vazgeç"
+    },
+    "signatories": {
+      "title": "Sertifika şablonu",
+      "description": "Sertifika ve katılım belgelerinde görünen imza yetkilileri. Değişiklik yalnızca bundan sonra düzenlenen belgelere yansır.",
+      "person": "{n}. imza yetkilisi",
+      "name": "Ad soyad",
+      "titleLabel": "Unvan",
+      "signature": "Taranmış imza (PNG veya JPG)",
+      "remove": "Kaldır",
+      "add": "İmza yetkilisi ekle",
+      "hint": "En fazla 3 imza yetkilisi eklenebilir. İmza görseli şeffaf arka planlı PNG olursa belgede daha iyi görünür."
     }
   }
 }

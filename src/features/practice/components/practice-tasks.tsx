@@ -144,7 +144,7 @@ function TaskCard({ task, index, assignmentModuleId, canMark }: { task: Practice
               <li key={h.id} className="flex flex-col gap-1">
                 <span>
                   <span className="font-medium">{t(`levels.${h.level}`)}</span>
-                  {h.direction === "down" && ` · ${t("lowered")}`} · {h.source === "exam_fail" ? t("examFail") : h.markedByName} ·{" "}
+                  {h.direction === "down" && ` · ${t("lowered")}`} · {h.source === "exam_fail" ? t("examFail") : h.source === "readiness" ? t("readinessReopen") : h.markedByName} ·{" "}
                   {format.dateTime(h.markedAt, { dateStyle: "medium", timeStyle: "short" })}
                 </span>
                 {h.note && <span className="text-muted-foreground">{h.note}</span>}

@@ -15,7 +15,8 @@ import { createdAt, id, tstz, updatedAt } from "./_shared";
 
 export const practiceLevel = pgEnum("practice_level", ["demonstrated", "supervised", "independent"]);
 export const markDirection = pgEnum("mark_direction", ["up", "down"]);
-export const markSource = pgEnum("mark_source", ["trainer", "exam_fail"]);
+/** exam_fail: pratik sınavda kalma (karar #72); readiness: işe başlama reddi/ek eğitim kararı (karar #75). */
+export const markSource = pgEnum("mark_source", ["trainer", "exam_fail", "readiness"]);
 
 export const practiceMarks = pgTable(
   "practice_marks",

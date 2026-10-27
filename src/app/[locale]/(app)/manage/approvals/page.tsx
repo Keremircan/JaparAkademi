@@ -12,6 +12,7 @@ import { approvalQueue } from "@/server/services/content";
 import { cardApprovalQueue } from "@/server/services/positions";
 import { questionApprovalQueue } from "@/server/services/questions";
 import { secondSignatureQueue } from "@/server/services/practice";
+import { decisionQueue, readinessQueue, type PendingPerson } from "@/server/services/readiness";
 import { hasRole } from "@/server/authz/policy";
 import { listClassroomSessions } from "@/server/services/classroom";
 
@@ -30,7 +31,8 @@ export default function Page() {
 
 async function Content() {
   const access = await libraryAccess();
-  if (!access || !(can(access.actor, "content.approve_section") || can(access.actor, "content.approve_ohs") || hasRole(access.actor, "section_manager"))) return <NotFoundView />;
+  if (!access || !(can(access.actor, "content.approve_section") || can(access.actor, "content.approve_ohs") || hasRole(access.actor, "section_manager") || hasRole(access.actor, "hr")))
+    return <NotFoundView />;
   const [t, tt, tNav, format, queue, cards, questionQueue] = await Promise.all([
     getTranslations("content.queue"),
     getTranslations("content"),
@@ -40,7 +42,7 @@ async function Content() {
     cardApprovalQueue(access.actor),
     questionApprovalQueue(access.actor),
   ]);
-  const secondSign = await secondSignatureQueue(access.actor);
+  const [secondSign, readiness, decisions] = await Promise.all([secondSignatureQueue(access.actor), readinessQueue(access.actor), decisionQueue(access.actor)]);
   const classroom = (await listClassroomSessions(access.actor)).pending;
   const when = (d: Date | null) => (d ? format.dateTime(d, { dateStyle: "medium", timeStyle: "short" }) : "—");
 
@@ -69,7 +71,7 @@ async function Content() {
           </ul>
         </section>
       )}
-      {queue.length === 0 && cards.length === 0 && classroom.length === 0 && questionQueue.length === 0 && secondSign.length === 0 && <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p>}
+      {queue.length === 0 && cards.length === 0 && classroom.length === 0 && questionQueue.length === 0 && secondSign.length === 0 && readiness.length === 0 && decisions.length === 0 && <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p>}
       {cards.length > 0 && (
         <section aria-labelledby="cards-heading" className="mb-8">
           <h2 id="cards-heading" className="mb-3 text-lg font-semibold">
@@ -95,6 +97,8 @@ async function Content() {
           </ul>
         </section>
       )}
+      <PeopleSection id="readiness" title={t("readinessHeading")} people={readiness} when={when} />
+      <PeopleSection id="decisions" title={t("decisionsHeading")} people={decisions} when={when} />
       {secondSign.length > 0 && (
         <section aria-labelledby="practical-heading" className="mb-8">
           <h2 id="practical-heading" className="mb-3 text-lg font-semibold">
@@ -165,6 +169,33 @@ async function Content() {
           </ul>
         </section>
       )}
+    </section>
+  );
+}
+
+/** İşe başlama onayı ve karar bekleyen kişiler (Ekran 9'a gider). */
+function PeopleSection({ id, title, people, when }: { id: string; title: string; people: PendingPerson[]; when: (d: Date | null) => string }) {
+  if (people.length === 0) return null;
+  return (
+    <section aria-labelledby={`${id}-heading`} className="mb-8">
+      <h2 id={`${id}-heading`} className="mb-3 text-lg font-semibold">
+        {title}
+      </h2>
+      <ul className="divide-y rounded-2xl border">
+        {people.map((x) => (
+          <li key={x.assignmentId}>
+            <Link href={`/manage/readiness/${x.assignmentId}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 hover:bg-muted">
+              <span className="min-w-48 flex-1">
+                <span className="block font-medium">{x.name}</span>
+                <span className="block text-sm text-muted-foreground">
+                  {x.positionName} · {x.unitName}
+                </span>
+              </span>
+              <span className="text-sm text-muted-foreground">{when(x.since)}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

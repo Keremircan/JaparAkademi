@@ -336,7 +336,7 @@ Kursiyer ve pratik eğitmen ekranları telefon ve tablette rahat kullanılmalıd
 | 19 | Tesis içindekiler / tahliye yoklaması | Güvenlik, İSG | Telefon | Anlık liste, "toplanma alanında" | `/security/evacuation` | 2 |
 | 20 | Raporlar ve ayarlar | İK, İSG, BT | PC | Bölüm 10 raporları, parametreler, roller, denetim kaydı | `/reports`, `/admin/settings` | 1 (temel) |
 
-Ek ekranlar: eğitimi bekleyenler (`/admin/people/waiting`), ekip ilerlemesi (`/manage/team`), sınıf eğitimi kayıtları (`/manage/classroom`), okuma görevi (`/learn/reread/[taskId]`), ortak cihazlar (`/admin/devices`), pozisyon listesi ve kart özeti (`/manage/positions`, `/manage/positions/[id]`, sürüm karşılaştırma `/manage/positions/[id]/compare`), modül kütüphanesi (`/manage/modules`), içerik sürüm karşılaştırma (`/manage/library/[id]/compare`), herkese açık sertifika doğrulama (`/verify/[token]`, Faz 1), profil ve şifre değiştirme, bildirim merkezi, KVKK aydınlatma onayı (ilk girişte).
+Ek ekranlar: eğitimi bekleyenler (`/admin/people/waiting`), ekip ilerlemesi (`/manage/team`), sınıf eğitimi kayıtları (`/manage/classroom`), okuma görevi (`/learn/reread/[taskId]`), ortak cihazlar (`/admin/devices`), pozisyon listesi ve kart özeti (`/manage/positions`, `/manage/positions/[id]`, sürüm karşılaştırma `/manage/positions/[id]/compare`), modül kütüphanesi (`/manage/modules`), içerik sürüm karşılaştırma (`/manage/library/[id]/compare`), herkese açık sertifika doğrulama (`/verify/[token]`, Faz 1), sertifika şablonu / imza yetkilileri (`/admin/certificates`), profil ve şifre değiştirme, bildirim merkezi, KVKK aydınlatma onayı (ilk girişte).
 
 **Navigasyon:** tek uygulama kabuğu kullanılır; menü kullanıcının rollerine göre oluşur. Mobilde alt sekme bar'ı, masaüstünde yan menü olur. Birden fazla rolü olan kullanıcı tüm yetkili bölümleri görür.
 
@@ -556,16 +556,16 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `attempt_grants`: assignment_module_id, extra_attempts, reason, granted_by, granted_at
 
 **Pratik**
-- `practice_marks`: id, assignment_module_id, practice_task_id, level (`demonstrated`|`supervised`|`independent`), direction (`up`|`down`), note (düşürmede gerekçe), photo_asset_ids, source (`trainer`|`exam_fail`), exam_result_id, marked_by, marked_at — **değiştirilemez**; görevin güncel seviyesi son kayıttır
+- `practice_marks`: id, assignment_module_id, practice_task_id, level (`demonstrated`|`supervised`|`independent`), direction (`up`|`down`), note (düşürmede gerekçe), photo_asset_ids, source (`trainer`|`exam_fail`|`readiness`), exam_result_id, marked_by, marked_at — **değiştirilemez**; görevin güncel seviyesi son kayıttır
 - `practical_exam_results`: id, assignment_module_id, attempt_no, status (`draft`|`awaiting_second_signature`|`final`|`returned`), criteria (jsonb: görev kimliği, başlık kopyası, kritik mi, `pass`|`fail`, not), pass_score, score, passed, fail_reason (`score`|`critical`), photo_asset_ids, note, evaluator_id, trainee_signature_id, trainer_signature_id, submitted_at (1. imza: değerlendirme kilitlenir), manager_user_id, manager_signature_id, return_reason, finalized_at (kilit) — taslak silinebilir; 1. imzadan sonra yalnızca 2. imza/geri gönderme alanları değişir (trigger)
 - `signatures`: id, signer_user_id (Faz 2: visitor_id), captured_by (imzanın alındığı oturum), subject_type, subject_id, role (`trainee`|`trainer`|`manager`), subject_hash (kanonik JSON'un SHA-256'sı), image_asset_id (PNG, `signatures/`), signed_at, ip, user_agent — **değiştirilemez**
 
 **Onay, sertifika, yetkinlik**
-- `readiness_decisions`: assignment_id, decision (`approved`|`rejected`), comment, reopen_module_ids, decided_by, decided_at — **değiştirilemez**
-- `decision_records` (tüm haklar bitince): assignment_id, decision (`extra_attempt`|`extra_training`|`end_process`), reason, decided_by, decided_at
-- `certificates`: id, user_id, kind (`position_competency`|`module_completion`|`attendance`), scope_ref, issued_at, expires_at, verify_token, pdf_asset_id, approved_by, status (`valid`|`expired`|`revoked`), revoked_reason, revoked_by
-- `competencies`: id, name, kind (`machine`|`task`), org_unit_id
-- `competency_grants`: user_id, competency_id, certificate_id, valid_until
+- `readiness_decisions`: assignment_id, decision (`approved`|`rejected`), comment, reopen_module_ids (atama modülleri), decided_by, decided_at — **değiştirilemez**
+- `decision_records` (tüm haklar bitince): assignment_id, decision (`extra_attempt`|`extra_training`|`end_process`), reason, exam_module_id, extra_attempts, reopen_module_ids, decided_by, decided_at — **değiştirilemez**; ek haklar ayrıca `attempt_grants`'a yazılır
+- `certificates`: id, serial_no (belge no `JA-YYYY-000123`), user_id, kind (`position_competency`|`attendance`), assignment_id, assignment_module_id (katılım belgesi), position_id, title, snapshot (jsonb: ad, sicil, pozisyon, birim, kapsam, modüller, puanlar, onaylayan, imza yetkilileri — düzenlendiği anda dondurulur), issued_at, expires_at (boşsa süresiz), verify_token (128 bit), pdf_asset_id, approved_by, issued_by (boşsa sistem), status (`valid`|`revoked`; "süresi dolmuş" tarihten hesaplanır), revoked_reason, revoked_by, revoked_at (kilit) — yalnızca PDF bağlantısı (bir kez) ve iptal alanları yazılabilir; silinemez
+- `competencies`: id, name, kind (`machine`|`task`), org_unit_id, archived_at (Faz 1'de yalnızca tablo; ekran Faz 3)
+- `competency_grants`: user_id, competency_id, certificate_id, valid_until — **değiştirilemez**
 
 **Ziyaretçi (Faz 2)**
 - `visitor_types` (parametreli 4 tip), `visitor_briefings` (tip × dil → içerik + sorular)
@@ -667,6 +667,9 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | `exam.question_pool_min_ratio` | 2.0 | — | sysadmin |
 | `proctor.code_ttl_min` | 120 | — | sysadmin |
 | `proctor.code_max_failures` / `proctor.code_lock_min` | 5 / 15 | — | sysadmin |
+| `certificate.signatories` | [] (en fazla 3: ad, unvan, taranmış imza) | — | İK, sysadmin |
+| `verify.ip_max_requests` / `verify.ip_window_min` | 60 / 1 | — | sysadmin |
+| `decision.extra_attempts_default` | 1 | — | sysadmin |
 | `session.shared_idle_min` | 10 | — | sysadmin |
 | `session.personal_days` | 30 | — | sysadmin |
 | `auth.password_min_length` | 8 | — | sysadmin |
@@ -805,6 +808,15 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 71 | Form ve imza akışı | Form sunucuda taslak olarak kaydedilir. Kursiyer değerlendirenin cihazında imzalar (imza kursiyer adına, alındığı oturum ayrıca yazılır). Değerlendiren imzalayınca kriterler kilitlenir. Bölüm sorumlusu imzalayıp kesinleştirir ya da gerekçeyle geri gönderir; geri gönderilen deneme hak saymaz, yeni form gerekir |
 | 72 | Pratik sınavda kalma | "Yapamadı" görevleri sistem kaydıyla "gözetiminde yapar"a düşer, ilgili pratik modüller "tekrar gerekli" olur, sınav kilitlenir. Görevler yeniden "tek başına" olunca yeni hak açılır. Haklar (`exam.practical.max_attempts`) bitince atama `awaiting_decision` |
 | 73 | Pratik fotoğrafları | Mevcut görsel yükleme kullanılır (işaretleme ve form başına en fazla 6). Fotoğraf ve imza görsellerini kursiyer, eğitmeni, kapsamdaki bölüm sorumlusu ve İK görür |
+| 74 | İşe başlama onayı | Kişiyi kapsamında tutan bölüm sorumlusu verir; kimse kendi atamasına karar veremez. Onayla atama `completed` olur ve pozisyon yetkinlik sertifikası düzenlenir |
+| 75 | Retle tekrar açma | Gerekçe zorunlu; atamadaki tamamlanmış modüllerden seçilenler açılır: teorik → yeni tur; pratik → bütün görevler "gözetiminde yaptı"ya düşer (sistem işaretlemesi, kaynak `readiness`); sınav → yeniden açılır, hakkı kalmadıysa gerekçeli +1 hak. Atama yeniden `active` |
+| 76 | Haklar bitince karar | İK veya kapsamdaki bölüm sorumlusu, gerekçeyle: ek hak (kalınan sınava +N, varsayılan `decision.extra_attempts_default`), ek eğitim (seçilen modüller açılır + kalınan sınava +1 hak), süreci sonlandır (atama `cancelled`; personel kaydı değişmez) |
+| 77 | Belge türleri | Pozisyon yetkinlik sertifikası onayla otomatik. Katılım belgesi: İSG modülü tamamlanınca otomatik (sistem düzenler); diğer modüller için İK veya kapsamdaki bölüm sorumlusu isteğe bağlı düzenler. Aynı modüle geçerli belge varsa yenisi düzenlenmez |
+| 78 | Geçerlilik | Pozisyon sertifikası atamadaki geçerlilik süreli modüllerin en erken bitişine kadar; yoksa süresiz. Katılım belgesi modülün bitişine kadar. "Süresi dolmuş" saklanmaz, tarihten hesaplanır |
+| 79 | Belge şablonu | Logo, Geist yazı tipi, belge no, kişi/pozisyon/birim, modül tablosu (konu, süre, tarih, yöntem, eğitimci), puanlar, onaylayan, geçerlilik, imza yetkilileri (`certificate.signatories`, İK yönetir) ve QR. İçerik düzenlendiği anda dondurulur; PDF worker'da üretilir (`certificate.render`) |
+| 80 | Doğrulama sayfası | Giriş istemez; maskeli ad ("Ahmet Y***"), belge türü, kapsam, belge no, tarihler, durum. TC ve sicil no gösterilmez. Token 128 bit. IP başına hız sınırı (`verify.ip_*`) |
+| 81 | İptal | İK, gerekçe zorunlu; iptal kaydı değiştirilemez. Kimse kendi belgesini iptal edemez |
+| 82 | Yetkinlik tabloları | `competencies` ve `competency_grants` Faz 1'de kurulur; ekran ve kullanım Faz 3 |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

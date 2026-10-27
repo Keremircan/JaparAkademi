@@ -1,4 +1,8 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { and, eq } from "drizzle-orm";
+import { db } from "../../src/server/db/client";
+import { certificates, users } from "../../src/server/db/schema";
+import { renderCertificate } from "../../src/server/services/certificates/render";
 import { acceptConsentIfAsked, login } from "./helpers";
 import { E2E_PASSWORD } from "./global-setup";
 
@@ -70,16 +74,53 @@ test("FG-5.2 / FG-6.2 eğitmen görevleri işaretler, pratik sınavı imzalatır
   await sm.getByRole("button", { name: "İmzala ve kesinleştir" }).click();
   await expect(sm.getByText("Kesinleşti").first()).toBeVisible();
   await expect(sm.getByText("Bölüm sorumlusu (2. imza)")).toBeVisible();
+
+  // 4) FG-7.1 İşe başlama onayı: sonuçlar tek ekranda, onayla sertifika düzenlenir
+  await sm.goto("/manage/approvals");
+  const readiness = sm.getByRole("region", { name: "İşe başlama onayı bekleyenler" }).filter({ visible: true });
+  await readiness.getByRole("link", { name: new RegExp(trainee) }).click();
+  await sm.waitForURL(/\/manage\/readiness\//);
+  await expect(sm.getByRole("heading", { level: 1, name: trainee })).toBeVisible();
+  await expect(sm.getByText("Pratik sınav formları")).toBeVisible();
+  await sm.getByRole("button", { name: "Onayla ve sertifika düzenle" }).click();
+  await sm.waitForURL(/\/manage\/approvals$/);
   await smCtx.close();
 
-  // 4) Kursiyer eğitimi bitirmiş olarak görür
+  // Sertifika PDF'i worker'da üretilir; testte doğrudan üretilir. Doğrulama bağlantısı kayıttan okunur.
+  const { token, id } = await certificateFor(sicil("PRA", testInfo.project.name));
+  await renderCertificate(id);
+
+  // 5) FG-7.2 Kursiyer eğitimi tamamlamıştır; Sertifikalarım'dan PDF indirilebilir
   const traineeCtx = await browser.newContext(contextOptions);
   const page = await traineeCtx.newPage();
   await login(page, sicil("PRA", testInfo.project.name), E2E_PASSWORD);
   await acceptConsentIfAsked(page);
   await page.goto("/learn");
-  await expect(page.getByText(/Zorunlu modüllerin hepsini tamamladınız/)).toBeVisible();
-  await page.goto("/learn/practice");
-  await expect(page.getByText("Tek başına yaptı").first()).toBeVisible();
+  await expect(page.getByText("Şu anda size atanmış bir eğitim yok.")).toBeVisible();
+  const certs = page.getByRole("region", { name: "Sertifikalarım" });
+  await expect(certs.getByText("Pozisyon yetkinlik sertifikası")).toBeVisible();
+  const pdf = await page.request.get(`/api/certificates/${id}`);
+  expect(pdf.ok()).toBe(true);
+  expect(pdf.headers()["content-type"]).toContain("application/pdf");
   await traineeCtx.close();
+
+  // 6) QR doğrulama sayfası: giriş gerekmez, ad maskeli
+  const publicCtx = await browser.newContext(contextOptions);
+  const pub = await publicCtx.newPage();
+  await pub.goto(`/verify/${token}`);
+  await expect(pub.getByText("Geçerli belge")).toBeVisible();
+  await expect(pub.getByText(/^Deneme P\*\*\* K\*\*\* [a-z]\*\*\*$/i)).toBeVisible();
+  await expect(pub.getByText(sicil("PRA", testInfo.project.name))).toHaveCount(0);
+  await publicCtx.close();
 });
+
+async function certificateFor(sicilNo: string) {
+  const [row] = await db()
+    .select({ id: certificates.id, token: certificates.verifyToken })
+    .from(certificates)
+    .innerJoin(users, eq(users.id, certificates.userId))
+    .where(and(eq(users.username, sicilNo), eq(certificates.kind, "position_competency")))
+    .limit(1);
+  if (!row) throw new Error("sertifika yok");
+  return row;
+}

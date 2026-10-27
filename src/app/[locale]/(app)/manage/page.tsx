@@ -14,6 +14,7 @@ import { approvalQueue } from "@/server/services/content";
 import { cardApprovalQueue } from "@/server/services/positions";
 import { questionApprovalQueue } from "@/server/services/questions";
 import { secondSignatureQueue } from "@/server/services/practice";
+import { decisionQueue, readinessQueue } from "@/server/services/readiness";
 import { canUseLibrary } from "@/server/services/content/access";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -40,12 +41,16 @@ async function Content() {
     canApprove ? cardApprovalQueue(actor) : Promise.resolve([]),
     canApprove ? questionApprovalQueue(actor) : Promise.resolve([]),
   ]);
-  const secondSign = hasRole(actor, "section_manager") ? await secondSignatureQueue(actor) : [];
+  const [secondSign, readiness, decisions] = await Promise.all([
+    hasRole(actor, "section_manager") ? secondSignatureQueue(actor) : Promise.resolve([]),
+    readinessQueue(actor),
+    decisionQueue(actor),
+  ]);
   const classroom = canUseLibrary(actor) ? await listClassroomSessions(actor) : { pending: [], mine: [] };
-  const pending = queue.length + cardQueue.length + questionQueue.length + secondSign.length;
+  const pending = queue.length + cardQueue.length + questionQueue.length + secondSign.length + readiness.length + decisions.length;
 
   const cards = [
-    { key: "approvals", href: "/manage/approvals", icon: ClipboardCheck, show: canApprove || secondSign.length > 0, badge: pending || null },
+    { key: "approvals", href: "/manage/approvals", icon: ClipboardCheck, show: canApprove || pending > 0, badge: pending || null },
     { key: "practice", href: "/trainer", icon: ListChecks, show: hasRole(actor, "section_manager"), badge: null },
     { key: "team", href: "/manage/team", icon: Users, show: hasAnyRole(actor, ["section_manager", "hr"]), badge: null },
     { key: "classroom", href: "/manage/classroom", icon: School, show: canUseLibrary(actor), badge: classroom.pending.length || null },

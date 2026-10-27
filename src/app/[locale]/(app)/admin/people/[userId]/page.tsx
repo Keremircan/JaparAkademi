@@ -15,6 +15,8 @@ import { getPerson } from "@/server/services/people";
 import { assignmentsForPerson, trainerCandidates } from "@/server/services/assignments";
 import { AssignmentControls } from "@/features/assignments/components/assignment-controls";
 import { AssignmentSummaryView } from "@/features/assignments/components/assignment-summary";
+import { CertificateList } from "@/features/certification/components/certificate-list";
+import { certificatesForUser } from "@/server/services/certificates";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.people");
@@ -59,10 +61,12 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
   const canSeeTc = can(access.actor, "people.view_national_id");
   const isSelf = access.actor.userId === person.userId;
   const canAssign = can(access.actor, "assignments.manage");
-  const [assignmentList, trainers, ta] = await Promise.all([
+  const [assignmentList, trainers, ta, tcert, certs] = await Promise.all([
     canAssign ? assignmentsForPerson(access.actor, person.userId) : Promise.resolve([]),
     canAssign ? trainerCandidates(access.actor) : Promise.resolve([]),
     getTranslations("assignments"),
+    getTranslations("certificates.list"),
+    canAssign ? certificatesForUser(access.actor, person.userId).catch(() => []) : Promise.resolve([]),
   ]);
   const open = assignmentList.find((a) => ["active", "awaiting_readiness", "awaiting_decision"].includes(a.status));
   const past = assignmentList.filter((a) => a !== open);
@@ -132,6 +136,11 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
                   targetDate={open.targetDate}
                   needsTrainer={open.modules.some((m) => m.kind === "practice" || m.kind === "practice_exam")}
                 />
+                {open.status !== "active" && !isSelf && (
+                  <Button className="self-start" nativeButton={false} render={<Link href={`/manage/readiness/${open.id}`} />}>
+                    {tcert("openReview")}
+                  </Button>
+                )}
               </>
             ) : (
               <>
@@ -150,6 +159,15 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
               </details>
             )}
           </div>
+        </section>
+      )}
+
+      {canAssign && (
+        <section aria-labelledby="certificates-heading" className="mb-8">
+          <h2 id="certificates-heading" className="mb-2 text-lg font-semibold">
+            {tcert("title")}
+          </h2>
+          <CertificateList items={certs} canRevoke={can(access.actor, "certificates.revoke") && !isSelf} />
         </section>
       )}
 

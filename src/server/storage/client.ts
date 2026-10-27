@@ -147,6 +147,16 @@ export async function getObjectText(key: string): Promise<string | null> {
   }
 }
 
+export async function getObjectBuffer(key: string): Promise<Buffer | null> {
+  try {
+    const res = await s3().send(new GetObjectCommand({ Bucket: privateBucket(), Key: key }));
+    const bytes = await res.Body?.transformToByteArray();
+    return bytes ? Buffer.from(bytes) : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function uploadFile(key: string, filePath: string, contentType: string, cacheControl?: string): Promise<void> {
   const { size } = await stat(filePath);
   await s3().send(

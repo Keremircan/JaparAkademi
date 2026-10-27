@@ -1,0 +1,1 @@
+ALTER TABLE "certificates" ALTER COLUMN "issued_by" DROP NOT NULL;
