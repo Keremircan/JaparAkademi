@@ -7,6 +7,8 @@ export const settings = pgTable("settings", {
   key: text().primaryKey(),
   value: jsonb().notNull(),
   updatedBy: uuid().references(() => users.id, { onDelete: "restrict" }),
+  /** Son değişikliğin gerekçesi (saklama sürelerinde zorunlu); denetim kaydına da yazılır. */
+  changeNote: text(),
   updatedAt: updatedAt(),
 });
 

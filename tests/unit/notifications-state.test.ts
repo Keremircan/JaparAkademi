@@ -6,7 +6,9 @@ describe("SPEC 10.2 bildirim kuralları", () => {
     expect(DEFAULT_EMAIL_EVENTS).not.toContain("exam_result");
     expect(DEFAULT_EMAIL_EVENTS).not.toContain("email_failed");
     expect(DEFAULT_EMAIL_EVENTS).toContain("readiness_pending");
-    expect(DEFAULT_EMAIL_EVENTS.length).toBe(NOTIFICATION_KINDS.length - 2);
+    // Saklama işi özeti de sistem bildirimidir (iş paketi 2.1)
+    expect(DEFAULT_EMAIL_EVENTS).not.toContain("retention_completed");
+    expect(DEFAULT_EMAIL_EVENTS.length).toBe(NOTIFICATION_KINDS.length - 3);
   });
 
   it("karar #87 yeniden deneme üstel beklemeyle, en çok 6 saat", () => {

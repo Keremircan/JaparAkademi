@@ -120,7 +120,7 @@ export const contentVersionLocales = pgTable(
 // ---- Medya ----
 
 export const mediaKind = pgEnum("media_kind", ["image", "pdf", "video", "document"]);
-export const mediaStatus = pgEnum("media_status", ["pending_upload", "uploaded", "processing", "ready", "failed"]);
+export const mediaStatus = pgEnum("media_status", ["pending_upload", "uploaded", "processing", "ready", "failed", "purged"]);
 
 export type MediaDerived = {
   /** Görsel: WebP (en fazla 2000 px) ve küçük önizleme */

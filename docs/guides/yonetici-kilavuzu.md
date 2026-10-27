@@ -72,7 +72,7 @@ Yalnızca kapsamınızdaki birimlerin personelini ve içeriklerini görürsünü
 
 - İSG içeriklerini, kartların İSG bölümünü ve **İSG/İSG kritik soruları** onaylarsınız (Onay bekleyenler).
 - Modüllerde **"Uzaktan verilebilir mi"** ayarını belirlersiniz; uzaktan verilemeyen modüller yalnızca sınıf eğitimi kaydıyla tamamlanır.
-- **Tehlike sınıfı** ve İSG eğitim saatleri parametredir; ayarlanana kadar "tehlikeli" kabul edilir ve raporda uyarı görünür.
+- **Tehlike sınıfı**, yıllık İSG eğitim saatleri ve yenileme süreleri **Sistem → Parametreler**'dedir; tehlike sınıfı ayarlanana kadar "tehlikeli" kabul edilir ve raporda uyarı görünür.
 - **Raporlar → İSG eğitim kayıt defteri**: bütün personelin İSG eğitimleri, yöntem (uzaktan/yüz yüze), geçerlilik ve kişi başı yıllık saat — denetimde sunulabilir biçimde Excel/PDF.
 - İSG modülünü tamamlayan herkes için **katılım belgesi** kendiliğinden düzenlenir.
 
@@ -83,6 +83,7 @@ Yalnızca kapsamınızdaki birimlerin personelini ve içeriklerini görürsünü
 - **Roller ve kapsam**: Sistem → Personel → kişi → **Roller**. Bölüm sorumlusunun hangi departman/bölümleri yönettiği de burada seçilir.
 - **Sistem → Ortak cihazlar**: eğitim odası bilgisayarlarını tanımlayın (bu cihazlarda giriş her zaman ortak modda olur).
 - **Sistem → Denetim kaydı**: kim, ne zaman, hangi kaydı değiştirdi; eski ve yeni değerler (hassas alanlar maskeli). Salt okunur.
-- **Parametreler** (sınav notu, süre, hak, bekleme, saklama süreleri, e-posta olayları vb., SPEC Bölüm 14): plan bazındaki sınav ayarları plan tasarımcısında değiştirilir; genel parametreler için henüz ekran yoktur, değişiklik BT tarafından yapılır.
+- **Sistem → Parametreler**: sınav, eğitim, giriş, bildirim (hangi olayların e-postayla da gideceği), dosya ve saklama süresi ayarları. **Değiştir** → yeni değer → **Kaydet**; **Varsayılana dön** ile ilk değere dönülür. Her değişiklik denetim kaydına yazılır. Saklama sürelerinde gerekçe zorunludur (hukuk onayının tarihi ve dayanağı). Plan bazındaki sınav ayarları plan tasarımcısında değiştirilir; saat dilimi ekrandan değiştirilemez.
+- **Saklama süreleri**: iş ilişkisi biten personelin verisi süre dolunca her gece anonimleştirilir (ad, sicil, TC, telefon, e-posta silinir; eğitim ve sınav kayıtları kalır). Anonimleştirme geri alınamaz; olduğunda size bildirim gelir.
 - **E-posta hatası** bildirimi gelirse e-posta ayarlarını (M365 uygulama kaydı) ve sunucu loglarını kontrol edin.
 - Kurulum, güncelleme, yedekleme ve geri dönüş: `docs/runbooks/deploy.md` ve `docs/runbooks/restore.md`.

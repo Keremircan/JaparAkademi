@@ -17,6 +17,8 @@ export const QUEUES = {
   mailDispatch: "mail.dispatch",
   /** Saklama süresi dolan bildirimleri siler (günlük). */
   notificationsPurge: "notifications.purge",
+  /** Saklama süreleri: personel anonimleştirme, imza görselleri, eski denetim kaydı (her gece; SPEC 12.3). */
+  retention: "retention.run",
 } as const;
 
 export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];

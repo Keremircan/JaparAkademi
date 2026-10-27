@@ -508,7 +508,7 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `org_units`: id, parent_id, kind (`department`|`section`), name, code (unique, büyük harf ASCII), responsible_user_id, is_active — iki seviye: departmanın üst düğümü yok, bölümün üst düğümü bir departman (veritabanı kısıtı); aynı üst düğümde ad benzersiz
 - `positions`: id, org_unit_id, name, code (unique), supervisor_position_id, deputy_position_id, collar_type (`blue`|`white`), shift_pattern, status (`active`|`passive`)
 - `users` (Better Auth: `user`, `session`, `account`, `verification`)
-- `personnel`: user_id (PK), sicil_no (unique, değiştirilemez), full_name, national_id_enc (AES-256-GCM, `v<anahtar sürümü>:<base64>`), national_id_hmac (unique), national_id_masked, phone, email, position_id (boş olabilir: pozisyonsuz personele eğitim atanamaz), employment_type (`employee`|`intern`), hire_date, end_date (ayrılanda zorunlu), status (`active`|`passive`|`terminated`), source (`excel`|`manual`|`hr_sync`), training_required (yeni işe giren → 1.4'te plan atanır), must_change_password
+- `personnel`: user_id (PK), sicil_no (unique, değiştirilemez), full_name, national_id_enc (AES-256-GCM, `v<anahtar sürümü>:<base64>`), national_id_hmac (unique), national_id_masked, phone, email, position_id (boş olabilir: pozisyonsuz personele eğitim atanamaz), employment_type (`employee`|`intern`), hire_date, end_date (ayrılanda zorunlu), status (`active`|`passive`|`terminated`), source (`excel`|`manual`|`hr_sync`), training_required (yeni işe giren → 1.4'te plan atanır), must_change_password, anonymized_at (saklama süresi dolunca; karar #120)
 - `user_roles`: user_id, role, granted_by, granted_at
 - `role_scopes`: user_id, role (yalnızca `section_manager`, veritabanı kısıtı), org_unit_id
 - `data_access_log`: id, at, actor_id, subject_user_id, field (ör. `national_id`), request_id — **değiştirilemez** (tam TC görüntüleme kaydı)
@@ -519,7 +519,7 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `contents`: id, type, title, owner_org_unit_id (null = ortak), is_ohs, is_common, common_target (`all`|`blue`|`white`), current_published_version_id, archived_at
 - `content_versions`: id, content_id, version, status (`draft`|`section_review`|`ohs_review`|`published`|`rejected`|`superseded`), body (jsonb; tipine göre), change_note, require_reread, created_by, submitted_at, published_at
 - `content_version_locales`: content_version_id, locale, title, body, media_asset_ids
-- `media_assets`: id, bucket, object_key, mime, size, kind, status (`uploaded`|`processing`|`ready`|`failed`), hls_manifest_key, duration_sec, width, height, created_by
+- `media_assets`: id, bucket, object_key, mime, size, kind, status (`pending_upload`|`uploaded`|`processing`|`ready`|`failed`|`purged`), hls_manifest_key, duration_sec, width, height, created_by
 - `tags`, `tag_types`, `content_tags`
 - `approvals`: id, subject_type (`content_version`|`position_card_version`|`question_version`|`classroom_session`), subject_id, step (`section`|`ohs`), decision (`approved`|`rejected`|`auto_self`), comment, decided_by, decided_at — **değiştirilemez**
 
@@ -577,7 +577,7 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `evacuation_rollcalls`, `evacuation_marks`
 
 **Ortak**
-- `settings`: key, value (jsonb), updated_by, updated_at. Tüm parametreler Bölüm 14'teki anahtarlarla tutulur ve Zod ile doğrulanır.
+- `settings`: key, value (jsonb), updated_by, change_note, updated_at. Tüm parametreler Bölüm 14'teki anahtarlarla tutulur ve Zod ile doğrulanır.
 - `legal_texts`: kind (`kvkk_personnel`|`kvkk_visitor`|`visitor_rules`), locale, version, title, body, published_at — yayınlanınca değiştirilemez; aynı anda tek taslak
 - `consents`: subject (user_id | visitor_id), legal_text_id, accepted_at, ip, user_agent
 - `notifications`: user_id, kind (olay türü), subject_key (konu; aynı konu için okunmamış tek bildirim), params (jsonb; metin gösterimde mesaj dosyasından üretilir), link (uygulama içi yol), read_at
@@ -692,7 +692,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | `upload.max_video_mb` / `pdf_mb` / `image_mb` | 2048 / 50 / 15 | — | sysadmin |
 | `visitor.types` | Bölüm 8.1 tablosu | — | ohs_specialist |
 | `retention.*` | Bölüm 12.3 tablosu | — | sysadmin (hukuk onayıyla) |
-| `notify.channels.<event>` | Bölüm 10.2 | — | sysadmin |
+| `notify.email_events` | Bölüm 10.2 (karar #119; push 2.6'da) | — | sysadmin |
 
 ---
 
@@ -733,6 +733,19 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | **1.8a Bildirim ve e-posta** | Uygulama içi bildirim, Graph e-posta (outbox + worker), bildirim merkezi, e-postayla şifre sıfırlama |
 | **1.8b Raporlar ve denetim** | Faz 1 raporları (xlsx/PDF), denetim kaydı ekranı, KVKK kişi verisi dışa aktarma |
 | **1.8c Yayına hazırlık ve pilot** | Üretim Docker imajları (app, worker, caddy), yedekleme/geri dönüş runbook'u ve betikleri, seed içerik, kullanıcı ve yönetici kılavuzu, pilot |
+
+### 16.4 Faz 2 İş Paketleri (sırayla, bir seferde bir paket)
+| Paket | Kapsam |
+|---|---|
+| **2.1 Ayarlar ve saklama** | Parametreler ekranı (`/admin/settings`), olay × kanal ayarı, saklama süresi dolan personelin anonimleştirilmesi, eski denetim kaydının silinmesi |
+| **2.2 Ziyaretçi temeli** | Ziyaretçi tipleri, tip × dil bilgilendirme içeriği ve kontrol soruları, taşeron firma kartı, ziyaretçi/ziyaret kayıtları, kara liste, ziyaretçi KVKK ve kurallar metni, ön kayıt (`/security/visits`) |
+| **2.3 Ziyaretçi bilgilendirme ve kapı** | E-posta bağlantısı (`/v/[token]`), kapı tableti (`/kiosk`), atlanamayan bilgilendirme, kontrol soruları, onay + imza, giriş/çıkış, kart ve KKD, ev sahibine bildirim, taşeron geçerliliği |
+| **2.4 Tahliye ve ziyaretçi raporları** | `/security/evacuation` (bağlantısız okunabilir liste, PDF), ziyaretçi kayıt defteri, taşeron uygunluk raporu |
+| **2.5 Tekrar eğitimi ve bildirimler** | Otomatik tekrar eğitimi ataması, süresi dolacak eğitimler raporu, Faz 2 bildirimleri, haftalık özet, içerik güncellik raporu |
+| **2.6 Web push** | VAPID, push abonelikleri, kullanıcı tercihi, service worker |
+| **2.7 İngilizce içerik ve yeni soru tipleri** | İçerik sürümünde dil (TR/EN), arayüzün İngilizce metinleri, eşleştirme ve görselde işaretleme soruları; Faz 2 yayını ve kılavuzlar |
+
+"Tüm bölümlerin pozisyon kartları" içerik girişidir; kod paketi değildir (pilot kontrol listesinde izlenir).
 
 ### 16.3 Genel Kabul (her faz)
 - İlgili her FG maddesi için test senaryosu yazılmış ve geçmiş olmalı.
@@ -854,6 +867,23 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 106 | Kılavuzlar | Markdown, `docs/guides/` (kullanıcı ve yönetici), Türkçe, "siz" hitabı; ekran görüntüleri pilotta gerçek veriyle eklenir |
 | 107 | Üretim seed | Üretimde yalnızca sistem yöneticisi; demo kullanıcılar yalnızca `SEED_DEMO_PASSWORD` tanımlıysa. Pilot hazırlığı `docs/pilot/pilot-kontrol-listesi.md` (Bölüm 18) |
 | 108 | Geri dönüş testi | İlk test yerelde üretim compose ile yapıldı ve `docs/runbooks/restore.md`'ye yazıldı; sonraki test sunucu ortamında |
+| 109 | Faz 2 paket sırası | 2.1 ayarlar ve saklama → 2.2 ziyaretçi temeli → 2.3 bilgilendirme ve kapı → 2.4 tahliye ve raporlar → 2.5 tekrar eğitimi ve bildirimler → 2.6 web push → 2.7 İngilizce içerik ve yeni soru tipleri (Bölüm 16.4). Ziyaretçi verisi gelmeden saklama işi hazır olur |
+| 110 | Web push içeriği | Push yalnızca "Yeni bildiriminiz var" + uygulama içi bağlantı taşır; kişisel veya içerik bilgisi gönderilmez (push servisleri yurt dışında) |
+| 111 | Ziyaretçi kimlik no | Ön kayıtta isteğe bağlı; güvenlik kapıda her tip için girer ve kara liste kontrolü o anda yapılır. Personeldeki gibi şifreli + HMAC + maskeli saklanır |
+| 112 | QR ile kendi kaydı | Kapıdaki sabit QR ziyaretçinin telefonunda bilgilendirmeyi açar; IP başına hız sınırı. Giriş her zaman güvenliğin onayıyla |
+| 113 | Tekrar eğitimi kapsamı | Faz 2'de yalnızca Akademi'de tamamlanmış ve geçerlilik süresi olan modüller. Açık ataması olan kişide tekrar eğitimi o atama kapanınca açılır; İK'ya bildirim gider |
+| 114 | Personel anonimleştirmesi (ilke) | İş ilişkisi bitişi + `retention.personnel_years_after_exit` dolunca kişi verisi silinir; değiştirilemez kayıtların kendisi kalır. Sertifika snapshot'ındaki ad hukuk teyidine kadar dokunulmaz |
+| 115 | Tahliye listesi cihazda | Yalnızca son liste tarayıcıda (IndexedDB); çıkışta silinir, 24 saatten eski liste gösterilmez; yalnızca güvenlik ve İSG |
+| 116 | Görselde işaretleme | Doğru bölge dikdörtgen veya daire; dokunulan nokta bölgedeyse doğru |
+| 117 | Parametreler ekranı | `/admin/settings` (Sistem → Parametreler; sysadmin ve İSG uzmanı). Herkes yalnızca yönettiği (`managedBy`) parametreleri görür. İmza yetkilileri kendi ekranında; `org.timezone` salt okunur. Değer kayıttaki Zod şemasıyla doğrulanır; varsayılana dönülebilir |
+| 118 | Değişiklik gerekçesi | `settings.change_note`; `retention.*` için en az 10 karakter zorunlu, diğerlerinde isteğe bağlı. Gerekçe denetim kaydına da yazılır |
+| 119 | Bildirim kanalları | `notify.channels.<olay>` yerine `notify.email_events` listesi; ekranda olay × kanal (uygulama içi her zaman). Push için 2.6'da `notify.push_events` |
+| 120 | Anonimleştirme kapsamı | Ad "Anonim #XXXXXXXX", sicil "ANON-XXXXXXXX"; TC, telefon, e-posta silinir; oturum, şifre, rol ve kapsamlar silinir; bildirim, e-posta kuyruğu ve şifre sıfırlama kayıtları silinir; giriş denemesi, sınav denemesi, KVKK onayı ve imzadaki IP/cihaz silinir; Excel aktarım satırının verisi silinir |
+| 121 | Değiştirilemez kayıtlara dokunma | Tek yol `app_anonymize_people(uuid[])` ve `app_purge_audit(timestamptz)` (SECURITY DEFINER). `prevent_mutation()` yalnızca `app.retention_job` açıkken ve işlem tablo sahibi rolüyle yapılıyorsa izin verir; uygulama rolünün kendi UPDATE'i yine JA001 |
+| 122 | Denetim kaydında kişi verisi | Anonimleştirmede kişinin denetim satırlarındaki ad, sicil, telefon, e-posta, kullanıcı adı ve IP/cihaz değerleri maskelenir. `retention.audit_years`'tan eski satırlar her gece silinir; son bir yılın kaydı hiçbir koşulda silinemez |
+| 123 | İmza ve fotoğraflar | Anonimleştirilen kişinin imza görselleri depodan silinir (`media_assets.status = purged`, `/api/media` 404); imza kaydı ve özeti kalır. Pratik görev fotoğrafları kalır |
+| 124 | Sertifika snapshot'ı | Anonimleştirmede sertifikaların donmuş bilgisine dokunulmaz; doğrulama sayfası maskeli adı gösterir. Hukuk teyidi pilot kontrol listesinde |
+| 125 | Saklama işi izleme | `retention.run` her gece 03:45 (İstanbul); bir gecede en çok 200 kişi ve 500 imza görseli. Anonimleştirilen kişi sayısı loglanır, 0'dan büyükse sistem yöneticisine `retention_completed` bildirimi |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

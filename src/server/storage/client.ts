@@ -175,6 +175,14 @@ export async function uploadBuffer(key: string, body: Buffer, contentType: strin
   await s3().send(new PutObjectCommand({ Bucket: privateBucket(), Key: key, Body: body, ContentType: contentType }));
 }
 
+/** Verilen anahtarları siler (olmayan anahtar hata vermez). */
+export async function deleteObjects(keys: readonly string[]): Promise<void> {
+  for (let i = 0; i < keys.length; i += 1000) {
+    const chunk = keys.slice(i, i + 1000).map((Key) => ({ Key }));
+    if (chunk.length) await s3().send(new DeleteObjectsCommand({ Bucket: privateBucket(), Delete: { Objects: chunk } }));
+  }
+}
+
 /** Önek altındaki tüm nesneleri siler (ör. başarısız dönüşümün yarım kalan HLS dosyaları). */
 export async function deletePrefix(prefix: string): Promise<void> {
   let token: string | undefined;

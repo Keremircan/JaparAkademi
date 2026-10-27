@@ -314,7 +314,10 @@
     "signatories_invalid": "Her imza yetkilisi için ad ve unvan yazın (en fazla 3 kişi).",
     "reset_link_invalid": "Bu bağlantı geçersiz ya da süresi dolmuş. Yeni bir bağlantı isteyin.",
     "report_range_invalid": "Başlangıç tarihi bitiş tarihinden sonra olamaz.",
-    "report_too_large": "Rapor satır sınırını aşıyor. Tarih aralığını ya da birim/pozisyon filtresini daraltın."
+    "report_too_large": "Rapor satır sınırını aşıyor. Tarih aralığını ya da birim/pozisyon filtresini daraltın.",
+    "invalid_setting": "Değer geçersiz ya da izin verilen aralığın dışında.",
+    "setting_readonly": "Bu parametre ekrandan değiştirilemez.",
+    "setting_note_required": "Bu parametre için en az 10 karakterlik bir gerekçe yazın."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -346,6 +349,10 @@
       "audit": {
         "title": "Denetim kaydı",
         "description": "Kim, ne zaman, hangi kaydı değiştirdi; eski ve yeni değerler."
+      },
+      "settings": {
+        "title": "Parametreler",
+        "description": "Sınav, eğitim, güvenlik ve saklama süresi ayarları"
       }
     },
     "org": {
@@ -813,7 +820,8 @@
         "uploaded": "İşlenmeyi bekliyor",
         "processing": "İşleniyor",
         "ready": "Hazır",
-        "failed": "İşlenemedi; başka bir dosya deneyin"
+        "failed": "İşlenemedi; başka bir dosya deneyin",
+        "purged": "Saklama süresi dolduğu için silindi"
       }
     },
     "video": {
@@ -2078,7 +2086,8 @@
       "second_signature_pending": "{name} için pratik sınav formu 2. imzanızı bekliyor.",
       "readiness_pending": "{name} işe başlama onayınızı bekliyor.",
       "all_attempts_failed": "{name}, \"{title}\" sınav haklarının hepsini kullandı. Karar bekleniyor.",
-      "email_failed": "Bazı e-postalar gönderilemedi. E-posta ayarlarını ve kayıtları kontrol edin."
+      "email_failed": "Bazı e-postalar gönderilemedi. E-posta ayarlarını ve kayıtları kontrol edin.",
+      "retention_completed": "Saklama süresi dolan {count} kişinin verisi anonimleştirildi."
     },
     "email": {
       "app": "JAPAR Akademi",
@@ -2096,7 +2105,8 @@
         "second_signature_pending": "2. imzanızı bekleyen bir pratik sınav var",
         "readiness_pending": "İşe başlama onayınızı bekleyen bir personel var",
         "all_attempts_failed": "Kararınızı bekleyen bir personel var",
-        "email_failed": "E-posta gönderim hatası"
+        "email_failed": "E-posta gönderim hatası",
+        "retention_completed": "Saklama süresi dolan kişi verileri anonimleştirildi"
       }
     },
     "pagination": "Bildirim sayfaları"
@@ -2308,6 +2318,281 @@
       "legalText": "Metin",
       "version": "Sürüm",
       "acceptedAt": "Onay tarihi"
+    }
+  },
+  "settings": {
+    "title": "Parametreler",
+    "description": "Yalnızca sizin yönettiğiniz parametreler görünür. Her değişiklik denetim kaydına yazılır. Plan bazındaki sınav ayarları plan tasarımcısında değişir.",
+    "current": "Güncel değer",
+    "default": "Varsayılan",
+    "lastChange": "Son değişiklik",
+    "changedBy": "{name}, {date}",
+    "system": "Sistem",
+    "edit": "Değiştir",
+    "newValue": "Yeni değer",
+    "save": "Kaydet",
+    "reset": "Varsayılana dön",
+    "cancel": "Vazgeç",
+    "note": "Gerekçe",
+    "optional": "isteğe bağlı",
+    "noteRequiredHint": "Saklama süresi hukuk onayıyla değişir. Onayın tarihini ve dayanağını yazın (en az 10 karakter).",
+    "readonly": "Bu parametre ekrandan değiştirilemez. Değişiklik gerekiyorsa BT ile görüşün.",
+    "yes": "Evet",
+    "no": "Hayır",
+    "retentionHint": "Süre dolan kişi verileri her gece anonimleştirilir; anonimleştirme geri alınamaz.",
+    "hazard": {
+      "unset": "Ayarlanmadı (tehlikeli kabul edilir)",
+      "low": "Az tehlikeli",
+      "medium": "Tehlikeli",
+      "high": "Çok tehlikeli"
+    },
+    "events": {
+      "legend": "E-postayla da gönderilecek olaylar (uygulama içi bildirim her zaman gider)",
+      "none": "Hiçbiri (yalnızca uygulama içi)"
+    },
+    "groups": {
+      "org": "Kurum",
+      "ohs": "İş sağlığı ve güvenliği",
+      "exam": "Sınavlar",
+      "training": "Eğitim ve hatırlatmalar",
+      "auth": "Giriş ve oturum",
+      "notify": "Bildirim ve e-posta",
+      "certificate": "Belge doğrulama",
+      "reports": "Raporlar",
+      "upload": "Dosya yükleme",
+      "retention": "Saklama süreleri"
+    },
+    "items": {
+      "org_timezone": {
+        "label": "Saat dilimi",
+        "hint": "Bütün tarih hesapları bu saat dilimine göre yapılır.",
+        "unit": "{n}"
+      },
+      "ohs_hazard_class": {
+        "label": "İşyeri tehlike sınıfı",
+        "hint": "İSG eğitim saatleri ve yenileme süreleri bu sınıfa göre uygulanır.",
+        "unit": "{n}"
+      },
+      "ohs_hours_by_class": {
+        "label": "Yıllık asgari İSG eğitim saati",
+        "hint": "Tehlike sınıfına göre kişi başı yıllık asgari saat (İSG kayıt defteri raporunda karşılaştırılır).",
+        "unit": "{n} saat"
+      },
+      "ohs_renewal_years_by_class": {
+        "label": "İSG eğitimi yenileme süresi",
+        "hint": "Tehlike sınıfına göre İSG eğitiminin tekrarlanma aralığı.",
+        "unit": "{n} yıl"
+      },
+      "exam_theory_question_count": {
+        "label": "Teorik sınav soru sayısı",
+        "hint": "Plan bazında değiştirilmemişse kullanılır.",
+        "unit": "{n} soru"
+      },
+      "exam_theory_duration_min": {
+        "label": "Teorik sınav süresi",
+        "hint": "Plan bazında değiştirilmemişse kullanılır.",
+        "unit": "{n} dakika"
+      },
+      "exam_theory_pass_score": {
+        "label": "Teorik sınav geçme notu",
+        "hint": "100 üzerinden.",
+        "unit": "{n} puan"
+      },
+      "exam_theory_max_attempts": {
+        "label": "Teorik sınav hak sayısı",
+        "hint": "Bütün haklar bitince karar İK ve bölüm sorumlusuna kalır.",
+        "unit": "{n} hak"
+      },
+      "exam_theory_cooldown_hours": {
+        "label": "Teorik sınav bekleme süresi",
+        "hint": "Kalınan denemeden sonra yeni deneme için beklenecek süre.",
+        "unit": "{n} saat"
+      },
+      "exam_theory_proctor_required": {
+        "label": "Gözetmen kodu zorunlu",
+        "hint": "Teorik sınav gözetmenin verdiği kodla başlar.",
+        "unit": "{n}"
+      },
+      "exam_practical_pass_score": {
+        "label": "Pratik sınav geçme notu",
+        "hint": "100 üzerinden.",
+        "unit": "{n} puan"
+      },
+      "exam_practical_max_attempts": {
+        "label": "Pratik sınav hak sayısı",
+        "hint": "Plan bazında değiştirilmemişse kullanılır.",
+        "unit": "{n} hak"
+      },
+      "exam_question_pool_min_ratio": {
+        "label": "Soru havuzu oranı",
+        "hint": "Havuz, sınav soru sayısının bu katından azsa plan tasarımcısı uyarır.",
+        "unit": "{n} kat"
+      },
+      "proctor_code_ttl_min": {
+        "label": "Gözetmen kodu geçerlilik süresi",
+        "hint": "Üretilen kodun kullanılabileceği süre.",
+        "unit": "{n} dakika"
+      },
+      "proctor_code_max_failures": {
+        "label": "Hatalı gözetmen kodu sınırı",
+        "hint": "Bu kadar hatalı denemeden sonra kursiyer geçici olarak kilitlenir.",
+        "unit": "{n} deneme"
+      },
+      "proctor_code_lock_min": {
+        "label": "Hatalı kod kilit süresi",
+        "hint": "Hatalı kod sınırı aşılınca bekleme süresi.",
+        "unit": "{n} dakika"
+      },
+      "decision_extra_attempts_default": {
+        "label": "Ek hak varsayılanı",
+        "hint": "Karar ekranında \"Ek hak tanı\" seçilince önerilen hak sayısı.",
+        "unit": "{n} hak"
+      },
+      "theory_video_watch_ratio": {
+        "label": "Video izleme oranı",
+        "hint": "Videonun bu oranı izlenmeden adım tamamlanamaz (0,5–1).",
+        "unit": "{n}"
+      },
+      "assignment_daily_training_minutes": {
+        "label": "Günlük eğitim süresi",
+        "hint": "Hedef tarih önerisi bu süreye göre hesaplanır (hafta sonu hariç).",
+        "unit": "{n} dakika"
+      },
+      "recert_lead_days": {
+        "label": "Tekrar eğitimi ön süresi",
+        "hint": "Geçerlilik bitmeden bu kadar gün önce tekrar eğitimi açılır.",
+        "unit": "{n} gün"
+      },
+      "reread_due_days": {
+        "label": "Okuma görevi süresi",
+        "hint": "\"Tekrar oku ve onayla\" görevlerinin son tarihi.",
+        "unit": "{n} gün"
+      },
+      "trainer_unmarked_alert_days": {
+        "label": "İşaretlenmeyen görev uyarısı",
+        "hint": "Eğitmen bu kadar gün görev işaretlemezse hatırlatılır.",
+        "unit": "{n} gün"
+      },
+      "content_review_max_age_months": {
+        "label": "İçerik gözden geçirme aralığı",
+        "hint": "Bu süreden eski pozisyon kartları güncellik raporunda görünür.",
+        "unit": "{n} ay"
+      },
+      "session_shared_idle_min": {
+        "label": "Ortak cihazda işlemsizlik süresi",
+        "hint": "Ortak cihazda bu süre işlem yapılmazsa oturum kapanır.",
+        "unit": "{n} dakika"
+      },
+      "session_personal_days": {
+        "label": "Kişisel cihazda oturum süresi",
+        "hint": "\"Beni hatırla\" seçiliyken oturumun açık kalacağı süre.",
+        "unit": "{n} gün"
+      },
+      "auth_password_min_length": {
+        "label": "En kısa şifre uzunluğu",
+        "hint": "En az 8.",
+        "unit": "{n} karakter"
+      },
+      "auth_lockout_attempts": {
+        "label": "Hesap kilidi deneme sınırı",
+        "hint": "Bu kadar hatalı şifreden sonra hesap geçici olarak kilitlenir.",
+        "unit": "{n} deneme"
+      },
+      "auth_lockout_min": {
+        "label": "Hesap kilit süresi",
+        "hint": "Kilitlenen hesabın açılacağı süre.",
+        "unit": "{n} dakika"
+      },
+      "auth_ip_max_failures": {
+        "label": "IP başına hatalı giriş sınırı",
+        "hint": "Aynı adresten bu kadar hatalı girişte geçici engel uygulanır.",
+        "unit": "{n} deneme"
+      },
+      "auth_ip_window_min": {
+        "label": "IP sınırı zaman aralığı",
+        "hint": "IP başına hatalı giriş bu süre içinde sayılır.",
+        "unit": "{n} dakika"
+      },
+      "auth_reset_link_minutes": {
+        "label": "Şifre yenileme bağlantısı süresi",
+        "hint": "E-postayla gönderilen bağlantının geçerlilik süresi.",
+        "unit": "{n} dakika"
+      },
+      "auth_reset_max_per_hour": {
+        "label": "Saatlik şifre yenileme isteği sınırı",
+        "hint": "Kişi başına bir saatte gönderilebilecek bağlantı sayısı.",
+        "unit": "{n} istek"
+      },
+      "notify_email_events": {
+        "label": "E-posta gönderilen olaylar",
+        "hint": "Seçilen olaylarda, e-postası kayıtlı kişiye kısa bir e-posta da gider.",
+        "unit": "{n}"
+      },
+      "notify_retention_days": {
+        "label": "Okunmuş bildirim saklama süresi",
+        "hint": "Bu süreden eski okunmuş bildirimler silinir.",
+        "unit": "{n} gün"
+      },
+      "mail_max_attempts": {
+        "label": "E-posta yeniden deneme sayısı",
+        "hint": "Gönderilemeyen e-posta bu kadar denemeden sonra başarısız sayılır.",
+        "unit": "{n} deneme"
+      },
+      "verify_ip_max_requests": {
+        "label": "Belge doğrulama istek sınırı",
+        "hint": "Herkese açık doğrulama sayfasında IP başına istek sayısı.",
+        "unit": "{n} istek"
+      },
+      "verify_ip_window_min": {
+        "label": "Doğrulama sınırı zaman aralığı",
+        "hint": "İstek sınırının sayıldığı süre.",
+        "unit": "{n} dakika"
+      },
+      "reports_max_rows": {
+        "label": "Rapor satır sınırı",
+        "hint": "Aşılırsa filtreyi daraltmanız istenir.",
+        "unit": "{n} satır"
+      },
+      "upload_max_video_mb": {
+        "label": "En büyük video",
+        "hint": "Yüklenebilecek en büyük video dosyası.",
+        "unit": "{n} MB"
+      },
+      "upload_max_pdf_mb": {
+        "label": "En büyük PDF",
+        "hint": "Yüklenebilecek en büyük PDF dosyası.",
+        "unit": "{n} MB"
+      },
+      "upload_max_image_mb": {
+        "label": "En büyük görsel",
+        "hint": "Yüklenebilecek en büyük görsel dosyası.",
+        "unit": "{n} MB"
+      },
+      "retention_personnel_years_after_exit": {
+        "label": "Personel kayıtları",
+        "hint": "İş ilişkisi bitişinden sonra; süre dolunca kişi verisi anonimleştirilir.",
+        "unit": "{n} yıl"
+      },
+      "retention_visitor_years": {
+        "label": "Ziyaretçi kayıtları",
+        "hint": "Ziyaret tarihinden sonra (Faz 2 ziyaretçi modülüyle uygulanır).",
+        "unit": "{n} yıl"
+      },
+      "retention_contractor_years": {
+        "label": "Taşeron çalışanı kayıtları",
+        "hint": "Son geçerlilik bitişinden sonra (ziyaretçi modülüyle uygulanır).",
+        "unit": "{n} yıl"
+      },
+      "retention_blacklist_years_after_lift": {
+        "label": "Kara liste kayıtları",
+        "hint": "Kaldırıldıktan sonra (ziyaretçi modülüyle uygulanır).",
+        "unit": "{n} yıl"
+      },
+      "retention_audit_years": {
+        "label": "Denetim kaydı",
+        "hint": "Bu süreden eski denetim kayıtları silinir.",
+        "unit": "{n} yıl"
+      }
     }
   }
 }
