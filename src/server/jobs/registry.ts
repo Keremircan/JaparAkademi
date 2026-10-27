@@ -9,6 +9,7 @@ import { finalizeExpiredAttempt } from "@/server/services/exams";
 import { renderCertificate } from "@/server/services/certificates/render";
 import { dispatchEmails } from "@/server/services/notifications/dispatch";
 import { purgeOldNotifications } from "@/server/services/notifications";
+import { runRetention } from "@/server/services/retention";
 import { env } from "@/server/env";
 import { QUEUE_OPTIONS, QUEUES } from "./queues";
 
@@ -42,6 +43,13 @@ export async function registerJobs(boss: PgBoss) {
     if (n > 0) logger.info({ notifications: n }, "Eski bildirimler silindi");
   });
   await boss.schedule(QUEUES.notificationsPurge, "30 3 * * *", null, { tz: "Europe/Istanbul" });
+
+  // Saklama süreleri (karar #120–125): bildirim temizliğinden sonra
+  await boss.work(QUEUES.retention, { batchSize: 1 }, async () => {
+    const r = await runRetention(systemActor("worker:retention"));
+    if (r.anonymized || r.images || r.auditRows) logger.info(r, "Saklama süresi işleri tamamlandı");
+  });
+  await boss.schedule(QUEUES.retention, "45 3 * * *", null, { tz: "Europe/Istanbul" });
 
   await boss.work(QUEUES.heartbeat, async () => {
     await db().execute(sql`select 1`);

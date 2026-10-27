@@ -19,12 +19,15 @@ export const NOTIFICATION_KINDS = [
   "all_attempts_failed",
   // Sistem yöneticisi
   "email_failed",
+  "retention_completed",
 ] as const;
 
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
 /** Varsayılan: sınav sonucu ve sistem alarmı yalnızca uygulama içi; diğerleri e-posta da (karar #85). */
-export const DEFAULT_EMAIL_EVENTS: NotificationKind[] = NOTIFICATION_KINDS.filter((k) => k !== "exam_result" && k !== "email_failed");
+export const DEFAULT_EMAIL_EVENTS: NotificationKind[] = NOTIFICATION_KINDS.filter(
+  (k) => k !== "exam_result" && k !== "email_failed" && k !== "retention_completed",
+);
 
 /** Yeniden deneme bekleme süresi: 1, 5, 15, 60 dk… (üstel, en çok 6 saat). */
 export function nextAttemptDelayMs(attempts: number): number {

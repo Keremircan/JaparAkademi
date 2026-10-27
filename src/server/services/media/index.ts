@@ -128,7 +128,7 @@ export async function completeUpload(
 export type AssetInfo = {
   id: string;
   kind: MediaKind;
-  status: "pending_upload" | "uploaded" | "processing" | "ready" | "failed";
+  status: "pending_upload" | "uploaded" | "processing" | "ready" | "failed" | "purged";
   originalName: string;
   mime: string;
   size: number;

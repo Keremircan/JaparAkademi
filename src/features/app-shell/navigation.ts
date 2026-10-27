@@ -17,7 +17,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { key: "manage", href: "/manage", roles: ["trainer", "section_manager", "ohs_specialist", "hr"] },
   { key: "reports", href: "/reports", roles: PERMISSIONS["reports.view"] },
   { key: "security", href: "/security", roles: ["security"] },
-  { key: "admin", href: "/admin", roles: ["hr", "sysadmin"] },
+  { key: "admin", href: "/admin", roles: ["hr", "ohs_specialist", "sysadmin"] },
   { key: "profile", href: "/profile", roles: "all" },
 ];
 

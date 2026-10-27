@@ -12,7 +12,8 @@ Her satırda sorumlu ve durum doldurulur.
 | 1.3 | Alan adları: `APP_DOMAIN`, `FILES_DOMAIN` | BT | ☐ |
 | 1.4 | M365 uygulama kaydı (Graph `Mail.Send`, uygulama izni) ve gönderen posta kutusu | BT | ☐ |
 | 1.5 | KVKK aydınlatma metni (personel) — hukuk onayı | Hukuk / KVKK sorumlusu | ☐ |
-| 1.6 | Saklama sürelerinin hukuk teyidi (SPEC 12.3, iş ilişkisi bitişi + 15 yıl varsayımı) | Hukuk | ☐ |
+| 1.6 | Saklama sürelerinin hukuk teyidi (SPEC 12.3, iş ilişkisi bitişi + 15 yıl varsayımı); onaylanan süreler Sistem → Parametreler'e gerekçesiyle girilir | Hukuk | ☐ |
+| 1.7 | Anonimleştirilen personelin sertifikalarındaki ad bilgisinin saklanması (karar #124) — hukuk teyidi | Hukuk / KVKK sorumlusu | ☐ |
 
 ## 2. Teknik kurulum (`docs/runbooks/deploy.md`)
 
@@ -33,7 +34,7 @@ Her satırda sorumlu ve durum doldurulur.
 | # | İş | Sorumlu | Durum |
 |---|---|---|---|
 | 3.1 | Organizasyon şeması ve pozisyon listesi girildi (İK listesiyle aynı) | İK | ☐ |
-| 3.2 | Tehlike sınıfı ve İSG eğitim süre/periyotları ayarlandı | İSG uzmanı | ☐ |
+| 3.2 | Tehlike sınıfı ve İSG eğitim süre/periyotları ayarlandı (Sistem → Parametreler) | İSG uzmanı | ☐ |
 | 3.3 | Rol atamaları ve bölüm sorumlusu kapsamları | Sistem yöneticisi | ☐ |
 | 3.4 | Pilot pozisyonların kartları dolduruldu ve onaylandı | Bölüm sorumluları + İSG | ☐ |
 | 3.5 | Ortak İSG modülleri ve içerikleri (risk değerlendirmesi, talimatlar, acil durum planı) | İSG uzmanı | ☐ |
@@ -65,6 +66,5 @@ Her satırda sorumlu ve durum doldurulur.
 ## 6. Bilinen eksikler (pilot sonrası)
 
 - Hata takibi (GlitchTip) kurulmadı; pilotta JSON loglar ve e-posta hatası alarmı kullanılıyor (karar #104).
-- Genel parametreler için yönetim ekranı yok; değişiklik BT tarafından yapılır.
 - Kılavuzlarda ekran görüntüsü yok; uygulama içi "Yardım" bağlantısı Faz 2.
 - Faz 2 kapsamı: web push, zamanlanmış hatırlatmalar, ziyaretçi modülü, süresi dolan eğitimler için otomatik tekrar ataması.

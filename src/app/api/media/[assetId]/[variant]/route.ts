@@ -22,7 +22,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ assetId: strin
   if (!user || user.mustChangePassword) return new NextResponse(null, { status: 401 });
 
   const asset = await getAssetForViewer(toActor(user), parsed.data.assetId);
-  if (!asset || asset.status === "pending_upload") return new NextResponse(null, { status: 404 });
+  if (!asset || asset.status === "pending_upload" || asset.status === "purged") return new NextResponse(null, { status: 404 });
 
   const { variant } = parsed.data;
   const key =

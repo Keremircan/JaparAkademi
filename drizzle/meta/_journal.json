@@ -169,6 +169,20 @@
       "when": 1793094523001,
       "tag": "0023_report_exports_triggers",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1793105584011,
+      "tag": "0024_retention_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1793105586266,
+      "tag": "0025_retention_functions",
+      "breakpoints": true
     }
   ]
 }

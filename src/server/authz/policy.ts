@@ -8,8 +8,8 @@ import type { Role } from "./roles";
  */
 export const PERMISSIONS = {
   // Sistem
-  "settings.manage": ["sysadmin"],
-  "settings.manage_ohs": ["ohs_specialist"],
+  // Parametreler ekranı: her parametreyi yalnızca yöneten rol görür (registry managedBy, karar #117)
+  "settings.view": ["sysadmin", "ohs_specialist"],
   "audit.view": ["sysadmin"],
   "roles.manage": ["sysadmin"],
   // Organizasyon ve personel

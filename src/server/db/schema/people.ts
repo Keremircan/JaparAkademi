@@ -42,6 +42,8 @@ export const personnel = pgTable(
     lockedUntil: tstz("locked_until"),
     lastLoginAt: tstz("last_login_at"),
     passwordChangedAt: tstz("password_changed_at"),
+    /** Saklama süresi dolunca anonimleştirildi (SPEC 12.3, iş paketi 2.1). */
+    anonymizedAt: tstz("anonymized_at"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
