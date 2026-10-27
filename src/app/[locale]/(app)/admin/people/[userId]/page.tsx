@@ -17,6 +17,7 @@ import { AssignmentControls } from "@/features/assignments/components/assignment
 import { AssignmentSummaryView } from "@/features/assignments/components/assignment-summary";
 import { CertificateList } from "@/features/certification/components/certificate-list";
 import { certificatesForUser } from "@/server/services/certificates";
+import { PersonalExportButton } from "@/features/reports/components/personal-export-button";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.people");
@@ -169,6 +170,12 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
           </h2>
           <CertificateList items={certs} canRevoke={can(access.actor, "certificates.revoke") && !isSelf} />
         </section>
+      )}
+
+      {can(access.actor, "people.export_personal") && !isSelf && (
+        <div className="mb-8">
+          <PersonalExportButton userId={person.userId} />
+        </div>
       )}
 
       <h2 className="mb-2 text-lg font-semibold">{t("detail.roles")}</h2>

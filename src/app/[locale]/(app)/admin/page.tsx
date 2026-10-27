@@ -1,4 +1,4 @@
-import { FileBadge, FileText, MonitorSmartphone, Network, Users } from "lucide-react";
+import { FileBadge, FileText, History, MonitorSmartphone, Network, Users } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -35,6 +35,7 @@ async function Content() {
     { key: "legal", href: "/admin/legal", icon: FileText, show: can(actor, "legal.manage") },
     { key: "devices", href: "/admin/devices", icon: MonitorSmartphone, show: can(actor, "devices.manage") },
     { key: "certificates", href: "/admin/certificates", icon: FileBadge, show: can(actor, "certificates.template") },
+    { key: "audit", href: "/admin/audit", icon: History, show: can(actor, "audit.view") },
   ] as const;
 
   return (

@@ -336,7 +336,7 @@ Kursiyer ve pratik eğitmen ekranları telefon ve tablette rahat kullanılmalıd
 | 19 | Tesis içindekiler / tahliye yoklaması | Güvenlik, İSG | Telefon | Anlık liste, "toplanma alanında" | `/security/evacuation` | 2 |
 | 20 | Raporlar ve ayarlar | İK, İSG, BT | PC | Bölüm 10 raporları, parametreler, roller, denetim kaydı | `/reports`, `/admin/settings` | 1 (temel) |
 
-Ek ekranlar: eğitimi bekleyenler (`/admin/people/waiting`), ekip ilerlemesi (`/manage/team`), sınıf eğitimi kayıtları (`/manage/classroom`), okuma görevi (`/learn/reread/[taskId]`), ortak cihazlar (`/admin/devices`), pozisyon listesi ve kart özeti (`/manage/positions`, `/manage/positions/[id]`, sürüm karşılaştırma `/manage/positions/[id]/compare`), modül kütüphanesi (`/manage/modules`), içerik sürüm karşılaştırma (`/manage/library/[id]/compare`), herkese açık sertifika doğrulama (`/verify/[token]`, Faz 1), sertifika şablonu / imza yetkilileri (`/admin/certificates`), şifremi unuttum ve yeni şifre (`/forgot-password`, `/reset-password/[token]`), profil ve şifre değiştirme, bildirim merkezi, KVKK aydınlatma onayı (ilk girişte).
+Ek ekranlar: eğitimi bekleyenler (`/admin/people/waiting`), ekip ilerlemesi (`/manage/team`), sınıf eğitimi kayıtları (`/manage/classroom`), okuma görevi (`/learn/reread/[taskId]`), ortak cihazlar (`/admin/devices`), pozisyon listesi ve kart özeti (`/manage/positions`, `/manage/positions/[id]`, sürüm karşılaştırma `/manage/positions/[id]/compare`), modül kütüphanesi (`/manage/modules`), içerik sürüm karşılaştırma (`/manage/library/[id]/compare`), herkese açık sertifika doğrulama (`/verify/[token]`, Faz 1), sertifika şablonu / imza yetkilileri (`/admin/certificates`), şifremi unuttum ve yeni şifre (`/forgot-password`, `/reset-password/[token]`), rapor (`/reports/[kind]`), denetim kaydı (`/admin/audit`), profil ve şifre değiştirme, bildirim merkezi, KVKK aydınlatma onayı (ilk girişte).
 
 **Navigasyon:** tek uygulama kabuğu kullanılır; menü kullanıcının rollerine göre oluşur. Mobilde alt sekme bar'ı, masaüstünde yan menü olur. Birden fazla rolü olan kullanıcı tüm yetkili bölümleri görür.
 
@@ -586,6 +586,7 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `notification_prefs`, `push_subscriptions` (F2)
 - `import_batches` (dosya, mod: `existing_staff`|`new_hires`, durum, sayılar), `import_rows` (normalleştirilmiş satır; TC yalnızca korumalı hâliyle; onaylanınca değiştirilemez). Onaylanmamış aktarımların satırları 24 saat sonra silinir (worker işi `imports.cleanup`)
 - `corrections`: target_table, target_id, field, old_value, new_value, reason, created_by, created_at
+- `report_exports`: actor_id, report (`training`|`exams`|`ohs`|`onboarding`), format (`xlsx`|`pdf`), filters (jsonb), row_count, at — **değiştirilemez** (her rapor dışa aktarması)
 - `audit_log`: id, at, actor_id, request_id, table_name, record_id, action, old_data, new_data — **append-only**
 
 \* Faz 2
@@ -677,6 +678,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | `notify.retention_days` | 180 | — | sysadmin |
 | `mail.max_attempts` | 5 | — | sysadmin |
 | `auth.reset_link_minutes` / `auth.reset_max_per_hour` | 60 / 3 | — | sysadmin |
+| `reports.max_rows` | 10000 | — | sysadmin |
 | `session.shared_idle_min` | 10 | — | sysadmin |
 | `session.personal_days` | 30 | — | sysadmin |
 | `auth.password_min_length` | 8 | — | sysadmin |
@@ -834,6 +836,15 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 88 | E-postayla şifre sıfırlama | Girişte "Şifremi unuttum" → sicil no. E-postası kayıtlı aktif personele tek kullanımlık, `auth.reset_link_minutes` geçerli bağlantı; ekran mesajı her durumda aynı; sicil ve IP başına saatlik sınır; sıfırlanınca bütün oturumlar kapanır. E-postası olmayan İK'ya başvurur |
 | 89 | Bildirim görünürlüğü | Bildirimi yalnızca alıcısı görür ve açar; bağlantı uygulama içi yoldur, yetki gidilen ekranda yeniden kontrol edilir |
 | 90 | Tekrar ve saklama | Aynı kişiye aynı konu için okunmamış tek bildirim; yeni olay mevcut bildirimi tazeler (e-posta tekrar gitmez). Konu kapanınca (onay, ret, karar, 2. imza) bekleyen bildirimler herkes için okundu sayılır. Bildirimler `notify.retention_days` sonra silinir |
+| 91 | Rapor görünürlüğü | Eğitim ilerleme ve sınav sonuçları: İK (tümü) ve bölüm sorumlusu (kapsamı). İSG kayıt defteri: İSG uzmanı (tüm personel) ve İK. İşe başlama süresi: İK. Güvenlik personel raporlarını görmez; sistem yöneticisi denetim kaydını görür |
+| 92 | Rapor filtreleri | Tarih aralığı, birim (org düğümü ve alt bölümleri), pozisyon. Varsayılan son 90 gün; İSG defterinde içinde bulunulan takvim yılı. Günler Europe/Istanbul'a göre |
+| 93 | En çok yanlış yapılan sorular | Soru metni yalnızca soru bankasını görebilene ve görebildiği sorular için; kişi adı yer almaz (soru bazında sorulma, yanlış ve oran) |
+| 94 | Yıllık İSG saati | Dönemde tamamlanan İSG modüllerinin süresi; yöntem uzaktan / yüz yüze; devreden modüller ilk tamamlandığı dönemde sayılır. Asgari saat `ohs.hours_by_class`; tehlike sınıfı ayarlanmamışsa "tehlikeli" kabul edilir ve rapor uyarır |
+| 95 | İşe başlama süresi | Yalnızca yeni girişler; işe giriş tarihinden (yoksa atama başlangıcından) işe başlama onayına takvim günü. Pozisyon başına kişi, ortalama, ortanca, en az, en çok |
+| 96 | Dışa aktarma | İstek anında Excel (sayfa başına tablo + bilgi sayfası) ya da yatay A4 PDF. Satır sınırı `reports.max_rows`; aşılırsa filtre daraltılması istenir. Ekranda ilk 50 satır önizlenir |
+| 97 | Dışa aktarma kaydı | Her dışa aktarma değiştirilemez `report_exports` kaydına yazılır (kim, rapor, filtreler, satır, biçim) |
+| 98 | Denetim ekranı | Sistem yöneticisi, salt okunur; tablo, kayıt, işlemi yapan ve tarih filtresi; yalnızca değişen alanlar eski → yeni. Maskeli alanlar maskeli görünür |
+| 99 | KVKK kişi verisi dışa aktarma | İK, kişi sayfasından Excel: kimlik ve iletişim (TC maskeli), roller, eğitimler, sınav özetleri (soru/cevap yok), belgeler, KVKK onayları. Her dışa aktarma `data_access_log`'a yazılır; İK kendi verisini bu yolla indiremez |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:
