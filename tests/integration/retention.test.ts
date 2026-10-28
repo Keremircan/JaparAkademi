@@ -195,7 +195,7 @@ describe("Parametreler ekranı (iş paketi 2.1)", () => {
     const sysKeys = (await listSettingsFor(admin.actor)).map((r) => r.key);
     const ohsKeys = (await listSettingsFor(ohs.actor)).map((r) => r.key);
     // İSG uzmanı: İSG parametreleri ve ziyaretçi tipleri (iş paketi 2.2)
-    expect(ohsKeys.every((k) => k.startsWith("ohs.") || k === "visitor.types")).toBe(true);
+    expect(ohsKeys.every((k) => k.startsWith("ohs.") || k === "visitor.types" || k === "visitor.ppe_items")).toBe(true);
     expect(ohsKeys).toContain("visitor.types");
     expect(ohsKeys).toContain("ohs.hazard_class");
     expect(sysKeys.some((k) => k.startsWith("ohs."))).toBe(false);

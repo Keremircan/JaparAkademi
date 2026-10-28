@@ -52,6 +52,10 @@ async function Content() {
         const v = value as Record<"low" | "medium" | "high", number>;
         return (["low", "medium", "high"] as const).map((c) => `${t(`hazard.${c}`)}: ${unit(v[c])}`).join(" · ");
       }
+      case "list": {
+        const v = value as string[];
+        return v.length === 0 ? "—" : v.join(", ");
+      }
       case "visitorTypes": {
         const v = value as Record<"office" | "site" | "contractor", { enabled: boolean; questionCount: number; passScore: number; validityYears: number }>;
         return (["office", "site", "contractor"] as const)

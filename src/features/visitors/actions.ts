@@ -18,6 +18,8 @@ import {
   updateVisit,
   briefingDraftSchema,
   resendVisitLink,
+  checkIn,
+  checkOut,
 } from "@/server/services/visitors";
 
 const uuid = z.uuid();
@@ -164,6 +166,32 @@ export async function discardBriefingDraftAction(id: string): Promise<ActionResu
   if (!uuid.safeParse(id).success) return { ok: false, error: "invalid_input" };
   const { actor } = await actionUser();
   const result = await runAction(() => discardBriefingDraft(actor, id));
+  if (result.ok) refresh();
+  return result;
+}
+
+// ---- Kapı (iş paketi 2.3b) ----
+
+const checkInSchema = z.object({
+  badgeNo: z.string().max(30),
+  ppe: z.array(z.string().max(60)).max(20),
+  hostSicilNo: optText(30),
+  id: idSchema,
+});
+
+export async function checkInAction(visitId: string, input: z.infer<typeof checkInSchema>): Promise<ActionResult<{ checkedIn: true } | { denied: true }>> {
+  const parsed = checkInSchema.safeParse(input);
+  if (!parsed.success || !uuid.safeParse(visitId).success) return { ok: false, error: "invalid_input" };
+  const { actor } = await actionUser();
+  const result = await runAction(() => checkIn(actor, visitId, parsed.data));
+  if (result.ok) refresh();
+  return result;
+}
+
+export async function checkOutAction(visitId: string, badgeReturned: boolean): Promise<ActionResult> {
+  if (!uuid.safeParse(visitId).success || typeof badgeReturned !== "boolean") return { ok: false, error: "invalid_input" };
+  const { actor } = await actionUser();
+  const result = await runAction(() => checkOut(actor, visitId, badgeReturned));
   if (result.ok) refresh();
   return result;
 }

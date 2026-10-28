@@ -151,6 +151,14 @@ export const visits = pgTable(
     briefingStartedAt: tstz("briefing_started_at"),
     briefingCompletedAt: tstz("briefing_completed_at"),
     quizScore: integer(),
+    // Kapı (iş paketi 2.3b, kararlar #147–155): giriş sonrası yalnızca çıkış alanları değişir, çıkıştan sonra donar
+    badgeNo: text(),
+    ppeIssued: jsonb().$type<string[]>(),
+    checkedInAt: tstz("checked_in_at"),
+    checkedInBy: uuid().references(() => users.id, { onDelete: "restrict" }),
+    checkedOutAt: tstz("checked_out_at"),
+    checkedOutBy: uuid().references(() => users.id, { onDelete: "restrict" }),
+    badgeReturned: boolean(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -241,6 +249,45 @@ export const visitorSignatures = pgTable("visitor_signatures", {
   ip: text(),
   userAgent: text(),
 });
+
+// ---- Taşeron geçerliliği ve kara liste reddi (iş paketi 2.3b) ----
+
+/** Bilgilendirmeyi geçen taşeron çalışanının geçerliliği (karar #152). Değiştirilemez; yeni geçerlilik yeni satırdır. */
+export const contractorClearances = pgTable(
+  "contractor_clearances",
+  {
+    id: id(),
+    visitorId: uuid()
+      .notNull()
+      .references(() => visitors.id, { onDelete: "restrict" }),
+    visitId: uuid()
+      .notNull()
+      .unique()
+      .references(() => visits.id, { onDelete: "restrict" }),
+    validUntil: date({ mode: "string" }).notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index("contractor_clearances_visitor_idx").on(t.visitorId, t.validUntil)],
+);
+
+/** Kara liste nedeniyle reddedilen giriş denemesi (karar #151). Değiştirilemez. */
+export const visitDenials = pgTable(
+  "visit_denials",
+  {
+    id: id(),
+    visitId: uuid()
+      .notNull()
+      .references(() => visits.id, { onDelete: "restrict" }),
+    blacklistEntryId: uuid()
+      .notNull()
+      .references(() => blacklistEntries.id, { onDelete: "restrict" }),
+    deniedBy: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    deniedAt: createdAt(),
+  },
+  (t) => [index("visit_denials_visit_idx").on(t.visitId)],
+);
 
 // ---- Kara liste (FG-8.4): yalnızca eklenir; kaldırma gerekçeli kilit alanlarıyla ----
 

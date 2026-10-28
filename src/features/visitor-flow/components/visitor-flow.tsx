@@ -32,6 +32,7 @@ export function VisitorFlow({
   kvkk,
   kiosk,
   resetSeconds,
+  clearanceUntil,
 }: {
   token: string;
   locale: "tr" | "en";
@@ -45,6 +46,8 @@ export function VisitorFlow({
   kvkk: Legal;
   kiosk: boolean;
   resetSeconds: number;
+  /** Geçerli taşeron: kartlar ve sorular atlanır (karar #152). */
+  clearanceUntil: string | null;
 }) {
   const t = useTranslations("visitorFlow");
   const [step, setStep] = useState<"intro" | "cards" | "quiz" | "consent" | "done">("intro");
@@ -63,7 +66,7 @@ export function VisitorFlow({
     return (
       <div className="flex flex-col gap-6">
         <p className="text-xl font-medium">{t("greeting", { name: firstName })}</p>
-        <p className="text-lg">{t("intro.text")}</p>
+        <p className="text-lg">{clearanceUntil ? t("intro.cleared", { date: clearanceUntil.split("-").reverse().join(".") }) : t("intro.text")}</p>
         <FormError error={error} />
         <Button
           size="lg"
@@ -74,7 +77,7 @@ export function VisitorFlow({
               const r = await startBriefingAction(token, locale);
               if (!r.ok) return setError(r.error);
               setIndex(0);
-              setStep("cards");
+              setStep(cards.length === 0 ? (needsQuiz ? "quiz" : "consent") : "cards");
             })
           }
         >

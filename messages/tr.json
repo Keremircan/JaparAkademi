@@ -349,7 +349,13 @@
     "contact_required": "Telefon ya da e-postadan en az birini yazın.",
     "not_kiosk": "Bu cihaz kapı tableti olarak kayıtlı değil.",
     "code_invalid": "Bu koda ait bugünkü bir ziyaret bulunamadı. Lütfen güvenliğe başvurun.",
-    "rate_limited": "Çok fazla deneme yapıldı. Lütfen güvenliğe başvurun."
+    "rate_limited": "Çok fazla deneme yapıldı. Lütfen güvenliğe başvurun.",
+    "visit_not_briefed": "Ziyaretçi bilgilendirmeyi tamamlamadan giriş yapılamaz.",
+    "visit_not_today": "Bu ziyaret bugüne ait değil.",
+    "badge_required": "Kart numarasını yazın.",
+    "host_required": "Ev sahibinin sicil no'sunu yazın.",
+    "visitor_id_required": "Ziyaretçinin kimlik numarasını girin.",
+    "visit_not_inside": "Ziyaretçi içeride değil."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -2142,7 +2148,9 @@
       "blacklist_added": "Kara listeye yeni bir kişi eklendi.",
       "email_failed": "Bazı e-postalar gönderilemedi. E-posta ayarlarını ve kayıtları kontrol edin.",
       "retention_completed": "Saklama süresi dolan {count} kişinin verisi anonimleştirildi.",
-      "visitor_briefed": "{name} bilgilendirmeyi tamamladı."
+      "visitor_briefed": "{name} bilgilendirmeyi tamamladı.",
+      "blacklist_denied": "Kara listedeki bir kişinin girişi kapıda reddedildi.",
+      "visitor_arrived": "Ziyaretçiniz {name} geldi."
     },
     "email": {
       "app": "JAPAR Akademi",
@@ -2163,7 +2171,9 @@
         "blacklist_added": "Kara listeye yeni bir kişi eklendi",
         "email_failed": "E-posta gönderim hatası",
         "retention_completed": "Saklama süresi dolan kişi verileri anonimleştirildi",
-        "visitor_briefed": "Ziyaretçiniz bilgilendirmeyi tamamladı"
+        "visitor_briefed": "Ziyaretçiniz bilgilendirmeyi tamamladı",
+        "blacklist_denied": "Kara listedeki bir kişi giriş denedi",
+        "visitor_arrived": "Ziyaretçiniz geldi"
       }
     },
     "pagination": "Bildirim sayfaları"
@@ -2680,6 +2690,11 @@
         "label": "Kiosk başa dönme süresi",
         "hint": "Bilgilendirme bitince kapı tableti bu süre sonra başa döner.",
         "unit": "{n} saniye"
+      },
+      "visitor_ppe_items": {
+        "label": "Ziyaretçiye verilen KKD",
+        "hint": "Kapıda girişte işaretlenebilecek kişisel koruyucu donanımlar.",
+        "unit": "{n}"
       }
     },
     "visitorTypes": {
@@ -2692,7 +2707,8 @@
       "visitDay": "ziyaret günü",
       "years": "{n} yıl",
       "off": "{type}: kapalı"
-    }
+    },
+    "listHint": "Her satıra bir madde yazın."
   },
   "visitors": {
     "types": {
@@ -2725,6 +2741,10 @@
       "briefings": {
         "title": "Bilgilendirme paketleri",
         "description": "Ziyaretçi tiplerine göre kartlar ve kontrol soruları (Türkçe + İngilizce)."
+      },
+      "gate": {
+        "title": "Kapı",
+        "description": "Bugünün ziyaretleri ve içeridekiler; giriş ve çıkış."
       }
     },
     "mine": {
@@ -2783,7 +2803,11 @@
       "briefing": "Bilgilendirme",
       "briefingDone": "{date} · {locale} · puan {score}",
       "briefingDoneNoQuiz": "{date} · {locale}",
-      "briefingPending": "Henüz tamamlanmadı"
+      "briefingPending": "Henüz tamamlanmadı",
+      "gate": "Kapı",
+      "checkedIn": "Giriş: {time} · kart {badge}",
+      "checkedOut": "Çıkış: {time} · kart {returned, select, true {iade edildi} other {iade edilmedi}}",
+      "ppe": "KKD: {items}"
     },
     "companies": {
       "name": "Firma unvanı",
@@ -2858,7 +2882,31 @@
       "discard": "Taslağı sil",
       "discardConfirm": "Taslak silinsin mi?"
     },
-    "selfRegistered": "Kendi kaydı"
+    "selfRegistered": "Kendi kaydı",
+    "gate": {
+      "search": "Kod ya da ad",
+      "searchButton": "Ara",
+      "empty": "Bugün için ziyaret yok.",
+      "inside": "İçeride",
+      "since": "Giriş: {time}",
+      "badge": "Kart {badge}",
+      "clearance": "Taşeron geçerliliği: {date}",
+      "noId": "Kimlik kayıtlı değil",
+      "notBriefed": "Bilgilendirme bekleniyor",
+      "checkIn": "Giriş yap",
+      "checkInTitle": "Giriş",
+      "badgeNo": "Kart no",
+      "ppe": "Verilen KKD",
+      "hostSicil": "Ev sahibinin sicil no'su",
+      "hostSicilHint": "Ziyaretçi \"{name}\" yazdı; gerçek ev sahibini seçin.",
+      "confirmCheckIn": "Girişi onayla",
+      "denied": "Giriş reddedildi: bu kişi kara listede. İSG uzmanına bildirildi.",
+      "checkedIn": "Giriş yapıldı.",
+      "checkOut": "Çıkış yap",
+      "badgeReturned": "Kart iade edildi",
+      "confirmCheckOut": "Çıkışı onayla",
+      "checkedOut": "Çıkış yapıldı."
+    }
   },
   "visitorFlow": {
     "title": "Ziyaretçi bilgilendirmesi",
@@ -2878,7 +2926,8 @@
     },
     "intro": {
       "text": "Tesise girmeden önce kısa bir iş sağlığı ve güvenliği bilgilendirmesi izleyeceksiniz. Kartlar atlanamaz; sonunda kuralları onaylayıp imzalayacaksınız.",
-      "start": "Başla"
+      "start": "Başla",
+      "cleared": "İSG bilgilendirmeniz {date} tarihine kadar geçerli. Bu ziyarette yalnızca kuralları onaylayıp imzalayacaksınız."
     },
     "cards": {
       "progress": "Kart {n} / {total}",
