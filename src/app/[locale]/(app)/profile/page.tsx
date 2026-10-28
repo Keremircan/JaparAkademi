@@ -1,4 +1,4 @@
-import { KeyRound, LogOut } from "lucide-react";
+import { KeyRound, LogOut, UserRoundPlus } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
@@ -58,6 +58,11 @@ async function Content() {
       {user.sharedDevice && <p className="mt-4 text-sm text-muted-foreground">{t("profile.sharedDevice")}</p>}
 
       <div className="mt-6 flex flex-col gap-3">
+        {/* Ziyaretçi ön kaydı her personele açıktır (iş paketi 2.2, karar #130) */}
+        <Button variant="outline" size="lg" className="justify-start" nativeButton={false} render={<Link href="/visits" />}>
+          <UserRoundPlus aria-hidden="true" />
+          {t("visitors.mine.title")}
+        </Button>
         <Button
           variant="outline"
           size="lg"

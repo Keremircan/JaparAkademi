@@ -29,10 +29,11 @@ const msgKey = (key: string) => key.replace(/\./g, "_");
 async function Content() {
   const access = await adminAccess("settings.view");
   if (!access) return <NotFoundView />;
-  const [t, tNav, tKinds, format, rows] = await Promise.all([
+  const [t, tNav, tKinds, tTypes, format, rows] = await Promise.all([
     getTranslations("settings"),
     getTranslations("sections.admin"),
     getTranslations("notifications.email.kinds"),
+    getTranslations("visitors.types"),
     getFormatter(),
     listSettingsFor(access.actor),
   ]);
@@ -50,6 +51,21 @@ async function Content() {
       case "perHazardClass": {
         const v = value as Record<"low" | "medium" | "high", number>;
         return (["low", "medium", "high"] as const).map((c) => `${t(`hazard.${c}`)}: ${unit(v[c])}`).join(" · ");
+      }
+      case "visitorTypes": {
+        const v = value as Record<"office" | "site" | "contractor", { enabled: boolean; questionCount: number; passScore: number; validityYears: number }>;
+        return (["office", "site", "contractor"] as const)
+          .map((k) =>
+            v[k].enabled
+              ? t("visitorTypes.summary", {
+                  type: tTypes(k),
+                  questions: v[k].questionCount,
+                  score: v[k].passScore,
+                  validity: v[k].validityYears === 0 ? t("visitorTypes.visitDay") : t("visitorTypes.years", { n: v[k].validityYears }),
+                })
+              : t("visitorTypes.off", { type: tTypes(k) }),
+          )
+          .join(" · ");
       }
       case "events": {
         const v = value as string[];

@@ -14,6 +14,7 @@ Her satırda sorumlu ve durum doldurulur.
 | 1.5 | KVKK aydınlatma metni (personel) — hukuk onayı | Hukuk / KVKK sorumlusu | ☐ |
 | 1.6 | Saklama sürelerinin hukuk teyidi (SPEC 12.3, iş ilişkisi bitişi + 15 yıl varsayımı); onaylanan süreler Sistem → Parametreler'e gerekçesiyle girilir | Hukuk | ☐ |
 | 1.7 | Anonimleştirilen personelin sertifikalarındaki ad bilgisinin saklanması (karar #124) — hukuk teyidi | Hukuk / KVKK sorumlusu | ☐ |
+| 1.8 | Ziyaretçi KVKK metni ve ziyaretçi kuralları (TR + EN) — hukuk onayı, Faz 2 öncesi | Hukuk / İSG | ☐ |
 
 ## 2. Teknik kurulum (`docs/runbooks/deploy.md`)
 

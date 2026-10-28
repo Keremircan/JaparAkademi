@@ -50,8 +50,13 @@ export const PERMISSIONS = {
   "reports.onboarding": ["hr"],
   // KVKK kişi verisi dışa aktarma (SPEC 13.3, karar #99)
   "people.export_personal": ["hr"],
-  // Ziyaretçi (Faz 2)
-  "visitors.manage": ["security"],
+  // Ziyaretçi (Faz 2, iş paketi 2.2, kararlar #128–131). Ev sahibi olarak ön kayıt her personele açıktır.
+  "visits.manage_all": ["security"],
+  "visits.view_all": ["security", "ohs_specialist"],
+  "visitor_briefings.manage": ["ohs_specialist"],
+  "contractors.manage": ["ohs_specialist", "security"],
+  "blacklist.manage": ["ohs_specialist", "security"],
+  "legal.visitor_rules": ["ohs_specialist"],
 } as const satisfies Record<string, readonly Role[]>;
 
 export type Permission = keyof typeof PERMISSIONS;

@@ -10,11 +10,11 @@ import { Textarea } from "@/components/ui/textarea";
 import type { ActionResult } from "@/features/shared/action-result";
 import { saveLegalDraftAction } from "../actions";
 
-export function LegalForm({ text }: { text?: { id: string; title: string; body: string } }) {
+export function LegalForm({ kind, locale, text }: { kind: string; locale: string; text?: { id: string; title: string; body: string } }) {
   const t = useTranslations("admin.legal");
   const tc = useTranslations("common");
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(
-    saveLegalDraftAction.bind(null, text?.id ?? null),
+    saveLegalDraftAction.bind(null, { id: text?.id || null, kind, locale }),
     null,
   );
   return (
