@@ -128,7 +128,7 @@
     },
     "security": {
       "title": "Güvenlik",
-      "description": "Ziyaretçi kaydı ve tahliye yoklaması Faz 2'de açılacak."
+      "description": "Ziyaretçi ön kayıtları, taşeron firmalar, kara liste ve ziyaretçi bilgilendirmesi."
     },
     "admin": {
       "title": "Sistem",
@@ -205,7 +205,7 @@
     "no_valid_rows": "Aktarılacak geçerli satır yok.",
     "invalid_title": "Başlık en az 3 karakter olmalı.",
     "invalid_body": "Metin çok kısa.",
-    "draft_exists": "Yayınlanmamış bir taslak zaten var.",
+    "draft_exists": "Bu tür için zaten bir taslak var; önce onu düzenleyin.",
     "already_published": "Yayınlanmış metin değiştirilemez.",
     "legal_text_outdated": "Metin güncellendi; sayfayı yenileyip tekrar onaylayın.",
     "upload_too_large": "Dosya izin verilen boyuttan büyük.",
@@ -317,7 +317,28 @@
     "report_too_large": "Rapor satır sınırını aşıyor. Tarih aralığını ya da birim/pozisyon filtresini daraltın.",
     "invalid_setting": "Değer geçersiz ya da izin verilen aralığın dışında.",
     "setting_readonly": "Bu parametre ekrandan değiştirilemez.",
-    "setting_note_required": "Bu parametre için en az 10 karakterlik bir gerekçe yazın."
+    "setting_note_required": "Bu parametre için en az 10 karakterlik bir gerekçe yazın.",
+    "legal_locale_missing": "Bu sürümün Türkçe ve İngilizce metinlerinin ikisi de gerekli.",
+    "passport_invalid": "Pasaport bilgisi geçersiz. Ülkeyi iki harfle (ör. DE) ve numarayı girin.",
+    "phone_invalid": "Telefon numarası geçersiz.",
+    "email_invalid": "E-posta adresi geçersiz.",
+    "tax_no_invalid": "Vergi numarası 10 ya da 11 haneli olmalı.",
+    "tax_no_taken": "Bu vergi numarasıyla kayıtlı bir firma var.",
+    "invalid_date": "Tarih geçersiz.",
+    "date_in_past": "Ziyaret tarihi bugünden önce olamaz.",
+    "host_not_found": "Bu sicil numarasıyla aktif personel bulunamadı.",
+    "visitor_type_disabled": "Bu ziyaretçi tipi şu an kullanılmıyor.",
+    "company_required": "Taşeron ziyaretçide firma seçimi zorunlu.",
+    "visit_locked": "Bilgilendirme başladığı için ziyaret değiştirilemez.",
+    "reason_required": "Gerekçe yazın (en az 10 karakter).",
+    "blacklist_exists": "Bu kişi zaten kara listede.",
+    "already_lifted": "Bu kayıt zaten kaldırılmış.",
+    "briefing_no_cards": "En az bir bilgilendirme kartı ekleyin.",
+    "briefing_card_incomplete": "Her kartın Türkçe ve İngilizce başlığı ve metni dolu olmalı.",
+    "briefing_question_incomplete": "Her sorunun Türkçe ve İngilizce metni ve bütün şıkları dolu olmalı.",
+    "briefing_question_invalid": "Sorunun Türkçe ve İngilizce şık sayıları eşit olmalı ve doğru şık seçilmeli.",
+    "briefing_not_enough_questions": "Soru sayısı bu ziyaretçi tipinin istediği sayıdan az.",
+    "briefing_media_not_ready": "Kartlardaki görsel ya da video henüz hazır değil."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -335,8 +356,8 @@
         "description": "Personel kayıtları, Excel aktarımı, şifre sıfırlama"
       },
       "legal": {
-        "title": "KVKK aydınlatma metni",
-        "description": "Personelin ilk girişte onayladığı metin"
+        "title": "Aydınlatma metinleri ve kurallar",
+        "description": "Personel ve ziyaretçi KVKK metinleri, ziyaretçi kuralları"
       },
       "devices": {
         "title": "Ortak cihazlar",
@@ -576,8 +597,12 @@
       "saveScopes": "Kapsamı kaydet"
     },
     "legal": {
-      "title": "KVKK aydınlatma metni",
-      "intro": "Yayınlanan metin değiştirilemez. Yeni sürüm yayınlanınca tüm personel bir sonraki girişte yeniden onaylar.",
+      "title": "Aydınlatma metinleri",
+      "intro": {
+        "kvkk_personnel": "Yayınlanan metin değiştirilemez. Yeni sürüm yayınlanınca tüm personel bir sonraki girişte yeniden onaylar.",
+        "kvkk_visitor": "Ziyaretçinin bilgilendirmede onayladığı KVKK metni. Türkçe ve İngilizce birlikte yayınlanır; yayınlanan metin değiştirilemez.",
+        "visitor_rules": "Ziyaretçinin girişten önce onayladığı tesis kuralları. Türkçe ve İngilizce birlikte yayınlanır; yayınlanan metin değiştirilemez."
+      },
       "newDraft": "Yeni sürüm hazırla",
       "version": "Sürüm {version}",
       "draft": "Taslak",
@@ -587,8 +612,20 @@
       "body": "Metin",
       "bodyHint": "Hukuk/KVKK sorumlusunun onayladığı metni yapıştırın. Paragraflar boş satırla ayrılır.",
       "publish": "Yayınla",
-      "publishConfirm": "Yayınlanan metin değiştirilemez ve tüm personelden yeniden onay istenir. Yayınlansın mı?",
-      "empty": "Henüz metin yok. Yayınlanmış metin yokken onay istenmez."
+      "publishConfirm": "Yayınlanan metin değiştirilemez. Personel metninde tüm personelden yeniden onay istenir. Yayınlansın mı?",
+      "empty": "Henüz metin yok. Yayınlanmış metin yokken onay istenmez.",
+      "kindsLabel": "Metin türü",
+      "kinds": {
+        "kvkk_personnel": "Personel KVKK metni",
+        "kvkk_visitor": "Ziyaretçi KVKK metni",
+        "visitor_rules": "Ziyaretçi kuralları"
+      },
+      "locales": {
+        "tr": "Türkçe",
+        "en": "İngilizce"
+      },
+      "addLocale": "{locale} metni ekle",
+      "missingLocales": "Yayınlamak için bütün dillerin metni gerekir."
     }
   },
   "consent": {
@@ -2086,6 +2123,7 @@
       "second_signature_pending": "{name} için pratik sınav formu 2. imzanızı bekliyor.",
       "readiness_pending": "{name} işe başlama onayınızı bekliyor.",
       "all_attempts_failed": "{name}, \"{title}\" sınav haklarının hepsini kullandı. Karar bekleniyor.",
+      "blacklist_added": "Kara listeye yeni bir kişi eklendi.",
       "email_failed": "Bazı e-postalar gönderilemedi. E-posta ayarlarını ve kayıtları kontrol edin.",
       "retention_completed": "Saklama süresi dolan {count} kişinin verisi anonimleştirildi."
     },
@@ -2105,6 +2143,7 @@
         "second_signature_pending": "2. imzanızı bekleyen bir pratik sınav var",
         "readiness_pending": "İşe başlama onayınızı bekleyen bir personel var",
         "all_attempts_failed": "Kararınızı bekleyen bir personel var",
+        "blacklist_added": "Kara listeye yeni bir kişi eklendi",
         "email_failed": "E-posta gönderim hatası",
         "retention_completed": "Saklama süresi dolan kişi verileri anonimleştirildi"
       }
@@ -2592,7 +2631,181 @@
         "label": "Denetim kaydı",
         "hint": "Bu süreden eski denetim kayıtları silinir.",
         "unit": "{n} yıl"
+      },
+      "visitor_types": {
+        "label": "Ziyaretçi tipleri",
+        "hint": "Tip başına kontrol sorusu sayısı, geçme notu, kart başına en az okuma süresi ve geçerlilik. Geçerlilik 0 = yalnızca ziyaret günü.",
+        "unit": "{n}"
       }
+    },
+    "visitorTypes": {
+      "enabled": "Açık",
+      "questionCount": "Soru sayısı",
+      "passScore": "Geçme notu",
+      "cardMinSeconds": "Kart başına en az (sn)",
+      "validityYears": "Geçerlilik (yıl)",
+      "summary": "{type}: {questions} soru, geçme {score}, {validity}",
+      "visitDay": "ziyaret günü",
+      "years": "{n} yıl",
+      "off": "{type}: kapalı"
+    }
+  },
+  "visitors": {
+    "types": {
+      "office": "Ofis ziyaretçisi",
+      "site": "Saha ziyaretçisi",
+      "contractor": "Taşeron / servis"
+    },
+    "status": {
+      "planned": "Planlandı",
+      "briefed": "Bilgilendirildi",
+      "checked_in": "İçeride",
+      "checked_out": "Çıktı",
+      "cancelled": "İptal edildi"
+    },
+    "blacklisted": "Kara listede",
+    "securityNewHint": "Ev sahibi sicil no'su boş bırakılırsa ev sahibi siz olursunuz. Kimlik no girilirse ziyaretçi tekrar geldiğinde tanınır.",
+    "cards": {
+      "visits": {
+        "title": "Ziyaretler",
+        "description": "Ön kayıtlı ve geçmiş ziyaretler; tarih ve duruma göre süzün."
+      },
+      "contractors": {
+        "title": "Taşeron firmalar",
+        "description": "Firma kartı, sözleşme bitişi ve kayıtlı çalışanlar."
+      },
+      "blacklist": {
+        "title": "Kara liste",
+        "description": "Giriş yasağı olan kişiler. Ekleme ve kaldırma gerekçelidir."
+      },
+      "briefings": {
+        "title": "Bilgilendirme paketleri",
+        "description": "Ziyaretçi tiplerine göre kartlar ve kontrol soruları (Türkçe + İngilizce)."
+      }
+    },
+    "mine": {
+      "title": "Ziyaretçilerim",
+      "description": "Ev sahibi olduğunuz ziyaretler. Ziyaretçinizi önceden kaydedin; kapıda beklemesi kısalır.",
+      "new": "Ziyaretçi kaydet",
+      "newHint": "Ziyaretçinin kimlik bilgisini güvenlik kapıda alır; burada girmeyin."
+    },
+    "list": {
+      "empty": "Bu aralıkta ziyaret yok.",
+      "host": "Ev sahibi: {name}",
+      "from": "Başlangıç",
+      "to": "Bitiş",
+      "allStatuses": "Bütün durumlar",
+      "apply": "Uygula"
+    },
+    "form": {
+      "type": "Ziyaretçi tipi",
+      "date": "Ziyaret tarihi",
+      "fullName": "Ad soyad",
+      "companyName": "Firma",
+      "contractor": "Taşeron firma",
+      "chooseCompany": "Firma seçin",
+      "noCompanies": "Kayıtlı taşeron firma yok. Güvenlik ya da İSG uzmanı firma kartını açmalı.",
+      "phone": "Telefon",
+      "email": "E-posta",
+      "emailHint": "Varsa bilgilendirme bağlantısı bu adrese gönderilir.",
+      "note": "Not",
+      "optional": "isteğe bağlı",
+      "idLegend": "Güvenlik bilgileri",
+      "hostSicil": "Ev sahibinin sicil no'su",
+      "hostSicilHint": "Başka bir personel adına kayıt açıyorsanız yazın.",
+      "idKind": "Kimlik türü",
+      "idNone": "Girilmedi",
+      "idTc": "TC kimlik no",
+      "idPassport": "Pasaport",
+      "idCountry": "Ülke (2 harf)",
+      "idNumber": "Kimlik numarası",
+      "create": "Kaydet",
+      "save": "Değişiklikleri kaydet",
+      "saved": "Kaydedildi."
+    },
+    "detail": {
+      "status": "Durum",
+      "host": "Ev sahibi",
+      "id": "Kimlik",
+      "edit": "Bilgileri düzelt",
+      "cancel": "Ziyareti iptal et",
+      "cancelReason": "İptal gerekçesi",
+      "cancelConfirm": "İptal et",
+      "history": "Önceki ziyaretleri",
+      "blacklistedWarning": "Bu kişi kara listede. Giriş yapmadan önce İSG uzmanıyla görüşün."
+    },
+    "companies": {
+      "name": "Firma unvanı",
+      "taxNo": "Vergi no",
+      "contractEnd": "Sözleşme bitişi",
+      "contractEndShort": "Sözleşme bitişi: {date}",
+      "responsible": "Sorumlu kişi",
+      "create": "Firma ekle",
+      "empty": "Henüz taşeron firma yok.",
+      "archived": "Arşivde",
+      "archive": "Arşive al",
+      "unarchive": "Arşivden çıkar",
+      "archiveConfirm": "Arşivdeki firma yeni ön kayıtta seçilemez. Arşive alınsın mı?",
+      "workers": "Kayıtlı çalışanlar",
+      "noWorkers": "Bu firmadan kayıtlı çalışan yok.",
+      "workersHint": "Çalışanlar ilk taşeron ziyaretinde kaydedilir; eğitim geçerlilikleri bilgilendirmeyle birlikte gelecek."
+    },
+    "blacklist": {
+      "reason": "Gerekçe",
+      "reasonHint": "En az 10 karakter. Kayıt değiştirilemez.",
+      "endsAt": "Bitiş tarihi",
+      "endsAtHint": "Boş bırakılırsa süresizdir.",
+      "add": "Kara listeye ekle",
+      "added": "Kara listeye eklendi.",
+      "empty": "Kara listede kimse yok.",
+      "active": "Geçerli",
+      "lifted": "Kaldırıldı",
+      "expired": "Süresi doldu",
+      "addedBy": "{name} ekledi, {date}",
+      "until": "Bitiş: {date}",
+      "liftedBy": "{name} kaldırdı, {date}",
+      "lift": "Kara listeden kaldır",
+      "liftReason": "Kaldırma gerekçesi",
+      "liftConfirm": "Kaldır"
+    },
+    "briefings": {
+      "intro": "Her ziyaretçi tipi için kartlar ve kontrol soruları. Türkçe ve İngilizce eksiksiz olmadan yayınlanamaz; yayınlanan sürüm değiştirilemez.",
+      "current": "Yayında: sürüm {version} ({date})",
+      "none": "Henüz yayınlanmış paket yok",
+      "typeDisabled": "Bu tip parametrelerde kapalı",
+      "newDraft": "Yeni sürüm hazırla",
+      "editDraft": "Taslağı düzenle (sürüm {version})",
+      "editTitle": "{type} · sürüm {version}",
+      "editHint": "Taslak kaydedilir; yayınlayınca ziyaretçiler bu sürümü görür.",
+      "cards": "Bilgilendirme kartları",
+      "cardN": "Kart {n}",
+      "titleTr": "Başlık (Türkçe)",
+      "bodyTr": "Metin (Türkçe)",
+      "titleEn": "Başlık (İngilizce)",
+      "bodyEn": "Metin (İngilizce)",
+      "media": "Görsel ya da video",
+      "moveUp": "Yukarı taşı",
+      "moveDown": "Aşağı taşı",
+      "remove": "Kaldır",
+      "addCard": "Kart ekle",
+      "questions": "Kontrol soruları",
+      "questionsRequired": "Bu tip için ziyaretçiye {count} soru sorulur; en az {count} soru gerekir.",
+      "questionsNone": "Bu tipte kontrol sorusu sorulmaz (parametrelerde değiştirilebilir).",
+      "questionN": "Soru {n}",
+      "stemTr": "Soru (Türkçe)",
+      "stemEn": "Soru (İngilizce)",
+      "correct": "Doğru şık",
+      "correctShort": "Doğru",
+      "optionTr": "{n}. şık (Türkçe)",
+      "optionEn": "{n}. şık (İngilizce)",
+      "removeOption": "Şıkkı kaldır",
+      "addOption": "Şık ekle",
+      "addQuestion": "Soru ekle",
+      "save": "Taslağı kaydet",
+      "saved": "Taslak kaydedildi.",
+      "publish": "Yayınla",
+      "discard": "Taslağı sil",
+      "discardConfirm": "Taslak silinsin mi?"
     }
   }
 }

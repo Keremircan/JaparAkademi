@@ -64,6 +64,14 @@ export default async function globalSetup() {
       roles: ["hr"],
       mustChangePassword: false,
     });
+    // Güvenlik görevlisi (ziyaretçi ön kaydı, iş paketi 2.2)
+    await createAccount(sys, {
+      sicilNo: `E2E-${suffix}-SEC${p}`,
+      fullName: "Deneme Güvenlik",
+      password: E2E_PASSWORD,
+      roles: ["security"],
+      mustChangePassword: false,
+    });
   }
 
   for (const project of ["mobile", "desktop"]) {

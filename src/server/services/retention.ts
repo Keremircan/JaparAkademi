@@ -1,7 +1,7 @@
 import { and, eq, isNotNull, isNull, lte, ne, sql } from "drizzle-orm";
 import type { Actor } from "@/server/authz/actor";
 import { db } from "@/server/db/client";
-import { mediaAssets, personnel, signatures } from "@/server/db/schema";
+import { blacklistEntries, mediaAssets, personnel, signatures, visitors, visits } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { todayIn } from "@/lib/dates";
 import { logger } from "@/server/logger";
@@ -19,7 +19,7 @@ import { getSettings } from "./settings";
 const MAX_PEOPLE_PER_RUN = 200;
 const MAX_IMAGES_PER_RUN = 500;
 
-export type RetentionResult = { anonymized: number; images: number; auditRows: number };
+export type RetentionResult = { anonymized: number; images: number; auditRows: number; visitors: number; blacklist: number };
 
 /** Süresi dolan ayrılmış personeli anonimleştirir ve sistem yöneticilerine bildirir (karar #125). */
 export async function anonymizeDuePersonnel(actor: Actor, now: Date = new Date()): Promise<number> {
@@ -74,6 +74,48 @@ export async function purgeAnonymizedSignatureImages(actor: Actor): Promise<numb
   return assets.length;
 }
 
+/**
+ * Ziyaretçi verisi (karar #134): son ziyaret tarihi + `retention.visitor_years`; taşeron ziyareti olan kişide
+ * `retention.contractor_years`. İçerideki ziyaretçiye veritabanı fonksiyonu dokunmaz.
+ */
+export async function anonymizeDueVisitors(actor: Actor, now: Date = new Date()): Promise<number> {
+  const s = await getSettings(["org.timezone", "retention.visitor_years", "retention.contractor_years"]);
+  const today = todayIn(s["org.timezone"], now);
+  const visitorCutoff = personnelAnonymizationCutoff(today, s["retention.visitor_years"]);
+  const contractorCutoff = personnelAnonymizationCutoff(today, s["retention.contractor_years"]);
+  const isContractor = sql<boolean>`bool_or(${visits.visitorType} = 'contractor')`;
+  const last = sql<string>`max(${visits.plannedDate})`;
+  const due = await db()
+    .select({ id: visitors.id })
+    .from(visitors)
+    .innerJoin(visits, eq(visits.visitorId, visitors.id))
+    .where(isNull(visitors.anonymizedAt))
+    .groupBy(visitors.id)
+    .having(sql`(${isContractor} and ${last} <= ${contractorCutoff}) or (not ${isContractor} and ${last} <= ${visitorCutoff})`)
+    .limit(MAX_PEOPLE_PER_RUN);
+  if (due.length === 0) return 0;
+  return withActor(actor, async (tx) => {
+    const rows = await tx.execute(sql`select app_anonymize_visitors(array[${sql.join(due.map((d) => sql`${d.id}`), sql`, `)}]::uuid[])`);
+    return rows.length;
+  });
+}
+
+/** Kara liste: kaldırılmasından `retention.blacklist_years_after_lift` sonra kişi verisi silinir. */
+export async function anonymizeLiftedBlacklist(actor: Actor, now: Date = new Date()): Promise<number> {
+  const { "retention.blacklist_years_after_lift": years } = await getSettings(["retention.blacklist_years_after_lift"]);
+  const before = auditPurgeBefore(now, years);
+  const due = await db()
+    .select({ id: blacklistEntries.id })
+    .from(blacklistEntries)
+    .where(and(isNotNull(blacklistEntries.liftedAt), lte(blacklistEntries.liftedAt, before), isNull(blacklistEntries.anonymizedAt)))
+    .limit(MAX_PEOPLE_PER_RUN);
+  if (due.length === 0) return 0;
+  return withActor(actor, async (tx) => {
+    const rows = await tx.execute(sql`select app_anonymize_blacklist(array[${sql.join(due.map((d) => sql`${d.id}`), sql`, `)}]::uuid[])`);
+    return rows.length;
+  });
+}
+
 /** Saklama süresini geçen denetim kayıtlarını siler (retention.audit_years). */
 export async function purgeOldAuditLog(actor: Actor, now: Date = new Date()): Promise<number> {
   const { "retention.audit_years": years } = await getSettings(["retention.audit_years"]);
@@ -84,7 +126,7 @@ export async function purgeOldAuditLog(actor: Actor, now: Date = new Date()): Pr
   });
 }
 
-/** Gece işi: sırayla anonimleştirme, imza görselleri, denetim kaydı. */
+/** Gece işi: sırayla personel, ziyaretçi ve kara liste anonimleştirme, imza görselleri, denetim kaydı. */
 export async function runRetention(actor: Actor, now: Date = new Date()): Promise<RetentionResult> {
   const anonymized = await anonymizeDuePersonnel(actor, now);
   let images = 0;
@@ -94,6 +136,8 @@ export async function runRetention(actor: Actor, now: Date = new Date()): Promis
     // Depo erişilemezse kayıtlar "purged" olmaz; ertesi gece yeniden denenir
     logger.error({ err }, "İmza görselleri silinemedi");
   }
+  const visitorCount = await anonymizeDueVisitors(actor, now);
+  const blacklist = await anonymizeLiftedBlacklist(actor, now);
   const auditRows = await purgeOldAuditLog(actor, now);
-  return { anonymized, images, auditRows };
+  return { anonymized, images, auditRows, visitors: visitorCount, blacklist };
 }

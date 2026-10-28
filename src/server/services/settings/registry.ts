@@ -28,6 +28,20 @@ const OHS = ["ohs_specialist"] as const satisfies readonly Role[];
 export const hazardClass = z.enum(["low", "medium", "high"]);
 const perHazardClass = z.object({ low: positiveInt, medium: positiveInt, high: positiveInt });
 
+/**
+ * Ziyaretçi tipi ayarları (SPEC 8.1, karar #126). validityYears = 0: yalnızca ziyaret günü geçerli.
+ * questionCount = 0: kontrol sorusu yok, onay yeterli.
+ */
+const visitorTypeSettings = z.object({
+  enabled: z.boolean(),
+  questionCount: z.number().int().min(0).max(50),
+  passScore: z.number().int().min(0).max(100),
+  cardMinSeconds: z.number().int().min(0).max(600),
+  validityYears: z.number().int().min(0).max(10),
+});
+export const visitorTypesSchema = z.object({ office: visitorTypeSettings, site: visitorTypeSettings, contractor: visitorTypeSettings });
+export type VisitorTypeSettings = z.infer<typeof visitorTypeSettings>;
+
 export const SETTINGS = {
   "org.timezone": def({ schema: z.string().min(1), default: "Europe/Istanbul", managedBy: SYS }),
 
@@ -93,6 +107,17 @@ export const SETTINGS = {
   "upload.max_video_mb": def({ schema: positiveInt.max(10_240), default: 2048, managedBy: SYS }),
   "upload.max_pdf_mb": def({ schema: positiveInt.max(1024), default: 50, managedBy: SYS }),
   "upload.max_image_mb": def({ schema: positiveInt.max(200), default: 15, managedBy: SYS }),
+
+  // Ziyaretçi tipleri (SPEC 8.1): ofis onay yeterli; saha 3 soru hepsi doğru; taşeron 10 soru, 80 puan, 1 yıl
+  "visitor.types": def({
+    schema: visitorTypesSchema,
+    default: {
+      office: { enabled: true, questionCount: 0, passScore: 100, cardMinSeconds: 10, validityYears: 0 },
+      site: { enabled: true, questionCount: 3, passScore: 100, cardMinSeconds: 15, validityYears: 0 },
+      contractor: { enabled: true, questionCount: 10, passScore: 80, cardMinSeconds: 20, validityYears: 1 },
+    },
+    managedBy: OHS,
+  }),
 
   // Saklama süreleri (SPEC 12.3, hukuk teyidi gerekli)
   "retention.personnel_years_after_exit": def({ schema: positiveInt.max(50), default: 15, managedBy: SYS }),

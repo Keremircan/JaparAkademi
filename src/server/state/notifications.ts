@@ -17,6 +17,8 @@ export const NOTIFICATION_KINDS = [
   "second_signature_pending",
   "readiness_pending",
   "all_attempts_failed",
+  // İSG uzmanı (Faz 2)
+  "blacklist_added",
   // Sistem yöneticisi
   "email_failed",
   "retention_completed",

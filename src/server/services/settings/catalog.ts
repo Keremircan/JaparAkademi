@@ -12,6 +12,7 @@ export type SettingInput =
   | { kind: "hazardClass" }
   | { kind: "perHazardClass" }
   | { kind: "events" }
+  | { kind: "visitorTypes" }
   | { kind: "readonly" };
 
 export const SETTING_GROUPS = ["org", "ohs", "exam", "training", "auth", "notify", "certificate", "reports", "upload", "retention"] as const;
@@ -28,6 +29,8 @@ export const SETTINGS_CATALOG: Partial<Record<SettingKey, Entry>> = {
   "ohs.hazard_class": { group: "ohs", input: { kind: "hazardClass" } },
   "ohs.hours_by_class": { group: "ohs", input: { kind: "perHazardClass" } },
   "ohs.renewal_years_by_class": { group: "ohs", input: { kind: "perHazardClass" } },
+  // Ziyaretçi tipleri tablo olarak düzenlenir (karar #126)
+  "visitor.types": { group: "ohs", input: { kind: "visitorTypes" } },
 
   "exam.theory.question_count": { group: "exam", input: int },
   "exam.theory.duration_min": { group: "exam", input: int },

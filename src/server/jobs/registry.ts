@@ -47,7 +47,7 @@ export async function registerJobs(boss: PgBoss) {
   // Saklama süreleri (karar #120–125): bildirim temizliğinden sonra
   await boss.work(QUEUES.retention, { batchSize: 1 }, async () => {
     const r = await runRetention(systemActor("worker:retention"));
-    if (r.anonymized || r.images || r.auditRows) logger.info(r, "Saklama süresi işleri tamamlandı");
+    if (r.anonymized || r.images || r.auditRows || r.visitors || r.blacklist) logger.info(r, "Saklama süresi işleri tamamlandı");
   });
   await boss.schedule(QUEUES.retention, "45 3 * * *", null, { tz: "Europe/Istanbul" });
 

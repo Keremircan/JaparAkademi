@@ -34,7 +34,7 @@ Sistem kimseyi otomatik reddetmez; karar sizindir ve değiştirilemez.
 ### Raporlar ve KVKK
 - **Raporlar**: eğitim ilerleme, sınav sonuçları, İSG eğitim kayıt defteri, işe başlama süresi. Filtreleyin, önizleyin, Excel/PDF indirin; her indirme kayda geçer.
 - **Kişi verisini dışa aktar** (kişi sayfası): KVKK kapsamındaki talepler için kişinin verilerini Excel olarak verir (TC maskeli). Kendi verinizi bu yolla indiremezsiniz.
-- **KVKK aydınlatma metni** (Sistem → KVKK aydınlatma metni): yeni sürüm yayımlanınca bütün kullanıcılar ilk girişte yeniden onaylar.
+- **Aydınlatma metinleri** (Sistem → Aydınlatma metinleri ve kurallar): personel KVKK metni (yeni sürümde bütün kullanıcılar yeniden onaylar) ve ziyaretçi KVKK metni (Türkçe + İngilizce birlikte yayınlanır).
 
 ---
 
@@ -75,10 +75,23 @@ Yalnızca kapsamınızdaki birimlerin personelini ve içeriklerini görürsünü
 - **Tehlike sınıfı**, yıllık İSG eğitim saatleri ve yenileme süreleri **Sistem → Parametreler**'dedir; tehlike sınıfı ayarlanana kadar "tehlikeli" kabul edilir ve raporda uyarı görünür.
 - **Raporlar → İSG eğitim kayıt defteri**: bütün personelin İSG eğitimleri, yöntem (uzaktan/yüz yüze), geçerlilik ve kişi başı yıllık saat — denetimde sunulabilir biçimde Excel/PDF.
 - İSG modülünü tamamlayan herkes için **katılım belgesi** kendiliğinden düzenlenir.
+- **Güvenlik → Bilgilendirme paketleri**: her ziyaretçi tipi için kartlar ve kontrol soruları (Türkçe + İngilizce). Taslağı kaydedin, eksiksizse **Yayınla**. Yayınlanan sürüm değişmez; değişiklik için yeni sürüm hazırlayın.
+- **Ziyaretçi tipleri** (soru sayısı, geçme notu, geçerlilik) Sistem → Parametreler'dedir. **Ziyaretçi kuralları** metni Sistem → Aydınlatma metinleri'ndedir.
+- **Güvenlik → Taşeron firmalar** ve **Kara liste**: güvenlik görevlisiyle birlikte yönetirsiniz; kara listeye eklenen her kişi için bildirim alırsınız.
 
 ---
 
-## 4. Sistem yöneticisi
+## 4. Güvenlik görevlisi
+
+- **Güvenlik → Ziyaretler**: bugünden itibaren planlı ziyaretler; tarih ve durumla süzün. **Ziyaretçi kaydet** ile herhangi bir personel adına (ev sahibi sicil no) ön kayıt açın; kimlik no'yu (TC ya da pasaport) yalnızca siz girersiniz. Aynı kimlik no ile gelen kişi tanınır.
+- Kara listedeki kişinin ziyareti kırmızı işaretle görünür; içeri almadan önce İSG uzmanıyla görüşün.
+- **Taşeron firmalar**: firma kartı (unvan, vergi no, sözleşme bitişi). Taşeron ziyaretçide firma seçimi zorunludur.
+- **Kara liste**: kimlik no ve gerekçeyle ekleyin; kaldırma da gerekçelidir. Kayıtlar değiştirilemez.
+- Kapıda bilgilendirme, giriş-çıkış ve kart işlemleri sonraki sürümde (2.3) gelecek.
+
+---
+
+## 5. Sistem yöneticisi
 
 - **Roller ve kapsam**: Sistem → Personel → kişi → **Roller**. Bölüm sorumlusunun hangi departman/bölümleri yönettiği de burada seçilir.
 - **Sistem → Ortak cihazlar**: eğitim odası bilgisayarlarını tanımlayın (bu cihazlarda giriş her zaman ortak modda olur).

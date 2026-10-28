@@ -331,7 +331,7 @@ Kursiyer ve pratik eğitmen ekranları telefon ve tablette rahat kullanılmalıd
 | 14 | Soru bankası | İSG, b. sorumlusu (İK okur) | PC | Soru ekle, etiketle, Excel'den içe aktar, onay | `/manage/questions` | 1 |
 | 15 | Personel listesi ve atama | İK | PC | Excel içe aktarma, pozisyon ata, plan başlat, şifre sıfırla, karar bekleyenler | `/admin/people` | 1 |
 | 16 | Yetkinlik matrisi | Yöneticiler | PC | Personel × yetkinlik, süresi dolanlar renkli | `/reports/competency` | 3 |
-| 17 | Ziyaretçi kayıt | Güvenlik, ev sahibi | PC, tablet | Ön kayıt, giriş-çıkış, kart no, KKD | `/security/visits` | 2 |
+| 17 | Ziyaretçi kayıt | Güvenlik, ev sahibi | PC, tablet | Ön kayıt, giriş-çıkış, kart no, KKD | `/security/visits`, `/visits` (ev sahibi) | 2 |
 | 18 | Ziyaretçi bilgilendirme | Ziyaretçi | Kapı tableti, telefon | Dil seçimi, video, sorular, onay/imza | `/kiosk`, `/v/[token]` | 2 |
 | 19 | Tesis içindekiler / tahliye yoklaması | Güvenlik, İSG | Telefon | Anlık liste, "toplanma alanında" | `/security/evacuation` | 2 |
 | 20 | Raporlar ve ayarlar | İK, İSG, BT | PC | Bölüm 10 raporları, parametreler, roller, denetim kaydı | `/reports`, `/admin/settings` | 1 (temel) |
@@ -568,12 +568,15 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `competency_grants`: user_id, competency_id, certificate_id, valid_until — **değiştirilemez**
 
 **Ziyaretçi (Faz 2)**
-- `visitor_types` (parametreli 4 tip), `visitor_briefings` (tip × dil → içerik + sorular)
-- `contractor_companies`: unvan, tax_no, responsible_name, phone, email, contract_end
-- `visitors`: id, full_name, company_name, contractor_company_id, phone, email, national_id_enc, national_id_hmac, national_id_masked, anonymized_at
-- `visits`: id, visitor_id, type, host_user_id, planned_date, token_hash, briefing_completed_at, quiz_score, consent_id, signature_id, badge_no, ppe_issued, checked_in_at, checked_in_by, checked_out_at, checked_out_by, badge_returned
+- Ziyaretçi tipleri tablo değil, `visitor.types` parametresidir (karar #126): tip başına açık mı, soru sayısı, geçme notu, kart başına en az süre, geçerlilik (0 = ziyaret günü)
+- `visitor_briefings`: id, visitor_type, version, published_at (kilit), published_by, created_by — tip başına tek taslak; yayınlanan **değiştirilemez**
+- `visitor_briefing_cards`: briefing_id, sort_order, title_tr, body_tr, title_en, body_en, media_asset_id — paket yayınlanınca **değiştirilemez**
+- `visitor_briefing_questions`: briefing_id, sort_order, stem_tr, stem_en, options_tr, options_en, correct_index — paket yayınlanınca **değiştirilemez**
+- `contractor_companies`: name, tax_no (benzersiz), responsible_name, phone, email, contract_end, archived_at, created_by
+- `visitors`: id, full_name, company_name, contractor_company_id, phone, email, id_kind (`tc`|`passport`), id_country, national_id_enc, national_id_hmac (benzersiz), national_id_masked, anonymized_at
+- `visits`: id, visitor_id, visitor_type, host_user_id, planned_date, status (`planned`|`briefed`|`checked_in`|`checked_out`|`cancelled`), note, cancel_reason, cancelled_at/by, created_by — 2.3'te bilgilendirme/kapı alanları (token_hash, briefing_id, quiz_score, consent_id, signature_id, badge_no, ppe_issued, checked_in/out) eklenir
 - `contractor_clearances`: visitor_id, valid_until, visit_id
-- `blacklist_entries`: national_id_hmac, full_name_snapshot, reason, created_by, created_at, ends_at, lifted_by, lifted_reason, lifted_at
+- `blacklist_entries`: national_id_hmac, national_id_masked, full_name_snapshot, reason, created_by, created_at, ends_at, anonymized_at, lifted_by, lifted_reason, lifted_at
 - `evacuation_rollcalls`, `evacuation_marks`
 
 **Ortak**
@@ -884,6 +887,16 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 123 | İmza ve fotoğraflar | Anonimleştirilen kişinin imza görselleri depodan silinir (`media_assets.status = purged`, `/api/media` 404); imza kaydı ve özeti kalır. Pratik görev fotoğrafları kalır |
 | 124 | Sertifika snapshot'ı | Anonimleştirmede sertifikaların donmuş bilgisine dokunulmaz; doğrulama sayfası maskeli adı gösterir. Hukuk teyidi pilot kontrol listesinde |
 | 125 | Saklama işi izleme | `retention.run` her gece 03:45 (İstanbul); bir gecede en çok 200 kişi ve 500 imza görseli. Anonimleştirilen kişi sayısı loglanır, 0'dan büyükse sistem yöneticisine `retention_completed` bildirimi |
+| 126 | Ziyaretçi tipleri | Tablo yerine `visitor.types` parametresi (İSG uzmanı, Parametreler ekranında tablo): açık mı, soru sayısı, geçme notu, kart başına en az süre, geçerlilik yılı (0 = ziyaret günü). Varsayılan: ofis onay yeterli; saha 3 soru, 100; taşeron 10 soru, 80, 1 yıl. Stajyer ziyaretçi tipi değildir |
+| 127 | Bilgilendirme paketi | İçerik kütüphanesi kullanılmaz; tip başına sürümlü paket: kartlar (başlık, metin, isteğe bağlı görsel/video) + kontrol soruları, her metin TR + EN. İSG uzmanı taslak hazırlar ve tek adımda yayınlar; yeni taslak güncel yayının kopyasıdır. TR/EN eksiksiz ve soru sayısı yeterli olmadan yayınlanmaz; yayınlanan sürüm değiştirilemez (trigger) |
+| 128 | Kim yönetir | Paketler ve ziyaretçi kuralları metni İSG uzmanı (`legal.visitor_rules`); ziyaretçi KVKK metni İK; taşeron firmalar ve kara liste İSG uzmanı + güvenlik. Ziyaretçi metinleri TR + EN aynı sürümle birlikte yayınlanır |
+| 129 | Güvenlik bölümü | `/security` güvenlik ve İSG uzmanına açık (ziyaretler, taşeronlar, kara liste, paketler). Ön kaydı başkası adına yalnızca güvenlik açar ve kimlik no yalnızca güvenlik girer/görür; İSG tüm ziyaretleri görür. Güvenlik eğitim verisi görmez |
+| 130 | Ev sahibi ön kaydı | Her personel "Ziyaretçilerim" (`/visits`, profil sayfasından) ile kendini ev sahibi olarak kaydeder, yalnızca kendi ziyaretlerini görür; başkasının ziyareti 404. Taşeron tipinde etkin firma zorunlu, firma adı firma kartından gelir |
+| 131 | Kara liste görünürlüğü | Kimlik no özetiyle (HMAC) eşleşir; ekleme kimlik no ve en az 10 karakter gerekçe ister, aynı kişi için tek geçerli kayıt. Ziyaret listesinde yalnızca güvenlik/İSG'ye işaretli; ev sahibine gösterilmez. Kayıt değiştirilemez; kaldırma gerekçeli ve bir kez. Güvenlik eklediğinde İSG uzmanına bildirim (`blacklist_added`) |
+| 132 | Ziyaretçi kimliği | TC (algoritma kontrollü) ya da pasaport (ISO ülke kodu + numara; özet girdisi `P:<ülke>:<no>`). Aynı kimlik = aynı ziyaretçi (taşeron yeniden tanınır, ad/iletişim güncellenir); kimlik yoksa her ziyaret yeni ziyaretçi. Adla eşleştirme yok |
+| 133 | Ziyaret düzeltme | Ön kayıt bilgileri yalnızca `planned` durumunda değişir; ev sahibi değiştirilmez. Kimlik girilirse ziyaret aynı kimlikli mevcut ziyaretçiye bağlanır |
+| 134 | Ziyaretçi saklama | Son ziyaret tarihi + `retention.visitor_years`; taşeron ziyareti olan kişide `retention.contractor_years`. Kara liste kaldırılmasından + `retention.blacklist_years_after_lift`. `app_anonymize_visitors` / `app_anonymize_blacklist` kişi verisini ve denetim kaydındaki karşılığını siler; içerideki ziyaretçiye dokunulmaz. Kaldırılmadan süresi dolan kara liste kaydı şimdilik anonimleştirilmez |
+| 135 | Ziyaret durumları | planned → briefed → checked_in → checked_out; iptal yalnızca girişten önce ve gerekçeyle (`state/visits.ts`). Ara geçişler ve girişten sonra değiştirilemezlik 2.3'te |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

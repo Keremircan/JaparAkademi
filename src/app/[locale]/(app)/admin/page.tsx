@@ -32,7 +32,7 @@ async function Content() {
   const cards = [
     { key: "org", href: "/admin/org", icon: Network, show: can(actor, "org.manage") },
     { key: "people", href: "/admin/people", icon: Users, show: can(actor, "people.view") },
-    { key: "legal", href: "/admin/legal", icon: FileText, show: can(actor, "legal.manage") },
+    { key: "legal", href: "/admin/legal", icon: FileText, show: can(actor, "legal.manage") || can(actor, "legal.visitor_rules") },
     { key: "devices", href: "/admin/devices", icon: MonitorSmartphone, show: can(actor, "devices.manage") },
     { key: "certificates", href: "/admin/certificates", icon: FileBadge, show: can(actor, "certificates.template") },
     { key: "settings", href: "/admin/settings", icon: SlidersHorizontal, show: can(actor, "settings.view") },

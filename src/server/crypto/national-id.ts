@@ -80,6 +80,18 @@ export function protectNationalId(raw: string): { enc: string; hmac: string; mas
   return { enc: encryptNationalId(value), hmac: hmacNationalId(value), masked: maskNationalId(value) };
 }
 
+/**
+ * Yabancı ziyaretçi pasaportu (iş paketi 2.2, karar #132): ülke (ISO 3166 iki harf) + numara.
+ * HMAC girdisi "P:<ülke>:<numara>" olduğundan TC numaralarıyla çakışmaz.
+ */
+export function protectPassport(country: string, raw: string): { enc: string; hmac: string; masked: string } | null {
+  const c = country.trim().toUpperCase();
+  const n = raw.replace(/[\s.-]/g, "").toUpperCase();
+  if (!/^[A-Z]{2}$/.test(c) || !/^[A-Z0-9]{5,20}$/.test(n)) return null;
+  const plain = `P:${c}:${n}`;
+  return { enc: encryptNationalId(plain), hmac: hmacNationalId(plain), masked: `${c} ${n.slice(0, 2)}****${n.slice(-2)}` };
+}
+
 /** Testler için: anahtar halkasını yeniden okur. */
 export function resetNationalIdKeys() {
   ring = undefined;

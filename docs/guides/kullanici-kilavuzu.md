@@ -80,5 +80,10 @@ Kritik görevlerden biri "Yapamadı" ise puan ne olursa olsun sınav başarısı
 
 ---
 
-## 4. Yardım
+## 4. Ziyaretçi kaydı (herkes)
+Ziyaretçi bekliyorsanız **Profil → Ziyaretçilerim → Ziyaretçi kaydet**: tip, tarih, ad soyad, firma; varsa telefon ve e-posta. Kimlik bilgisini güvenlik kapıda alır. Ziyaret başlamadan bilgileri düzeltebilir ya da gerekçeyle iptal edebilirsiniz. Yalnızca kendi ziyaretçilerinizi görürsünüz.
+
+---
+
+## 5. Yardım
 Sorun yaşarsanız önce bölüm sorumlunuza, şifre ve hesap konularında İK'ya başvurun.

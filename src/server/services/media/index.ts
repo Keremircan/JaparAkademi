@@ -201,6 +201,9 @@ export async function getAssetForViewer(actor: Actor, assetId: string) {
     // Pratik işaretleme/sınav fotoğrafı ve imza görseli
     const { canViewPracticeAsset } = await import("../practice");
     if (await canViewPracticeAsset(actor, assetId)) return asset;
+    // Ziyaretçi bilgilendirme kartı görseli/videosu (iş paketi 2.2)
+    const { canViewBriefingAsset } = await import("../visitors/briefings");
+    if (await canViewBriefingAsset(actor, assetId)) return asset;
     // Sertifika PDF'i: kişiyi görebilenler (FG-7.2)
     const { canViewCertificateAsset } = await import("../certificates");
     return (await canViewCertificateAsset(actor, assetId)) ? asset : null;

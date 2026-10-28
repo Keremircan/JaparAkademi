@@ -126,6 +126,10 @@ export function SettingEditor({
         </fieldset>
       )}
 
+      {input.kind === "visitorTypes" && (
+        <VisitorTypesEditor value={draft as VisitorTypes} onChange={setDraft} idPrefix={id} />
+      )}
+
       {input.kind === "events" && (
         <fieldset>
           <legend className="mb-2 text-base font-medium">{t("events.legend")}</legend>
@@ -180,6 +184,64 @@ export function SettingEditor({
           {t("cancel")}
         </Button>
       </div>
+    </div>
+  );
+}
+
+type VisitorTypeRow = { enabled: boolean; questionCount: number; passScore: number; cardMinSeconds: number; validityYears: number };
+type VisitorTypes = Record<"office" | "site" | "contractor", VisitorTypeRow>;
+
+/** Ziyaretçi tipleri tablosu (karar #126): her satır bir tip. */
+function VisitorTypesEditor({ value, onChange, idPrefix }: { value: VisitorTypes; onChange: (v: VisitorTypes) => void; idPrefix: string }) {
+  const t = useTranslations("settings.visitorTypes");
+  const tTypes = useTranslations("visitors.types");
+  const cols = ["questionCount", "passScore", "cardMinSeconds", "validityYears"] as const;
+  const patch = (type: keyof VisitorTypes, p: Partial<VisitorTypeRow>) => onChange({ ...value, [type]: { ...value[type], ...p } });
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[36rem] text-sm">
+        <thead>
+          <tr className="text-left text-muted-foreground">
+            <th className="py-2 pr-3 font-medium" />
+            <th className="py-2 pr-3 font-medium">{t("enabled")}</th>
+            {cols.map((c) => (
+              <th key={c} className="py-2 pr-3 font-medium">
+                {t(c)}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {(["office", "site", "contractor"] as const).map((type) => (
+            <tr key={type} className="border-t">
+              <th scope="row" className="py-2 pr-3 text-left font-medium">
+                {tTypes(type)}
+              </th>
+              <td className="py-2 pr-3">
+                <Checkbox
+                  className="size-6"
+                  aria-label={`${tTypes(type)} · ${t("enabled")}`}
+                  checked={value[type].enabled}
+                  onCheckedChange={(v) => patch(type, { enabled: v === true })}
+                />
+              </td>
+              {cols.map((c) => (
+                <td key={c} className="py-2 pr-3">
+                  <Input
+                    id={`${idPrefix}-${type}-${c}`}
+                    aria-label={`${tTypes(type)} · ${t(c)}`}
+                    type="number"
+                    inputMode="numeric"
+                    className="w-24"
+                    value={Number.isNaN(value[type][c]) ? "" : String(value[type][c])}
+                    onChange={(e) => patch(type, { [c]: e.target.value.trim() === "" ? Number.NaN : Number(e.target.value) })}
+                  />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
