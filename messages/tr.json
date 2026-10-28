@@ -355,7 +355,9 @@
     "badge_required": "Kart numarasını yazın.",
     "host_required": "Ev sahibinin sicil no'sunu yazın.",
     "visitor_id_required": "Ziyaretçinin kimlik numarasını girin.",
-    "visit_not_inside": "Ziyaretçi içeride değil."
+    "visit_not_inside": "Ziyaretçi içeride değil.",
+    "rollcall_open": "Açık bir yoklama var; önce onu bitirin.",
+    "rollcall_ended": "Bu yoklama bitti; değiştirilemez."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -2215,6 +2217,22 @@
           "positions": "Pozisyon bazında",
           "people": "Kişi bazında"
         }
+      },
+      "visitors": {
+        "title": "Ziyaretçi kayıt defteri",
+        "description": "Tarih aralığındaki ziyaretler: ziyaretçi, firma, ev sahibi, bilgilendirme ve giriş-çıkış.",
+        "file": "ziyaretci-kayit-defteri",
+        "tables": {
+          "visits": "Ziyaretler"
+        }
+      },
+      "contractors": {
+        "title": "Taşeron uygunluk",
+        "description": "Firma başına çalışan sayısı ve dönem sonu itibarıyla İSG bilgilendirmesi geçerli olanlar.",
+        "file": "taseron-uygunluk",
+        "tables": {
+          "companies": "Firmalar"
+        }
       }
     },
     "columns": {
@@ -2255,7 +2273,26 @@
       "maxDays": "En çok gün",
       "hireDate": "İşe giriş",
       "approvedAt": "Onay tarihi",
-      "days": "Gün"
+      "days": "Gün",
+      "visitDate": "Ziyaret tarihi",
+      "company": "Firma",
+      "visitorType": "Tip",
+      "host": "Ev sahibi",
+      "visitStatus": "Durum",
+      "briefedAt": "Bilgilendirme",
+      "language": "Dil",
+      "quizScore": "Puan",
+      "checkedInAt": "Giriş",
+      "checkedOutAt": "Çıkış",
+      "badge": "Kart",
+      "idMasked": "Kimlik",
+      "taxNo": "Vergi no",
+      "contractEnd": "Sözleşme bitişi",
+      "archived": "Arşivde",
+      "workers": "Çalışan",
+      "validWorkers": "Geçerli",
+      "invalidWorkers": "Geçersiz / yok",
+      "nextExpiry": "En yakın bitiş"
     },
     "values": {
       "yes": "Evet",
@@ -2284,6 +2321,22 @@
         "online": "Uzaktan",
         "classroom": "Yüz yüze",
         "carried_over": "Önceki eğitim"
+      },
+      "visitorType": {
+        "office": "Ofis",
+        "site": "Saha",
+        "contractor": "Taşeron"
+      },
+      "visitStatus": {
+        "planned": "Planlandı",
+        "briefed": "Bilgilendirildi",
+        "checked_in": "İçeride",
+        "checked_out": "Çıktı",
+        "cancelled": "İptal"
+      },
+      "language": {
+        "tr": "Türkçe",
+        "en": "İngilizce"
       }
     },
     "meta": {
@@ -2745,6 +2798,10 @@
       "gate": {
         "title": "Kapı",
         "description": "Bugünün ziyaretleri ve içeridekiler; giriş ve çıkış."
+      },
+      "evacuation": {
+        "title": "Tahliye yoklaması",
+        "description": "Tesis içindekiler listesi, toplanma alanı yoklaması ve kağıt yedeği."
       }
     },
     "mine": {
@@ -2994,5 +3051,62 @@
       "open": "Bilgilendirmeyi aç",
       "footer": "Bu e-posta JAPAR Akademi tarafından otomatik gönderilmiştir. Bağlantı yalnızca ziyaret gününün sonuna kadar geçerlidir."
     }
+  },
+  "evacuation": {
+    "title": "Tahliye yoklaması",
+    "description": "Şu an içeride olan ziyaretçi ve taşeronlar. Personel bu listede yoktur.",
+    "inside": "İçeride: {count}",
+    "insideEmpty": "Şu an içeride ziyaretçi yok.",
+    "start": "Yoklama başlat",
+    "startDrill": "Tatbikat",
+    "startReal": "Gerçek tahliye",
+    "startConfirm": "Yoklama başlatılsın mı? İçeridekiler listeye eklenecek.",
+    "kinds": {
+      "drill": "Tatbikat",
+      "real": "Gerçek tahliye"
+    },
+    "open": "Açık yoklama: {kind} · {time}",
+    "progress": "{safe} / {total} toplanma alanında",
+    "missing": "{count} kişi eksik",
+    "safe": "Toplanma alanında",
+    "markSafe": "Toplanma alanında",
+    "unmark": "Geri al",
+    "refresh": "Listeyi yenile",
+    "refreshed": "{count} kişi eklendi.",
+    "end": "Yoklamayı bitir",
+    "endConfirm": "Yoklama bitirilsin mi? Eksik kişiler kayıtta \"toplanma alanında değil\" olarak kalır ve kayıt değiştirilemez.",
+    "endConfirmMissing": "{count} kişi hâlâ eksik. Yine de bitirilsin mi? Eksikler kayıtta kalır.",
+    "pdfInside": "İçeridekiler (PDF)",
+    "pdfRollcall": "Yoklama sonucu (PDF)",
+    "history": "Son yoklamalar",
+    "historyRow": "{kind} · {time} · {safe}/{total}",
+    "openNow": "açık",
+    "offlineSaved": "Son liste bu cihaza kaydedildi ({time}); bağlantı kesilirse çevrimdışı sayfasında okunabilir.",
+    "offlineTitle": "Son tahliye listesi (bağlantı yok)",
+    "offlineSavedAt": "Kaydedilme: {time}. İşaretleme için bağlantı gerekir.",
+    "offlineStale": "Kayıtlı liste 24 saatten eski; gösterilmiyor.",
+    "pdf": {
+      "insideTitle": "Tesis içindekiler listesi",
+      "rollcallTitle": "Tahliye yoklaması ({kind})",
+      "kinds": {
+        "drill": "tatbikat",
+        "real": "gerçek"
+      },
+      "generated": "Oluşturulma: {date}",
+      "count": "Kişi sayısı: {count}",
+      "started": "Başlangıç: {date}",
+      "ended": "Bitiş: {date}",
+      "table": "Kişiler",
+      "cols": {
+        "name": "Ad soyad",
+        "company": "Firma",
+        "type": "Tip",
+        "host": "Ev sahibi",
+        "checkedIn": "Giriş",
+        "badge": "Kart",
+        "safe": "Toplanma alanında"
+      }
+    },
+    "pdfShort": "PDF indir"
   }
 }

@@ -32,6 +32,7 @@ Her satırda sorumlu ve durum doldurulur.
 | 2.10 | Kapı tableti "Kapı tableti" olarak kaydedildi, ekran sabitleme açık; kapıya `/visit` QR afişi asıldı | Sistem yöneticisi + güvenlik | ☐ |
 | 2.11 | Ziyaretçi bilgilendirme paketleri (TR + EN) ve ziyaretçi metinleri yayında; bir deneme ziyaretiyle uçtan uca denendi (ön kayıt → bilgilendirme → kapıda giriş → çıkış) | İSG + İK + güvenlik | ☐ |
 | 2.12 | Ziyaretçiye verilen KKD listesi (Parametreler) ve kart numaraları kapıyla uyumlu | İSG + güvenlik | ☐ |
+| 2.13 | Tahliye tatbikatında yoklama listesi telefondan alındı (Faz 2 kabul kriteri); bağlantısız okuma ve PDF yedeği denendi | İSG + güvenlik | ☐ |
 
 ## 3. Veri ve içerik (SPEC Bölüm 18)
 

@@ -11,7 +11,15 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { getSectionUser } from "@/server/auth/current-user";
 import { AppError } from "@/server/errors";
 import { toActor } from "@/server/services/auth";
-import { canViewReport, parseFilters, REPORT_KINDS, reportFilterOptions, runReport, type ReportKind } from "@/server/services/reports";
+import {
+  canViewReport,
+  hasOrgFilters,
+  parseFilters,
+  REPORT_KINDS,
+  reportFilterOptions,
+  runReport,
+  type ReportKind,
+} from "@/server/services/reports";
 import { formatCell, type Translate } from "@/server/services/reports/format";
 import { getSettings } from "@/server/services/settings";
 
@@ -23,7 +31,10 @@ export async function generateMetadata(): Promise<Metadata> {
 const PREVIEW = 50;
 
 /** Rapor: filtreler, ekran önizlemesi (ilk 50 satır) ve Excel/PDF indirme (SPEC 10.1). */
-export default function Page({ params, searchParams }: PageProps<"/[locale]/reports/[kind]">) {
+export default function Page({
+  params,
+  searchParams,
+}: PageProps<"/[locale]/reports/[kind]">) {
   return (
     <Suspense fallback={<PageSkeleton />}>
       <Content params={params} searchParams={searchParams} />
@@ -31,22 +42,44 @@ export default function Page({ params, searchParams }: PageProps<"/[locale]/repo
   );
 }
 
-async function Content({ params, searchParams }: { params: Promise<{ kind: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+async function Content({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ kind: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const user = await getSectionUser("reports");
   if (!user) return <NotFoundView />;
   const actor = toActor(user);
   const { kind: raw } = await params;
-  if (!(REPORT_KINDS as readonly string[]).includes(raw)) return <NotFoundView />;
+  if (!(REPORT_KINDS as readonly string[]).includes(raw))
+    return <NotFoundView />;
   const kind = raw as ReportKind;
   if (!canViewReport(actor, kind)) return <NotFoundView />;
   const sp = await searchParams;
-  const str = (k: string) => (typeof sp[k] === "string" ? (sp[k] as string) : undefined);
-  const [t, filters] = await Promise.all([getTranslations("reports"), parseFilters(kind, { from: str("from"), to: str("to"), orgUnitId: str("unit"), positionId: str("position") }).catch(() => null)]);
+  const str = (k: string) =>
+    typeof sp[k] === "string" ? (sp[k] as string) : undefined;
+  const [t, filters] = await Promise.all([
+    getTranslations("reports"),
+    parseFilters(kind, {
+      from: str("from"),
+      to: str("to"),
+      orgUnitId: str("unit"),
+      positionId: str("position"),
+    }).catch(() => null),
+  ]);
   if (!filters) {
     return (
       <section className="max-w-4xl">
-        <PageHeader title={t(`kinds.${kind}.title`)} back={{ href: "/reports", label: t("back") }} />
-        <p role="alert" className="rounded-2xl border border-destructive/40 p-4 text-destructive">
+        <PageHeader
+          title={t(`kinds.${kind}.title`)}
+          back={{ href: "/reports", label: t("back") }}
+        />
+        <p
+          role="alert"
+          className="rounded-2xl border border-destructive/40 p-4 text-destructive"
+        >
           {(await getTranslations("errors"))("report_range_invalid")}
         </p>
       </section>
@@ -63,43 +96,75 @@ async function Content({ params, searchParams }: { params: Promise<{ kind: strin
   if (!result) return <NotFoundView />;
   const tz = settings["org.timezone"];
   const tr = t as unknown as Translate;
-  const qs = new URLSearchParams({ from: filters.from, to: filters.to, ...(filters.orgUnitId ? { orgUnitId: filters.orgUnitId } : {}), ...(filters.positionId ? { positionId: filters.positionId } : {}) });
+  const qs = new URLSearchParams({
+    from: filters.from,
+    to: filters.to,
+    ...(filters.orgUnitId ? { orgUnitId: filters.orgUnitId } : {}),
+    ...(filters.positionId ? { positionId: filters.positionId } : {}),
+  });
 
   return (
     <section className="flex max-w-6xl flex-col gap-6">
-      <PageHeader title={t(`kinds.${kind}.title`)} description={t(`kinds.${kind}.description`)} back={{ href: "/reports", label: t("back") }} />
+      <PageHeader
+        title={t(`kinds.${kind}.title`)}
+        description={t(`kinds.${kind}.description`)}
+        back={{ href: "/reports", label: t("back") }}
+      />
 
-      <form method="get" className="flex flex-wrap items-end gap-3 rounded-2xl border p-4" aria-label={t("filters.apply")}>
+      <form
+        method="get"
+        className="flex flex-wrap items-end gap-3 rounded-2xl border p-4"
+        aria-label={t("filters.apply")}
+      >
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">{t("filters.from")}</span>
-          <Input type="date" name="from" defaultValue={filters.from} className="w-44" />
+          <Input
+            type="date"
+            name="from"
+            defaultValue={filters.from}
+            className="w-44"
+          />
         </label>
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">{t("filters.to")}</span>
-          <Input type="date" name="to" defaultValue={filters.to} className="w-44" />
+          <Input
+            type="date"
+            name="to"
+            defaultValue={filters.to}
+            className="w-44"
+          />
         </label>
-        <label className="flex min-w-48 flex-1 flex-col gap-1">
-          <span className="text-sm font-medium">{t("filters.unit")}</span>
-          <NativeSelect name="unit" defaultValue={filters.orgUnitId ?? ""}>
-            <option value="">{t("filters.all")}</option>
-            {options.units.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.parentName ? `${u.parentName} / ${u.name}` : u.name}
-              </option>
-            ))}
-          </NativeSelect>
-        </label>
-        <label className="flex min-w-48 flex-1 flex-col gap-1">
-          <span className="text-sm font-medium">{t("filters.position")}</span>
-          <NativeSelect name="position" defaultValue={filters.positionId ?? ""}>
-            <option value="">{t("filters.all")}</option>
-            {options.positions.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} · {p.unitName}
-              </option>
-            ))}
-          </NativeSelect>
-        </label>
+        {hasOrgFilters(kind) && (
+          <>
+            <label className="flex min-w-48 flex-1 flex-col gap-1">
+              <span className="text-sm font-medium">{t("filters.unit")}</span>
+              <NativeSelect name="unit" defaultValue={filters.orgUnitId ?? ""}>
+                <option value="">{t("filters.all")}</option>
+                {options.units.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.parentName ? `${u.parentName} / ${u.name}` : u.name}
+                  </option>
+                ))}
+              </NativeSelect>
+            </label>
+            <label className="flex min-w-48 flex-1 flex-col gap-1">
+              <span className="text-sm font-medium">
+                {t("filters.position")}
+              </span>
+              <NativeSelect
+                name="position"
+                defaultValue={filters.positionId ?? ""}
+              >
+                <option value="">{t("filters.all")}</option>
+                {options.positions.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} · {p.unitName}
+                  </option>
+                ))}
+              </NativeSelect>
+            </label>
+          </>
+        )}
         <Button type="submit">
           <Filter aria-hidden="true" />
           {t("filters.apply")}
@@ -120,20 +185,38 @@ async function Content({ params, searchParams }: { params: Promise<{ kind: strin
         ))}
       </div>
 
-      {[...result.warnings.map((w) => t(`warnings.${w as "hazard_class_assumed"}`)), ...(result.truncated ? [t("truncated")] : [])].map((w) => (
-        <p key={w} role="status" className="flex gap-2 rounded-2xl border border-amber-500/40 bg-amber-500/5 p-4">
-          <TriangleAlert aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
+      {[
+        ...result.warnings.map((w) =>
+          t(`warnings.${w as "hazard_class_assumed"}`),
+        ),
+        ...(result.truncated ? [t("truncated")] : []),
+      ].map((w) => (
+        <p
+          key={w}
+          role="status"
+          className="flex gap-2 rounded-2xl border border-amber-500/40 bg-amber-500/5 p-4"
+        >
+          <TriangleAlert
+            aria-hidden="true"
+            className="mt-0.5 size-5 shrink-0"
+          />
           {w}
         </p>
       ))}
 
       {result.tables.map((tbl) => (
-        <section key={tbl.key} aria-labelledby={`t-${tbl.key}`} className="flex flex-col gap-2">
+        <section
+          key={tbl.key}
+          aria-labelledby={`t-${tbl.key}`}
+          className="flex flex-col gap-2"
+        >
           <h2 id={`t-${tbl.key}`} className="text-lg font-semibold">
             {tr(`kinds.${kind}.tables.${tbl.key}`)}
           </h2>
           {tbl.rows.length === 0 ? (
-            <p className="rounded-2xl border border-dashed p-5 text-muted-foreground">{t("empty")}</p>
+            <p className="rounded-2xl border border-dashed p-5 text-muted-foreground">
+              {t("empty")}
+            </p>
           ) : (
             <>
               <div className="overflow-x-auto rounded-2xl border">
@@ -141,7 +224,11 @@ async function Content({ params, searchParams }: { params: Promise<{ kind: strin
                   <thead className="bg-muted/50 text-start">
                     <tr>
                       {tbl.columns.map((c) => (
-                        <th key={c} scope="col" className="px-3 py-2 text-start font-medium">
+                        <th
+                          key={c}
+                          scope="col"
+                          className="px-3 py-2 text-start font-medium"
+                        >
                           {tr(`columns.${c}`)}
                         </th>
                       ))}
@@ -160,7 +247,12 @@ async function Content({ params, searchParams }: { params: Promise<{ kind: strin
                   </tbody>
                 </table>
               </div>
-              <p className="text-sm text-muted-foreground">{t("preview", { shown: Math.min(PREVIEW, tbl.rows.length), total: tbl.rows.length })}</p>
+              <p className="text-sm text-muted-foreground">
+                {t("preview", {
+                  shown: Math.min(PREVIEW, tbl.rows.length),
+                  total: tbl.rows.length,
+                })}
+              </p>
             </>
           )}
         </section>

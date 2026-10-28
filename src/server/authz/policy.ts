@@ -57,6 +57,10 @@ export const PERMISSIONS = {
   "contractors.manage": ["ohs_specialist", "security"],
   "blacklist.manage": ["ohs_specialist", "security"],
   "legal.visitor_rules": ["ohs_specialist"],
+  // Tahliye yoklaması ve ziyaretçi raporları (iş paketi 2.4, kararlar #162–163)
+  "evacuation.manage": ["security", "ohs_specialist"],
+  "reports.visitors": ["security", "ohs_specialist"],
+  "reports.contractors": ["ohs_specialist", "hr"],
 } as const satisfies Record<string, readonly Role[]>;
 
 export type Permission = keyof typeof PERMISSIONS;

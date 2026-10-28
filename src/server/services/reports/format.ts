@@ -12,7 +12,13 @@ const ENUM_COLUMNS: Record<string, string> = {
   examType: "examType",
   failReason: "failReason",
   method: "method",
+  visitorType: "visitorType",
+  visitStatus: "visitStatus",
+  language: "language",
 };
+
+/** Tarih ve saatle gösterilen sütunlar (ziyaretçi kayıt defteri). */
+const DATETIME_COLUMNS = new Set(["briefedAt", "checkedInAt", "checkedOutAt"]);
 
 const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -23,6 +29,9 @@ export function formatDate(value: Date | string, timeZone: string): string {
 
 export function formatCell(column: string, value: Cell, t: Translate, timeZone: string): string {
   if (value === null || value === undefined || value === "") return "—";
+  if (value instanceof Date && DATETIME_COLUMNS.has(column)) {
+    return new Intl.DateTimeFormat("tr-TR", { dateStyle: "short", timeStyle: "short", timeZone }).format(value);
+  }
   if (value instanceof Date) return formatDate(value, timeZone);
   if (typeof value === "boolean") {
     if (column === "result") return t(value ? "values.result.passed" : "values.result.failed");

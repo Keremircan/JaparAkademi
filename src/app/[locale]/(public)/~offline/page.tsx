@@ -1,6 +1,7 @@
 import { WifiOff } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
+import { OfflineEvacuation } from "@/features/visitors/components/offline-evacuation";
 
 /** Service worker'ın bağlantı yokken gösterdiği sayfa (önbellekte tutulur). */
 export default async function OfflinePage() {
@@ -16,6 +17,8 @@ export default async function OfflinePage() {
           {t("retry")}
         </Button>
       </form>
+      {/* Güvenlik/İSG cihazında kayıtlı son tahliye listesi (salt okunur, karar #160) */}
+      <OfflineEvacuation />
     </main>
   );
 }
