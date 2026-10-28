@@ -16,7 +16,7 @@ const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 export type SignatureImage = { key: string; bytes: Buffer };
 
 /** Çizim imzasını (data URL) doğrular ve depoya yükler. Transaction dışında çağrılır. */
-export async function uploadSignatureImage(dataUrl: string): Promise<SignatureImage> {
+export async function uploadSignatureImage(dataUrl: string, prefix = "signatures"): Promise<SignatureImage> {
   const m = /^data:image\/png;base64,([A-Za-z0-9+/=]+)$/.exec(dataUrl);
   if (!m) throw new ValidationError("signature_invalid");
   const bytes = Buffer.from(m[1]!, "base64");
@@ -24,7 +24,7 @@ export async function uploadSignatureImage(dataUrl: string): Promise<SignatureIm
   if (bytes.length < 1200 || bytes.length > MAX_SIGNATURE_BYTES || !bytes.subarray(0, 8).equals(PNG_MAGIC)) {
     throw new ValidationError("signature_invalid");
   }
-  const key = `signatures/${randomUUID()}.png`;
+  const key = `${prefix}/${randomUUID()}.png`;
   await uploadBuffer(key, bytes, "image/png");
   return { key, bytes };
 }

@@ -5,7 +5,8 @@ import { can } from "@/server/authz/policy";
 import { companyOptions, getVisit, visitorHistory } from "@/server/services/visitors";
 import { getSettings } from "@/server/services/settings";
 import { todayIn } from "@/lib/dates";
-import { cancelVisitAction } from "../actions";
+import { ActionButton } from "@/components/forms/action-button";
+import { cancelVisitAction, resendVisitLinkAction } from "../actions";
 import { ReasonAction } from "./reason-action";
 import { VisitForm } from "./visit-form";
 
@@ -41,7 +42,24 @@ export async function VisitDetail({ actor, visit, base }: { actor: UserActor; vi
         <dt className="text-muted-foreground">{t("form.date")}</dt>
         <dd>{date(visit.plannedDate)}</dd>
         <dt className="text-muted-foreground">{t("detail.host")}</dt>
-        <dd>{visit.hostName}</dd>
+        <dd>{visit.hostUserId ? visit.hostName : t("detail.hostWritten", { name: visit.hostName })}</dd>
+        <dt className="text-muted-foreground">{t("detail.code")}</dt>
+        <dd className="font-mono text-lg font-semibold tracking-widest">{visit.code}</dd>
+        <dt className="text-muted-foreground">{t("detail.briefing")}</dt>
+        <dd>
+          {visit.briefingCompletedAt
+            ? visit.quizScore !== null
+              ? t("detail.briefingDone", {
+                  date: format.dateTime(visit.briefingCompletedAt, { dateStyle: "medium", timeStyle: "short" }),
+                  locale: visit.briefingLocale === "en" ? "English" : "Türkçe",
+                  score: visit.quizScore,
+                })
+              : t("detail.briefingDoneNoQuiz", {
+                  date: format.dateTime(visit.briefingCompletedAt, { dateStyle: "medium", timeStyle: "short" }),
+                  locale: visit.briefingLocale === "en" ? "English" : "Türkçe",
+                })
+            : t("detail.briefingPending")}
+        </dd>
         {visit.nationalIdMasked && (
           <>
             <dt className="text-muted-foreground">{t("detail.id")}</dt>
@@ -82,6 +100,10 @@ export async function VisitDetail({ actor, visit, base }: { actor: UserActor; vi
         </section>
       )}
       {!visit.canEdit && visit.note && <p className="rounded-2xl border p-5 text-muted-foreground">{visit.note}</p>}
+
+      {visit.canEdit && visit.email && (
+        <ActionButton action={resendVisitLinkAction.bind(null, visit.id)}>{t("detail.resendLink")}</ActionButton>
+      )}
 
       {visit.canCancel && (
         <ReasonAction

@@ -19,6 +19,8 @@ export const NOTIFICATION_KINDS = [
   "all_attempts_failed",
   // İSG uzmanı (Faz 2)
   "blacklist_added",
+  // Ev sahibi (Faz 2)
+  "visitor_briefed",
   // Sistem yöneticisi
   "email_failed",
   "retention_completed",

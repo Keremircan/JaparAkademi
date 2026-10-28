@@ -7,12 +7,14 @@ import { Field } from "@/components/forms/field";
 import { FormError } from "@/components/forms/form-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { registerThisDeviceAction } from "../actions";
 
 /** Bu tarayıcıyı ortak cihaz olarak kaydetme (eğitim odası bilgisayarında yapılır). */
 export function RegisterDevice() {
   const t = useTranslations("devices");
   const [name, setName] = useState("");
+  const [kind, setKind] = useState<"shared_pc" | "kiosk">("shared_pc");
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -22,6 +24,12 @@ export function RegisterDevice() {
       <p className="text-sm text-muted-foreground">{t("registerHint")}</p>
       <Field id="device-name" label={t("name")}>
         <Input id="device-name" maxLength={100} value={name} onChange={(e) => setName(e.target.value)} placeholder={t("namePlaceholder")} />
+      </Field>
+      <Field id="device-kind" label={t("kind")}>
+        <NativeSelect id="device-kind" value={kind} onChange={(e) => setKind(e.target.value as "shared_pc" | "kiosk")}>
+          <option value="shared_pc">{t("kinds.shared_pc")}</option>
+          <option value="kiosk">{t("kinds.kiosk")}</option>
+        </NativeSelect>
       </Field>
       <FormError error={error} />
       {done && (
@@ -35,7 +43,7 @@ export function RegisterDevice() {
         onClick={() =>
           startTransition(async () => {
             setError(null);
-            const r = await registerThisDeviceAction(name);
+            const r = await registerThisDeviceAction(name, kind);
             if (!r.ok) return setError(r.error);
             setDone(true);
             setName("");

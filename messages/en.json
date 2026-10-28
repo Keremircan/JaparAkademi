@@ -6,7 +6,9 @@
   "common": {
     "loading": "Loading…",
     "comingSoon": "This section will open in an upcoming release.",
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "cancel": "Cancel",
+    "save": "Save"
   },
   "nav": {
     "mainMenu": "Main menu",
@@ -126,11 +128,125 @@
   },
   "errors": {
     "forbidden": "You are not allowed to do this.",
-    "unexpected": "An unexpected error occurred. Please try again."
+    "unexpected": "Something went wrong. Please try again.",
+    "invalid_input": "Please check the information you entered.",
+    "invalid_name": "The name must be at least 2 characters.",
+    "phone_invalid": "The phone number is not valid.",
+    "email_invalid": "The e-mail address is not valid.",
+    "company_required": "Please choose your company.",
+    "visitor_type_disabled": "This type of visit is not available.",
+    "visit_locked": "This visit can no longer be changed.",
+    "legal_text_outdated": "The text has been updated; please reload the page and confirm again.",
+    "not_found": "Not found.",
+    "briefing_not_ready": "The briefing is not ready yet. Please contact security.",
+    "briefing_not_started": "Please start the briefing from the beginning.",
+    "briefing_too_fast": "Please take a little more time to read the cards, then try again.",
+    "quiz_incomplete": "Choose one answer for each question.",
+    "quiz_not_passed": "Please pass the check questions first.",
+    "host_name_required": "Please enter who you are visiting.",
+    "contact_required": "Enter at least a phone number or an e-mail address.",
+    "signature_invalid": "The signature could not be read. Please sign again.",
+    "not_kiosk": "This device is not registered as a gate tablet.",
+    "code_invalid": "No visit for today was found with this code. Please contact security.",
+    "rate_limited": "Too many attempts. Please contact security."
   },
   "notFound": {
     "title": "Page not found",
     "description": "The page does not exist or you are not allowed to view it.",
     "home": "Back to home"
+  },
+  "visitorFlow": {
+    "title": "Visitor safety briefing",
+    "language": "Language",
+    "languages": {
+      "tr": "Türkçe",
+      "en": "English"
+    },
+    "invalid": "This link is invalid or has expired. Please contact security.",
+    "notReady": "The briefing is not ready yet. Please contact security.",
+    "greeting": "Welcome, {name}",
+    "codeLabel": "Your visit code",
+    "types": {
+      "office": "Office visitor",
+      "site": "Site visitor",
+      "contractor": "Contractor / service"
+    },
+    "intro": {
+      "text": "Before entering the site you will go through a short occupational health and safety briefing. Cards cannot be skipped; at the end you will accept the rules and sign.",
+      "start": "Start"
+    },
+    "cards": {
+      "progress": "Card {n} of {total}",
+      "next": "Next card",
+      "wait": "{seconds} s",
+      "watchVideo": "Watch the video to the end to continue.",
+      "toQuiz": "Go to questions",
+      "toConsent": "Go to confirmation"
+    },
+    "quiz": {
+      "title": "Check questions",
+      "intro": "Choose one answer for each question.",
+      "question": "Question {n}",
+      "submit": "Submit answers",
+      "failed": "You did not reach the pass mark (score: {score}). Please try again.",
+      "retry": "Try again"
+    },
+    "consent": {
+      "title": "Rules and confirmation",
+      "acceptRules": "I have read the site rules and will follow them.",
+      "acceptKvkk": "I have read the privacy notice.",
+      "read": "Read the text",
+      "signature": "Your signature",
+      "signatureHint": "Sign in the box with your finger.",
+      "clear": "Clear",
+      "submit": "Confirm and finish"
+    },
+    "done": {
+      "title": "Briefing completed",
+      "text": "Thank you. Please tell your visit code to security at the gate.",
+      "kioskReset": "This screen will reset in {seconds} seconds.",
+      "newVisitor": "Next visitor"
+    },
+    "kiosk": {
+      "title": "Visitor check-in",
+      "intro": "If you are pre-registered, enter the 6-digit code from your e-mail or your host.",
+      "notKiosk": "This device is not registered as a gate tablet.",
+      "codeLabel": "6-digit visit code",
+      "continue": "Continue",
+      "codeInvalid": "No visit for today was found with this code. Please contact security.",
+      "rateLimited": "Too many attempts. Please contact security.",
+      "noCode": "I am not pre-registered"
+    },
+    "register": {
+      "title": "Visitor registration",
+      "intro": "If you are not pre-registered, enter your details. Security will check your ID at the gate.",
+      "type": "Type of visit",
+      "fullName": "Full name",
+      "company": "Company",
+      "contractor": "Your company",
+      "chooseCompany": "Choose your company",
+      "phone": "Phone",
+      "email": "E-mail",
+      "contactHint": "Enter at least a phone number or an e-mail address.",
+      "hostName": "Who are you visiting?",
+      "optional": "optional",
+      "privacy": "Your details are used only for the visit record and site safety; see the privacy notice for details.",
+      "submit": "Continue",
+      "rateLimited": "Too many registration attempts. Please contact security."
+    },
+    "email": {
+      "subject": "Safety briefing for your visit to JAPAR",
+      "body": "Before your visit on {date}, please complete the short safety briefing. Your visit code: {code}",
+      "open": "Open the briefing",
+      "footer": "This e-mail was sent automatically by JAPAR Akademi. The link is valid until the end of the visit day."
+    }
+  },
+  "practice": {
+    "signature": {
+      "empty": "{label}: signature box is empty",
+      "signed": "{label}: signed",
+      "hint": "Sign with your finger or a pen.",
+      "clear": "Clear"
+    }
   }
 }

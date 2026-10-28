@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, lte, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lte, sql, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { Actor, UserActor } from "@/server/authz/actor";
 import { assertUser, can } from "@/server/authz/policy";
@@ -11,6 +11,7 @@ import { isVisitCancellable, isVisitEditable, type VisitStatus } from "@/server/
 import { getSettings } from "../settings";
 import { activeBlacklistHmacs } from "./blacklist";
 import { cleanContact, protectVisitorId, type VisitorIdInput } from "./identity";
+import { newVisitCode, sendVisitLink } from "./session";
 import type { VisitorType } from "./briefings";
 
 /**
@@ -37,6 +38,8 @@ export type VisitInput = {
 };
 
 const hostUser = alias(users, "visit_host");
+/** Ev sahibi adı: personel kaydı ya da kendi kaydında yazılan ad (karar #139). */
+const hostName = sql<string>`coalesce(${hostUser.name}, ${visits.hostNameText})`;
 
 async function today(): Promise<string> {
   const { "org.timezone": tz } = await getSettings(["org.timezone"]);
@@ -122,8 +125,18 @@ export async function createVisit(actor: Actor, input: VisitInput): Promise<{ id
     const visitorId = await upsertVisitor(tx, v);
     const [row] = await tx
       .insert(visits)
-      .values({ visitorId, visitorType: input.visitorType, hostUserId, plannedDate: input.plannedDate, note: v.note, createdBy: actor.userId })
+      .values({
+        visitorId,
+        visitorType: input.visitorType,
+        hostUserId,
+        plannedDate: input.plannedDate,
+        note: v.note,
+        code: await newVisitCode(tx),
+        createdBy: actor.userId,
+      })
       .returning({ id: visits.id });
+    // E-posta varsa bilgilendirme bağlantısı (karar #137)
+    await sendVisitLink(tx, row!.id);
     return { id: row!.id };
   });
 }
@@ -149,13 +162,14 @@ export async function listVisits(actor: Actor, filters: VisitFilters = {}) {
       visitorType: visits.visitorType,
       fullName: visitors.fullName,
       companyName: visitors.companyName,
-      hostName: hostUser.name,
+      hostName,
+      selfRegistered: visits.selfRegistered,
       hmac: visitors.nationalIdHmac,
       nationalIdMasked: visitors.nationalIdMasked,
     })
     .from(visits)
     .innerJoin(visitors, eq(visitors.id, visits.visitorId))
-    .innerJoin(hostUser, eq(hostUser.id, visits.hostUserId))
+    .leftJoin(hostUser, eq(hostUser.id, visits.hostUserId))
     .where(and(...where))
     .orderBy(asc(visits.plannedDate), asc(visitors.fullName))
     .limit(500);
@@ -179,8 +193,13 @@ async function loadVisit(id: string) {
       visitorType: visits.visitorType,
       note: visits.note,
       hostUserId: visits.hostUserId,
-      hostName: hostUser.name,
+      hostName,
       cancelReason: visits.cancelReason,
+      code: visits.code,
+      selfRegistered: visits.selfRegistered,
+      briefingCompletedAt: visits.briefingCompletedAt,
+      briefingLocale: visits.briefingLocale,
+      quizScore: visits.quizScore,
       cancelledAt: visits.cancelledAt,
       createdAt: visits.createdAt,
       fullName: visitors.fullName,
@@ -195,7 +214,7 @@ async function loadVisit(id: string) {
     })
     .from(visits)
     .innerJoin(visitors, eq(visitors.id, visits.visitorId))
-    .innerJoin(hostUser, eq(hostUser.id, visits.hostUserId))
+    .leftJoin(hostUser, eq(hostUser.id, visits.hostUserId))
     .where(eq(visits.id, id))
     .limit(1);
   if (!row) throw new NotFoundError("visit");
@@ -237,6 +256,7 @@ export async function updateVisit(actor: Actor, id: string, input: Omit<VisitInp
   const row = await assertMayChange(actor, id);
   if (!isVisitEditable(row.status)) throw new ValidationError("visit_locked");
   const v = await validate(actor, input, { requireFuture: input.plannedDate !== row.plannedDate });
+  const emailChanged = !!v.email && v.email !== row.email;
   await withActor(actor, async (tx) => {
     // Kimlik girilirse aynı kimlikli mevcut ziyaretçiye bağlanır
     let visitorId = row.visitorId;
@@ -252,6 +272,19 @@ export async function updateVisit(actor: Actor, id: string, input: Omit<VisitInp
       .update(visits)
       .set({ visitorId, visitorType: input.visitorType, plannedDate: input.plannedDate, note: v.note })
       .where(eq(visits.id, id));
+    // Yeni e-posta adresine bağlantı gider
+    if (emailChanged) await sendVisitLink(tx, id);
+  });
+}
+
+/** Bilgilendirme bağlantısını yeniden gönderir (yeni belirteç; eskisi gün sonuna kadar geçerli kalır). */
+export async function resendVisitLink(actor: Actor, id: string): Promise<void> {
+  assertUser(actor);
+  const row = await assertMayChange(actor, id);
+  if (row.status !== "planned") throw new ValidationError("visit_locked");
+  if (!row.email) throw new ValidationError("visit_no_email");
+  await withActor(actor, async (tx) => {
+    await sendVisitLink(tx, id);
   });
 }
 
@@ -274,9 +307,9 @@ export async function visitorHistory(actor: Actor, visitorId: string) {
   assertUser(actor);
   if (!can(actor, "visits.view_all")) throw new ForbiddenError("visits.view_all");
   return db()
-    .select({ id: visits.id, plannedDate: visits.plannedDate, status: visits.status, visitorType: visits.visitorType, hostName: hostUser.name })
+    .select({ id: visits.id, plannedDate: visits.plannedDate, status: visits.status, visitorType: visits.visitorType, hostName })
     .from(visits)
-    .innerJoin(hostUser, eq(hostUser.id, visits.hostUserId))
+    .leftJoin(hostUser, eq(hostUser.id, visits.hostUserId))
     .where(eq(visits.visitorId, visitorId))
     .orderBy(desc(visits.plannedDate))
     .limit(50);

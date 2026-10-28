@@ -87,14 +87,17 @@ Yalnızca kapsamınızdaki birimlerin personelini ve içeriklerini görürsünü
 - Kara listedeki kişinin ziyareti kırmızı işaretle görünür; içeri almadan önce İSG uzmanıyla görüşün.
 - **Taşeron firmalar**: firma kartı (unvan, vergi no, sözleşme bitişi). Taşeron ziyaretçide firma seçimi zorunludur.
 - **Kara liste**: kimlik no ve gerekçeyle ekleyin; kaldırma da gerekçelidir. Kayıtlar değiştirilemez.
-- Kapıda bilgilendirme, giriş-çıkış ve kart işlemleri sonraki sürümde (2.3) gelecek.
+- **Ziyaretçi bilgilendirmesi**: ön kayıtta e-posta varsa ziyaretçiye bilgilendirme bağlantısı kendiliğinden gider (Türkçe + İngilizce). Ziyaret ayrıntısında **ziyaret kodu** ve bilgilendirme durumu görünür; gerekirse **Bilgilendirme bağlantısını yeniden gönder**.
+- **Kapı tableti**: ziyaretçi kodunu yazar ya da "Ön kaydım yok" ile kendini kaydeder; bilgilendirmeyi bitirince kodu size söyler. Kapıdaki QR kodu ziyaretçinin kendi telefonunda aynı kaydı açar (`/visit`).
+- Kendi kaydında ev sahibi ziyaretçinin yazdığı addır ("ziyaretçinin yazdığı"); girişte gerçek ev sahibini siz atarsınız.
+- Kapıda giriş-çıkış, kart ve KKD işlemleri sonraki sürümde (2.3b) gelecek.
 
 ---
 
 ## 5. Sistem yöneticisi
 
 - **Roller ve kapsam**: Sistem → Personel → kişi → **Roller**. Bölüm sorumlusunun hangi departman/bölümleri yönettiği de burada seçilir.
-- **Sistem → Ortak cihazlar**: eğitim odası bilgisayarlarını tanımlayın (bu cihazlarda giriş her zaman ortak modda olur).
+- **Sistem → Ortak cihazlar**: eğitim odası bilgisayarlarını ("Ortak bilgisayar"; girişte ortak mod) ve kapıdaki ziyaretçi tabletini ("Kapı tableti"; `/kiosk` yalnızca bu cihazda açılır) kayıt yapılacak cihazın tarayıcısından tanımlayın. Tableti ekran sabitleme / kiosk tarayıcı modunda kullanın.
 - **Sistem → Denetim kaydı**: kim, ne zaman, hangi kaydı değiştirdi; eski ve yeni değerler (hassas alanlar maskeli). Salt okunur.
 - **Sistem → Parametreler**: sınav, eğitim, giriş, bildirim (hangi olayların e-postayla da gideceği), dosya ve saklama süresi ayarları. **Değiştir** → yeni değer → **Kaydet**; **Varsayılana dön** ile ilk değere dönülür. Her değişiklik denetim kaydına yazılır. Saklama sürelerinde gerekçe zorunludur (hukuk onayının tarihi ve dayanağı). Plan bazındaki sınav ayarları plan tasarımcısında değiştirilir; saat dilimi ekrandan değiştirilemez.
 - **Saklama süreleri**: iş ilişkisi biten personelin verisi süre dolunca her gece anonimleştirilir (ad, sicil, TC, telefon, e-posta silinir; eğitim ve sınav kayıtları kalır). Anonimleştirme geri alınamaz; olduğunda size bildirim gelir.

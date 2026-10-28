@@ -304,7 +304,7 @@
     "practical_not_draft": "Bu form imzalanmış; artık değiştirilemez.",
     "practical_incomplete": "İmzalamadan önce bütün kriterleri işaretleyin.",
     "practical_not_awaiting": "Bu form 2. imza beklemiyor.",
-    "signature_invalid": "İmza okunamadı. Lütfen imzayı yeniden çizin.",
+    "signature_invalid": "İmza okunamadı. Kutuya tekrar imza atın.",
     "readiness_not_pending": "Bu kişi işe başlama onayı beklemiyor.",
     "reopen_modules_invalid": "Tekrar açılacak en az bir tamamlanmış modül seçin.",
     "decision_not_pending": "Bu kişi için karar beklenmiyor.",
@@ -338,7 +338,18 @@
     "briefing_question_incomplete": "Her sorunun Türkçe ve İngilizce metni ve bütün şıkları dolu olmalı.",
     "briefing_question_invalid": "Sorunun Türkçe ve İngilizce şık sayıları eşit olmalı ve doğru şık seçilmeli.",
     "briefing_not_enough_questions": "Soru sayısı bu ziyaretçi tipinin istediği sayıdan az.",
-    "briefing_media_not_ready": "Kartlardaki görsel ya da video henüz hazır değil."
+    "briefing_media_not_ready": "Kartlardaki görsel ya da video henüz hazır değil.",
+    "briefing_not_ready": "Bilgilendirme henüz hazır değil. Lütfen güvenliğe başvurun.",
+    "briefing_not_started": "Bilgilendirmeyi baştan başlatın.",
+    "briefing_too_fast": "Kartları okumak için biraz daha zaman ayırın, sonra tekrar deneyin.",
+    "quiz_incomplete": "Her soruda bir şık seçin.",
+    "quiz_not_passed": "Önce kontrol sorularını geçin.",
+    "visit_no_email": "Bu ziyaretçinin e-posta adresi yok.",
+    "host_name_required": "Kimi ziyaret ettiğinizi yazın.",
+    "contact_required": "Telefon ya da e-postadan en az birini yazın.",
+    "not_kiosk": "Bu cihaz kapı tableti olarak kayıtlı değil.",
+    "code_invalid": "Bu koda ait bugünkü bir ziyaret bulunamadı. Lütfen güvenliğe başvurun.",
+    "rate_limited": "Çok fazla deneme yapıldı. Lütfen güvenliğe başvurun."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -1524,7 +1535,12 @@
     "lastSeen": "Son kullanım: {date}",
     "revoked": "İptal edildi",
     "revokeConfirm": "Cihaz kaydı iptal edilsin mi?",
-    "revoke": "İptal et"
+    "revoke": "İptal et",
+    "kind": "Cihaz türü",
+    "kinds": {
+      "shared_pc": "Ortak bilgisayar (eğitim odası)",
+      "kiosk": "Kapı tableti (ziyaretçi kiosku)"
+    }
   },
   "questions": {
     "title": "Soru bankası",
@@ -2125,7 +2141,8 @@
       "all_attempts_failed": "{name}, \"{title}\" sınav haklarının hepsini kullandı. Karar bekleniyor.",
       "blacklist_added": "Kara listeye yeni bir kişi eklendi.",
       "email_failed": "Bazı e-postalar gönderilemedi. E-posta ayarlarını ve kayıtları kontrol edin.",
-      "retention_completed": "Saklama süresi dolan {count} kişinin verisi anonimleştirildi."
+      "retention_completed": "Saklama süresi dolan {count} kişinin verisi anonimleştirildi.",
+      "visitor_briefed": "{name} bilgilendirmeyi tamamladı."
     },
     "email": {
       "app": "JAPAR Akademi",
@@ -2145,7 +2162,8 @@
         "all_attempts_failed": "Kararınızı bekleyen bir personel var",
         "blacklist_added": "Kara listeye yeni bir kişi eklendi",
         "email_failed": "E-posta gönderim hatası",
-        "retention_completed": "Saklama süresi dolan kişi verileri anonimleştirildi"
+        "retention_completed": "Saklama süresi dolan kişi verileri anonimleştirildi",
+        "visitor_briefed": "Ziyaretçiniz bilgilendirmeyi tamamladı"
       }
     },
     "pagination": "Bildirim sayfaları"
@@ -2399,7 +2417,8 @@
       "certificate": "Belge doğrulama",
       "reports": "Raporlar",
       "upload": "Dosya yükleme",
-      "retention": "Saklama süreleri"
+      "retention": "Saklama süreleri",
+      "visitors": "Ziyaretçi ekranları"
     },
     "items": {
       "org_timezone": {
@@ -2636,6 +2655,31 @@
         "label": "Ziyaretçi tipleri",
         "hint": "Tip başına kontrol sorusu sayısı, geçme notu, kart başına en az okuma süresi ve geçerlilik. Geçerlilik 0 = yalnızca ziyaret günü.",
         "unit": "{n}"
+      },
+      "visitor_code_max_attempts": {
+        "label": "Kiosk kodu deneme sınırı",
+        "hint": "Kapı tabletinde bu kadar hatalı koddan sonra geçici engel.",
+        "unit": "{n} deneme"
+      },
+      "visitor_code_window_min": {
+        "label": "Kiosk kodu zaman aralığı",
+        "hint": "Hatalı kod denemeleri bu süre içinde sayılır.",
+        "unit": "{n} dakika"
+      },
+      "visitor_selfreg_max": {
+        "label": "Kendi kaydı sınırı",
+        "hint": "Aynı adresten bu süre içinde açılabilecek ziyaretçi kaydı.",
+        "unit": "{n} kayıt"
+      },
+      "visitor_selfreg_window_min": {
+        "label": "Kendi kaydı zaman aralığı",
+        "hint": "Kendi kaydı sınırının sayıldığı süre.",
+        "unit": "{n} dakika"
+      },
+      "visitor_kiosk_reset_seconds": {
+        "label": "Kiosk başa dönme süresi",
+        "hint": "Bilgilendirme bitince kapı tableti bu süre sonra başa döner.",
+        "unit": "{n} saniye"
       }
     },
     "visitorTypes": {
@@ -2732,7 +2776,14 @@
       "cancelReason": "İptal gerekçesi",
       "cancelConfirm": "İptal et",
       "history": "Önceki ziyaretleri",
-      "blacklistedWarning": "Bu kişi kara listede. Giriş yapmadan önce İSG uzmanıyla görüşün."
+      "blacklistedWarning": "Bu kişi kara listede. Giriş yapmadan önce İSG uzmanıyla görüşün.",
+      "code": "Ziyaret kodu",
+      "hostWritten": "{name} (ziyaretçinin yazdığı)",
+      "resendLink": "Bilgilendirme bağlantısını yeniden gönder",
+      "briefing": "Bilgilendirme",
+      "briefingDone": "{date} · {locale} · puan {score}",
+      "briefingDoneNoQuiz": "{date} · {locale}",
+      "briefingPending": "Henüz tamamlanmadı"
     },
     "companies": {
       "name": "Firma unvanı",
@@ -2806,6 +2857,93 @@
       "publish": "Yayınla",
       "discard": "Taslağı sil",
       "discardConfirm": "Taslak silinsin mi?"
+    },
+    "selfRegistered": "Kendi kaydı"
+  },
+  "visitorFlow": {
+    "title": "Ziyaretçi bilgilendirmesi",
+    "language": "Dil",
+    "languages": {
+      "tr": "Türkçe",
+      "en": "English"
+    },
+    "invalid": "Bağlantı geçersiz ya da süresi dolmuş. Lütfen güvenliğe başvurun.",
+    "notReady": "Bilgilendirme henüz hazır değil. Lütfen güvenliğe başvurun.",
+    "greeting": "Hoş geldiniz, {name}",
+    "codeLabel": "Ziyaret kodunuz",
+    "types": {
+      "office": "Ofis ziyaretçisi",
+      "site": "Saha ziyaretçisi",
+      "contractor": "Taşeron / servis"
+    },
+    "intro": {
+      "text": "Tesise girmeden önce kısa bir iş sağlığı ve güvenliği bilgilendirmesi izleyeceksiniz. Kartlar atlanamaz; sonunda kuralları onaylayıp imzalayacaksınız.",
+      "start": "Başla"
+    },
+    "cards": {
+      "progress": "Kart {n} / {total}",
+      "next": "Sonraki kart",
+      "wait": "{seconds} sn",
+      "watchVideo": "Devam etmek için videoyu sonuna kadar izleyin.",
+      "toQuiz": "Sorulara geç",
+      "toConsent": "Onaya geç"
+    },
+    "quiz": {
+      "title": "Kontrol soruları",
+      "intro": "Her soruda bir şık seçin.",
+      "question": "Soru {n}",
+      "submit": "Cevapları gönder",
+      "failed": "Geçme notuna ulaşamadınız (puan: {score}). Yeniden deneyin.",
+      "retry": "Yeniden dene"
+    },
+    "consent": {
+      "title": "Kurallar ve onay",
+      "acceptRules": "Tesis kurallarını okudum ve uyacağım.",
+      "acceptKvkk": "Kişisel verilerin korunması aydınlatma metnini okudum.",
+      "read": "Metni oku",
+      "signature": "İmzanız",
+      "signatureHint": "Kutuya parmağınızla imza atın.",
+      "clear": "Temizle",
+      "submit": "Onayla ve bitir"
+    },
+    "done": {
+      "title": "Bilgilendirme tamamlandı",
+      "text": "Teşekkürler. Kapıda güvenliğe ziyaret kodunuzu söyleyin.",
+      "kioskReset": "Ekran {seconds} saniye içinde başa dönecek.",
+      "newVisitor": "Yeni ziyaretçi"
+    },
+    "kiosk": {
+      "title": "Ziyaretçi girişi",
+      "intro": "Ön kaydınız varsa e-postanızdaki ya da ev sahibinizden aldığınız 6 haneli kodu girin.",
+      "notKiosk": "Bu cihaz kapı tableti olarak kayıtlı değil.",
+      "codeLabel": "6 haneli ziyaret kodu",
+      "continue": "Devam",
+      "codeInvalid": "Bu koda ait bugünkü bir ziyaret bulunamadı. Lütfen güvenliğe başvurun.",
+      "rateLimited": "Çok fazla deneme yapıldı. Lütfen güvenliğe başvurun.",
+      "noCode": "Ön kaydım yok"
+    },
+    "register": {
+      "title": "Ziyaretçi kaydı",
+      "intro": "Ön kaydınız yoksa bilgilerinizi girin. Kimliğinizi girişte güvenlik kontrol eder.",
+      "type": "Ziyaret türü",
+      "fullName": "Ad soyad",
+      "company": "Firma",
+      "contractor": "Firmanız",
+      "chooseCompany": "Firmanızı seçin",
+      "phone": "Telefon",
+      "email": "E-posta",
+      "contactHint": "Telefon ya da e-postadan en az birini yazın.",
+      "hostName": "Kimi ziyaret ediyorsunuz?",
+      "optional": "isteğe bağlı",
+      "privacy": "Bilgileriniz yalnızca ziyaret kaydı ve tesis güvenliği için kullanılır; ayrıntılar aydınlatma metnindedir.",
+      "submit": "Devam",
+      "rateLimited": "Çok fazla kayıt denemesi yapıldı. Lütfen güvenliğe başvurun."
+    },
+    "email": {
+      "subject": "JAPAR ziyaretiniz için İSG bilgilendirmesi",
+      "body": "{date} tarihindeki ziyaretiniz için girişten önce kısa İSG bilgilendirmesini tamamlayın. Ziyaret kodunuz: {code}",
+      "open": "Bilgilendirmeyi aç",
+      "footer": "Bu e-posta JAPAR Akademi tarafından otomatik gönderilmiştir. Bağlantı yalnızca ziyaret gününün sonuna kadar geçerlidir."
     }
   }
 }

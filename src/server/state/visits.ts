@@ -70,3 +70,17 @@ export function briefingProblems(
   if (data.questions.length < requiredQuestions) problems.push("briefing_not_enough_questions");
   return problems;
 }
+
+/**
+ * Bilgilendirmenin en kısa süresi (karar #141): her kart en az `perCard` saniye; videolu kartta video süresi
+ * daha uzunsa video süresi. Sunucu, başlangıçtan bu süre geçmeden soruları ve onayı kabul etmez.
+ */
+export function briefingMinSeconds(videoDurations: readonly number[], perCard: number): number {
+  return videoDurations.reduce((sum, v) => sum + Math.max(perCard, Math.floor(v)), 0);
+}
+
+/** Kontrol sorusu puanı (100 üzerinden, yuvarlanır) ve geçme durumu. */
+export function quizScore(correct: readonly boolean[], passScore: number): { score: number; passed: boolean } {
+  const score = correct.length === 0 ? 100 : Math.round((100 * correct.filter(Boolean).length) / correct.length);
+  return { score, passed: score >= passScore };
+}
