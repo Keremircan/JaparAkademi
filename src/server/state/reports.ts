@@ -16,6 +16,12 @@ export function daysBetween(from: string, to: string): number {
   return Math.round((b - a) / 86_400_000);
 }
 
+/** Tam ay farkı (gün sayısı ayın gününden küçükse eksik ay sayılmaz). */
+export function monthsBetween(from: string, to: string): number {
+  const m = (+to.slice(0, 4) - +from.slice(0, 4)) * 12 + (+to.slice(5, 7) - +from.slice(5, 7));
+  return +to.slice(8, 10) < +from.slice(8, 10) ? m - 1 : m;
+}
+
 export function summarize(values: readonly number[]): { count: number; avg: number | null; median: number | null; min: number | null; max: number | null } {
   if (values.length === 0) return { count: 0, avg: null, median: null, min: null, max: null };
   const sorted = [...values].sort((x, y) => x - y);

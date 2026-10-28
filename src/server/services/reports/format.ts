@@ -15,6 +15,8 @@ const ENUM_COLUMNS: Record<string, string> = {
   visitorType: "visitorType",
   visitStatus: "visitStatus",
   language: "language",
+  itemKind: "itemKind",
+  recertStatus: "recertStatus",
 };
 
 /** Tarih ve saatle gösterilen sütunlar (ziyaretçi kayıt defteri). */

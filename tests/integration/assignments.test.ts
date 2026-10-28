@@ -1,7 +1,7 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { db } from "@/server/db/client";
-import { assignmentItems, assignments, quizResponses } from "@/server/db/schema";
+import { assignmentItems, assignments, notifications, quizResponses } from "@/server/db/schema";
 import { isImmutableViolation } from "@/server/errors";
 import { createContent, saveDraft, startNewVersion, submitForApproval } from "@/server/services/content";
 import { createModule, setModuleContents } from "@/server/services/modules";
@@ -316,6 +316,9 @@ describe("FG-3.3 pozisyon değişikliği ve FG-2.2 okuma görevi", () => {
     const tasks = (await myLearning(u.actor)).rereads;
     expect(tasks).toHaveLength(1);
     expect(tasks[0]).toMatchObject({ contentTitle: "Pres temelleri", overdue: false });
+    // SPEC 10.2 (Faz 2): kursiyere okuma görevi bildirimi
+    const notes = await db().select().from(notifications).where(and(eq(notifications.userId, u.userId), eq(notifications.kind, "reread_assigned")));
+    expect(notes.map((x) => x.params)).toEqual([{ title: "Pres temelleri" }]);
     expect((await myLearning(other.actor)).rereads).toEqual([]);
     await acknowledgeReread(u.actor, tasks[0]!.id);
     expect((await myLearning(u.actor)).rereads).toEqual([]);

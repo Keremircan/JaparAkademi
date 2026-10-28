@@ -65,6 +65,9 @@ async function Content({ params }: { params: Promise<{ assignmentId: string }> }
         description={`${view.person.positionName} · ${view.person.unitName}${view.person.sicilNo ? ` · ${view.person.sicilNo}` : ""}`}
         back={{ href: "/manage/approvals", label: tNav("title") }}
       />
+      {view.reason === "recertification" && (
+        <p className="rounded-2xl border border-sky-600/40 bg-sky-600/5 p-4">{t("recertNotice")}</p>
+      )}
       <p className="rounded-2xl border p-4" role="status">
         {t(`status.${view.status}`)}
         {view.person.trainerName && ` · ${t("trainer", { name: view.person.trainerName })}`}

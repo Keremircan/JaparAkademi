@@ -33,6 +33,7 @@ Her satırda sorumlu ve durum doldurulur.
 | 2.11 | Ziyaretçi bilgilendirme paketleri (TR + EN) ve ziyaretçi metinleri yayında; bir deneme ziyaretiyle uçtan uca denendi (ön kayıt → bilgilendirme → kapıda giriş → çıkış) | İSG + İK + güvenlik | ☐ |
 | 2.12 | Ziyaretçiye verilen KKD listesi (Parametreler) ve kart numaraları kapıyla uyumlu | İSG + güvenlik | ☐ |
 | 2.13 | Tahliye tatbikatında yoklama listesi telefondan alındı (Faz 2 kabul kriteri); bağlantısız okuma ve PDF yedeği denendi | İSG + güvenlik | ☐ |
+| 2.14 | Süreli modüllerin geçerlilik süreleri (ör. İSG 12 ay) ve `recert.lead_days` İSG ile teyit edildi; ilk gece çalışmasında açılan tekrar eğitimleri "Süresi dolacak" raporuyla kontrol edildi. `notify.email_events` yeni Faz 2 bildirimleriyle güncellendi | İSG + İK + sysadmin | ☐ |
 
 ## 3. Veri ve içerik (SPEC Bölüm 18)
 

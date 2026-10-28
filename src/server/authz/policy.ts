@@ -61,6 +61,8 @@ export const PERMISSIONS = {
   "evacuation.manage": ["security", "ohs_specialist"],
   "reports.visitors": ["security", "ohs_specialist"],
   "reports.contractors": ["ohs_specialist", "hr"],
+  "reports.expiring": ["ohs_specialist", "hr"],
+  "reports.content": ["section_manager", "hr"],
 } as const satisfies Record<string, readonly Role[]>;
 
 export type Permission = keyof typeof PERMISSIONS;

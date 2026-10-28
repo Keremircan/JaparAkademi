@@ -22,9 +22,10 @@ import {
 import { addDays, defaultTargetDate, maxDate, todayIn } from "@/lib/dates";
 import { getSettings } from "@/server/services/settings";
 import { CARD_SECTION_KEYS, parseCardSections } from "@/server/services/positions/card-schema";
-import { allRequiredDone, isDone, unlockable, type ModuleKind } from "@/server/state/assignment";
+import { allRequiredDone, isDone, needsTrainer, unlockable, type ModuleKind } from "@/server/state/assignment";
+import { recertRows, recertTargetDate } from "@/server/state/recert";
 import { commonModulesFor } from "../modules";
-import { notify, sectionManagersForPerson } from "../notifications";
+import { notify, resolveNotifications, sectionManagersForPerson, usersWithRole } from "../notifications";
 
 /**
  * Atama motoru: servislerin transaction'ı içinde çalışan iç işlemler (yetki kontrolü çağıranda).
@@ -53,6 +54,22 @@ async function publishedPlan(tx: Tx, positionId: string) {
   return row ?? null;
 }
 
+/** Kişinin şu anki pozisyon planındaki ve ortak modüllerindeki modül kimlikleri (tekrar eğitimi kapsamı, karar #164). */
+export async function currentPlanModuleIds(tx: Tx, userId: string): Promise<Set<string>> {
+  const [person] = await tx
+    .select({ positionId: personnel.positionId, collarType: positions.collarType })
+    .from(personnel)
+    .leftJoin(positions, eq(positions.id, personnel.positionId))
+    .where(eq(personnel.userId, userId))
+    .limit(1);
+  if (!person?.positionId || !person.collarType) return new Set();
+  const plan = await publishedPlan(tx, person.positionId);
+  if (!plan) return new Set();
+  const common = await commonModulesFor(person.collarType, tx);
+  const planRows = await tx.select({ id: planModules.moduleId }).from(planModules).where(eq(planModules.planId, plan.planId));
+  return new Set([...common.map((c) => c.id), ...planRows.map((r) => r.id)]);
+}
+
 /** Kartın kursiyere okunacak bölümleri: künye + dolu bölümler (karar #47). */
 function cardSectionKeys(sections: unknown): string[] {
   const parsed = parseCardSections(sections);
@@ -74,6 +91,11 @@ export type CreateAssignmentInput = {
   createdBy: string | null;
   trainerUserId?: string | null;
   targetDate?: string | null;
+  /**
+   * Tekrar eğitimi (karar #164–168): modül kimliği → yenilenen tamamlanış (assignment_modules.id) ve bitişi.
+   * Verilirse atamaya yalnızca bu modüller ve bunlara bağlı sınavlar girer; devretme yapılmaz.
+   */
+  renew?: ReadonlyMap<string, { instanceId: string; expiresAt: Date }>;
 };
 
 /**
@@ -104,24 +126,31 @@ export async function createAssignment(tx: Tx, input: CreateAssignmentInput): Pr
   // Ortak modüller sırayla; zorunlu ortaklar bitmeden ilk plan modülü açılmaz (karar #51)
   const requiredCommon: string[] = [];
   let prevCommon: string | null = null;
-  type Row = { moduleId: string; isCommon: boolean; isRequired: boolean; prereqs: string[]; settings: object; m: typeof modules.$inferSelect };
-  const rows: Row[] = [];
+  type Row = { moduleId: string; kind: ModuleKind; isCommon: boolean; isRequired: boolean; prereqs: string[]; settings: object; m: typeof modules.$inferSelect };
+  let rows: Row[] = [];
   for (const c of common) {
     const m = commonFull.find((x) => x.id === c.id)!;
-    rows.push({ moduleId: m.id, isCommon: true, isRequired: true, prereqs: prevCommon ? [prevCommon] : [], settings: {}, m });
+    rows.push({ moduleId: m.id, kind: m.kind, isCommon: true, isRequired: true, prereqs: prevCommon ? [prevCommon] : [], settings: {}, m });
     prevCommon = m.id;
     requiredCommon.push(m.id);
   }
   for (const [i, { pm, m }] of planRows.entries()) {
     if (rows.some((r) => r.moduleId === m.id)) continue;
     const prereqs = i === 0 ? [...new Set([...pm.prerequisiteModuleIds, ...requiredCommon])] : pm.prerequisiteModuleIds;
-    rows.push({ moduleId: m.id, isCommon: false, isRequired: pm.isRequired, prereqs, settings: pm.settings, m });
+    rows.push({ moduleId: m.id, kind: m.kind, isCommon: false, isRequired: pm.isRequired, prereqs, settings: pm.settings, m });
+  }
+  const renew = input.renew;
+  if (renew) {
+    rows = recertRows(rows, new Set(renew.keys()));
+    if (rows.length === 0) return null;
   }
 
   const settings = await getSettings(["org.timezone", "assignment.daily_training_minutes"]);
   const start = maxDate(todayIn(settings["org.timezone"]), person.hireDate);
   const totalMinutes = rows.reduce((a, r) => a + r.m.durationMin, 0);
-  const targetDate = input.targetDate ?? defaultTargetDate(start, totalMinutes, settings["assignment.daily_training_minutes"]);
+  const computed = defaultTargetDate(start, totalMinutes, settings["assignment.daily_training_minutes"]);
+  const earliest = renew ? [...renew.values()].map((r) => todayIn(settings["org.timezone"], r.expiresAt)).sort()[0] : undefined;
+  const targetDate = input.targetDate ?? (earliest ? recertTargetDate(earliest, computed) : computed);
 
   const [assignment] = await tx
     .insert(assignments)
@@ -148,7 +177,7 @@ export async function createAssignment(tx: Tx, input: CreateAssignmentInput): Pr
     .where(and(eq(assignments.userId, input.userId), ne(assignments.id, assignmentId), eq(assignmentModules.status, "completed")))
     .orderBy(desc(assignmentModules.completedAt));
   const carry = new Map<string, (typeof previous)[number]>();
-  for (const p of previous) if (!carry.has(p.moduleId) && (!p.expiresAt || p.expiresAt > now)) carry.set(p.moduleId, p);
+  if (!renew) for (const p of previous) if (!carry.has(p.moduleId) && (!p.expiresAt || p.expiresAt > now)) carry.set(p.moduleId, p);
 
   for (const [i, r] of rows.entries()) {
     const from = carry.get(r.moduleId);
@@ -173,6 +202,7 @@ export async function createAssignment(tx: Tx, input: CreateAssignmentInput): Pr
         prerequisiteModuleIds: r.prereqs,
         settings: r.settings,
         pinnedTaskIds: tasks.map((t) => t.id),
+        renewsId: renew?.get(r.moduleId)?.instanceId ?? null,
         ...(from
           ? { status: "completed" as const, completedAt: from.completedAt, completedVia: "carried_over" as const, carriedFromId: from.id, expiresAt: from.expiresAt }
           : {}),
@@ -181,9 +211,21 @@ export async function createAssignment(tx: Tx, input: CreateAssignmentInput): Pr
     if (r.m.kind === "theory" && !from) await pinItems(tx, am!.id, r.m, plan);
   }
   await refreshAssignment(tx, assignmentId);
-  // Bildirim (SPEC 10.2): kursiyere yeni eğitim, eğitmene yeni kursiyer
-  await notify(tx, { kind: "assignment_started", userIds: [input.userId], subjectKey: `assignment:${assignmentId}`, link: "/learn" });
+  // Bildirim (SPEC 10.2): kursiyere yeni eğitim (ya da tekrar eğitimi), eğitmene yeni kursiyer
+  await notify(tx, { kind: renew ? "recert_started" : "assignment_started", userIds: [input.userId], subjectKey: `assignment:${assignmentId}`, link: "/learn" });
   if (input.trainerUserId) await notifyTrainer(tx, assignmentId, input.trainerUserId, input.userId);
+  else if (renew && rows.some((r) => needsTrainer(r.kind))) {
+    // Pratik modül eğitmen seçilene kadar kilitli (karar #168): İK'ya "eğitmen seçin"
+    const [u] = await tx.select({ name: users.name }).from(users).where(eq(users.id, input.userId)).limit(1);
+    await notify(tx, {
+      kind: "recert_trainer_needed",
+      userIds: await usersWithRole(tx, "hr"),
+      subjectKey: `recert_trainer:${assignmentId}`,
+      link: "/manage/team",
+      params: { name: u?.name ?? "" },
+      exclude: [input.userId],
+    });
+  }
   return assignmentId;
 }
 
@@ -234,6 +276,7 @@ export async function refreshAssignment(tx: Tx, assignmentId: string): Promise<v
   // Tüm zorunlu modüller bitince işe başlama onayı beklenir (1.7)
   if (a.status === "active" && allRequiredDone(mods)) {
     await tx.update(assignments).set({ status: "awaiting_readiness" }).where(eq(assignments.id, assignmentId));
+    await resolveNotifications(tx, `overdue:${a.id}`);
     const [u] = await tx.select({ name: users.name }).from(users).where(eq(users.id, a.userId)).limit(1);
     await notify(tx, {
       kind: "readiness_pending",
@@ -410,10 +453,15 @@ export async function createRereadTasks(tx: Tx, contentId: string, versionId: st
   if (users.length === 0) return 0;
   const active = await tx.select({ userId: personnel.userId }).from(personnel).where(and(inArray(personnel.userId, users), eq(personnel.status, "active")));
   if (active.length === 0) return 0;
-  await tx
+  const created = await tx
     .insert(rereadTasks)
     .values(active.map((u) => ({ userId: u.userId, contentId, contentVersionId: versionId, dueDate: due })))
-    .onConflictDoNothing();
+    .onConflictDoNothing()
+    .returning({ userId: rereadTasks.userId });
+  if (created.length) {
+    const [c] = await tx.select({ title: contents.title }).from(contents).where(eq(contents.id, contentId)).limit(1);
+    await notify(tx, { kind: "reread_assigned", userIds: created.map((r) => r.userId), subjectKey: `reread:${versionId}`, link: "/learn", params: { title: c?.title ?? "" } });
+  }
   return active.length;
 }
 

@@ -9,7 +9,7 @@ import { renderReportPdf } from "@/server/pdf/report";
 import messages from "../../../../messages/tr.json";
 import { getSettings } from "../settings";
 import { formatCell, formatDate, type Translate } from "./format";
-import { runReport, type ReportFilters, type ReportKind } from "./index";
+import { hasDateFilters, runReport, type ReportFilters, type ReportKind } from "./index";
 
 /**
  * Rapor dışa aktarma (karar #96–97): istek anında Excel ya da PDF üretilir; satır sınırı aşılırsa filtre daraltılması
@@ -27,7 +27,7 @@ export async function exportReport(actor: Actor, kind: ReportKind, filters: Repo
   const appName = createTranslator({ locale: "tr", messages, namespace: "app" })("name");
   const title = t(`kinds.${kind}.title`);
   const meta = [
-    t("meta.range", { from: formatDate(filters.from, tz), to: formatDate(filters.to, tz) }),
+    ...(hasDateFilters(kind) ? [t("meta.range", { from: formatDate(filters.from, tz), to: formatDate(filters.to, tz) })] : []),
     t("meta.generated", { date: new Intl.DateTimeFormat("tr-TR", { dateStyle: "long", timeStyle: "short", timeZone: tz }).format(new Date()) }),
   ];
   const warnings = result.warnings.map((w) => t(`warnings.${w}`));

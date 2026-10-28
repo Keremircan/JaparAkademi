@@ -2029,7 +2029,8 @@
         "extra_training": "Ek eğitim ata",
         "end_process": "Süreci sonlandır"
       }
-    }
+    },
+    "recertNotice": "Bu bir tekrar eğitimi. Onaylarsanız yenilenen ve hâlâ geçerli modüllerle yeni pozisyon sertifikası düzenlenir."
   },
   "certificates": {
     "pdf": {
@@ -2152,11 +2153,20 @@
       "retention_completed": "Saklama süresi dolan {count} kişinin verisi anonimleştirildi.",
       "visitor_briefed": "{name} bilgilendirmeyi tamamladı.",
       "blacklist_denied": "Kara listedeki bir kişinin girişi kapıda reddedildi.",
-      "visitor_arrived": "Ziyaretçiniz {name} geldi."
+      "visitor_arrived": "Ziyaretçiniz {name} geldi.",
+      "recert_started": "Tekrar eğitimi zamanı geldi. Süresi dolacak eğitimleriniz yeniden atandı.",
+      "reread_assigned": "\"{title}\" güncellendi. Okuyup onaylamanız gerekiyor.",
+      "tasks_unmarked": "{name} için pratik görevler {days} gündür işaretlenmedi.",
+      "training_overdue": "{name} eğitiminin hedef tarihini geçti.",
+      "weekly_summary": "Haftalık özet: {active} süren eğitim, {overdue} hedefi geçen, {readiness} onay bekleyen, {expiring} süresi dolacak, {rereads} bekleyen okuma.",
+      "recert_deferred": "{name} için tekrar eğitimi zamanı geldi; açık eğitimi bitince başlayacak.",
+      "recert_trainer_needed": "{name} tekrar eğitimine başladı. Pratik modül için eğitmen seçin.",
+      "ohs_expired": "{count} kişinin İSG eğitiminin süresi doldu."
     },
     "email": {
       "app": "JAPAR Akademi",
       "body": "Ayrıntıları görmek için JAPAR Akademi'ye giriş yapın.",
+      "weeklyBody": "Süren eğitim: {active} · Hedefi geçen: {overdue} · Onay bekleyen: {readiness} · {days} gün içinde süresi dolacak: {expiring} · Bekleyen okuma: {rereads}. Ayrıntılar için JAPAR Akademi'ye giriş yapın.",
       "open": "JAPAR Akademi'de aç",
       "footer": "Bu e-posta JAPAR Akademi tarafından otomatik gönderilmiştir. Bildirim ayrıntıları güvenlik nedeniyle e-postada yer almaz.",
       "kinds": {
@@ -2175,7 +2185,15 @@
         "retention_completed": "Saklama süresi dolan kişi verileri anonimleştirildi",
         "visitor_briefed": "Ziyaretçiniz bilgilendirmeyi tamamladı",
         "blacklist_denied": "Kara listedeki bir kişi giriş denedi",
-        "visitor_arrived": "Ziyaretçiniz geldi"
+        "visitor_arrived": "Ziyaretçiniz geldi",
+        "recert_started": "Tekrar eğitimi zamanı geldi",
+        "reread_assigned": "Okumanız gereken güncel bir içerik var",
+        "tasks_unmarked": "İşaretlenmeyen pratik görevler var",
+        "training_overdue": "Hedef tarihi geçen bir eğitim var",
+        "weekly_summary": "Ekibinizin haftalık eğitim özeti",
+        "recert_deferred": "Ertelenen bir tekrar eğitimi var",
+        "recert_trainer_needed": "Tekrar eğitimi için eğitmen seçilmesi gerekiyor",
+        "ohs_expired": "Süresi dolan İSG eğitimleri var"
       }
     },
     "pagination": "Bildirim sayfaları"
@@ -2216,6 +2234,22 @@
         "tables": {
           "positions": "Pozisyon bazında",
           "people": "Kişi bazında"
+        }
+      },
+      "expiring": {
+        "title": "Süresi dolacak eğitim ve sertifikalar",
+        "description": "Bitişi seçilen tarih aralığında olan modül eğitimleri ve pozisyon sertifikaları; tekrar eğitimi durumu.",
+        "file": "suresi-dolacak-egitimler",
+        "tables": {
+          "items": "Süresi dolacaklar"
+        }
+      },
+      "content": {
+        "title": "İçerik güncellik",
+        "description": "Son gözden geçirmesi parametredeki süreden eski olan yayındaki pozisyon kartları.",
+        "file": "icerik-guncellik",
+        "tables": {
+          "cards": "Gözden geçirilmesi gereken kartlar"
         }
       },
       "visitors": {
@@ -2292,7 +2326,17 @@
       "workers": "Çalışan",
       "validWorkers": "Geçerli",
       "invalidWorkers": "Geçersiz / yok",
-      "nextExpiry": "En yakın bitiş"
+      "nextExpiry": "En yakın bitiş",
+      "item": "Eğitim / belge",
+      "itemKind": "Tür",
+      "isOhs": "İSG",
+      "expiresAt": "Bitiş",
+      "daysLeft": "Kalan gün",
+      "recertStatus": "Tekrar eğitimi",
+      "cardVersion": "Kart sürümü",
+      "publishedAt": "Yayın tarihi",
+      "lastReviewed": "Son gözden geçirme",
+      "monthsSince": "Geçen ay"
     },
     "values": {
       "yes": "Evet",
@@ -2337,6 +2381,15 @@
       "language": {
         "tr": "Türkçe",
         "en": "İngilizce"
+      },
+      "itemKind": {
+        "module": "Modül",
+        "certificate": "Pozisyon sertifikası"
+      },
+      "recertStatus": {
+        "opened": "Açıldı",
+        "waiting": "Açık eğitim bitince",
+        "none": "Açılmadı"
       }
     },
     "meta": {
@@ -2354,6 +2407,11 @@
       "position": "Pozisyon",
       "all": "Tümü",
       "apply": "Uygula"
+    },
+    "quick": {
+      "label": "Hızlı seçim",
+      "days": "Önümüzdeki {days} gün",
+      "expired": "Süresi dolmuş (son 1 yıl)"
     },
     "export": {
       "xlsx": "Excel indir",

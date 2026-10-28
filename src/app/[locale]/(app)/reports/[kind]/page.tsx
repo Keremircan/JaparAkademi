@@ -13,6 +13,7 @@ import { AppError } from "@/server/errors";
 import { toActor } from "@/server/services/auth";
 import {
   canViewReport,
+  hasDateFilters,
   hasOrgFilters,
   parseFilters,
   REPORT_KINDS,
@@ -22,6 +23,8 @@ import {
 } from "@/server/services/reports";
 import { formatCell, type Translate } from "@/server/services/reports/format";
 import { getSettings } from "@/server/services/settings";
+import { Link } from "@/i18n/navigation";
+import { addDays, todayIn } from "@/lib/dates";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("sections.reports");
@@ -95,6 +98,7 @@ async function Content({
   ]);
   if (!result) return <NotFoundView />;
   const tz = settings["org.timezone"];
+  const today = todayIn(tz);
   const tr = t as unknown as Translate;
   const qs = new URLSearchParams({
     from: filters.from,
@@ -116,24 +120,28 @@ async function Content({
         className="flex flex-wrap items-end gap-3 rounded-2xl border p-4"
         aria-label={t("filters.apply")}
       >
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">{t("filters.from")}</span>
-          <Input
-            type="date"
-            name="from"
-            defaultValue={filters.from}
-            className="w-44"
-          />
-        </label>
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">{t("filters.to")}</span>
-          <Input
-            type="date"
-            name="to"
-            defaultValue={filters.to}
-            className="w-44"
-          />
-        </label>
+        {hasDateFilters(kind) && (
+          <>
+            <label className="flex flex-col gap-1">
+              <span className="text-sm font-medium">{t("filters.from")}</span>
+              <Input
+                type="date"
+                name="from"
+                defaultValue={filters.from}
+                className="w-44"
+              />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-sm font-medium">{t("filters.to")}</span>
+              <Input
+                type="date"
+                name="to"
+                defaultValue={filters.to}
+                className="w-44"
+              />
+            </label>
+          </>
+        )}
         {hasOrgFilters(kind) && (
           <>
             <label className="flex min-w-48 flex-1 flex-col gap-1">
@@ -170,6 +178,26 @@ async function Content({
           {t("filters.apply")}
         </Button>
       </form>
+
+      {kind === "expiring" && (
+        <nav aria-label={t("quick.label")} className="flex flex-wrap gap-2">
+          {([30, 60, 90] as const).map((d) => (
+            <Link
+              key={d}
+              href={`/reports/expiring?from=${today}&to=${addDays(today, d)}`}
+              className="inline-flex min-h-12 items-center rounded-lg border px-4 font-medium hover:bg-muted"
+            >
+              {t("quick.days", { days: d })}
+            </Link>
+          ))}
+          <Link
+            href={`/reports/expiring?from=${addDays(today, -365)}&to=${addDays(today, -1)}`}
+            className="inline-flex min-h-12 items-center rounded-lg border px-4 font-medium hover:bg-muted"
+          >
+            {t("quick.expired")}
+          </Link>
+        </nav>
+      )}
 
       <div className="flex flex-wrap gap-2">
         {(["xlsx", "pdf"] as const).map((format) => (
