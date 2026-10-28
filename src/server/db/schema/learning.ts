@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   boolean,
   check,
   date,
@@ -112,6 +113,8 @@ export const assignmentModules = pgTable(
     completedVia: completedVia(),
     /** Devreden modülde kaynağı (FG-3.3) */
     carriedFromId: uuid(),
+    /** Tekrar eğitiminde yenilenen tamamlanış (karar #166): aynı tamamlanış için ikinci tekrar eğitimi açılmaz. */
+    renewsId: uuid().references((): AnyPgColumn => assignmentModules.id, { onDelete: "restrict" }),
     /** Geçerlilik bitişi (completed_at + geçerlilik ayı) */
     expiresAt: tstz("expires_at"),
     updatedAt: updatedAt(),
@@ -119,6 +122,7 @@ export const assignmentModules = pgTable(
   (t) => [
     unique("assignment_modules_assignment_module_unique").on(t.assignmentId, t.moduleId),
     index("assignment_modules_module_idx").on(t.moduleId),
+    index("assignment_modules_renews_idx").on(t.renewsId),
     check("assignment_modules_completed_check", sql`(${t.status} = 'completed') = (${t.completedAt} is not null)`),
   ],
 );

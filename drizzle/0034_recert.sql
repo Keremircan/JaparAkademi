@@ -1,0 +1,3 @@
+ALTER TABLE "assignment_modules" ADD COLUMN "renews_id" uuid;--> statement-breakpoint
+ALTER TABLE "assignment_modules" ADD CONSTRAINT "assignment_modules_renews_id_assignment_modules_id_fk" FOREIGN KEY ("renews_id") REFERENCES "public"."assignment_modules"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "assignment_modules_renews_idx" ON "assignment_modules" USING btree ("renews_id");

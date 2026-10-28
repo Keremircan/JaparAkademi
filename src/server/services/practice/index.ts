@@ -25,7 +25,7 @@ import { attemptsLeft } from "@/server/state/exam";
 import { checkMark, currentLevels, allIndependent, lowerLevels, nextLevel, scorePractical, type PracticeLevel } from "@/server/state/practice";
 import { canViewPerson } from "../assignments";
 import { completeModule, refreshAssignment } from "../assignments/engine";
-import { notify, notifyAllAttemptsFailed, resolveNotifications, sectionManagersForPerson } from "../notifications";
+import { notify, notifyAllAttemptsFailed, resolveNotifications, resolveNotificationsByPrefix, sectionManagersForPerson } from "../notifications";
 import { planDefaults } from "../positions/plan-settings";
 import { createSignature, subjectHash, uploadSignatureImage } from "../signatures";
 
@@ -255,6 +255,7 @@ export async function markTask(
       markedBy: actor.userId,
     });
     levels.set(taskId, input.level);
+    await resolveNotificationsByPrefix(tx, `unmarked:${am.id}:`, "tasks_unmarked");
     if (am.status === "available") await tx.update(assignmentModules).set({ status: "in_progress", startedAt: am.startedAt ?? new Date() }).where(eq(assignmentModules.id, am.id));
     if (allIndependent(am.pinnedTaskIds, levels)) {
       await completeModule(tx, am.id, "online");

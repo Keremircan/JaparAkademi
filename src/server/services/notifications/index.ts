@@ -27,13 +27,16 @@ export type NotifyInput = {
   params?: Record<string, string | number>;
   /** Bildirim gönderilmeyecek kişiler (ör. işlemi yapan, kursiyerin kendisi). */
   exclude?: readonly (string | null | undefined)[];
+  /** Aynı kişiye aynı konu için (okunmuş olsa da) yalnızca bir kez (ör. hedefi geçen eğitim; karar #172). */
+  once?: boolean;
 };
 
-function emailContent(kind: NotificationKind, link: string) {
+function emailContent(kind: NotificationKind, link: string, params: Record<string, string | number>) {
   const t = createTranslator({ locale: "tr", messages, namespace: "notifications.email" });
   const url = new URL(link, env().APP_URL).toString();
   const subject = t(`kinds.${kind}`);
-  const body = t("body");
+  // Haftalık özette yalnızca sayılar (kişi adı yok; karar #172)
+  const body = kind === "weekly_summary" ? t("weeklyBody", params) : t("body");
   return {
     subject: `${subject} · ${t("app")}`,
     text: `${subject}\n\n${body}\n${url}\n\n${t("footer")}`,
@@ -62,8 +65,16 @@ export async function notify(tx: Tx, input: NotifyInput): Promise<void> {
     const [existing] = await tx
       .select({ id: notifications.id })
       .from(notifications)
-      .where(and(eq(notifications.userId, userId), eq(notifications.kind, input.kind), eq(notifications.subjectKey, input.subjectKey), isNull(notifications.readAt)))
+      .where(
+        and(
+          eq(notifications.userId, userId),
+          eq(notifications.kind, input.kind),
+          eq(notifications.subjectKey, input.subjectKey),
+          ...(input.once ? [] : [isNull(notifications.readAt)]),
+        ),
+      )
       .limit(1);
+    if (existing && input.once) continue;
     if (existing) {
       await tx.update(notifications).set({ params: input.params ?? {}, link: input.link }).where(eq(notifications.id, existing.id));
       continue;
@@ -74,7 +85,7 @@ export async function notify(tx: Tx, input: NotifyInput): Promise<void> {
       .returning({ id: notifications.id });
     const to = emails.get(userId);
     if (wantsEmail && to) {
-      const c = emailContent(input.kind, input.link);
+      const c = emailContent(input.kind, input.link, input.params ?? {});
       await tx.insert(emailOutbox).values({ notificationId: n!.id, kind: input.kind, toAddress: to, subject: c.subject, bodyText: c.text, bodyHtml: c.html });
     }
   }
@@ -89,6 +100,14 @@ export async function resolveNotifications(tx: Tx, subjectKey: string, kind?: No
     .update(notifications)
     .set({ readAt: new Date() })
     .where(and(eq(notifications.subjectKey, subjectKey), isNull(notifications.readAt), ...(kind ? [eq(notifications.kind, kind)] : [])));
+}
+
+/** Konu öneki eşleşen okunmamış bildirimleri okundu sayar (ör. `unmarked:<modül>:` — eğitmen işaretleyince). */
+export async function resolveNotificationsByPrefix(tx: Tx, prefix: string, kind: NotificationKind): Promise<void> {
+  await tx
+    .update(notifications)
+    .set({ readAt: new Date() })
+    .where(and(sql`starts_with(${notifications.subjectKey}, ${prefix})`, eq(notifications.kind, kind), isNull(notifications.readAt)));
 }
 
 // ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, ne } from "drizzle-orm";
 import type { Actor } from "@/server/authz/actor";
 import { assertCan, assertUser, hasRole } from "@/server/authz/policy";
 import { isPersonInScope } from "@/server/authz/scope";
@@ -97,12 +97,35 @@ function queueRender(id: string) {
   return enqueue(QUEUES.certificateRender, { certificateId: id }, { startAfter: new Date(Date.now() + 2000) });
 }
 
+/**
+ * Tekrar eğitiminde yeni sertifika (karar #169): yenilenen modüllerle birlikte aynı pozisyonun önceki atamalarında
+ * tamamlanmış ve hâlâ geçerli modüller (her modülün son tamamlanışı). Bitiş bunların en erkenidir.
+ */
+async function stillValidElsewhere(tx: Tx, a: typeof assignments.$inferSelect, exclude: string[]) {
+  const rows = await tx
+    .select({ am: assignmentModules })
+    .from(assignmentModules)
+    .innerJoin(assignments, eq(assignments.id, assignmentModules.assignmentId))
+    .where(and(eq(assignments.userId, a.userId), eq(assignments.positionId, a.positionId), ne(assignments.id, a.id), eq(assignmentModules.status, "completed")))
+    .orderBy(desc(assignmentModules.completedAt));
+  const now = new Date();
+  const seen = new Set(exclude);
+  const out: (typeof assignmentModules.$inferSelect)[] = [];
+  for (const { am } of rows) {
+    if (seen.has(am.moduleId)) continue;
+    seen.add(am.moduleId);
+    if (!am.expiresAt || am.expiresAt > now) out.push(am);
+  }
+  return out.sort((x, y) => x.sortOrder - y.sortOrder);
+}
+
 /** Pozisyon yetkinlik sertifikası (işe başlama onayı transaction'ı içinde). */
 export async function issuePositionCertificate(tx: Tx, input: { assignmentId: string; approvedBy: string }): Promise<string> {
   const [a] = await tx.select().from(assignments).where(eq(assignments.id, input.assignmentId)).limit(1);
   if (!a) throw new NotFoundError("assignment");
   const mods = await tx.select().from(assignmentModules).where(eq(assignmentModules.assignmentId, a.id)).orderBy(asc(assignmentModules.sortOrder));
   const done = mods.filter((m) => m.status === "completed");
+  if (a.reason === "recertification") done.push(...(await stillValidElsewhere(tx, a, done.map((m) => m.moduleId))));
   const person = await personInfo(tx, a.userId, a.positionId);
   const trainerName = await nameOf(tx, a.trainerUserId);
   const scores = await bestScores(tx, mods.map((m) => m.id));

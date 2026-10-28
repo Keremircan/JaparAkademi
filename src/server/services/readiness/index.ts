@@ -178,6 +178,8 @@ export type ReviewModule = {
 export type ReadinessReview = {
   assignmentId: string;
   status: AssignmentRow["status"];
+  /** Tekrar eğitiminde onay ekranı "Tekrar eğitimi onayı" olarak gösterilir (karar #169). */
+  reason: AssignmentRow["reason"];
   person: { userId: string; name: string; sicilNo: string | null; positionName: string; unitName: string; trainerName: string | null };
   startDate: string;
   modules: ReviewModule[];
@@ -251,6 +253,7 @@ export async function readinessReview(actor: Actor, assignmentId: string): Promi
     status: row.a.status,
     person: { userId: row.a.userId, name: row.name, sicilNo: row.sicilNo, positionName: row.positionName, unitName: row.unitName, trainerName: row.trainerName },
     startDate: row.a.startDate,
+    reason: row.a.reason,
     modules,
     history,
     can: {

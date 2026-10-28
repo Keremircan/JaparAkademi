@@ -9,17 +9,25 @@ export const NOTIFICATION_KINDS = [
   "exam_available",
   "exam_result",
   "certificate_ready",
+  "recert_started",
+  "reread_assigned",
   // Eğitmen
   "trainee_assigned",
   "practical_exam_available",
+  "tasks_unmarked",
   // Bölüm sorumlusu / İSG / İK
   "approval_pending",
   "second_signature_pending",
   "readiness_pending",
   "all_attempts_failed",
+  "training_overdue",
+  "weekly_summary",
+  "recert_deferred",
+  "recert_trainer_needed",
   // İSG uzmanı (Faz 2)
   "blacklist_added",
   "blacklist_denied",
+  "ohs_expired",
   // Ev sahibi (Faz 2)
   "visitor_briefed",
   "visitor_arrived",

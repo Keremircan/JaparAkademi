@@ -24,7 +24,7 @@ import {
 } from "@/server/db/schema";
 import { ValidationError } from "@/server/errors";
 import { addDays, todayIn } from "@/lib/dates";
-import { daysBetween, effectiveHazardClass, minutesToHours, summarize, wrongRate } from "@/server/state/reports";
+import { daysBetween, effectiveHazardClass, minutesToHours, monthsBetween, summarize, wrongRate } from "@/server/state/reports";
 import { questionViewFilter } from "../questions";
 import { getSettings } from "../settings";
 
@@ -33,7 +33,7 @@ import { getSettings } from "../settings";
  * birimlerin pozisyonlarını görür. Sonuç sütun anahtarı + ham değer olarak döner; metinler arayüzde/dışa aktarmada çevrilir.
  */
 
-export const REPORT_KINDS = ["training", "exams", "ohs", "onboarding", "visitors", "contractors"] as const;
+export const REPORT_KINDS = ["training", "exams", "ohs", "onboarding", "expiring", "content", "visitors", "contractors"] as const;
 export type ReportKind = (typeof REPORT_KINDS)[number];
 
 const PERMISSION = {
@@ -43,11 +43,18 @@ const PERMISSION = {
   onboarding: "reports.onboarding",
   visitors: "reports.visitors",
   contractors: "reports.contractors",
+  expiring: "reports.expiring",
+  content: "reports.content",
 } as const;
 
 /** Birim/pozisyon filtresi olan raporlar (ziyaretçi raporlarında yok, karar #162). */
 export function hasOrgFilters(kind: ReportKind): boolean {
   return kind !== "visitors" && kind !== "contractors";
+}
+
+/** Tarih filtresi olan raporlar (içerik güncellik raporunda yok, karar #171). */
+export function hasDateFilters(kind: ReportKind): boolean {
+  return kind !== "content";
 }
 
 export type Cell = string | number | boolean | Date | null;
@@ -67,8 +74,9 @@ export async function parseFilters(kind: ReportKind, input: Partial<Record<keyof
   const { "org.timezone": tz } = await getSettings(["org.timezone"]);
   const today = todayIn(tz);
   const year = today.slice(0, 4);
-  const defFrom = kind === "ohs" ? `${year}-01-01` : addDays(today, -90);
-  const defTo = kind === "ohs" ? `${year}-12-31` : today;
+  // Süresi dolacaklar: bugünden itibaren 90 gün (bitiş tarihi aralığı; karar #170)
+  const defFrom = kind === "ohs" ? `${year}-01-01` : kind === "expiring" ? today : addDays(today, -90);
+  const defTo = kind === "ohs" ? `${year}-12-31` : kind === "expiring" ? addDays(today, 90) : today;
   const from = input.from && DATE.test(input.from) ? input.from : defFrom;
   const to = input.to && DATE.test(input.to) ? input.to : defTo;
   if (from > to) throw new ValidationError("report_range_invalid");
@@ -396,11 +404,138 @@ export async function runReport(actor: Actor, kind: ReportKind, filters: ReportF
       return ohsReport(actor, filters);
     case "onboarding":
       return onboardingReport(actor, filters);
+    case "expiring":
+      return expiringReport(actor, filters);
+    case "content":
+      return contentReport(actor, filters);
     case "visitors":
       return visitorsReport(filters);
     case "contractors":
       return contractorsReport(filters);
   }
+}
+
+// ---------------------------------------------------------------------------
+// Süresi dolacak eğitim/sertifika ve içerik güncellik (SPEC 10.1, iş paketi 2.5, kararlar #170–171)
+// ---------------------------------------------------------------------------
+
+/** Ham SQL raporları için kapsam + birim/pozisyon koşulu (`pos` takma adlı pozisyon tablosu üzerinde). */
+async function rawUnitCondition(actor: Actor, f: ReportFilters, opts: { ohsAll?: boolean } = {}): Promise<SQL> {
+  const conds: SQL[] = [];
+  const scope = opts.ohsAll && hasRole(actor, "ohs_specialist") ? ({ all: true } as const) : await orgScopeFor(actor);
+  const list = (ids: string[]) => sql.join(ids.map((id) => sql`${id}::uuid`), sql`, `);
+  if (!scope.all) {
+    const ids = [...scope.orgUnitIds];
+    if (ids.length === 0) return sql`false`;
+    conds.push(sql`pos.org_unit_id in (${list(ids)})`);
+  }
+  if (f.orgUnitId) {
+    const children = await db().select({ id: orgUnits.id }).from(orgUnits).where(eq(orgUnits.parentId, f.orgUnitId));
+    conds.push(sql`pos.org_unit_id in (${list([f.orgUnitId, ...children.map((c) => c.id)])})`);
+  }
+  if (f.positionId) conds.push(sql`pos.id = ${f.positionId}::uuid`);
+  return conds.length ? sql.join(conds, sql` and `) : sql`true`;
+}
+
+/**
+ * Süresi dolacak eğitim ve sertifikalar: her kişinin her modüldeki son tamamlanışı ve son geçerli pozisyon sertifikası,
+ * bitişi tarih aralığında olanlar. İK hepsini, yalnızca İSG uzmanı olan İSG modüllerini görür.
+ */
+async function expiringReport(actor: Actor, f: ReportFilters): Promise<ReportResult> {
+  const { "reports.max_rows": max, "org.timezone": tz } = await limits();
+  const unit = await rawUnitCondition(actor, f, { ohsAll: true });
+  const ohsOnly = !hasRole(actor, "hr");
+  const today = todayIn(tz);
+  const inRange = (col: SQL) => sql`${col} >= (${f.from}::date)::timestamp at time zone ${tz} and ${col} < ((${f.to}::date + 1)::timestamp at time zone ${tz})`;
+  const rows = await db().execute<{
+    sicil: string;
+    name: string;
+    unit: string;
+    position: string;
+    item: string;
+    item_kind: "module" | "certificate";
+    is_ohs: boolean;
+    expires_at: string;
+    recert: "opened" | "waiting" | "none" | null;
+  }>(sql`
+    select * from (
+      select u.username as sicil, u.name, ou.name as unit, pos.name as position, l.title as item, 'module' as item_kind, l.is_ohs, l.expires_at,
+        case
+          when exists (select 1 from assignment_modules r where r.renews_id = l.id) then 'opened'
+          when exists (select 1 from assignments o where o.user_id = l.user_id and o.status in ('active', 'awaiting_readiness', 'awaiting_decision')) then 'waiting'
+          else 'none'
+        end as recert
+      from (
+        select distinct on (a.user_id, am.module_id) am.id, a.user_id, am.title, am.is_ohs, am.expires_at
+        from assignment_modules am join assignments a on a.id = am.assignment_id
+        where am.status = 'completed' and am.completed_via is distinct from 'carried_over'
+        order by a.user_id, am.module_id, am.completed_at desc
+      ) l
+      join personnel p on p.user_id = l.user_id and p.status = 'active'
+      join users u on u.id = l.user_id
+      join positions pos on pos.id = p.position_id
+      join org_units ou on ou.id = pos.org_unit_id
+      where l.expires_at is not null and ${inRange(sql`l.expires_at`)} and ${unit} ${ohsOnly ? sql`and l.is_ohs` : sql``}
+      ${
+        ohsOnly
+          ? sql``
+          : sql`union all
+      select u.username, u.name, ou.name, pos.name, c.title, 'certificate', false, c.expires_at, null
+      from certificates c
+      join personnel p on p.user_id = c.user_id and p.status = 'active'
+      join users u on u.id = c.user_id
+      join positions pos on pos.id = c.position_id
+      join org_units ou on ou.id = pos.org_unit_id
+      where c.kind = 'position_competency' and c.status = 'valid' and c.expires_at is not null and ${inRange(sql`c.expires_at`)} and ${unit}
+        and not exists (select 1 from certificates n where n.user_id = c.user_id and n.position_id = c.position_id
+          and n.kind = 'position_competency' and n.status = 'valid' and n.issued_at > c.issued_at)`
+      }
+    ) x order by x.expires_at, x.name
+    limit ${max + 1}`);
+  const out = rows.slice(0, max).map((r) => {
+    const expires = new Date(r.expires_at);
+    return [r.sicil, r.name, r.unit, r.position, r.item, r.item_kind, r.is_ohs, expires, daysBetween(today, todayIn(tz, expires)), r.recert] as Cell[];
+  });
+  return {
+    kind: "expiring",
+    filters: f,
+    tables: [{ key: "items", columns: ["sicil", "name", "unit", "position", "item", "itemKind", "isOhs", "expiresAt", "daysLeft", "recertStatus"], rows: out }],
+    truncated: rows.length > max,
+    warnings: [],
+  };
+}
+
+/** İçerik güncellik: yayındaki pozisyon kartlarından son gözden geçirmesi `content.review_max_age_months`'tan eski olanlar. */
+async function contentReport(actor: Actor, f: ReportFilters): Promise<ReportResult> {
+  const { "reports.max_rows": max, "org.timezone": tz, "content.review_max_age_months": months } = await getSettings([
+    "reports.max_rows",
+    "org.timezone",
+    "content.review_max_age_months",
+  ]);
+  const unit = await rawUnitCondition(actor, f);
+  const rows = await db().execute<{ unit: string; position: string; version: number; published_at: string; last_reviewed: string }>(sql`
+    select ou.name as unit, pos.name as position, v.version, v.published_at,
+      greatest(v.published_at, (select max(r.reviewed_at) from position_card_reviews r join position_card_versions rv on rv.id = r.card_version_id where rv.position_id = pos.id)) as last_reviewed
+    from position_card_versions v
+    join positions pos on pos.id = v.position_id
+    join org_units ou on ou.id = pos.org_unit_id
+    where v.status = 'published' and ${unit}
+      and greatest(v.published_at, (select max(r.reviewed_at) from position_card_reviews r join position_card_versions rv on rv.id = r.card_version_id where rv.position_id = pos.id))
+        < now() - make_interval(months => ${months})
+    order by last_reviewed, ou.name, pos.name
+    limit ${max + 1}`);
+  const today = todayIn(tz);
+  const out = rows.slice(0, max).map((r) => {
+    const last = new Date(r.last_reviewed);
+    return [r.unit, r.position, r.version, new Date(r.published_at), last, monthsBetween(todayIn(tz, last), today)] as Cell[];
+  });
+  return {
+    kind: "content",
+    filters: f,
+    tables: [{ key: "cards", columns: ["unit", "position", "cardVersion", "publishedAt", "lastReviewed", "monthsSince"], rows: out }],
+    truncated: rows.length > max,
+    warnings: [],
+  };
 }
 
 // ---------------------------------------------------------------------------

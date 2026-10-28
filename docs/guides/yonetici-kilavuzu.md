@@ -32,7 +32,9 @@ Sistem kimseyi otomatik reddetmez; karar sizindir ve değiştirilemez.
 - **Sistem → Sertifika şablonu**: belgelerde görünen imza yetkilileri (en fazla 3; ad, unvan, taranmış imza). Değişiklik yalnızca yeni belgelere yansır.
 
 ### Raporlar ve KVKK
-- **Raporlar**: eğitim ilerleme, sınav sonuçları, İSG eğitim kayıt defteri, işe başlama süresi. Filtreleyin, önizleyin, Excel/PDF indirin; her indirme kayda geçer.
+- **Raporlar**: eğitim ilerleme, sınav sonuçları, İSG eğitim kayıt defteri, işe başlama süresi, süresi dolacak eğitim ve sertifikalar (İSG + İK; 30/60/90 gün ya da süresi dolmuş), içerik güncellik (bölüm sorumlusu + İK). Filtreleyin, önizleyin, Excel/PDF indirin; her indirme kayda geçer.
+- **Tekrar eğitimi** otomatik açılır: süreli modülün bitişine `recert.lead_days` (varsayılan 30) gün kala kişiye yalnızca o modüller ve bağlı sınavlar atanır. Kişinin açık eğitimi varsa o bitince açılır (size bildirim gelir). Pratik modül varsa kişinin eğitimine eğitmen seçin. İptal ettiğiniz tekrar eğitimi yeniden açılmaz. Bitince bölüm sorumlusu onaylar ve yeni sertifika düzenlenir.
+- **Bildirimler (Faz 2):** hedef tarihi geçen eğitim (bölüm sorumlusuna bir kez), işaretlenmeyen pratik görev (eğitmene), süresi dolan İSG eğitimleri (İSG'ye günlük özet), Pazartesi 08:00 haftalık ekip özeti (bölüm sorumlusuna; e-postada yalnızca sayılar).
 - **Kişi verisini dışa aktar** (kişi sayfası): KVKK kapsamındaki talepler için kişinin verilerini Excel olarak verir (TC maskeli). Kendi verinizi bu yolla indiremezsiniz.
 - **Aydınlatma metinleri** (Sistem → Aydınlatma metinleri ve kurallar): personel KVKK metni (yeni sürümde bütün kullanıcılar yeniden onaylar) ve ziyaretçi KVKK metni (Türkçe + İngilizce birlikte yayınlanır).
 

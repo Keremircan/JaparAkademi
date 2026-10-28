@@ -10,6 +10,7 @@ import { renderCertificate } from "@/server/services/certificates/render";
 import { dispatchEmails } from "@/server/services/notifications/dispatch";
 import { purgeOldNotifications } from "@/server/services/notifications";
 import { runRetention } from "@/server/services/retention";
+import { runTrainingDaily, sendWeeklySummaries } from "@/server/services/assignments/alerts";
 import { env } from "@/server/env";
 import { QUEUE_OPTIONS, QUEUES } from "./queues";
 
@@ -50,6 +51,18 @@ export async function registerJobs(boss: PgBoss) {
     if (r.anonymized || r.images || r.auditRows || r.visitors || r.blacklist) logger.info(r, "Saklama süresi işleri tamamlandı");
   });
   await boss.schedule(QUEUES.retention, "45 3 * * *", null, { tz: "Europe/Istanbul" });
+
+  // Faz 2 eğitim bildirimleri ve otomatik tekrar eğitimi (kararlar #164–173)
+  await boss.work(QUEUES.trainingDaily, { batchSize: 1 }, async () => {
+    const r = await runTrainingDaily(systemActor("worker:training.daily"));
+    logger.info(r, "Günlük eğitim işi tamamlandı");
+  });
+  await boss.schedule(QUEUES.trainingDaily, "0 6 * * *", null, { tz: "Europe/Istanbul" });
+  await boss.work(QUEUES.trainingWeekly, { batchSize: 1 }, async () => {
+    const n = await sendWeeklySummaries(systemActor("worker:training.weekly"));
+    logger.info({ managers: n }, "Haftalık özetler gönderildi");
+  });
+  await boss.schedule(QUEUES.trainingWeekly, "0 8 * * 1", null, { tz: "Europe/Istanbul" });
 
   await boss.work(QUEUES.heartbeat, async () => {
     await db().execute(sql`select 1`);

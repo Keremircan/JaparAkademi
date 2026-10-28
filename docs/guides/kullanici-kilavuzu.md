@@ -40,6 +40,8 @@ Uygulama telefonda, tablette ve bilgisayarda çalışır. Telefonunuzun ana ekra
 7. Sonuç ekranında puanınızı ve konulara göre sonucunuzu görürsünüz. Sorular ve doğru cevaplar gösterilmez.
 
 **"İSG kritik"** sorulardan biri yanlışsa puan ne olursa olsun sınav başarısız sayılır.
+**Tekrar eğitimi:** Süreli bir eğitiminizin (ör. yıllık İSG) bitişi yaklaşınca sistem yalnızca o modülleri ve bağlı sınavları size yeniden atar; bildirim alırsınız. Bitirip onaylandığınızda yeni sertifikanız düzenlenir. Bir içerik güncellenip yeniden okumanız istendiğinde de bildirim gelir.
+
 **Kalırsanız** ilgili modüller "Tekrar gerekli" olur; onları yeniden tamamlayıp bekleme süresi dolunca yeni deneme hakkınız açılır. Bütün haklar biterse kararı İK ve bölüm sorumlunuz verir; size bilgi verilir.
 
 ### Pratik görevlerim

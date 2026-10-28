@@ -19,6 +19,10 @@ export const QUEUES = {
   notificationsPurge: "notifications.purge",
   /** Saklama süreleri: personel anonimleştirme, imza görselleri, eski denetim kaydı (her gece; SPEC 12.3). */
   retention: "retention.run",
+  /** Tekrar eğitimi, hedefi geçen eğitim, işaretlenmeyen görev, süresi dolan İSG eğitimi (her gün 06:00; iş paketi 2.5). */
+  trainingDaily: "training.daily",
+  /** Bölüm sorumlularına haftalık özet (Pazartesi 08:00; SPEC 10.2). */
+  trainingWeekly: "training.weekly",
 } as const;
 
 export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];

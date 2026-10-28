@@ -1,4 +1,4 @@
-import { BarChart3, Building2, ClipboardList, HardHat, History, Timer, UsersRound } from "lucide-react";
+import { BarChart3, Building2, CalendarClock, ClipboardList, FileClock, HardHat, History, Timer, UsersRound } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title") };
 }
 
-const ICONS = { training: BarChart3, exams: ClipboardList, ohs: HardHat, onboarding: Timer, visitors: UsersRound, contractors: Building2 } as const;
+const ICONS = { training: BarChart3, exams: ClipboardList, ohs: HardHat, onboarding: Timer, expiring: CalendarClock, content: FileClock, visitors: UsersRound, contractors: Building2 } as const;
 
 /** Raporlar (SPEC 10.1): role göre görülebilen Faz 1 raporları. */
 export default function Page() {

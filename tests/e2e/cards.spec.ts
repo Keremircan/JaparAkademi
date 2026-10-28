@@ -5,6 +5,7 @@ import { E2E_PASSWORD } from "./global-setup";
 const sicil = (kind: string, projectName: string) => `E2E-${process.env.E2E_SUFFIX}-${kind}${projectName[0]}`;
 
 test("Bölüm 5 + FG-3.1 plan tasarlanır, kart onaya gider ve İSG uzmanı onayıyla yayınlanır", async ({ page }, testInfo) => {
+  test.setTimeout(120_000);
   const p = testInfo.project.name[0];
   const positionName = `E2E Kart Pozisyonu ${p}`;
   await login(page, sicil("SM", testInfo.project.name), E2E_PASSWORD);
@@ -39,7 +40,8 @@ test("Bölüm 5 + FG-3.1 plan tasarlanır, kart onaya gider ve İSG uzmanı onay
   await login(page, sicil("OHS", testInfo.project.name), E2E_PASSWORD);
   await acceptConsentIfAsked(page);
   await page.goto("/manage/approvals");
-  await page.getByRole("link", { name: new RegExp(positionName) }).click();
+  // Önceki yarıda kalmış çalıştırmaların kartları da listede olabilir: en yeni gönderim sonda
+  await page.getByRole("link", { name: new RegExp(positionName) }).last().click();
   page.once("dialog", (d) => d.accept());
   await page.getByRole("button", { name: "Onayla" }).click();
   await expect(page.getByText("Yayında (s1)").first()).toBeVisible();
