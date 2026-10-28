@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, lte } from "drizzle-orm";
+import { and, asc, eq, inArray, lte, sql } from "drizzle-orm";
 import { systemActor } from "@/server/authz/actor";
 import { emailOutbox } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
@@ -24,7 +24,8 @@ export async function dispatchEmails(): Promise<{ sent: number; failed: number }
     const rows = await tx
       .select()
       .from(emailOutbox)
-      .where(and(eq(emailOutbox.status, "pending"), lte(emailOutbox.nextAttemptAt, new Date())))
+      // Veritabanı saatiyle karşılaştırılır: satırlar now() ile yazılır, uygulama saati biraz geride olabilir
+      .where(and(eq(emailOutbox.status, "pending"), lte(emailOutbox.nextAttemptAt, sql`now()`)))
       .orderBy(asc(emailOutbox.nextAttemptAt))
       .limit(BATCH)
       .for("update", { skipLocked: true });

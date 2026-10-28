@@ -14,6 +14,7 @@ import type { SettingInput } from "@/server/services/settings/catalog";
 import { updateSettingAction } from "../actions";
 
 const CLASSES = ["low", "medium", "high"] as const;
+const NEWLINE = String.fromCharCode(10);
 type PerClass = Record<(typeof CLASSES)[number], number>;
 
 /** Tek parametrenin düzenleyicisi. Değer sunucuda parametrenin Zod şemasıyla doğrulanır. */
@@ -124,6 +125,19 @@ export function SettingEditor({
             </Field>
           ))}
         </fieldset>
+      )}
+
+      {input.kind === "list" && (
+        <Field id={`${id}-value`} label={t("newValue")} hint={t("listHint")}>
+          <Textarea
+            id={`${id}-value`}
+            rows={6}
+            value={(draft as string[]).join(NEWLINE)}
+            onChange={(e) => setDraft(e.target.value.split(NEWLINE))}
+            onBlur={() => setDraft((draft as string[]).map((x) => x.trim()).filter(Boolean))}
+            aria-describedby={`${id}-value-hint`}
+          />
+        </Field>
       )}
 
       {input.kind === "visitorTypes" && (

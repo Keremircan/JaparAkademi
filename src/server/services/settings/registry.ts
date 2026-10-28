@@ -119,6 +119,13 @@ export const SETTINGS = {
     managedBy: OHS,
   }),
 
+  // Kapıda verilen KKD listesi (iş paketi 2.3b, karar #149)
+  "visitor.ppe_items": def({
+    schema: z.array(z.string().trim().min(1).max(60)).max(20),
+    default: ["Baret", "Reflektörlü yelek", "İş ayakkabısı", "Koruyucu gözlük", "Kulak koruyucu"],
+    managedBy: OHS,
+  }),
+
   // Ziyaretçi ekranları (iş paketi 2.3a): kiosk kodu ve kendi kaydı hız sınırları, kiosk başa dönme süresi
   "visitor.code_max_attempts": def({ schema: positiveInt.max(100), default: 10, managedBy: SYS }),
   "visitor.code_window_min": def({ schema: positiveInt.max(1440), default: 10, managedBy: SYS }),

@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { acceptConsentIfAsked, login } from "./helpers";
 import { E2E_PASSWORD } from "./global-setup";
+import { testNationalId } from "../support/national-id";
 
 const sicil = (kind: string, projectName: string) => `E2E-${process.env.E2E_SUFFIX}-${kind}${projectName[0]}`;
 
@@ -56,4 +57,19 @@ test("SPEC 8.2 ziyaretçi QR ile kendini kaydeder, İngilizce bilgilendirmeyi ta
   await row.click();
   await expect(page.getByText(code!, { exact: true }).filter({ visible: true })).toBeVisible();
   await expect(page.getByText(/Deneme İK \(ziyaretçinin yazdığı\)/).filter({ visible: true })).toBeVisible();
+
+  // Kapı (2.3b): kodla bul, gerçek ev sahibi + TC + kart no ile giriş, sonra çıkış
+  await page.goto(`/security/gate?q=${code}`);
+  const item = page.getByRole("listitem").filter({ hasText: name }).filter({ visible: true });
+  await item.getByRole("button", { name: "Giriş yap" }).click();
+  await item.getByLabel(/Ev sahibinin sicil no/).fill(sicil("HR", testInfo.project.name));
+  await item.getByLabel("Kimlik numarası").fill(testNationalId(Date.now() % 900_000_000));
+  await item.getByLabel("Kart no").fill("E2E-1");
+  await item.getByRole("checkbox", { name: "Baret" }).click();
+  await item.getByRole("button", { name: "Girişi onayla" }).click();
+  await expect(page.getByText("İçeride (", { exact: false }).filter({ visible: true })).toBeVisible();
+  const inside = page.getByRole("listitem").filter({ hasText: name }).filter({ visible: true });
+  await inside.getByRole("button", { name: "Çıkış yap" }).click();
+  await inside.getByRole("button", { name: "Çıkışı onayla" }).click();
+  await expect(page.getByRole("listitem").filter({ hasText: name }).filter({ visible: true })).toHaveCount(0);
 });

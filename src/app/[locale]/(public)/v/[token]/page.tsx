@@ -65,6 +65,7 @@ async function Content({ params }: { params: Promise<{ token: string }> }) {
         kvkk={view.kvkk}
         kiosk={kiosk}
         resetSeconds={s["visitor.kiosk_reset_seconds"]}
+        clearanceUntil={view.clearanceUntil}
       />
     </VisitorFrame>
   );

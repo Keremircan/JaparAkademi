@@ -2,7 +2,7 @@ import { randomInt } from "node:crypto";
 import { and, eq, isNull } from "drizzle-orm";
 import { systemActor } from "@/server/authz/actor";
 import { db } from "@/server/db/client";
-import { contractorCompanies, mediaAssets, visitors, visitorConsents, visitorSignatures, visitQuizAttempts, visits, type VisitQuizItem } from "@/server/db/schema";
+import { contractorClearances, contractorCompanies, mediaAssets, visitors, visitorConsents, visitorSignatures, visitQuizAttempts, visits, type VisitQuizItem } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { NotFoundError, ValidationError } from "@/server/errors";
 import { todayIn } from "@/lib/dates";
@@ -15,6 +15,8 @@ import { notify } from "../notifications";
 import { getSettings } from "../settings";
 import { subjectHash, uploadSignatureImage } from "../signatures";
 import { currentBriefing, getBriefingContent, type VisitorType } from "./briefings";
+import { activeClearanceUntil } from "./gate";
+import { subtractYears } from "@/server/state/retention";
 import { cleanContact } from "./identity";
 import { issueVisitSession, newVisitCode, visitForToken } from "./session";
 
@@ -61,14 +63,17 @@ export async function visitorView(token: string, locale: Locale) {
     .from(visitQuizAttempts)
     .where(and(eq(visitQuizAttempts.visitId, visit.id), eq(visitQuizAttempts.passed, true)))
     .limit(1);
+  // Geçerli taşeron: kartlar ve sorular atlanır, yalnızca onay + imza (karar #152)
+  const clearanceUntil = base.visitorType === "contractor" ? await activeClearanceUntil(visit.visitorId) : null;
   return {
     state: "ready" as const,
     ...base,
+    clearanceUntil,
     started: visit.briefingStartedAt !== null && visit.briefingLocale === locale,
     cardMinSeconds: settings.cardMinSeconds,
-    questionCount: settings.questionCount,
-    quizPassed: settings.questionCount === 0 || !!passed,
-    cards: briefing.cards.map((c) => {
+    questionCount: clearanceUntil ? 0 : settings.questionCount,
+    quizPassed: clearanceUntil !== null || settings.questionCount === 0 || !!passed,
+    cards: (clearanceUntil ? [] : briefing.cards).map((c) => {
       const a = c.mediaAssetId ? assets.get(c.mediaAssetId) : null;
       return {
         id: c.id,
@@ -100,6 +105,7 @@ export async function startBriefing(token: string, locale: Locale): Promise<void
 async function assertCardsRead(visit: typeof visits.$inferSelect) {
   if (!visit.briefingId || !visit.briefingStartedAt) throw new ValidationError("briefing_not_started");
   const content = await getBriefingContent(visit.briefingId);
+  if (await isCleared(visit)) return content;
   const { "visitor.types": types } = await getSettings(["visitor.types"]);
   const ids = content.cards.map((c) => c.mediaAssetId).filter((x): x is string => !!x);
   const info = ids.length ? await assetsInfo(ids) : new Map();
@@ -107,6 +113,11 @@ async function assertCardsRead(visit: typeof visits.$inferSelect) {
   const min = briefingMinSeconds(durations, types[visit.visitorType].cardMinSeconds);
   if (Date.now() - visit.briefingStartedAt.getTime() < min * 1000) throw new ValidationError("briefing_too_fast");
   return content;
+}
+
+/** Taşeron geçerliliği sürüyor mu (karar #152). */
+async function isCleared(visit: typeof visits.$inferSelect): Promise<boolean> {
+  return visit.visitorType === "contractor" && (await activeClearanceUntil(visit.visitorId)) !== null;
 }
 
 function shuffle(n: number): number[] {
@@ -127,7 +138,7 @@ export async function drawQuiz(token: string, locale: Locale) {
   if (visit.status !== "planned") throw new ValidationError("visit_locked");
   const content = await assertCardsRead(visit);
   const { "visitor.types": types } = await getSettings(["visitor.types"]);
-  const count = types[visit.visitorType].questionCount;
+  const count = (await isCleared(visit)) ? 0 : types[visit.visitorType].questionCount;
   if (count === 0) return { attemptId: null, questions: [] };
 
   let [attempt] = await db()
@@ -195,8 +206,9 @@ export async function completeBriefing(
   const visit = await requireVisit(token);
   if (!canTransition(visit.status, "briefed")) throw new ValidationError("visit_locked");
   await assertCardsRead(visit);
-  const { "visitor.types": types } = await getSettings(["visitor.types"]);
-  if (types[visit.visitorType].questionCount > 0) {
+  const { "visitor.types": types, "org.timezone": tz } = await getSettings(["visitor.types", "org.timezone"]);
+  const cleared = await isCleared(visit);
+  if (!cleared && types[visit.visitorType].questionCount > 0) {
     const [passed] = await db()
       .select({ id: visitQuizAttempts.id })
       .from(visitQuizAttempts)
@@ -218,6 +230,11 @@ export async function completeBriefing(
     ]);
     await tx.insert(visitorSignatures).values({ visitId: visit.id, visitorId: visit.visitorId, subjectHash: hash, imageKey: image.key, ip: meta.ip, userAgent: ua });
     await tx.update(visits).set({ status: "briefed", briefingCompletedAt: new Date() }).where(eq(visits.id, visit.id));
+    // Bilgilendirmeyi geçen taşerona geçerlilik (karar #152); kısa yolla tamamlanan ziyaret süreyi uzatmaz
+    const years = types[visit.visitorType].validityYears;
+    if (visit.visitorType === "contractor" && !cleared && years > 0) {
+      await tx.insert(contractorClearances).values({ visitorId: visit.visitorId, visitId: visit.id, validUntil: subtractYears(todayIn(tz), -years) });
+    }
     // SPEC 10.2: ev sahibine "bilgilendirmeyi tamamladı" (kendi kaydında ev sahibi henüz yok)
     if (visit.hostUserId) {
       await notify(tx, {

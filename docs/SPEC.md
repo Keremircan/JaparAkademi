@@ -331,7 +331,7 @@ Kursiyer ve pratik eğitmen ekranları telefon ve tablette rahat kullanılmalıd
 | 14 | Soru bankası | İSG, b. sorumlusu (İK okur) | PC | Soru ekle, etiketle, Excel'den içe aktar, onay | `/manage/questions` | 1 |
 | 15 | Personel listesi ve atama | İK | PC | Excel içe aktarma, pozisyon ata, plan başlat, şifre sıfırla, karar bekleyenler | `/admin/people` | 1 |
 | 16 | Yetkinlik matrisi | Yöneticiler | PC | Personel × yetkinlik, süresi dolanlar renkli | `/reports/competency` | 3 |
-| 17 | Ziyaretçi kayıt | Güvenlik, ev sahibi | PC, tablet | Ön kayıt, giriş-çıkış, kart no, KKD | `/security/visits`, `/visits` (ev sahibi) | 2 |
+| 17 | Ziyaretçi kayıt ve kapı | Güvenlik, ev sahibi | PC, tablet | Ön kayıt; kapıda giriş-çıkış, kart no, KKD | `/security/visits`, `/security/gate`, `/visits` (ev sahibi) | 2 |
 | 18 | Ziyaretçi bilgilendirme | Ziyaretçi | Kapı tableti, telefon | Dil seçimi, kartlar, sorular, onay/imza; kiosk kodu; QR ile kendi kaydı | `/kiosk`, `/v/[token]`, `/visit` | 2 |
 | 19 | Tesis içindekiler / tahliye yoklaması | Güvenlik, İSG | Telefon | Anlık liste, "toplanma alanında" | `/security/evacuation` | 2 |
 | 20 | Raporlar ve ayarlar | İK, İSG, BT | PC | Bölüm 10 raporları, parametreler, roller, denetim kaydı | `/reports`, `/admin/settings` | 1 (temel) |
@@ -574,12 +574,13 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `visitor_briefing_questions`: briefing_id, sort_order, stem_tr, stem_en, options_tr, options_en, correct_index — paket yayınlanınca **değiştirilemez**
 - `contractor_companies`: name, tax_no (benzersiz), responsible_name, phone, email, contract_end, archived_at, created_by
 - `visitors`: id, full_name, company_name, contractor_company_id, phone, email, id_kind (`tc`|`passport`), id_country, national_id_enc, national_id_hmac (benzersiz), national_id_masked, anonymized_at
-- `visits`: id, visitor_id, visitor_type, host_user_id (kendi kaydında boş), host_name_text, planned_date, code (6 hane; açık ziyaretler arasında benzersiz), self_registered, status (`planned`|`briefed`|`checked_in`|`checked_out`|`cancelled`), note, cancel_reason, cancelled_at/by, created_by (kendi kaydında boş), briefing_id, briefing_locale, briefing_started_at, briefing_completed_at, quiz_score — 2.3b'de kapı alanları (badge_no, ppe_issued, checked_in/out) eklenir
+- `visits`: id, visitor_id, visitor_type, host_user_id (kendi kaydında boş), host_name_text, planned_date, code (6 hane; açık ziyaretler arasında benzersiz), self_registered, status (`planned`|`briefed`|`checked_in`|`checked_out`|`cancelled`), note, cancel_reason, cancelled_at/by, created_by (kendi kaydında boş), briefing_id, briefing_locale, briefing_started_at, briefing_completed_at, quiz_score, badge_no, ppe_issued, checked_in_at/by, checked_out_at/by, badge_returned — girişten sonra yalnızca çıkış alanları değişir, çıkıştan sonra **değiştirilemez** (trigger `visit_gate_guard`)
 - `visit_sessions`: visit_id, channel (`link`|`kiosk`|`self`), token_hash (SHA-256), expires_at (ziyaret günü sonu) — ziyaretçinin hesapsız oturumu
 - `visit_quiz_attempts`: visit_id, briefing_id, items (soru, şık sırası, cevap, doğru mu), score, passed, submitted_at (kilit) — teslimden sonra **değiştirilemez**
 - `visitor_consents`: visit_id, legal_text_id, accepted_at, ip, user_agent — **değiştirilemez**
 - `visitor_signatures`: visit_id (tekil), visitor_id, subject_hash, image_key (`visitor-signatures/`; anonimleştirmede silinir), signed_at, ip, user_agent — **değiştirilemez**
-- `contractor_clearances`: visitor_id, valid_until, visit_id
+- `contractor_clearances`: visitor_id, visit_id (tekil), valid_until — **değiştirilemez** (kimlik birleştirmede yalnızca visitor_id taşınır)
+- `visit_denials`: visit_id, blacklist_entry_id, denied_by, denied_at — kara liste nedeniyle reddedilen giriş, **değiştirilemez**
 - `blacklist_entries`: national_id_hmac, national_id_masked, full_name_snapshot, reason, created_by, created_at, ends_at, anonymized_at, lifted_by, lifted_reason, lifted_at
 - `evacuation_rollcalls`, `evacuation_marks`
 
@@ -698,6 +699,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | `content.review_max_age_months` | 12 | — | sysadmin |
 | `upload.max_video_mb` / `pdf_mb` / `image_mb` | 2048 / 50 / 15 | — | sysadmin |
 | `visitor.types` | Bölüm 8.1 tablosu | — | ohs_specialist |
+| `visitor.ppe_items` | Baret, reflektörlü yelek, iş ayakkabısı, koruyucu gözlük, kulak koruyucu | — | ohs_specialist |
 | `visitor.code_max_attempts` / `visitor.code_window_min` | 10 / 10 | — | sysadmin |
 | `visitor.selfreg_max` / `visitor.selfreg_window_min` | 20 / 60 | — | sysadmin |
 | `visitor.kiosk_reset_seconds` | 20 | — | sysadmin |
@@ -916,6 +918,15 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 144 | Kapı (2.3b) | Giriş için bilgilendirme (ya da geçerli taşeron), kimlik no, kart no ve ev sahibi gerekli; KKD `visitor.ppe_items` listesinden. Geçerli kara liste eşleşmesinde giriş reddedilir, deneme kaydedilir, İSG'ye bildirim |
 | 145 | Ziyaretçi bildirimleri | Ev sahibine `visitor_briefed` (2.3a) ve `visitor_arrived` (2.3b); uygulama içi + e-posta (varsayılan e-posta olayları) |
 | 146 | Kiosk | Sistem yöneticisi "Ortak cihazlar"da cihazı "Kapı tableti" olarak kaydeder; `/kiosk` yalnızca o çerezle açılır. İlk ekranda dil seçimi; bitince `visitor.kiosk_reset_seconds` sonra başa döner, tablette veri kalmaz |
+| 147 | Kapı ekranı | `/security/gate` (Güvenlik → Kapı): bugünün planlı/bilgilendirilmiş ziyaretleri ve tarihten bağımsız içeridekiler; 6 haneli kod ya da adla arama; tablet/telefon öncelikli. İSG görür, işlem yapmaz |
+| 148 | Giriş koşulları | Ziyaret `briefed` ve bugüne ait; kart no zorunlu; kimlik no kayıtlı değilse güvenlik girer; kendi kaydında gerçek ev sahibi (sicil no) atanır; KKD `visitor.ppe_items` listesinden isteğe bağlı |
+| 149 | KKD listesi | `visitor.ppe_items` parametresi (İSG uzmanı; Parametreler ekranında satır başına bir madde) |
+| 150 | Kimlik birleştirme | Kapıda girilen kimlik kayıtlı bir ziyaretçiyle eşleşirse ziyaret, imza ve geçerlilik o kişiye taşınır, ad/iletişim güncellenir; başka ziyareti kalmayan geçici kayıt silinir |
+| 151 | Kara liste reddi | Geçerli eşleşmede sistem girişi yapmaz (güvenlik geçemez); `visit_denials` kaydı ve İSG uzmanına `blacklist_denied` bildirimi. Ziyaret `briefed` kalır; giriş için İSG kaydı kaldırmalıdır |
+| 152 | Taşeron geçerliliği | Tam bilgilendirmeyi tamamlayan taşerona tamamlama gününden itibaren tipin `validityYears` süresi (`contractor_clearances`). Geçerliyken kart ve sorular atlanır, onay + imza alınır; kısa yol süreyi uzatmaz. Güvenlik ekranında bitiş tarihi görünür |
+| 153 | Ziyaret kilidi | Girişten sonra yalnızca status/çıkış alanları değişir; çıkıştan sonra donar; girişi yapılmış ziyaret silinemez. Saklama işi istisnadır. Düzeltme `corrections` ile |
+| 154 | İçeride kalan | Otomatik çıkış yok; gün geçse de `checked_in` kalır ve kapı ekranında listelenir (2.4 tahliye listesinin temeli) |
+| 155 | Kapı yetkisi ve bildirim | Giriş/çıkışı yalnızca güvenlik yapar; ev sahibine girişte `visitor_arrived` (uygulama içi + e-posta) |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

@@ -90,7 +90,12 @@ Yalnızca kapsamınızdaki birimlerin personelini ve içeriklerini görürsünü
 - **Ziyaretçi bilgilendirmesi**: ön kayıtta e-posta varsa ziyaretçiye bilgilendirme bağlantısı kendiliğinden gider (Türkçe + İngilizce). Ziyaret ayrıntısında **ziyaret kodu** ve bilgilendirme durumu görünür; gerekirse **Bilgilendirme bağlantısını yeniden gönder**.
 - **Kapı tableti**: ziyaretçi kodunu yazar ya da "Ön kaydım yok" ile kendini kaydeder; bilgilendirmeyi bitirince kodu size söyler. Kapıdaki QR kodu ziyaretçinin kendi telefonunda aynı kaydı açar (`/visit`).
 - Kendi kaydında ev sahibi ziyaretçinin yazdığı addır ("ziyaretçinin yazdığı"); girişte gerçek ev sahibini siz atarsınız.
-- Kapıda giriş-çıkış, kart ve KKD işlemleri sonraki sürümde (2.3b) gelecek.
+- **Güvenlik → Kapı**: bugünün ziyaretleri ve şu an içeride olanlar. Ziyaretçinin söylediği 6 haneli kodu ya da adını arayın.
+  - **Giriş yap**: kart no'yu yazın, verdiğiniz KKD'yi işaretleyin. Kimliği kayıtlı değilse TC ya da pasaportu, kendi kaydıysa ev sahibinin sicil no'sunu girin. Bilgilendirmeyi tamamlamamış ziyaretçi içeri alınamaz.
+  - Kişi kara listedeyse sistem girişi reddeder ve İSG uzmanına bildirir; içeri almayın.
+  - **Çıkış yap**: kartın iade edilip edilmediğini işaretleyin. Girişten sonra kayıt değiştirilemez.
+  - Geçerli bilgilendirmesi olan taşeron çalışanının geçerlilik bitişi satırda görünür; bu kişiler yalnızca kuralları onaylayıp imzalar.
+  - Gün sonunda çıkışı yapılmamış ziyaretçiler "İçeride" listesinde kalır; çıkışı siz işaretlersiniz.
 
 ---
 

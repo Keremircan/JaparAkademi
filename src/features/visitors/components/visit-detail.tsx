@@ -66,6 +66,23 @@ export async function VisitDetail({ actor, visit, base }: { actor: UserActor; vi
             <dd>{visit.nationalIdMasked}</dd>
           </>
         )}
+        {visit.checkedInAt && (
+          <>
+            <dt className="text-muted-foreground">{t("detail.gate")}</dt>
+            <dd>
+              {t("detail.checkedIn", { time: format.dateTime(visit.checkedInAt, { dateStyle: "medium", timeStyle: "short" }), badge: visit.badgeNo ?? "" })}
+              {visit.ppeIssued && visit.ppeIssued.length > 0 && <span className="block">{t("detail.ppe", { items: visit.ppeIssued.join(", ") })}</span>}
+              {visit.checkedOutAt && (
+                <span className="block">
+                  {t("detail.checkedOut", {
+                    time: format.dateTime(visit.checkedOutAt, { dateStyle: "medium", timeStyle: "short" }),
+                    returned: visit.badgeReturned ? "true" : "false",
+                  })}
+                </span>
+              )}
+            </dd>
+          </>
+        )}
         {visit.status === "cancelled" && (
           <>
             <dt className="text-muted-foreground">{t("detail.cancelReason")}</dt>

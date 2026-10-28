@@ -173,7 +173,8 @@
     },
     "intro": {
       "text": "Before entering the site you will go through a short occupational health and safety briefing. Cards cannot be skipped; at the end you will accept the rules and sign.",
-      "start": "Start"
+      "start": "Start",
+      "cleared": "Your safety briefing is valid until {date}. For this visit you only need to accept the rules and sign."
     },
     "cards": {
       "progress": "Card {n} of {total}",

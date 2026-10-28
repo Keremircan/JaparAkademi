@@ -30,7 +30,8 @@ Her satırda sorumlu ve durum doldurulur.
 | 2.8 | Ortak cihazlar (eğitim odası bilgisayarları) tanımlandı | Sistem yöneticisi | ☐ |
 | 2.9 | Eğitim odası bilgisayarlarına Türkçe ses paketi kuruldu (sesli okuma) | BT | ☐ |
 | 2.10 | Kapı tableti "Kapı tableti" olarak kaydedildi, ekran sabitleme açık; kapıya `/visit` QR afişi asıldı | Sistem yöneticisi + güvenlik | ☐ |
-| 2.11 | Ziyaretçi bilgilendirme paketleri (TR + EN) ve ziyaretçi metinleri yayında; bir deneme ziyaretiyle uçtan uca denendi | İSG + İK | ☐ |
+| 2.11 | Ziyaretçi bilgilendirme paketleri (TR + EN) ve ziyaretçi metinleri yayında; bir deneme ziyaretiyle uçtan uca denendi (ön kayıt → bilgilendirme → kapıda giriş → çıkış) | İSG + İK + güvenlik | ☐ |
+| 2.12 | Ziyaretçiye verilen KKD listesi (Parametreler) ve kart numaraları kapıyla uyumlu | İSG + güvenlik | ☐ |
 
 ## 3. Veri ve içerik (SPEC Bölüm 18)
 
