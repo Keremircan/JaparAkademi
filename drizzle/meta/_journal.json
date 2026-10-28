@@ -225,6 +225,20 @@
       "when": 1793180724943,
       "tag": "0031_gate_triggers",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1793184909715,
+      "tag": "0032_evacuation",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1793184912017,
+      "tag": "0033_evacuation_triggers",
+      "breakpoints": true
     }
   ]
 }

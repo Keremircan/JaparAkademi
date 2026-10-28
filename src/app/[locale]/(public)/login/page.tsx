@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { LoginForm } from "@/features/auth/components/login-form";
+import { ClearEvacuationCache } from "@/features/visitors/components/offline-evacuation";
 import { AuthCard } from "../auth-card";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -14,6 +15,8 @@ export default async function LoginPage() {
   return (
     <AuthCard title={t("title")}>
       <LoginForm />
+      {/* Çıkış yapılmış cihazda tahliye listesi kalmaz (karar #160) */}
+      <ClearEvacuationCache />
     </AuthCard>
   );
 }

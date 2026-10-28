@@ -73,6 +73,7 @@ Yalnızca kapsamınızdaki birimlerin personelini ve içeriklerini görürsünü
 - İSG içeriklerini, kartların İSG bölümünü ve **İSG/İSG kritik soruları** onaylarsınız (Onay bekleyenler).
 - Modüllerde **"Uzaktan verilebilir mi"** ayarını belirlersiniz; uzaktan verilemeyen modüller yalnızca sınıf eğitimi kaydıyla tamamlanır.
 - **Tehlike sınıfı**, yıllık İSG eğitim saatleri ve yenileme süreleri **Sistem → Parametreler**'dedir; tehlike sınıfı ayarlanana kadar "tehlikeli" kabul edilir ve raporda uyarı görünür.
+- **Raporlar → Ziyaretçi kayıt defteri** (güvenlik + İSG) ve **Taşeron uygunluk** (İSG + İK): Excel/PDF; satın alma ile taşeron raporunu siz paylaşırsınız.
 - **Raporlar → İSG eğitim kayıt defteri**: bütün personelin İSG eğitimleri, yöntem (uzaktan/yüz yüze), geçerlilik ve kişi başı yıllık saat — denetimde sunulabilir biçimde Excel/PDF.
 - İSG modülünü tamamlayan herkes için **katılım belgesi** kendiliğinden düzenlenir.
 - **Güvenlik → Bilgilendirme paketleri**: her ziyaretçi tipi için kartlar ve kontrol soruları (Türkçe + İngilizce). Taslağı kaydedin, eksiksizse **Yayınla**. Yayınlanan sürüm değişmez; değişiklik için yeni sürüm hazırlayın.
@@ -96,6 +97,10 @@ Yalnızca kapsamınızdaki birimlerin personelini ve içeriklerini görürsünü
   - **Çıkış yap**: kartın iade edilip edilmediğini işaretleyin. Girişten sonra kayıt değiştirilemez.
   - Geçerli bilgilendirmesi olan taşeron çalışanının geçerlilik bitişi satırda görünür; bu kişiler yalnızca kuralları onaylayıp imzalar.
   - Gün sonunda çıkışı yapılmamış ziyaretçiler "İçeride" listesinde kalır; çıkışı siz işaretlersiniz.
+- **Güvenlik → Tahliye yoklaması** (güvenlik ve İSG, telefonda): şu an içeride olan ziyaretçi ve taşeronlar. **Yoklama başlat** (tatbikat ya da gerçek) → toplanma alanına gelenleri **Toplanma alanında** ile işaretleyin (yanlışsa **Geri al**). Sonradan girenler için **Listeyi yenile**. Bitince **Yoklamayı bitir**; eksikler kayıtta kalır.
+  - Liste bu ekranı her açtığınızda telefona kaydedilir; bağlantı kesilirse uygulamanın çevrimdışı sayfasında okunabilir (24 saat). İşaretleme için bağlantı gerekir.
+  - Kağıt yedeği için **İçeridekiler (PDF)** ya da **Yoklama sonucu (PDF)**.
+  - Personel bu listede yoktur (Faz 3).
 
 ---
 

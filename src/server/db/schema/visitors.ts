@@ -289,6 +289,40 @@ export const visitDenials = pgTable(
   (t) => [index("visit_denials_visit_idx").on(t.visitId)],
 );
 
+// ---- Tahliye yoklaması (FG-8.1, iş paketi 2.4, kararlar #156–163) ----
+
+export const rollcallKind = pgEnum("rollcall_kind", ["drill", "real"]);
+
+/** Yoklama: aynı anda tek açık yoklama (serviste kilitle). Bitince (ended_at) donar. */
+export const evacuationRollcalls = pgTable("evacuation_rollcalls", {
+  id: id(),
+  kind: rollcallKind().notNull(),
+  startedBy: uuid()
+    .notNull()
+    .references(() => users.id, { onDelete: "restrict" }),
+  startedAt: createdAt(),
+  endedBy: uuid().references(() => users.id, { onDelete: "restrict" }),
+  endedAt: tstz("ended_at"),
+});
+
+/** Yoklamadaki kişi (içerideki ziyaret) ve "toplanma alanında" işareti; yoklama açıkken geri alınabilir. */
+export const evacuationMarks = pgTable(
+  "evacuation_marks",
+  {
+    id: id(),
+    rollcallId: uuid()
+      .notNull()
+      .references(() => evacuationRollcalls.id, { onDelete: "restrict" }),
+    visitId: uuid()
+      .notNull()
+      .references(() => visits.id, { onDelete: "restrict" }),
+    addedAt: createdAt(),
+    safeAt: tstz("safe_at"),
+    safeBy: uuid().references(() => users.id, { onDelete: "restrict" }),
+  },
+  (t) => [unique("evacuation_marks_rollcall_visit_unique").on(t.rollcallId, t.visitId)],
+);
+
 // ---- Kara liste (FG-8.4): yalnızca eklenir; kaldırma gerekçeli kilit alanlarıyla ----
 
 export const blacklistEntries = pgTable(

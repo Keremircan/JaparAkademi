@@ -333,7 +333,7 @@ Kursiyer ve pratik eğitmen ekranları telefon ve tablette rahat kullanılmalıd
 | 16 | Yetkinlik matrisi | Yöneticiler | PC | Personel × yetkinlik, süresi dolanlar renkli | `/reports/competency` | 3 |
 | 17 | Ziyaretçi kayıt ve kapı | Güvenlik, ev sahibi | PC, tablet | Ön kayıt; kapıda giriş-çıkış, kart no, KKD | `/security/visits`, `/security/gate`, `/visits` (ev sahibi) | 2 |
 | 18 | Ziyaretçi bilgilendirme | Ziyaretçi | Kapı tableti, telefon | Dil seçimi, kartlar, sorular, onay/imza; kiosk kodu; QR ile kendi kaydı | `/kiosk`, `/v/[token]`, `/visit` | 2 |
-| 19 | Tesis içindekiler / tahliye yoklaması | Güvenlik, İSG | Telefon | Anlık liste, "toplanma alanında" | `/security/evacuation` | 2 |
+| 19 | Tesis içindekiler / tahliye yoklaması | Güvenlik, İSG | Telefon | İçeridekiler, yoklama (tatbikat/gerçek), "toplanma alanında", bağlantısız son liste, PDF | `/security/evacuation` | 2 |
 | 20 | Raporlar ve ayarlar | İK, İSG, BT | PC | Bölüm 10 raporları, parametreler, roller, denetim kaydı | `/reports`, `/admin/settings` | 1 (temel) |
 
 Ek ekranlar: eğitimi bekleyenler (`/admin/people/waiting`), ekip ilerlemesi (`/manage/team`), sınıf eğitimi kayıtları (`/manage/classroom`), okuma görevi (`/learn/reread/[taskId]`), ortak cihazlar (`/admin/devices`), pozisyon listesi ve kart özeti (`/manage/positions`, `/manage/positions/[id]`, sürüm karşılaştırma `/manage/positions/[id]/compare`), modül kütüphanesi (`/manage/modules`), içerik sürüm karşılaştırma (`/manage/library/[id]/compare`), herkese açık sertifika doğrulama (`/verify/[token]`, Faz 1), sertifika şablonu / imza yetkilileri (`/admin/certificates`), şifremi unuttum ve yeni şifre (`/forgot-password`, `/reset-password/[token]`), rapor (`/reports/[kind]`), denetim kaydı (`/admin/audit`), profil ve şifre değiştirme, bildirim merkezi, KVKK aydınlatma onayı (ilk girişte).
@@ -582,7 +582,8 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `contractor_clearances`: visitor_id, visit_id (tekil), valid_until — **değiştirilemez** (kimlik birleştirmede yalnızca visitor_id taşınır)
 - `visit_denials`: visit_id, blacklist_entry_id, denied_by, denied_at — kara liste nedeniyle reddedilen giriş, **değiştirilemez**
 - `blacklist_entries`: national_id_hmac, national_id_masked, full_name_snapshot, reason, created_by, created_at, ends_at, anonymized_at, lifted_by, lifted_reason, lifted_at
-- `evacuation_rollcalls`, `evacuation_marks`
+- `evacuation_rollcalls`: kind (`drill`|`real`), started_by, started_at, ended_by, ended_at (kilit) — bitince **değiştirilemez**
+- `evacuation_marks`: rollcall_id, visit_id (tekil), added_at, safe_at, safe_by — yoklama açıkken geri alınabilir, bitince **değiştirilemez**
 
 **Ortak**
 - `settings`: key, value (jsonb), updated_by, change_note, updated_at. Tüm parametreler Bölüm 14'teki anahtarlarla tutulur ve Zod ile doğrulanır.
@@ -927,6 +928,14 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 153 | Ziyaret kilidi | Girişten sonra yalnızca status/çıkış alanları değişir; çıkıştan sonra donar; girişi yapılmış ziyaret silinemez. Saklama işi istisnadır. Düzeltme `corrections` ile |
 | 154 | İçeride kalan | Otomatik çıkış yok; gün geçse de `checked_in` kalır ve kapı ekranında listelenir (2.4 tahliye listesinin temeli) |
 | 155 | Kapı yetkisi ve bildirim | Giriş/çıkışı yalnızca güvenlik yapar; ev sahibine girişte `visitor_arrived` (uygulama içi + e-posta) |
+| 156 | Tahliye listesinde kimler | Faz 2'de yalnızca içerideki ziyaretçi ve taşeronlar (`checked_in`, tarihten bağımsız); personel PDKS ile Faz 3 (varsayım 9) |
+| 157 | Yoklama | Güvenlik ya da İSG başlatır (tatbikat/gerçek); başlangıçtaki içeridekiler eklenir, sonradan girenler "Listeyi yenile" ile. Aynı anda tek açık yoklama (danışma kilidi) |
+| 158 | İşaretleme | "Toplanma alanında" yoklama açıkken geri alınabilir; her işlem denetim kaydında. Yoklama bitince işaretler ve yoklama **değiştirilemez** (trigger) |
+| 159 | Bitirme | Eksik varken de bitirilebilir (onay sorulur, karar insanda); eksikler kayıtta "toplanma alanında değil" kalır; kimse otomatik çıkmış sayılmaz |
+| 160 | Bağlantısız liste | Ekran her açılışta son listeyi tarayıcıya (IndexedDB, tek kayıt) yazar; bağlantı yokken çevrimdışı sayfası salt okunur gösterir; 24 saatten eskisi gösterilmez ve silinir; giriş sayfası açılınca (çıkışta) silinir. İşaretleme bağlantı ister |
+| 161 | Kağıt yedeği | A4 PDF: içeridekiler ya da yoklama sonucu (ad, firma, tip, ev sahibi, giriş, kart, işaret kutusu). Her indirme `report_exports` (`evacuation`) |
+| 162 | Ziyaretçi raporları | "Ziyaretçi kayıt defteri" (güvenlik + İSG; tarih aralığında ziyaret, firma, tip, ev sahibi, durum, bilgilendirme tarihi/dili/puanı, giriş/çıkış, kart, maskeli kimlik) ve "Taşeron uygunluk" (İSG + İK; firma başına çalışan, dönem sonu itibarıyla geçerli/geçersiz, en yakın bitiş, sözleşme bitişi). Birim/pozisyon filtresi yok; Excel/PDF ve dışa aktarma kaydı mevcut altyapıyla |
+| 163 | Tahliye yetkisi | `evacuation.manage`: güvenlik ve İSG; Güvenlik bölümünde kart. Ev sahibi göremez |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

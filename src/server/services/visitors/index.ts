@@ -6,3 +6,4 @@ export { protectVisitorId, type VisitorIdInput } from "./identity";
 export * from "./flow";
 export { visitForToken } from "./session";
 export * from "./gate";
+export * from "./evacuation";

@@ -20,6 +20,10 @@ import {
   resendVisitLink,
   checkIn,
   checkOut,
+  endRollcall,
+  refreshRollcall,
+  setSafe,
+  startRollcall,
 } from "@/server/services/visitors";
 
 const uuid = z.uuid();
@@ -192,6 +196,41 @@ export async function checkOutAction(visitId: string, badgeReturned: boolean): P
   if (!uuid.safeParse(visitId).success || typeof badgeReturned !== "boolean") return { ok: false, error: "invalid_input" };
   const { actor } = await actionUser();
   const result = await runAction(() => checkOut(actor, visitId, badgeReturned));
+  if (result.ok) refresh();
+  return result;
+}
+
+// ---- Tahliye yoklaması (iş paketi 2.4) ----
+
+export async function startRollcallAction(kind: string): Promise<ActionResult<{ id: string }>> {
+  const parsed = z.enum(["drill", "real"]).safeParse(kind);
+  if (!parsed.success) return { ok: false, error: "invalid_input" };
+  const { actor } = await actionUser();
+  const result = await runAction(() => startRollcall(actor, parsed.data));
+  if (result.ok) refresh();
+  return result;
+}
+
+export async function refreshRollcallAction(id: string): Promise<ActionResult<number>> {
+  if (!uuid.safeParse(id).success) return { ok: false, error: "invalid_input" };
+  const { actor } = await actionUser();
+  const result = await runAction(() => refreshRollcall(actor, id));
+  if (result.ok) refresh();
+  return result;
+}
+
+export async function setSafeAction(rollcallId: string, visitId: string, safe: boolean): Promise<ActionResult> {
+  if (!uuid.safeParse(rollcallId).success || !uuid.safeParse(visitId).success || typeof safe !== "boolean") return { ok: false, error: "invalid_input" };
+  const { actor } = await actionUser();
+  const result = await runAction(() => setSafe(actor, rollcallId, visitId, safe));
+  if (result.ok) refresh();
+  return result;
+}
+
+export async function endRollcallAction(id: string): Promise<ActionResult> {
+  if (!uuid.safeParse(id).success) return { ok: false, error: "invalid_input" };
+  const { actor } = await actionUser();
+  const result = await runAction(() => endRollcall(actor, id));
   if (result.ok) refresh();
   return result;
 }

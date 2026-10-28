@@ -1,4 +1,4 @@
-import { BookOpenCheck, Building2, CalendarClock, DoorOpen, ShieldBan } from "lucide-react";
+import { BookOpenCheck, Building2, CalendarClock, DoorOpen, ShieldBan, Siren } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -31,6 +31,7 @@ async function Content() {
   const t = await getTranslations();
   const cards = [
     { key: "gate", href: "/security/gate", icon: DoorOpen, show: can(actor, "visits.view_all") },
+    { key: "evacuation", href: "/security/evacuation", icon: Siren, show: can(actor, "evacuation.manage") },
     { key: "visits", href: "/security/visits", icon: CalendarClock, show: can(actor, "visits.view_all") },
     { key: "contractors", href: "/security/contractors", icon: Building2, show: can(actor, "contractors.manage") },
     { key: "blacklist", href: "/security/blacklist", icon: ShieldBan, show: can(actor, "blacklist.manage") },

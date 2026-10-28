@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray, isNotNull, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNotNull, lte, or, sql, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { Actor } from "@/server/authz/actor";
 import { assertCan, assertUser, can, hasRole } from "@/server/authz/policy";
@@ -17,6 +17,10 @@ import {
   questionVersions,
   readinessDecisions,
   users,
+  contractorClearances,
+  contractorCompanies,
+  visitors,
+  visits,
 } from "@/server/db/schema";
 import { ValidationError } from "@/server/errors";
 import { addDays, todayIn } from "@/lib/dates";
@@ -29,10 +33,22 @@ import { getSettings } from "../settings";
  * birimlerin pozisyonlarını görür. Sonuç sütun anahtarı + ham değer olarak döner; metinler arayüzde/dışa aktarmada çevrilir.
  */
 
-export const REPORT_KINDS = ["training", "exams", "ohs", "onboarding"] as const;
+export const REPORT_KINDS = ["training", "exams", "ohs", "onboarding", "visitors", "contractors"] as const;
 export type ReportKind = (typeof REPORT_KINDS)[number];
 
-const PERMISSION = { training: "reports.training", exams: "reports.exams", ohs: "reports.ohs", onboarding: "reports.onboarding" } as const;
+const PERMISSION = {
+  training: "reports.training",
+  exams: "reports.exams",
+  ohs: "reports.ohs",
+  onboarding: "reports.onboarding",
+  visitors: "reports.visitors",
+  contractors: "reports.contractors",
+} as const;
+
+/** Birim/pozisyon filtresi olan raporlar (ziyaretçi raporlarında yok, karar #162). */
+export function hasOrgFilters(kind: ReportKind): boolean {
+  return kind !== "visitors" && kind !== "contractors";
+}
 
 export type Cell = string | number | boolean | Date | null;
 export type ReportTable = { key: string; columns: string[]; rows: Cell[][] };
@@ -380,7 +396,83 @@ export async function runReport(actor: Actor, kind: ReportKind, filters: ReportF
       return ohsReport(actor, filters);
     case "onboarding":
       return onboardingReport(actor, filters);
+    case "visitors":
+      return visitorsReport(filters);
+    case "contractors":
+      return contractorsReport(filters);
   }
+}
+
+// ---------------------------------------------------------------------------
+// Ziyaretçi kayıt defteri ve taşeron uygunluk (SPEC 10.1, iş paketi 2.4, karar #162)
+// ---------------------------------------------------------------------------
+
+async function visitorsReport(f: ReportFilters): Promise<ReportResult> {
+  const { "reports.max_rows": max } = await limits();
+  const host = alias(users, "vr_host");
+  const rows = await db()
+    .select({
+      plannedDate: visits.plannedDate,
+      fullName: visitors.fullName,
+      companyName: visitors.companyName,
+      visitorType: visits.visitorType,
+      hostName: sql<string>`coalesce(${host.name}, ${visits.hostNameText})`,
+      status: visits.status,
+      briefedAt: visits.briefingCompletedAt,
+      locale: visits.briefingLocale,
+      quizScore: visits.quizScore,
+      checkedInAt: visits.checkedInAt,
+      checkedOutAt: visits.checkedOutAt,
+      badgeNo: visits.badgeNo,
+      idMasked: visitors.nationalIdMasked,
+    })
+    .from(visits)
+    .innerJoin(visitors, eq(visitors.id, visits.visitorId))
+    .leftJoin(host, eq(host.id, visits.hostUserId))
+    .where(and(gte(visits.plannedDate, f.from), lte(visits.plannedDate, f.to)))
+    .orderBy(asc(visits.plannedDate), asc(visitors.fullName))
+    .limit(max + 1);
+  const out = rows
+    .slice(0, max)
+    .map((r) => [r.plannedDate, r.fullName, r.companyName, r.visitorType, r.hostName, r.status, r.briefedAt, r.locale, r.quizScore, r.checkedInAt, r.checkedOutAt, r.badgeNo, r.idMasked] as Cell[]);
+  return {
+    kind: "visitors",
+    filters: f,
+    tables: [
+      {
+        key: "visits",
+        columns: ["visitDate", "name", "company", "visitorType", "host", "visitStatus", "briefedAt", "language", "quizScore", "checkedInAt", "checkedOutAt", "badge", "idMasked"],
+        rows: out,
+      },
+    ],
+    truncated: rows.length > max,
+    warnings: [],
+  };
+}
+
+/** Taşeron uygunluk: firma başına çalışan ve dönem sonu (bitiş tarihi) itibarıyla geçerli bilgilendirme sayısı. */
+async function contractorsReport(f: ReportFilters): Promise<ReportResult> {
+  const ref = f.to;
+  const rows = await db()
+    .select({
+      name: sql<string>`cc.name`,
+      taxNo: sql<string | null>`cc.tax_no`,
+      contractEnd: sql<string | null>`cc.contract_end::text`,
+      archived: sql<boolean>`cc.archived_at is not null`,
+      workers: sql<number>`(select count(*)::int from ${visitors} v where v.contractor_company_id = cc.id and v.anonymized_at is null)`,
+      valid: sql<number>`(select count(distinct v.id)::int from ${visitors} v join ${contractorClearances} c on c.visitor_id = v.id where v.contractor_company_id = cc.id and v.anonymized_at is null and c.valid_until >= ${ref}::date)`,
+      nextExpiry: sql<string | null>`(select min(m.until)::text from (select max(c.valid_until) as until from ${visitors} v join ${contractorClearances} c on c.visitor_id = v.id where v.contractor_company_id = cc.id and v.anonymized_at is null group by v.id) m where m.until >= ${ref}::date)`,
+    })
+    .from(sql`${contractorCompanies} cc`)
+    .orderBy(sql`cc.name`);
+  const out = rows.map((r) => [r.name, r.taxNo, r.contractEnd, r.archived, r.workers, r.valid, r.workers - r.valid, r.nextExpiry] as Cell[]);
+  return {
+    kind: "contractors",
+    filters: f,
+    tables: [{ key: "companies", columns: ["company", "taxNo", "contractEnd", "archived", "workers", "validWorkers", "invalidWorkers", "nextExpiry"], rows: out }],
+    truncated: false,
+    warnings: [],
+  };
 }
 
 /** Filtre seçenekleri: kapsamdaki birimler ve pozisyonlar. */
@@ -389,6 +481,7 @@ export async function reportFilterOptions(
   kind: ReportKind,
 ): Promise<{ units: { id: string; name: string; parentName: string | null }[]; positions: { id: string; name: string; unitName: string }[] }> {
   guard(actor, kind);
+  if (!hasOrgFilters(kind)) return { units: [], positions: [] };
   const scope = kind === "ohs" && hasRole(actor, "ohs_specialist") ? ({ all: true } as const) : await orgScopeFor(actor);
   const parent = alias(orgUnits, "parent");
   const all = await db()
