@@ -197,6 +197,20 @@
       "when": 1793171919067,
       "tag": "0027_visitors_triggers",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1793176822845,
+      "tag": "0028_visitor_briefing_flow",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1793176851125,
+      "tag": "0029_visitor_briefing_flow_triggers",
+      "breakpoints": true
     }
   ]
 }

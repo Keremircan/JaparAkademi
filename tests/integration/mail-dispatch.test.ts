@@ -19,7 +19,8 @@ vi.mock("@/server/mail", async (importActual) => {
 });
 
 async function queued() {
-  await owner()`insert into email_outbox (id, kind, to_address, subject, body_text, body_html) values (gen_random_uuid(), 'readiness_pending', 'a@example.com', 'Konu', 'metin', '<p>metin</p>')`;
+  // Zamanı geçmiş olarak eklenir: veritabanı (Docker) saati uygulama saatinden biraz ileride olabilir
+  await owner()`insert into email_outbox (id, kind, to_address, subject, body_text, body_html, next_attempt_at) values (gen_random_uuid(), 'readiness_pending', 'a@example.com', 'Konu', 'metin', '<p>metin</p>', now() - interval '1 second')`;
   const [row] = await db().select().from(emailOutbox);
   return row!;
 }

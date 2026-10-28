@@ -75,6 +75,11 @@ export async function getBriefing(actor: Actor, id: string) {
   return { ...data, cards: data.cards.map((c) => ({ ...c, asset: c.mediaAssetId ? (assets.get(c.mediaAssetId) ?? null) : null })) };
 }
 
+/** Paket içeriği, yetki kontrolsüz (ziyaretçi akışı belirteçle doğrular). */
+export function getBriefingContent(id: string, conn: DbOrTx = db()) {
+  return loadBriefing(id, conn);
+}
+
 /** Yayınlanmış güncel paket (2.3'te ziyaretçi ekranı kullanır). */
 export async function currentBriefing(type: VisitorType, conn: DbOrTx = db()) {
   const [row] = await conn

@@ -100,3 +100,12 @@ export async function setCompanyArchived(actor: Actor, id: string, archived: boo
       .where(eq(contractorCompanies.id, id)),
   );
 }
+
+/** Ziyaretçinin kendi kaydı formu (hesapsız): etkin firmaların yalnızca adı (karar #139). */
+export async function publicCompanyOptions(): Promise<{ id: string; name: string }[]> {
+  return db()
+    .select({ id: contractorCompanies.id, name: contractorCompanies.name })
+    .from(contractorCompanies)
+    .where(isNull(contractorCompanies.archivedAt))
+    .orderBy(asc(contractorCompanies.name));
+}

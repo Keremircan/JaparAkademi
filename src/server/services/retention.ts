@@ -1,7 +1,7 @@
-import { and, eq, isNotNull, isNull, lte, ne, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, lte, ne, sql } from "drizzle-orm";
 import type { Actor } from "@/server/authz/actor";
 import { db } from "@/server/db/client";
-import { blacklistEntries, mediaAssets, personnel, signatures, visitors, visits } from "@/server/db/schema";
+import { blacklistEntries, mediaAssets, personnel, signatures, visitors, visitorSignatures, visits } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { todayIn } from "@/lib/dates";
 import { logger } from "@/server/logger";
@@ -94,10 +94,24 @@ export async function anonymizeDueVisitors(actor: Actor, now: Date = new Date())
     .having(sql`(${isContractor} and ${last} <= ${contractorCutoff}) or (not ${isContractor} and ${last} <= ${visitorCutoff})`)
     .limit(MAX_PEOPLE_PER_RUN);
   if (due.length === 0) return 0;
-  return withActor(actor, async (tx) => {
+  // İmza görsellerinin anahtarları fonksiyon silmeden önce alınır; nesneler işlemden sonra depodan silinir
+  const images = await db()
+    .select({ key: visitorSignatures.imageKey })
+    .from(visitorSignatures)
+    .where(inArray(visitorSignatures.visitorId, due.map((d) => d.id)));
+  const n = await withActor(actor, async (tx) => {
     const rows = await tx.execute(sql`select app_anonymize_visitors(array[${sql.join(due.map((d) => sql`${d.id}`), sql`, `)}]::uuid[])`);
     return rows.length;
   });
+  const keys = images.map((i) => i.key).filter((k): k is string => !!k);
+  if (keys.length) {
+    try {
+      await deleteObjects(keys);
+    } catch (err) {
+      logger.error({ err, keys }, "Ziyaretçi imza görselleri silinemedi");
+    }
+  }
+  return n;
 }
 
 /** Kara liste: kaldırılmasından `retention.blacklist_years_after_lift` sonra kişi verisi silinir. */

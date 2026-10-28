@@ -15,7 +15,7 @@ export type SettingInput =
   | { kind: "visitorTypes" }
   | { kind: "readonly" };
 
-export const SETTING_GROUPS = ["org", "ohs", "exam", "training", "auth", "notify", "certificate", "reports", "upload", "retention"] as const;
+export const SETTING_GROUPS = ["org", "ohs", "visitors", "exam", "training", "auth", "notify", "certificate", "reports", "upload", "retention"] as const;
 export type SettingGroup = (typeof SETTING_GROUPS)[number];
 
 type Entry = { group: SettingGroup; input: SettingInput; requireNote?: boolean };
@@ -31,6 +31,12 @@ export const SETTINGS_CATALOG: Partial<Record<SettingKey, Entry>> = {
   "ohs.renewal_years_by_class": { group: "ohs", input: { kind: "perHazardClass" } },
   // Ziyaretçi tipleri tablo olarak düzenlenir (karar #126)
   "visitor.types": { group: "ohs", input: { kind: "visitorTypes" } },
+
+  "visitor.code_max_attempts": { group: "visitors", input: int },
+  "visitor.code_window_min": { group: "visitors", input: int },
+  "visitor.selfreg_max": { group: "visitors", input: int },
+  "visitor.selfreg_window_min": { group: "visitors", input: int },
+  "visitor.kiosk_reset_seconds": { group: "visitors", input: int },
 
   "exam.theory.question_count": { group: "exam", input: int },
   "exam.theory.duration_min": { group: "exam", input: int },

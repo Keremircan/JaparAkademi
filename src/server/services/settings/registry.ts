@@ -119,6 +119,13 @@ export const SETTINGS = {
     managedBy: OHS,
   }),
 
+  // Ziyaretçi ekranları (iş paketi 2.3a): kiosk kodu ve kendi kaydı hız sınırları, kiosk başa dönme süresi
+  "visitor.code_max_attempts": def({ schema: positiveInt.max(100), default: 10, managedBy: SYS }),
+  "visitor.code_window_min": def({ schema: positiveInt.max(1440), default: 10, managedBy: SYS }),
+  "visitor.selfreg_max": def({ schema: positiveInt.max(1000), default: 20, managedBy: SYS }),
+  "visitor.selfreg_window_min": def({ schema: positiveInt.max(1440), default: 60, managedBy: SYS }),
+  "visitor.kiosk_reset_seconds": def({ schema: z.number().int().min(5).max(600), default: 20, managedBy: SYS }),
+
   // Saklama süreleri (SPEC 12.3, hukuk teyidi gerekli)
   "retention.personnel_years_after_exit": def({ schema: positiveInt.max(50), default: 15, managedBy: SYS }),
   "retention.visitor_years": def({ schema: positiveInt.max(20), default: 2, managedBy: SYS }),

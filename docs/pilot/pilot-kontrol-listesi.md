@@ -29,6 +29,8 @@ Her satırda sorumlu ve durum doldurulur.
 | 2.7 | **Sunucuda geri dönüş testi** yapıldı, `restore.md` tablosuna yazıldı | BT | ☐ |
 | 2.8 | Ortak cihazlar (eğitim odası bilgisayarları) tanımlandı | Sistem yöneticisi | ☐ |
 | 2.9 | Eğitim odası bilgisayarlarına Türkçe ses paketi kuruldu (sesli okuma) | BT | ☐ |
+| 2.10 | Kapı tableti "Kapı tableti" olarak kaydedildi, ekran sabitleme açık; kapıya `/visit` QR afişi asıldı | Sistem yöneticisi + güvenlik | ☐ |
+| 2.11 | Ziyaretçi bilgilendirme paketleri (TR + EN) ve ziyaretçi metinleri yayında; bir deneme ziyaretiyle uçtan uca denendi | İSG + İK | ☐ |
 
 ## 3. Veri ve içerik (SPEC Bölüm 18)
 

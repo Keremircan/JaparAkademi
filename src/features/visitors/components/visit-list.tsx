@@ -10,6 +10,7 @@ type Row = {
   fullName: string;
   companyName: string | null;
   hostName: string;
+  selfRegistered: boolean;
   nationalIdMasked: string | null;
   blacklisted: boolean;
 };
@@ -29,6 +30,7 @@ export async function VisitList({ rows, base, showHost }: { rows: Row[]; base: s
                 {r.blacklisted && <ShieldAlert aria-hidden="true" className="size-5 text-destructive" />}
                 {r.fullName}
                 {r.blacklisted && <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs text-destructive">{t("blacklisted")}</span>}
+                {r.selfRegistered && <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{t("selfRegistered")}</span>}
               </span>
               <span className="block text-sm text-muted-foreground">
                 {t(`types.${r.visitorType}`)}

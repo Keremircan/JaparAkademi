@@ -1,8 +1,9 @@
 import { sql } from "drizzle-orm";
-import { check, date, index, integer, jsonb, pgEnum, pgTable, text, unique, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { boolean, check, date, index, integer, jsonb, pgEnum, pgTable, text, unique, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { VISIT_STATUSES } from "@/server/state/visits";
 import { users } from "./auth";
 import { mediaAssets } from "./content";
+import { legalTexts } from "./legal";
 import { createdAt, id, tstz, updatedAt } from "./_shared";
 
 /**
@@ -129,28 +130,117 @@ export const visits = pgTable(
       .notNull()
       .references(() => visitors.id, { onDelete: "restrict" }),
     visitorType: visitorType().notNull(),
-    hostUserId: uuid()
-      .notNull()
-      .references(() => users.id, { onDelete: "restrict" }),
+    /** Kendi kaydında boş olabilir; güvenlik girişte ev sahibini atar (karar #139). */
+    hostUserId: uuid().references(() => users.id, { onDelete: "restrict" }),
+    /** Kendi kaydında ziyaretçinin yazdığı ev sahibi adı. */
+    hostNameText: text(),
     plannedDate: date({ mode: "string" }).notNull(),
+    /** 6 haneli ziyaret kodu (kiosk girişi, karar #138). */
+    code: text().notNull(),
+    selfRegistered: boolean().notNull().default(false),
     status: visitStatus().notNull().default("planned"),
     note: text(),
     cancelReason: text(),
     cancelledAt: tstz("cancelled_at"),
     cancelledBy: uuid().references(() => users.id, { onDelete: "restrict" }),
-    createdBy: uuid()
-      .notNull()
-      .references(() => users.id, { onDelete: "restrict" }),
+    /** Kendi kaydında boş (sistem). */
+    createdBy: uuid().references(() => users.id, { onDelete: "restrict" }),
+    // Bilgilendirme (iş paketi 2.3a): görülen paket sürümü, dil ve zamanlar
+    briefingId: uuid().references(() => visitorBriefings.id, { onDelete: "restrict" }),
+    briefingLocale: text(),
+    briefingStartedAt: tstz("briefing_started_at"),
+    briefingCompletedAt: tstz("briefing_completed_at"),
+    quizScore: integer(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
   (t) => [
     index("visits_date_idx").on(t.plannedDate),
+    uniqueIndex("visits_open_code_unique").on(t.code).where(sql`${t.status} in ('planned', 'briefed')`),
+    check("visits_host_check", sql`${t.hostUserId} is not null or ${t.hostNameText} is not null`),
     index("visits_host_idx").on(t.hostUserId, t.plannedDate),
     index("visits_visitor_idx").on(t.visitorId),
     check("visits_cancel_reason_check", sql`${t.status} <> 'cancelled' or ${t.cancelReason} is not null`),
   ],
 );
+
+// ---- Ziyaretçi oturumu ve bilgilendirme kayıtları (iş paketi 2.3a, kararlar #137–141) ----
+
+export const visitSessionChannel = pgEnum("visit_session_channel", ["link", "kiosk", "self"]);
+
+/** Ziyaretçinin hesabı yoktur; bağlantı/kiosk/kendi kaydı tek ziyarete bağlı süreli bir belirteç açar. */
+export const visitSessions = pgTable(
+  "visit_sessions",
+  {
+    id: id(),
+    visitId: uuid()
+      .notNull()
+      .references(() => visits.id, { onDelete: "cascade" }),
+    channel: visitSessionChannel().notNull(),
+    tokenHash: text().notNull().unique(),
+    expiresAt: tstz("expires_at").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index("visit_sessions_visit_idx").on(t.visitId)],
+);
+
+/** Kontrol sorusu denemesi: çekilen sorular ve şık sırası başta yazılır, teslimden sonra değiştirilemez. */
+export type VisitQuizItem = { questionId: string; optionOrder: number[]; answer: number | null; correct: boolean | null };
+
+export const visitQuizAttempts = pgTable(
+  "visit_quiz_attempts",
+  {
+    id: id(),
+    visitId: uuid()
+      .notNull()
+      .references(() => visits.id, { onDelete: "restrict" }),
+    briefingId: uuid()
+      .notNull()
+      .references(() => visitorBriefings.id, { onDelete: "restrict" }),
+    items: jsonb().$type<VisitQuizItem[]>().notNull(),
+    score: integer(),
+    passed: boolean(),
+    startedAt: createdAt(),
+    submittedAt: tstz("submitted_at"),
+  },
+  (t) => [index("visit_quiz_attempts_visit_idx").on(t.visitId)],
+);
+
+/** Ziyaretçi onayı (kurallar ve KVKK metni, seçilen dilde yayındaki sürüm). Değiştirilemez. */
+export const visitorConsents = pgTable(
+  "visitor_consents",
+  {
+    id: id(),
+    visitId: uuid()
+      .notNull()
+      .references(() => visits.id, { onDelete: "restrict" }),
+    legalTextId: uuid()
+      .notNull()
+      .references(() => legalTexts.id, { onDelete: "restrict" }),
+    acceptedAt: createdAt(),
+    ip: text(),
+    userAgent: text(),
+  },
+  (t) => [unique("visitor_consents_visit_text_unique").on(t.visitId, t.legalTextId)],
+);
+
+/** Ziyaretçi imzası (parmakla). Görsel depoda `visitor-signatures/` altında; kayıt değiştirilemez. */
+export const visitorSignatures = pgTable("visitor_signatures", {
+  id: id(),
+  visitId: uuid()
+    .notNull()
+    .unique()
+    .references(() => visits.id, { onDelete: "restrict" }),
+  visitorId: uuid()
+    .notNull()
+    .references(() => visitors.id, { onDelete: "restrict" }),
+  subjectHash: text().notNull(),
+  /** Anonimleştirmede silinir (karar #134). */
+  imageKey: text(),
+  signedAt: createdAt(),
+  ip: text(),
+  userAgent: text(),
+});
 
 // ---- Kara liste (FG-8.4): yalnızca eklenir; kaldırma gerekçeli kilit alanlarıyla ----
 

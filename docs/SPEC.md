@@ -332,7 +332,7 @@ Kursiyer ve pratik eğitmen ekranları telefon ve tablette rahat kullanılmalıd
 | 15 | Personel listesi ve atama | İK | PC | Excel içe aktarma, pozisyon ata, plan başlat, şifre sıfırla, karar bekleyenler | `/admin/people` | 1 |
 | 16 | Yetkinlik matrisi | Yöneticiler | PC | Personel × yetkinlik, süresi dolanlar renkli | `/reports/competency` | 3 |
 | 17 | Ziyaretçi kayıt | Güvenlik, ev sahibi | PC, tablet | Ön kayıt, giriş-çıkış, kart no, KKD | `/security/visits`, `/visits` (ev sahibi) | 2 |
-| 18 | Ziyaretçi bilgilendirme | Ziyaretçi | Kapı tableti, telefon | Dil seçimi, video, sorular, onay/imza | `/kiosk`, `/v/[token]` | 2 |
+| 18 | Ziyaretçi bilgilendirme | Ziyaretçi | Kapı tableti, telefon | Dil seçimi, kartlar, sorular, onay/imza; kiosk kodu; QR ile kendi kaydı | `/kiosk`, `/v/[token]`, `/visit` | 2 |
 | 19 | Tesis içindekiler / tahliye yoklaması | Güvenlik, İSG | Telefon | Anlık liste, "toplanma alanında" | `/security/evacuation` | 2 |
 | 20 | Raporlar ve ayarlar | İK, İSG, BT | PC | Bölüm 10 raporları, parametreler, roller, denetim kaydı | `/reports`, `/admin/settings` | 1 (temel) |
 
@@ -574,7 +574,11 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `visitor_briefing_questions`: briefing_id, sort_order, stem_tr, stem_en, options_tr, options_en, correct_index — paket yayınlanınca **değiştirilemez**
 - `contractor_companies`: name, tax_no (benzersiz), responsible_name, phone, email, contract_end, archived_at, created_by
 - `visitors`: id, full_name, company_name, contractor_company_id, phone, email, id_kind (`tc`|`passport`), id_country, national_id_enc, national_id_hmac (benzersiz), national_id_masked, anonymized_at
-- `visits`: id, visitor_id, visitor_type, host_user_id, planned_date, status (`planned`|`briefed`|`checked_in`|`checked_out`|`cancelled`), note, cancel_reason, cancelled_at/by, created_by — 2.3'te bilgilendirme/kapı alanları (token_hash, briefing_id, quiz_score, consent_id, signature_id, badge_no, ppe_issued, checked_in/out) eklenir
+- `visits`: id, visitor_id, visitor_type, host_user_id (kendi kaydında boş), host_name_text, planned_date, code (6 hane; açık ziyaretler arasında benzersiz), self_registered, status (`planned`|`briefed`|`checked_in`|`checked_out`|`cancelled`), note, cancel_reason, cancelled_at/by, created_by (kendi kaydında boş), briefing_id, briefing_locale, briefing_started_at, briefing_completed_at, quiz_score — 2.3b'de kapı alanları (badge_no, ppe_issued, checked_in/out) eklenir
+- `visit_sessions`: visit_id, channel (`link`|`kiosk`|`self`), token_hash (SHA-256), expires_at (ziyaret günü sonu) — ziyaretçinin hesapsız oturumu
+- `visit_quiz_attempts`: visit_id, briefing_id, items (soru, şık sırası, cevap, doğru mu), score, passed, submitted_at (kilit) — teslimden sonra **değiştirilemez**
+- `visitor_consents`: visit_id, legal_text_id, accepted_at, ip, user_agent — **değiştirilemez**
+- `visitor_signatures`: visit_id (tekil), visitor_id, subject_hash, image_key (`visitor-signatures/`; anonimleştirmede silinir), signed_at, ip, user_agent — **değiştirilemez**
 - `contractor_clearances`: visitor_id, valid_until, visit_id
 - `blacklist_entries`: national_id_hmac, national_id_masked, full_name_snapshot, reason, created_by, created_at, ends_at, anonymized_at, lifted_by, lifted_reason, lifted_at
 - `evacuation_rollcalls`, `evacuation_marks`
@@ -694,6 +698,9 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | `content.review_max_age_months` | 12 | — | sysadmin |
 | `upload.max_video_mb` / `pdf_mb` / `image_mb` | 2048 / 50 / 15 | — | sysadmin |
 | `visitor.types` | Bölüm 8.1 tablosu | — | ohs_specialist |
+| `visitor.code_max_attempts` / `visitor.code_window_min` | 10 / 10 | — | sysadmin |
+| `visitor.selfreg_max` / `visitor.selfreg_window_min` | 20 / 60 | — | sysadmin |
+| `visitor.kiosk_reset_seconds` | 20 | — | sysadmin |
 | `retention.*` | Bölüm 12.3 tablosu | — | sysadmin (hukuk onayıyla) |
 | `notify.email_events` | Bölüm 10.2 (karar #119; push 2.6'da) | — | sysadmin |
 
@@ -742,7 +749,8 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 |---|---|
 | **2.1 Ayarlar ve saklama** | Parametreler ekranı (`/admin/settings`), olay × kanal ayarı, saklama süresi dolan personelin anonimleştirilmesi, eski denetim kaydının silinmesi |
 | **2.2 Ziyaretçi temeli** | Ziyaretçi tipleri, tip × dil bilgilendirme içeriği ve kontrol soruları, taşeron firma kartı, ziyaretçi/ziyaret kayıtları, kara liste, ziyaretçi KVKK ve kurallar metni, ön kayıt (`/security/visits`) |
-| **2.3 Ziyaretçi bilgilendirme ve kapı** | E-posta bağlantısı (`/v/[token]`), kapı tableti (`/kiosk`), atlanamayan bilgilendirme, kontrol soruları, onay + imza, giriş/çıkış, kart ve KKD, ev sahibine bildirim, taşeron geçerliliği |
+| **2.3a Ziyaretçi bilgilendirme** | E-posta bağlantısı (`/v/[token]`), kapı tableti (`/kiosk`, ziyaret kodu), QR ile kendi kaydı (`/visit`), atlanamayan kartlar, kontrol soruları, kurallar + KVKK onayı + imza, ev sahibine "bilgilendirmeyi tamamladı" bildirimi |
+| **2.3b Kapı** | Güvenlik ekranında bugünün ziyaretleri, kimlik kontrolü, kart no ve KKD, giriş/çıkış, taşeron geçerliliği, kara liste engeli, ev sahibine "ziyaretçiniz geldi", girişten sonra değiştirilemezlik |
 | **2.4 Tahliye ve ziyaretçi raporları** | `/security/evacuation` (bağlantısız okunabilir liste, PDF), ziyaretçi kayıt defteri, taşeron uygunluk raporu |
 | **2.5 Tekrar eğitimi ve bildirimler** | Otomatik tekrar eğitimi ataması, süresi dolacak eğitimler raporu, Faz 2 bildirimleri, haftalık özet, içerik güncellik raporu |
 | **2.6 Web push** | VAPID, push abonelikleri, kullanıcı tercihi, service worker |
@@ -897,6 +905,17 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 133 | Ziyaret düzeltme | Ön kayıt bilgileri yalnızca `planned` durumunda değişir; ev sahibi değiştirilmez. Kimlik girilirse ziyaret aynı kimlikli mevcut ziyaretçiye bağlanır |
 | 134 | Ziyaretçi saklama | Son ziyaret tarihi + `retention.visitor_years`; taşeron ziyareti olan kişide `retention.contractor_years`. Kara liste kaldırılmasından + `retention.blacklist_years_after_lift`. `app_anonymize_visitors` / `app_anonymize_blacklist` kişi verisini ve denetim kaydındaki karşılığını siler; içerideki ziyaretçiye dokunulmaz. Kaldırılmadan süresi dolan kara liste kaydı şimdilik anonimleştirilmez |
 | 135 | Ziyaret durumları | planned → briefed → checked_in → checked_out; iptal yalnızca girişten önce ve gerekçeyle (`state/visits.ts`). Ara geçişler ve girişten sonra değiştirilemezlik 2.3'te |
+| 136 | 2.3 bölünmesi | 2.3a ziyaretçi bilgilendirme (ziyaretçinin ekranları) ve 2.3b kapı (güvenlik giriş/çıkış) ayrı paketler |
+| 137 | Ziyaretçinin girişi | Hesap ve şifre yok. E-posta bağlantısı (`/v/<token>`), kapı tableti (`/kiosk`) ya da kapıdaki QR (`/visit`) tek ziyarete bağlı bir belirteç açar (`visit_sessions`, yalnızca SHA-256 özet); geçerlilik ziyaret günü sonu (`org.timezone`). Ön kayıtta e-posta varsa iki dilli bağlantı e-postası gider; güvenlik/ev sahibi yeniden gönderebilir |
+| 138 | Ziyaret kodu | Her ziyarete 6 haneli kod (açık ziyaretler arasında benzersiz); e-postada, ev sahibi ve güvenlik ekranında görünür. Kiosk yalnızca bugünkü planlı ziyareti kodla açar; cihaz başına hatalı deneme sınırı. Kiosk isim listesi göstermez |
+| 139 | Kendi kaydı | Ön kaydı olmayan ziyaretçi ad, firma (taşeronda listeden), tip, telefon ya da e-posta ve ev sahibi adını (serbest metin) girer. `host_user_id` boş, `host_name_text` dolu; güvenlik girişte ev sahibini atar (2.3b). Ziyaret bugüne açılır |
+| 140 | QR ve hız sınırı | Kapıdaki sabit QR `/visit`'i açar; IP başına `visitor.selfreg_max` / `visitor.selfreg_window_min`. Kioskta sınır cihaz başınadır |
+| 141 | Bilgilendirme kuralları | Her kart en az `cardMinSeconds`; videolu kartta video sonuna kadar izlenir (istemci) ve sunucu başlangıçtan toplam en az süreyi (kart başına max(süre, video)) doğrular. Sorular paketten tipin sayısı kadar rastgele, şıklar karışık; geçme notu altında sınırsız tekrar, her deneme kayıtlı; doğru cevap gösterilmez. Video ziyaretçiye özgün dosyadan (HLS değil) imzalı adresle verilir |
+| 142 | Onay ve imza | Ziyaretçi kuralları ve ziyaretçi KVKK metni (seçilen dildeki yayın) ayrı onay kutuları + parmakla imza. Kullanıcıya bağlı `consents`/`signatures` yerine `visitor_consents`, `visitor_signatures`, `visit_quiz_attempts` (değiştirilemez). Tamamlanınca ziyaret `briefed` |
+| 143 | Taşeron geçerliliği (2.3b) | Geçen taşerona tipin geçerlilik süresi (`contractor_clearances`); geçerliyken kart ve soru tekrarlanmaz, kurallar + KVKK onayı + imza her ziyarette |
+| 144 | Kapı (2.3b) | Giriş için bilgilendirme (ya da geçerli taşeron), kimlik no, kart no ve ev sahibi gerekli; KKD `visitor.ppe_items` listesinden. Geçerli kara liste eşleşmesinde giriş reddedilir, deneme kaydedilir, İSG'ye bildirim |
+| 145 | Ziyaretçi bildirimleri | Ev sahibine `visitor_briefed` (2.3a) ve `visitor_arrived` (2.3b); uygulama içi + e-posta (varsayılan e-posta olayları) |
+| 146 | Kiosk | Sistem yöneticisi "Ortak cihazlar"da cihazı "Kapı tableti" olarak kaydeder; `/kiosk` yalnızca o çerezle açılır. İlk ekranda dil seçimi; bitince `visitor.kiosk_reset_seconds` sonra başa döner, tablette veri kalmaz |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

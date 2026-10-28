@@ -1,11 +1,12 @@
 import { writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
-import { isNotNull } from "drizzle-orm";
+import { and, eq, isNotNull, isNull } from "drizzle-orm";
 import { systemActor } from "../../src/server/authz/actor";
 import { closeDb, db } from "../../src/server/db/client";
 import { legalTexts } from "../../src/server/db/schema";
 import { createAccount } from "../../src/server/services/accounts";
-import { createDraft, publishText } from "../../src/server/services/legal";
+import { createDraft, currentText, publishText } from "../../src/server/services/legal";
+import { createBriefingDraft, listBriefings, publishBriefing, saveBriefingDraft } from "../../src/server/services/visitors";
 import { createOrgUnit, createPosition } from "../../src/server/services/org";
 import { setSectionManagerScopes } from "../../src/server/services/roles";
 import { createModule, saveTasks, setModuleContents } from "../../src/server/services/modules";
@@ -31,11 +32,33 @@ export default async function globalSetup() {
   process.env.E2E_SUFFIX = suffix;
   const sys = systemActor("e2e");
 
-  const [published] = await db().select({ id: legalTexts.id }).from(legalTexts).where(isNotNull(legalTexts.publishedAt)).limit(1);
+  const personnelKind = eq(legalTexts.kind, "kvkk_personnel");
+  const [published] = await db().select({ id: legalTexts.id }).from(legalTexts).where(and(personnelKind, isNotNull(legalTexts.publishedAt))).limit(1);
   if (!published) {
-    const draft = await db().select({ id: legalTexts.id }).from(legalTexts).limit(1);
+    const draft = await db().select({ id: legalTexts.id }).from(legalTexts).where(personnelKind).limit(1);
     const id = draft[0]?.id ?? (await createDraft(sys, { title: "E2E Aydınlatma Metni", body: "Uçtan uca test için aydınlatma metni. ".repeat(3) })).id;
     await publishText(sys, id);
+  }
+
+  // Ziyaretçi bilgilendirmesi (iş paketi 2.3a): yayında ofis paketi ve TR/EN ziyaretçi metinleri yoksa hazırlanır
+  const ohsSetup = await createAccount(sys, { sicilNo: `E2E-${suffix}-OHSV`, fullName: "Deneme İSG Kurulum", password: E2E_PASSWORD, roles: ["ohs_specialist"], mustChangePassword: false });
+  const ohsSetupActor = { kind: "user" as const, userId: ohsSetup.userId, roles: ["personnel" as const, "ohs_specialist" as const] };
+  const office = (await listBriefings(ohsSetupActor)).find((b) => b.type === "office")!;
+  if (!office.current) {
+    const id = office.draft?.id ?? (await createBriefingDraft(ohsSetupActor, "office")).id;
+    const card = { titleTr: "E2E acil durum", bodyTr: "Alarm çalınca toplanma alanına gidin.", titleEn: "E2E emergency", bodyEn: "When the alarm sounds, go to the assembly point.", mediaAssetId: null };
+    await saveBriefingDraft(ohsSetupActor, id, { cards: [card], questions: [] });
+    await publishBriefing(ohsSetupActor, id);
+  }
+  for (const kind of ["visitor_rules", "kvkk_visitor"] as const) {
+    if (await currentText(kind, "tr")) continue;
+    const drafts = await db().select({ id: legalTexts.id }).from(legalTexts).where(and(eq(legalTexts.kind, kind), isNull(legalTexts.publishedAt)));
+    let id = drafts[0]?.id;
+    for (const locale of ["tr", "en"] as const) {
+      const exists = await db().select({ id: legalTexts.id }).from(legalTexts).where(and(eq(legalTexts.kind, kind), eq(legalTexts.locale, locale), isNull(legalTexts.publishedAt)));
+      if (!exists[0]) id = (await createDraft(sys, { title: `E2E ${kind} ${locale}`, body: "Uçtan uca test için ziyaretçi metni. ".repeat(3) }, kind, locale)).id;
+    }
+    await publishText(sys, id!);
   }
 
   const dept = await createOrgUnit(sys, { kind: "department", name: `E2E Departman ${suffix}`, code: `E2E-${suffix}` });

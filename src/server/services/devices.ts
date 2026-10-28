@@ -74,3 +74,14 @@ export async function recognizeDevice(token: string | undefined | null): Promise
   await db().update(devices).set({ lastSeenAt: new Date() }).where(eq(devices.id, row.id));
   return row;
 }
+
+/** Kapı tableti (kiosk) olarak kayıtlı ve iptal edilmemiş cihaz (iş paketi 2.3a, karar #146). */
+export async function recognizeKiosk(token: string | undefined | null): Promise<{ id: string; name: string } | null> {
+  if (!token || token.length > 200) return null;
+  const [row] = await db()
+    .select({ id: devices.id, name: devices.name })
+    .from(devices)
+    .where(and(eq(devices.tokenHash, hash(token)), isNull(devices.revokedAt), eq(devices.kind, "kiosk")))
+    .limit(1);
+  return row ?? null;
+}

@@ -52,3 +52,13 @@ export function defaultTargetDate(start: string, totalMinutes: number, dailyMinu
 export function maxDate(a: string, b: string | null | undefined): string {
   return b && b > a ? b : a;
 }
+
+/** Saat dilimindeki takvim gününün sonu (ertesi günün 00:00'ı) — ör. ziyaret bağlantısının bitişi. */
+export function endOfDayIn(date: string, timeZone: string): Date {
+  const [y, m, d] = addDays(date, 1).split("-").map(Number) as [number, number, number];
+  const guess = Date.UTC(y, m - 1, d);
+  const parts = new Intl.DateTimeFormat("en-US", { timeZone, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" }).formatToParts(new Date(guess));
+  const get = (t: string) => Number(parts.find((p) => p.type === t)!.value);
+  const local = Date.UTC(get("year"), get("month") - 1, get("day"), get("hour"), get("minute"), get("second"));
+  return new Date(guess - (local - guess));
+}

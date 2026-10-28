@@ -17,6 +17,7 @@ import {
   updateCompany,
   updateVisit,
   briefingDraftSchema,
+  resendVisitLink,
 } from "@/server/services/visitors";
 
 const uuid = z.uuid();
@@ -55,6 +56,12 @@ export async function updateVisitAction(id: string, input: z.infer<typeof visitS
   const result = await runAction(() => updateVisit(actor, id, parsed.data));
   if (result.ok) refresh();
   return result;
+}
+
+export async function resendVisitLinkAction(id: string): Promise<ActionResult> {
+  if (!uuid.safeParse(id).success) return { ok: false, error: "invalid_input" };
+  const { actor } = await actionUser();
+  return runAction(() => resendVisitLink(actor, id));
 }
 
 export async function cancelVisitAction(id: string, reason: string): Promise<ActionResult> {
