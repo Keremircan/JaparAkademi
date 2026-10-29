@@ -42,6 +42,8 @@ export const personnel = pgTable(
     lockedUntil: tstz("locked_until"),
     lastLoginAt: tstz("last_login_at"),
     passwordChangedAt: tstz("password_changed_at"),
+    /** Davet etkinleştirildi ya da ilk şifre değiştirildi (karar #187). Boşsa hesap davet bekliyor. */
+    activatedAt: tstz("activated_at"),
     /** Saklama süresi dolunca anonimleştirildi (SPEC 12.3, iş paketi 2.1). */
     anonymizedAt: tstz("anonymized_at"),
     createdAt: createdAt(),
@@ -61,6 +63,9 @@ export const loginAttemptResult = pgEnum("login_attempt_result", [
   "locked",
   "inactive",
   "rate_limited",
+  // Hesap etkinleştirme (iş paketi 2.6b): hatalı/geçersiz kod ve başarılı etkinleştirme
+  "bad_invite",
+  "activated",
 ]);
 
 /** Giriş denemeleri: hesap kilidi ve IP sınırı bu kayıtlardan hesaplanır. Append-only. */
@@ -132,4 +137,50 @@ export const dataAccessLog = pgTable(
     requestId: text(),
   },
   (t) => [index("data_access_log_subject_idx").on(t.subjectUserId, t.at)],
+);
+
+export const inviteChannel = pgEnum("invite_channel", ["email", "whatsapp", "print"]);
+
+/**
+ * Hesaba davet (kararlar #185–187). Token yalnızca SHA-256 özetiyle, basılı kanalın 8 haneli kodu
+ * HMAC ile saklanır. Tek kullanımlık ve süreli; yeni davet açılınca kişinin eski davetleri iptal edilir.
+ */
+export const accountInvitations = pgTable(
+  "account_invitations",
+  {
+    id: id(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    channel: inviteChannel().notNull(),
+    tokenHash: text().notNull().unique(),
+    codeHash: text(),
+    expiresAt: tstz("expires_at").notNull(),
+    usedAt: tstz("used_at"),
+    revokedAt: tstz("revoked_at"),
+    failedAttempts: integer().notNull().default(0),
+    createdBy: uuid().references(() => users.id, { onDelete: "restrict" }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("account_invitations_user_idx").on(t.userId, t.createdAt)],
+);
+
+/**
+ * Üst yöneticinin (owner) kendi rolü olmadan yaptığı mesleki işlemler (karar #196): İSG onayı,
+ * pratik sınav imzası, işe başlama kararı vb. Append-only, değiştirilemez.
+ */
+export const ownerActions = pgTable(
+  "owner_actions",
+  {
+    id: id(),
+    at: tstz("at").notNull().defaultNow(),
+    actorId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    permission: text().notNull(),
+    subjectType: text().notNull(),
+    subjectId: uuid().notNull(),
+  },
+  (t) => [index("owner_actions_actor_idx").on(t.actorId, t.at)],
 );

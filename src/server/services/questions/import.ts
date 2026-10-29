@@ -1,6 +1,6 @@
 import { and, eq, inArray, isNull, or } from "drizzle-orm";
 import type { Actor } from "@/server/authz/actor";
-import { assertCan, assertUser, hasRole } from "@/server/authz/policy";
+import { assertCan, assertUser, hasRole, isOwner } from "@/server/authz/policy";
 import { inOrgScope, orgScopeFor } from "@/server/authz/scope";
 import { db } from "@/server/db/client";
 import { modules, orgUnits, questionModules, questions, questionVersions } from "@/server/db/schema";
@@ -25,7 +25,8 @@ async function assertTarget(actor: Actor & { kind: "user" }, target: QuestionImp
   }
   const [unit] = await db().select({ isActive: orgUnits.isActive }).from(orgUnits).where(eq(orgUnits.id, target.ownerOrgUnitId));
   if (!unit?.isActive) throw new ValidationError("org_unit_invalid");
-  if (target.isOhs && hasRole(actor, "ohs_specialist")) return;
+  // Üst yönetici her birime soru aktarabilir (karar #192)
+  if (isOwner(actor) || (target.isOhs && hasRole(actor, "ohs_specialist"))) return;
   const scope = await orgScopeFor(actor);
   if (!hasRole(actor, "section_manager") || scope.all || !inOrgScope(scope, target.ownerOrgUnitId)) throw new ForbiddenError("questions.edit");
 }

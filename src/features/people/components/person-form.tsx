@@ -11,8 +11,8 @@ import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import type { ActionResult } from "@/features/shared/action-result";
 import { Link } from "@/i18n/navigation";
-import { createPersonAction, type CreatedPerson, updatePersonAction } from "../actions";
-import { TempPasswordPanel } from "./temp-password-panel";
+import { createPersonAction, type InviteResult, updatePersonAction } from "../actions";
+import { ChannelPicker, InvitePanel } from "./invite-controls";
 
 type PositionOption = { id: string; label: string };
 
@@ -29,11 +29,19 @@ export type PersonFormValues = {
   trainingRequired: boolean;
 };
 
-export function PersonForm({ person, positions }: { person?: PersonFormValues; positions: PositionOption[] }) {
+export function PersonForm({
+  person,
+  positions,
+  mailEnabled = false,
+}: {
+  person?: PersonFormValues;
+  positions: PositionOption[];
+  mailEnabled?: boolean;
+}) {
   const t = useTranslations("admin.people");
   const tc = useTranslations("common");
   const isEdit = !!person;
-  type FormState = ActionResult<CreatedPerson | void> | null;
+  type FormState = ActionResult<InviteResult | void> | null;
   const submit = (isEdit ? updatePersonAction.bind(null, person.userId) : createPersonAction) as (
     prev: FormState,
     formData: FormData,
@@ -41,21 +49,16 @@ export function PersonForm({ person, positions }: { person?: PersonFormValues; p
   const [state, action, pending] = useActionState<FormState, FormData>(submit, null);
   const [positionId, setPositionId] = useState(person?.positionId ?? "");
   const [sicilNo, setSicilNo] = useState("");
+  const ti = useTranslations("invite.panel");
 
   if (!isEdit && state?.ok && state.data) {
-    const created = state.data as CreatedPerson;
+    const created = state.data as InviteResult;
     return (
-      <TempPasswordPanel
-        title={t("created.title")}
-        description={t("created.description")}
-        sicilNo={sicilNo}
-        tempPassword={created.tempPassword}
-        slipPdf={created.slipPdf}
-      >
-        <Button nativeButton={false} render={<Link href={`/admin/people/${created.userId}`} />}>
-          {t("created.toDetail")}
+      <InvitePanel title={ti("createdTitle")} invite={created}>
+        <Button className="self-start" nativeButton={false} render={<Link href={`/admin/people/${created.userId}`} />}>
+          {ti("toDetail")}
         </Button>
-      </TempPasswordPanel>
+      </InvitePanel>
     );
   }
 
@@ -139,6 +142,7 @@ export function PersonForm({ person, positions }: { person?: PersonFormValues; p
           </span>
         </span>
       </Label>
+      {!isEdit && <ChannelPicker mailEnabled={mailEnabled} />}
       <Button type="submit" size="lg" disabled={pending} className="self-start">
         {pending ? tc("saving") : tc("save")}
       </Button>

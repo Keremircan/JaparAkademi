@@ -7,7 +7,9 @@ import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 import { Button } from "@/components/ui/button";
 import { adminAccess, orNull } from "@/features/admin/guard";
-import { ResetPasswordControl, RevealNationalId, StatusControls } from "@/features/people/components/person-actions";
+import { ReinviteControl } from "@/features/people/components/invite-controls";
+import { RevealNationalId, StatusControls } from "@/features/people/components/person-actions";
+import { inviteMailEnabled, inviteStatus } from "@/server/services/invitations";
 import { Link } from "@/i18n/navigation";
 import { can } from "@/server/authz/policy";
 import { listPositionOptions, listUnitOptions } from "@/server/services/org";
@@ -62,12 +64,14 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
   const canSeeTc = can(access.actor, "people.view_national_id");
   const isSelf = access.actor.userId === person.userId;
   const canAssign = can(access.actor, "assignments.manage");
-  const [assignmentList, trainers, ta, tcert, certs] = await Promise.all([
+  const [assignmentList, trainers, ta, tcert, certs, invite, tInvite] = await Promise.all([
     canAssign ? assignmentsForPerson(access.actor, person.userId) : Promise.resolve([]),
     canAssign ? trainerCandidates(access.actor) : Promise.resolve([]),
     getTranslations("assignments"),
     getTranslations("certificates.list"),
     canAssign ? certificatesForUser(access.actor, person.userId).catch(() => []) : Promise.resolve([]),
+    inviteStatus(access.actor, person.userId),
+    getTranslations("invite"),
   ]);
   const open = assignmentList.find((a) => ["active", "awaiting_readiness", "awaiting_decision"].includes(a.status));
   const past = assignmentList.filter((a) => a !== open);
@@ -204,7 +208,16 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
           {person.lastLoginAt ? format.dateTime(person.lastLoginAt, { dateStyle: "medium", timeStyle: "short" }) : t("detail.never")}
           {person.mustChangePassword && ` · ${t("mustChange")}`}
         </p>
-        {canManage && !isSelf && person.status === "active" && <ResetPasswordControl userId={person.userId} sicilNo={person.sicilNo} />}
+        <p className="text-sm">
+          {tInvite("status.label")}:{" "}
+          <span className="font-medium" data-testid="account-state">
+            {tInvite(`status.${invite.state}`, {
+              channel: invite.channel ? tInvite(`channel.${invite.channel}`) : "",
+              date: invite.expiresAt ? format.dateTime(invite.expiresAt, { dateStyle: "medium", timeStyle: "short" }) : "",
+            })}
+          </span>
+        </p>
+        {canManage && !isSelf && person.status === "active" && <ReinviteControl userId={person.userId} mailEnabled={inviteMailEnabled()} />}
       </div>
 
       {canManage && !isSelf && (

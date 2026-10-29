@@ -1,7 +1,8 @@
 import { and, asc, count, desc, eq, inArray, isNull, max, or, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { Actor } from "@/server/authz/actor";
-import { assertNotSelf, assertUser, hasAnyRole, hasRole } from "@/server/authz/policy";
+import { assertNotSelf, assertUser, hasAnyRole, hasOwnRole, hasRole } from "@/server/authz/policy";
+import { assertDifferentApprover, recordOwnerAction } from "@/server/services/owner-actions";
 import { db, type DbOrTx, type Tx } from "@/server/db/client";
 import {
   approvals,
@@ -656,7 +657,8 @@ export async function submitCard(actor: Actor, positionId: string, input: { chan
     const result = cardOnSubmit({
       ohsRequired,
       submitterCanApproveSection: canApproveSection(access, ref(position)),
-      submitterIsOhsSpecialist: hasRole(actor, "ohs_specialist"),
+      // Üst yönetici İSG kısayolundan yararlanmaz (karar #196)
+      submitterIsOhsSpecialist: hasOwnRole(actor, "ohs_specialist"),
     });
     const now = new Date();
     await tx
@@ -708,6 +710,8 @@ async function loadPendingCard(tx: Tx, actor: Actor, versionId: string) {
   const allowed = step === "section" ? canApproveSection(access, ref(position)) : canApproveOhs(access);
   if (!allowed) throw new ForbiddenError(step === "section" ? "content.approve_section" : "content.approve_ohs");
   if (card.submittedBy) assertNotSelf(actor, card.submittedBy);
+  if (step === "ohs") await assertDifferentApprover(tx, actor, { type: "position_card_version", id: card.id, since: card.submittedAt });
+  if (step === "ohs") await recordOwnerAction(tx, actor, "content.approve_ohs", { type: "position_card_version", id: card.id });
   return { card, step };
 }
 

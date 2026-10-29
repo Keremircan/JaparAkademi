@@ -1,8 +1,8 @@
-import { and, count, eq, inArray } from "drizzle-orm";
+import { and, count, eq, inArray, ne, sql } from "drizzle-orm";
 import type { Actor } from "@/server/authz/actor";
-import { assertCan } from "@/server/authz/policy";
+import { assertCan, isOwner } from "@/server/authz/policy";
 import { ROLES, type Role } from "@/server/authz/roles";
-import { db } from "@/server/db/client";
+import { db, type DbOrTx } from "@/server/db/client";
 import { orgUnits, personnel, roleScopes, userRoles } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { NotFoundError, ValidationError } from "@/server/errors";
@@ -10,7 +10,34 @@ import { NotFoundError, ValidationError } from "@/server/errors";
 /**
  * Rol ve kapsam yönetimi (yalnızca sistem yöneticisi, karar #3).
  * "personnel" rolü herkeste vardır ve kaldırılamaz.
+ * `owner` rolünü yalnızca bir `owner` verir veya alır; son aktif `owner` kaldırılamaz (karar #193).
+ * E-postayla giriş yapabilen rollerde (owner, sysadmin, hr) e-posta kayıtlı ve tekil olmalıdır (karar #189).
  */
+
+/** Kayıtlı e-postayla giriş yapabilen roller (karar #189, #197). */
+export const EMAIL_LOGIN_ROLES = ["owner", "sysadmin", "hr"] as const satisfies readonly Role[];
+
+/** Aktif kişiler arasında bu roldeki kişi sayısı. */
+export async function activeRoleCount(role: Role, conn: DbOrTx = db()): Promise<number> {
+  const [row] = await conn
+    .select({ n: count() })
+    .from(userRoles)
+    .innerJoin(personnel, eq(personnel.userId, userRoles.userId))
+    .where(and(eq(userRoles.role, role), eq(personnel.status, "active")));
+  return row?.n ?? 0;
+}
+
+/** E-postayla giriş rolleri için: e-posta kayıtlı ve başka bir aktif kişide yok. */
+export async function assertLoginEmailUsable(userId: string, conn: DbOrTx = db()): Promise<void> {
+  const [person] = await conn.select({ email: personnel.email }).from(personnel).where(eq(personnel.userId, userId)).limit(1);
+  const email = person?.email?.trim().toLowerCase();
+  if (!email) throw new ValidationError("login_email_required");
+  const [dup] = await conn
+    .select({ n: count() })
+    .from(personnel)
+    .where(and(ne(personnel.userId, userId), eq(personnel.status, "active"), sql`lower(${personnel.email}) = ${email}`));
+  if ((dup?.n ?? 0) > 0) throw new ValidationError("login_email_taken");
+}
 
 /** Rolleri tam liste olarak ayarlar. Bölüm sorumlusu rolü kaldırılırsa kapsamları da silinir. */
 export async function setRoles(actor: Actor, userId: string, roles: readonly Role[]): Promise<void> {
@@ -24,14 +51,17 @@ export async function setRoles(actor: Actor, userId: string, roles: readonly Rol
     (await db().select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, userId))).map((r) => r.role),
   );
 
+  // `owner` rolünü yalnızca üst yönetici verir/alır; diğerleri düzenlerken mevcut durum korunur (karar #193)
+  if (actor.kind !== "system" && !isOwner(actor)) {
+    if (desired.has("owner") && !current.has("owner")) throw new ValidationError("owner_only");
+    if (current.has("owner")) desired.add("owner");
+  }
+  if (current.has("owner") && !desired.has("owner") && (await activeRoleCount("owner")) <= 1) throw new ValidationError("last_owner");
+  if (EMAIL_LOGIN_ROLES.some((r) => desired.has(r) && !current.has(r))) await assertLoginEmailUsable(userId);
+
   if (current.has("sysadmin") && !desired.has("sysadmin")) {
     if (actor.kind === "user" && actor.userId === userId) throw new ValidationError("cannot_remove_own_sysadmin");
-    const [row] = await db()
-      .select({ n: count() })
-      .from(userRoles)
-      .innerJoin(personnel, eq(personnel.userId, userRoles.userId))
-      .where(and(eq(userRoles.role, "sysadmin"), eq(personnel.status, "active")));
-    if ((row?.n ?? 0) <= 1) throw new ValidationError("last_sysadmin");
+    if ((await activeRoleCount("sysadmin")) <= 1) throw new ValidationError("last_sysadmin");
   }
 
   const toAdd = [...desired].filter((r) => !current.has(r));
@@ -90,4 +120,21 @@ export async function setSectionManagerScopes(actor: Actor, userId: string, orgU
         .values(toAdd.map((orgUnitId) => ({ userId, role: "section_manager" as const, orgUnitId, grantedBy })));
     }
   });
+}
+
+/**
+ * İlk üst yönetici (karar #193): sistemde aktif `owner` yoksa verilen sicile `owner` rolü verir.
+ * Seed ve `scripts/grant-owner.ts` kullanır; owner varsa hiçbir şey yapmaz (sonraki owner'ları owner verir).
+ */
+export async function bootstrapOwner(actor: Actor, sicilNo: string): Promise<"granted" | "exists" | "not_found"> {
+  if (actor.kind !== "system") throw new ValidationError("owner_only");
+  if ((await activeRoleCount("owner")) > 0) return "exists";
+  const [person] = await db()
+    .select({ userId: personnel.userId })
+    .from(personnel)
+    .where(and(eq(personnel.sicilNo, sicilNo.trim()), eq(personnel.status, "active")))
+    .limit(1);
+  if (!person) return "not_found";
+  await withActor(actor, (tx) => tx.insert(userRoles).values({ userId: person.userId, role: "owner" }).onConflictDoNothing());
+  return "granted";
 }

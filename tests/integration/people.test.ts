@@ -9,32 +9,31 @@ import {
   createPerson,
   getPerson,
   listPeople,
-  resetPassword,
   revealNationalId,
   setPersonStatus,
   updatePerson,
 } from "@/server/services/people";
-import { owner } from "../support/db";
 import { createTestUser, meta, TEST_PASSWORD } from "../support/factories";
 import { seedTestOrg } from "../support/org";
 
-const base = { employmentType: "employee" as const, trainingRequired: true };
+const base = { employmentType: "employee" as const, trainingRequired: true, channel: "print" as const };
 
 describe("Personel kaydı (ekran 15)", () => {
-  it("İK yeni personel açar; geçici şifreyle giriş yapılır ve şifre değiştirme zorunludur", async () => {
+  it("karar #185: İK yeni personel açar; hesap şifresiz açılır ve basılı davet kodu bir kez döner", async () => {
     const org = await seedTestOrg();
     const hr = await createTestUser({ roles: ["hr"] });
-    const { userId, tempPassword } = await createPerson(hr.actor, {
+    const invite = await createPerson(hr.actor, {
       ...base,
       sicilNo: "5001",
       fullName: "Yeni Kişi",
       positionId: org.positions.presOp,
       hireDate: "2026-11-02",
     });
-    expect(tempPassword).toMatch(/^\d{8}$/);
-
-    const login = await signIn({ sicilNo: "5001", password: tempPassword, sharedDevice: false }, meta());
-    expect(login).toMatchObject({ ok: true, mustChangePassword: true });
+    const userId = invite.userId;
+    expect(invite).toMatchObject({ channel: "print", sicilNo: "5001", whatsappUrl: null });
+    expect(invite.code).toMatch(/^\d{4} \d{4}$/);
+    // Etkinleştirmeden önce hiçbir şifreyle giriş yapılamaz
+    expect((await signIn({ sicilNo: "5001", password: invite.code!.replace(" ", ""), sharedDevice: false }, meta())).ok).toBe(false);
 
     const person = await getPerson(hr.actor, userId);
     expect(person).toMatchObject({ positionId: org.positions.presOp, hireDate: "2026-11-02", source: "manual", trainingRequired: true });
@@ -89,9 +88,11 @@ describe("Personel kaydı (ekran 15)", () => {
   it("güncellemede TC boş bırakılırsa mevcut değer korunur", async () => {
     const hr = await createTestUser({ roles: ["hr"] });
     const { userId } = await createPerson(hr.actor, { ...base, sicilNo: "5007", fullName: "E Kişi", nationalId: "10000000146" });
-    await updatePerson(hr.actor, userId, { ...base, fullName: "E. Kişi Güncel", nationalId: null, phone: "5321112233" });
+    await updatePerson(hr.actor, userId, { ...base, fullName: "E. Kişi Güncel", nationalId: null, phone: "0532 111 22 33" });
     const person = await getPerson(hr.actor, userId);
-    expect(person).toMatchObject({ fullName: "E. Kişi Güncel", nationalIdMasked: "100******46", phone: "5321112233" });
+    // Telefon +90 biçiminde saklanır (karar #188)
+    expect(person).toMatchObject({ fullName: "E. Kişi Güncel", nationalIdMasked: "100******46", phone: "+905321112233" });
+    await expect(updatePerson(hr.actor, userId, { ...base, fullName: "E. Kişi", phone: "12345" })).rejects.toMatchObject({ code: "phone_invalid" });
   });
 
   it("pasife alınan personelin oturumları kapanır ve giriş yapamaz", async () => {
@@ -112,20 +113,6 @@ describe("Personel kaydı (ekran 15)", () => {
     await setPersonStatus(hr.actor, worker.userId, { status: "terminated", endDate: "2026-12-31" });
     expect((await getPerson(hr.actor, worker.userId)).endDate).toBe("2026-12-31");
     await expect(setPersonStatus(hr.actor, hr.userId, { status: "passive" })).rejects.toMatchObject({ code: "cannot_deactivate_self" });
-  });
-
-  it("şifre sıfırlama: eski şifre geçmez, kilit kalkar, değiştirme zorunlu olur", async () => {
-    const hr = await createTestUser({ roles: ["hr"] });
-    const worker = await createTestUser();
-    await owner()`update personnel set locked_until = now() + interval '1 hour', failed_login_count = 3 where user_id = ${worker.userId}`;
-    const { tempPassword } = await resetPassword(hr.actor, worker.userId);
-
-    expect((await signIn({ sicilNo: worker.sicilNo, password: TEST_PASSWORD, sharedDevice: false }, meta())).ok).toBe(false);
-    expect(await signIn({ sicilNo: worker.sicilNo, password: tempPassword, sharedDevice: false }, meta())).toMatchObject({
-      ok: true,
-      mustChangePassword: true,
-    });
-    await expect(resetPassword(hr.actor, hr.userId)).rejects.toMatchObject({ code: "cannot_reset_self" });
   });
 
   it("personel listesi: arama, durum filtresi; yetkisi olmayan roller göremez", async () => {

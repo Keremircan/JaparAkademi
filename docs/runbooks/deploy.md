@@ -91,6 +91,16 @@ $C up -d                               # migrate önce çalışır, sonra app ve
 $C logs --since 10m migrate app worker
 ```
 
+### İlk üst yönetici (owner) — iş paketi 2.6b'den sonra bir kez
+
+Üst yönetici rolünü yalnızca bir üst yönetici verebilir. Sistemde hiç yoksa ilkini sunucuda tanımlayın (sicil no, uygulamada giriş yaptığınız sicil):
+
+```bash
+$C run --rm migrate node_modules/.bin/tsx scripts/grant-owner.ts <sicil no>
+```
+
+Komut, sistemde zaten üst yönetici varsa hiçbir şey yapmaz. Sonraki üst yöneticiyi (ör. kurum yöneticisi) uygulamada verin: Sistem → Personel → kişi → Roller → **Üst yönetici** (kişinin e-postası kayıtlı olmalı).
+
 Geri almak için `docker/.env.production` içinde `APP_IMAGE` ve `WORKER_IMAGE`'ı önceki commit etiketine çevirip `$C up -d` çalıştırın.
 Migration'lar geri alınmaz; şema değişikliği içeren bir sürümü geri almak gerekiyorsa önce yedekten dönüş planlayın (restore.md).
 

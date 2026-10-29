@@ -49,7 +49,7 @@ async function Content() {
         <div className="px-5 py-4">
           <dt className="text-sm text-muted-foreground">{t("profile.roles")}</dt>
           <dd className="mt-2 flex flex-wrap gap-2">
-            {user.roles.map((role) => (
+            {user.baseRoles.map((role) => (
               <span key={role} className="rounded-full bg-muted px-3 py-1 text-sm">
                 {t(`roles.${role}`)}
               </span>

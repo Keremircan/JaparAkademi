@@ -7,9 +7,19 @@ export const ROLES = [
   "hr",
   "security",
   "sysadmin",
+  // Üst yönetici (karar #192): diğer bütün rollerin yetkileri
+  "owner",
 ] as const;
 
 export type Role = (typeof ROLES)[number];
+
+/**
+ * Oturumda geçerli roller: `owner` diğer bütün rolleri de taşır (menü, kapsam, yetki).
+ * Kişinin kendi atanmış rolleri ayrıca saklanır (baseRoles): bildirim alıcıları ve mesleki imza uyarısı için.
+ */
+export function effectiveRoles(roles: readonly Role[]): Role[] {
+  return roles.includes("owner") ? [...ROLES] : [...roles];
+}
 
 export function isRole(value: string): value is Role {
   return (ROLES as readonly string[]).includes(value);

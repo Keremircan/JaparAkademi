@@ -1,3 +1,4 @@
+import { normalizePhone as normalizePhoneIntl } from "@/server/state/invitations";
 import ExcelJS from "exceljs";
 import { isValidNationalId, normalizeNationalId } from "@/server/crypto/national-id";
 
@@ -169,11 +170,9 @@ export function parseDate(text: string, cellDate?: Date): string | null {
 }
 
 /** Telefon: rakamlar; +90/0 öneki olabilir. 10 haneli yerel numaraya indirgenir. */
+/** Telefon `+90…` biçiminde saklanır (karar #188). */
 export function normalizePhone(text: string): string | null {
-  let digits = text.replace(/[^\d]/g, "");
-  if (digits.startsWith("90") && digits.length === 12) digits = digits.slice(2);
-  if (digits.startsWith("0") && digits.length === 11) digits = digits.slice(1);
-  return /^\d{10}$/.test(digits) ? digits : null;
+  return normalizePhoneIntl(text);
 }
 
 function matchDepartment(lookup: OrgLookup, text: string) {

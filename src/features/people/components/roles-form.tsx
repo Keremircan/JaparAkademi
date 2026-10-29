@@ -22,7 +22,7 @@ function CheckRow({ name, value, label, checked }: { name: string; value: string
   );
 }
 
-export function RolesForm({ userId, roles }: { userId: string; roles: Role[] }) {
+export function RolesForm({ userId, roles, canGrantOwner }: { userId: string; roles: Role[]; canGrantOwner: boolean }) {
   const t = useTranslations();
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(setRolesAction.bind(null, userId), null);
   return (
@@ -33,6 +33,12 @@ export function RolesForm({ userId, roles }: { userId: string; roles: Role[] }) 
       {ASSIGNABLE.map((role) => (
         <CheckRow key={role} name="roles" value={role} label={t(`roles.${role}`)} checked={roles.includes(role)} />
       ))}
+      {/* Üst yönetici rolünü yalnızca üst yönetici verir (karar #193) */}
+      {canGrantOwner ? (
+        <CheckRow name="roles" value="owner" label={t("roles.owner")} checked={roles.includes("owner")} />
+      ) : (
+        roles.includes("owner") && <p className="flex min-h-12 items-center text-muted-foreground">{t("roles.owner")} ✓</p>
+      )}
       <Button type="submit" disabled={pending} className="mt-2 self-start">
         {t("admin.roles.saveRoles")}
       </Button>

@@ -47,8 +47,10 @@
       "sharedDeviceHint": "İşlem yapılmazsa oturum kısa süre sonra kendiliğinden kapanır.",
       "submit": "Giriş yap",
       "submitting": "Giriş yapılıyor…",
-      "help": "Şifrenizi unuttuysanız İK ile görüşün.",
-      "forgot": "Şifremi unuttum"
+      "help": "Şifrenizi unuttuysanız ve e-postanız kayıtlı değilse İK ile görüşün.",
+      "forgot": "Şifremi unuttum",
+      "adminHint": "Yöneticiler kayıtlı e-posta adresiyle de girebilir.",
+      "activate": "Hesabımı etkinleştir"
     },
     "errors": {
       "invalid_input": "Sicil no ve şifrenizi girin.",
@@ -103,6 +105,24 @@
         "open": "Şifremi yenile",
         "footer": "Bu e-posta JAPAR Akademi tarafından otomatik gönderilmiştir."
       }
+    },
+    "activate": {
+      "title": "Hesabımı etkinleştir",
+      "codeIntro": "Size verilen etkinleştirme kağıdındaki 8 haneli kodu ve sicil numaranızı yazın.",
+      "qrHint": "Telefonunuz varsa kağıttaki QR kodu kamerayla okutmanız yeterlidir.",
+      "sicil": "Sicil no",
+      "code": "Etkinleştirme kodu",
+      "codeHint": "8 rakam, örneğin 1234 5678",
+      "continue": "Devam",
+      "checking": "Kontrol ediliyor…",
+      "welcome": "Hoş geldiniz, {name}",
+      "setIntro": "Sicil no: {sicil}. Kendinize bir şifre belirleyin; bundan sonra sicil numaranız ve bu şifreyle giriş yapacaksınız.",
+      "submit": "Hesabımı etkinleştir",
+      "submitting": "Etkinleştiriliyor…",
+      "invalid": "Bu bağlantı ya da kod geçersiz, süresi dolmuş veya daha önce kullanılmış. Yeni davet için İK'ya başvurun.",
+      "toLogin": "Giriş ekranına dön",
+      "missing": "Sicil numaranızı ve kağıttaki kodu yazın.",
+      "sharedDevice": "Ortak cihaz (eğitim odası, şirket tableti)"
     }
   },
   "home": {
@@ -155,7 +175,8 @@
     "ohs_specialist": "İSG uzmanı",
     "hr": "İnsan kaynakları",
     "security": "Güvenlik",
-    "sysadmin": "Sistem yöneticisi"
+    "sysadmin": "Sistem yöneticisi",
+    "owner": "Üst yönetici"
   },
   "offline": {
     "title": "Bağlantı yok",
@@ -191,7 +212,6 @@
     "national_id_taken": "Bu TC kimlik numarası başka bir personele kayıtlı.",
     "cannot_deactivate_self": "Kendi hesabınızı pasife alamazsınız.",
     "end_date_required": "Ayrılış tarihini girin.",
-    "cannot_reset_self": "Kendi şifrenizi Profil sayfasından değiştirin.",
     "cannot_remove_own_sysadmin": "Kendi sistem yöneticisi rolünüzü kaldıramazsınız.",
     "last_sysadmin": "Son aktif sistem yöneticisinin rolü kaldırılamaz.",
     "not_section_manager": "Kişinin bölüm sorumlusu rolü yok.",
@@ -361,7 +381,17 @@
     "shared_device": "Ortak cihazda bu işlem yapılamaz.",
     "push_unavailable": "Bildirimler bu sunucuda henüz açılmadı.",
     "push_endpoint": "Bu tarayıcının bildirim servisi desteklenmiyor.",
-    "push_failed": "Bildirimler açılamadı. Sayfayı yenileyip tekrar deneyin."
+    "push_failed": "Bildirimler açılamadı. Sayfayı yenileyip tekrar deneyin.",
+    "invite_invalid": "Bağlantı ya da kod geçersiz, süresi dolmuş veya daha önce kullanılmış. Yeni davet için İK'ya başvurun.",
+    "invite_email_missing": "Kişinin e-posta adresi kayıtlı değil. Başka bir kanal seçin ya da e-postayı ekleyin.",
+    "invite_mail_disabled": "E-posta gönderimi bu sunucuda henüz açık değil. WhatsApp ya da basılı kağıt seçin.",
+    "invite_phone_missing": "Kişinin geçerli bir telefon numarası kayıtlı değil. Başka bir kanal seçin ya da telefonu ekleyin.",
+    "cannot_invite_self": "Kendinizi yeniden davet edemezsiniz; şifrenizi profilden değiştirin.",
+    "owner_only": "Bu işlemi yalnızca üst yönetici yapabilir.",
+    "last_owner": "Sistemde en az bir aktif üst yönetici kalmalı.",
+    "login_email_required": "Bu rol e-postayla giriş yaptığı için kişinin e-posta adresi kayıtlı olmalı.",
+    "login_email_taken": "Bu e-posta adresi başka bir aktif personelde kayıtlı. Yönetici rolleri için e-posta tekil olmalı.",
+    "same_approver": "Bu kaydın önceki onay adımını siz verdiniz. İki adımlı onayın ikinci adımını başka bir kişi vermeli."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -480,10 +510,10 @@
         "commit": "Geçerli satırları aktar",
         "committing": "Aktarılıyor… Büyük dosyalarda birkaç dakika sürebilir.",
         "cancel": "Aktarımı iptal et",
-        "commitNotice": "Hatalı satırlar aktarılmaz. Yeni hesapların geçici şifreleri bir kez PDF olarak indirilir; PDF yeniden üretilemez.",
+        "commitNotice": "Hatalı satırlar aktarılmaz. Yeni hesapların etkinleştirme kağıtları (QR + kod) bir kez PDF olarak indirilir; PDF yeniden üretilemez.",
         "committedTitle": "Aktarım tamamlandı",
         "committedSummary": "{created} yeni hesap, {updated} güncellendi, {unchanged} değişmedi.",
-        "pdfDownloaded": "Geçici şifre fişleri indirildi. Bu sayfayı kapatınca PDF yeniden alınamaz; kaybolan şifre için kişi bazında sıfırlama yapın.",
+        "pdfDownloaded": "Etkinleştirme kağıtları indirildi. Yazdırıp kişilere elden verin. Bu sayfayı kapatınca PDF yeniden alınamaz; kaybolan kağıt için kişi bazında yeniden davet yapın.",
         "downloadAgain": "PDF'i tekrar indir",
         "cancelledTitle": "Aktarım iptal edildi",
         "alreadyCommitted": "Bu aktarım daha önce tamamlandı.",
@@ -563,13 +593,6 @@
         "trainingRequired": "Yeni işe giren (eğitim planı atanacak)",
         "trainingRequiredHint": "Mevcut personel için işaretlemeyin."
       },
-      "created": {
-        "title": "Personel oluşturuldu",
-        "description": "Geçici şifre yalnızca şimdi gösterilir. Kişiye iletin; ilk girişte yeni şifre belirlemesi istenecek.",
-        "tempPassword": "Geçici şifre",
-        "printSlip": "Şifre fişini indir (PDF)",
-        "toDetail": "Personel kaydına git"
-      },
       "detail": {
         "info": "Kişi bilgileri",
         "nationalId": "TC kimlik no",
@@ -585,9 +608,6 @@
           "manual": "Elle girildi",
           "hr_sync": "İK senkronu"
         },
-        "resetPassword": "Şifre sıfırla",
-        "resetConfirm": "Yeni geçici şifre üretilecek, açık oturumlar kapanacak. Devam edilsin mi?",
-        "resetDone": "Yeni geçici şifre",
         "statusTitle": "Durum",
         "setPassive": "Pasife al",
         "setActive": "Aktifleştir",
@@ -597,14 +617,6 @@
         "roles": "Roller",
         "manageRoles": "Rolleri düzenle",
         "scopes": "Bölüm sorumlusu kapsamı"
-      },
-      "slip": {
-        "title": "Geçici giriş şifresi",
-        "sicil": "Sicil no",
-        "position": "Pozisyon",
-        "password": "Geçici şifre",
-        "instructions": "İlk girişte yeni şifre belirlemeniz istenecek. Bu kâğıdı kimseyle paylaşmayın.",
-        "issuedAt": "Düzenlenme: {date}"
       },
       "waitingButton": "Eğitimi bekleyenler"
     },
@@ -2844,6 +2856,16 @@
         "label": "Ziyaretçiye verilen KKD",
         "hint": "Kapıda girişte işaretlenebilecek kişisel koruyucu donanımlar.",
         "unit": "{n}"
+      },
+      "auth_invite_valid_hours": {
+        "label": "Davet geçerlilik süresi",
+        "hint": "Hesap etkinleştirme bağlantısı ve kodunun geçerli kaldığı süre.",
+        "unit": "{n} saat"
+      },
+      "auth_invite_code_attempts": {
+        "label": "Etkinleştirme kodu deneme hakkı",
+        "hint": "Bu kadar hatalı kod girişinde davet kullanılamaz olur; İK yeniden davet eder.",
+        "unit": "{n} deneme"
       }
     },
     "visitorTypes": {
@@ -3204,5 +3226,63 @@
       }
     },
     "pdfShort": "PDF indir"
+  },
+  "invite": {
+    "message": {
+      "emailSubject": "JAPAR Akademi hesabınızı etkinleştirin",
+      "emailBody": "Merhaba {name}, JAPAR Akademi hesabınız açıldı. Aşağıdaki bağlantıyla kendi şifrenizi belirleyerek hesabınızı etkinleştirin. Bağlantı {hours} saat geçerlidir ve bir kez kullanılabilir.",
+      "emailOpen": "Hesabımı etkinleştir",
+      "emailFooter": "Bu e-posta JAPAR Akademi tarafından otomatik gönderilmiştir. Bu hesabı beklemiyorsanız İK'ya bildirin.",
+      "whatsapp": "Merhaba {name}, JAPAR Akademi hesabınızı etkinleştirmek için bu bağlantıyı açıp kendi şifrenizi belirleyin: {url} (Bağlantı {hours} saat geçerlidir, bir kez kullanılır.)"
+    },
+    "channel": {
+      "label": "Davet kanalı",
+      "email": "E-posta",
+      "emailHint": "Kişinin e-postasına etkinleştirme bağlantısı gider.",
+      "emailDisabled": "E-posta gönderimi bu sunucuda henüz açık değil.",
+      "whatsapp": "WhatsApp",
+      "whatsappHint": "Hazır mesajı kendi telefonunuzdaki WhatsApp'tan siz gönderirsiniz. Telefon numarası gerekir.",
+      "print": "Basılı kağıt",
+      "printHint": "QR kod ve 8 haneli kod içeren kağıdı yazdırıp kişiye elden verirsiniz."
+    },
+    "panel": {
+      "createdTitle": "Personel oluşturuldu",
+      "reinvitedTitle": "Yeni davet hazır",
+      "expires": "Davet {date} tarihine kadar geçerli ve bir kez kullanılabilir.",
+      "emailSent": "Etkinleştirme bağlantısı kişinin e-postasına gönderiliyor.",
+      "whatsappIntro": "Düğmeye basınca WhatsApp mesaj yazılmış hâlde açılır; Gönder'e basmanız yeterli.",
+      "whatsappOpen": "WhatsApp'ta gönder",
+      "copyLink": "Bağlantıyı kopyala",
+      "copied": "Bağlantı kopyalandı",
+      "printIntro": "Kağıdı yazdırıp kişiye elden verin. Kod yalnızca şimdi gösterilir.",
+      "code": "Etkinleştirme kodu",
+      "printSheet": "Etkinleştirme kağıdını indir (PDF)",
+      "toDetail": "Personel kaydına git"
+    },
+    "sheet": {
+      "title": "Hesap etkinleştirme",
+      "sicil": "Sicil no",
+      "position": "Pozisyon",
+      "code": "Etkinleştirme kodu",
+      "steps": "Telefonla QR kodu okutun ya da giriş ekranında \"Hesabımı etkinleştir\"e dokunup sicil numaranızı ve bu kodu yazın. Sonra kendi şifrenizi belirleyin.",
+      "expires": "Son geçerlilik: {date}",
+      "note": "Kod bir kez kullanılır. Bu kağıdı kimseyle paylaşmayın."
+    },
+    "status": {
+      "label": "Hesap durumu",
+      "active": "Etkin",
+      "invite_pending": "Davet bekliyor ({channel}, {date} tarihine kadar)",
+      "invite_expired": "Davet kullanılamıyor (süresi doldu ya da kod çok kez hatalı girildi); yeniden davet edin",
+      "not_activated": "İlk giriş bekleniyor"
+    },
+    "reinvite": {
+      "title": "Yeniden davet",
+      "hint": "Şifresini unutan, davetini kaybeden ya da süresi dolan kişi için. Mevcut şifre ve eski davet geçersiz olur, açık oturumlar kapanır.",
+      "submit": "Davet oluştur",
+      "confirm": "Kişinin mevcut şifresi geçersiz olacak ve açık oturumları kapanacak. Devam edilsin mi?"
+    }
+  },
+  "owner": {
+    "actingNotice": "Bu işlem normalde {role} yetkisindedir. Üst yönetici olarak yapıyorsunuz; kayda böyle işlenecek."
   }
 }

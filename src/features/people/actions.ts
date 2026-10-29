@@ -5,12 +5,12 @@ import { refresh } from "next/cache";
 import { z } from "zod";
 import { actionUser, formText, runAction, type ActionResult } from "@/features/shared/action-result";
 import { redirect } from "@/i18n/navigation";
-import { renderCredentialSlips, type CredentialSlip } from "@/server/pdf/credentials";
+import { renderActivationSheets } from "@/server/pdf/activation";
+import { reinvite, type IssuedInvite } from "@/server/services/invitations";
+import { INVITE_CHANNELS } from "@/server/state/invitations";
 import { cancelImport, commitImport, validateImport } from "@/server/services/imports";
 import {
   createPerson,
-  getPerson,
-  resetPassword,
   revealNationalId,
   setPersonStatus,
   updatePerson,
@@ -21,22 +21,59 @@ import { ROLES } from "@/server/authz/roles";
 const uuid = z.uuid();
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
-/** Geçici şifre fişlerini (PDF) base64 olarak üretir; sunucuda saklanmaz. */
-async function slipsPdfBase64(slips: CredentialSlip[]): Promise<string> {
-  const t = await getTranslations("admin.people.slip");
+/** Etkinleştirme kağıtlarını (PDF) base64 olarak üretir; sunucuda saklanmaz. */
+async function sheetsPdfBase64(invites: IssuedInvite[]): Promise<string> {
+  const t = await getTranslations("invite.sheet");
   const tApp = await getTranslations("app");
   const format = await getFormatter();
-  const pdf = await renderCredentialSlips(slips, {
-    appName: tApp("name"),
-    title: t("title"),
-    sicil: t("sicil"),
-    position: t("position"),
-    password: t("password"),
-    instructions: t("instructions"),
-    issuedAt: t("issuedAt", { date: format.dateTime(new Date(), { dateStyle: "short" }) }),
-  });
+  const pdf = await renderActivationSheets(
+    invites.map((i) => ({
+      sicilNo: i.sicilNo,
+      fullName: i.fullName,
+      positionName: i.positionName,
+      url: i.url,
+      code: i.code ?? "",
+      expires: t("expires", { date: format.dateTime(i.expiresAt, { dateStyle: "short", timeStyle: "short" }) }),
+    })),
+    {
+      appName: tApp("name"),
+      title: t("title"),
+      sicil: t("sicil"),
+      position: t("position"),
+      code: t("code"),
+      steps: t("steps"),
+      note: t("note"),
+    },
+  );
   return pdf.toString("base64");
 }
+
+/** İstemciye dönen davet bilgisi. E-posta kanalında bağlantı dönmez (yalnızca kişiye gider). */
+export type InviteResult = {
+  userId: string;
+  sicilNo: string;
+  channel: IssuedInvite["channel"];
+  expiresAt: string;
+  whatsappUrl: string | null;
+  link: string | null;
+  code: string | null;
+  sheetPdf: string | null;
+};
+
+async function toResult(invite: IssuedInvite): Promise<InviteResult> {
+  return {
+    userId: invite.userId,
+    sicilNo: invite.sicilNo,
+    channel: invite.channel,
+    expiresAt: invite.expiresAt.toISOString(),
+    whatsappUrl: invite.whatsappUrl,
+    link: invite.channel === "email" ? null : invite.url,
+    code: invite.code,
+    sheetPdf: invite.channel === "print" ? await sheetsPdfBase64([invite]) : null,
+  };
+}
+
+const channelSchema = z.enum(INVITE_CHANNELS);
 
 const personSchema = z.object({
   fullName: z.string().min(1).max(160),
@@ -62,23 +99,16 @@ function readPerson(formData: FormData) {
   });
 }
 
-export type CreatedPerson = { userId: string; tempPassword: string; slipPdf: string };
-
 export async function createPersonAction(
-  _prev: ActionResult<CreatedPerson> | null,
+  _prev: ActionResult<InviteResult> | null,
   formData: FormData,
-): Promise<ActionResult<CreatedPerson>> {
+): Promise<ActionResult<InviteResult>> {
   const person = readPerson(formData);
   const sicilNo = z.string().min(1).max(32).safeParse(formText(formData, "sicilNo") ?? "");
-  if (!person.success || !sicilNo.success) return { ok: false, error: "invalid_input" };
+  const channel = channelSchema.safeParse(formText(formData, "channel"));
+  if (!person.success || !sicilNo.success || !channel.success) return { ok: false, error: "invalid_input" };
   const { actor } = await actionUser();
-  return runAction(async () => {
-    const { userId, tempPassword } = await createPerson(actor, { ...person.data, sicilNo: sicilNo.data });
-    const slipPdf = await slipsPdfBase64([
-      { sicilNo: sicilNo.data.trim(), fullName: person.data.fullName.trim(), positionName: "", tempPassword },
-    ]);
-    return { userId, tempPassword, slipPdf };
-  });
+  return runAction(async () => toResult(await createPerson(actor, { ...person.data, sicilNo: sicilNo.data, channel: channel.data })));
 }
 
 export async function updatePersonAction(
@@ -109,15 +139,14 @@ export async function setPersonStatusAction(
   return result;
 }
 
-export async function resetPasswordAction(userId: string): Promise<ActionResult<{ tempPassword: string; slipPdf: string }>> {
-  if (!uuid.safeParse(userId).success) return { ok: false, error: "invalid_input" };
+/** Yeniden davet (şifre sıfırlamanın yerini alır, karar #185). */
+export async function reinviteAction(userId: string, _prev: ActionResult<InviteResult> | null, formData: FormData): Promise<ActionResult<InviteResult>> {
+  const channel = channelSchema.safeParse(formText(formData, "channel"));
+  if (!uuid.safeParse(userId).success || !channel.success) return { ok: false, error: "invalid_input" };
   const { actor } = await actionUser();
-  return runAction(async () => {
-    const { tempPassword } = await resetPassword(actor, userId);
-    const person = await getPerson(actor, userId);
-    const slipPdf = await slipsPdfBase64([{ sicilNo: person.sicilNo, fullName: person.fullName, positionName: "", tempPassword }]);
-    return { tempPassword, slipPdf };
-  });
+  const result = await runAction(async () => toResult(await reinvite(actor, userId, channel.data)));
+  if (result.ok) refresh();
+  return result;
 }
 
 export async function revealNationalIdAction(userId: string): Promise<ActionResult<string | null>> {
@@ -160,15 +189,15 @@ export async function uploadImportAction(_prev: ActionResult | null, formData: F
   return redirect({ href: `/admin/people/import/${result.data.batchId}`, locale: await getLocale() });
 }
 
-export type CommitImportResult = { created: number; updated: number; unchanged: number; slipPdf: string | null };
+export type CommitImportResult = { created: number; updated: number; unchanged: number; sheetPdf: string | null };
 
 export async function commitImportAction(batchId: string): Promise<ActionResult<CommitImportResult>> {
   if (!uuid.safeParse(batchId).success) return { ok: false, error: "invalid_input" };
   const { actor } = await actionUser();
   return runAction(async () => {
-    const { credentials, ...counts } = await commitImport(actor, batchId);
-    const slipPdf = credentials.length ? await slipsPdfBase64(credentials) : null;
-    return { ...counts, slipPdf };
+    const { invites, ...counts } = await commitImport(actor, batchId);
+    const sheetPdf = invites.length ? await sheetsPdfBase64(invites) : null;
+    return { ...counts, sheetPdf };
   });
 }
 

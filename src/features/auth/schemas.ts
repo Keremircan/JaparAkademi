@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 export const signInSchema = z.object({
-  sicilNo: z.string().trim().min(1).max(32),
+  // Sicil no ya da (yönetici rollerinde) e-posta, karar #189
+  sicilNo: z.string().trim().min(1).max(200),
   password: z.string().min(1).max(128),
   sharedDevice: z.boolean(),
 });

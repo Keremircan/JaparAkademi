@@ -17,6 +17,7 @@ import { toActor } from "@/server/services/auth";
 import { canIssueAttendance, certificatesForUser } from "@/server/services/certificates";
 import { readinessReview } from "@/server/services/readiness";
 import { getSettings } from "@/server/services/settings";
+import { OwnerActingNotice } from "@/features/admin/owner-notice";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("readiness");
@@ -65,6 +66,7 @@ async function Content({ params }: { params: Promise<{ assignmentId: string }> }
         description={`${view.person.positionName} · ${view.person.unitName}${view.person.sicilNo ? ` · ${view.person.sicilNo}` : ""}`}
         back={{ href: "/manage/approvals", label: tNav("title") }}
       />
+      <OwnerActingNotice actor={actor} permission="readiness.decide" role="section_manager" />
       {view.reason === "recertification" && (
         <p className="rounded-2xl border border-sky-600/40 bg-sky-600/5 p-4">{t("recertNotice")}</p>
       )}

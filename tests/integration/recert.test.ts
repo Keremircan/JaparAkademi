@@ -192,7 +192,8 @@ describe("Faz 2 eğitim bildirimleri (SPEC 10.2, karar #172)", () => {
     await updateAssignment(p.hr.actor, a.id, { trainerUserId: p.trainerPres.userId, targetDate: null });
     const am = (await current(u)).modules.find((m) => m.moduleId === t.practice)!;
     expect(await notifyUnmarked(sys, new Date())).toBe(0);
-    await owner()`update assignment_modules set unlocked_at = now() - interval '5 days' where id = ${am.id}`;
+    // Takvim günü yerine saat payı: yaz saati geçişinde aralık 4 gün 23 saate düşmesin
+    await owner()`update assignment_modules set unlocked_at = now() - interval '5 days 2 hours' where id = ${am.id}`;
     expect(await notifyUnmarked(sys, new Date())).toBe(1);
     await notifyUnmarked(sys, new Date());
     const notes = await notesOf(p.trainerPres.userId, "tasks_unmarked");

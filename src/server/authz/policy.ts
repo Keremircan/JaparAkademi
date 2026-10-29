@@ -67,19 +67,47 @@ export const PERMISSIONS = {
 
 export type Permission = keyof typeof PERMISSIONS;
 
+/** `owner` (üst yönetici, karar #192) her role sahip sayılır. */
 export function hasRole(actor: Actor, role: Role): boolean {
-  return actor.kind === "user" && actor.roles.includes(role);
+  return actor.kind === "user" && (actor.roles.includes(role) || actor.roles.includes("owner"));
 }
 
 export function hasAnyRole(actor: Actor, roles: readonly Role[]): boolean {
-  return actor.kind === "user" && actor.roles.some((r) => roles.includes(r));
+  return actor.kind === "user" && (actor.roles.includes("owner") || actor.roles.some((r) => roles.includes(r)));
 }
 
-/** Sistem aktörü (seed, worker) tüm yetkilere sahiptir; kullanıcı aktörü rollerine göre. */
+export function isOwner(actor: Actor): boolean {
+  return actor.kind === "user" && actor.roles.includes("owner");
+}
+
+function ownRoles(actor: Actor & { kind: "user" }): readonly Role[] {
+  return actor.baseRoles ?? actor.roles;
+}
+
+/**
+ * Kişinin kendi atanmış rolü mü (owner genişletmesi hariç)? Mesleki kısayollar için kullanılır:
+ * örn. İSG uzmanının hazırladığı İSG içeriği kendiliğinden onaylı sayılır; `owner` bu kısayoldan yararlanmaz.
+ */
+export function hasOwnRole(actor: Actor, role: Role): boolean {
+  return actor.kind === "user" && ownRoles(actor).includes(role);
+}
+
+/** Sistem aktörü (seed, worker) tüm yetkilere sahiptir; kullanıcı aktörü rollerine göre (`owner` hepsine). */
 export function can(actor: Actor, permission: Permission): boolean {
   if (actor.kind === "system") return true;
+  if (actor.roles.includes("owner")) return true;
   const allowed: readonly Role[] = PERMISSIONS[permission];
   return actor.roles.some((r) => allowed.includes(r));
+}
+
+/**
+ * `owner` bu işlemi kendi atanmış rolüyle değil, üst yönetici yetkisiyle mi yapıyor (karar #196)?
+ * Mesleki imzalarda (İSG onayı, pratik sınav imzası, işe başlama kararı) ekranda uyarı ve `owner_actions` kaydı için.
+ */
+export function actsAsOwner(actor: Actor, permission: Permission): boolean {
+  if (actor.kind !== "user" || !actor.roles.includes("owner")) return false;
+  const allowed: readonly Role[] = PERMISSIONS[permission];
+  return !ownRoles(actor).some((r) => r !== "owner" && allowed.includes(r));
 }
 
 export function assertCan(actor: Actor, permission: Permission): void {

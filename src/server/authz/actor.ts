@@ -8,7 +8,10 @@ import type { Role } from "./roles";
 export type UserActor = {
   kind: "user";
   userId: string;
+  /** Geçerli roller (`owner` ise bütün roller). */
   roles: readonly Role[];
+  /** Kişiye atanmış roller; verilmezse `roles` ile aynı. `owner`'ın mesleki imza uyarısı için (karar #196). */
+  baseRoles?: readonly Role[];
 };
 
 export type SystemActor = {

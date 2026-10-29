@@ -8,6 +8,7 @@ import { adminAccess, orNull } from "@/features/admin/guard";
 import { RolesForm, ScopesForm } from "@/features/people/components/roles-form";
 import { listUnitOptions } from "@/server/services/org";
 import { getPerson } from "@/server/services/people";
+import { isOwner } from "@/server/authz/policy";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.roles");
@@ -37,7 +38,7 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-2xl border p-5">
           <h2 className="mb-3 text-lg font-semibold">{t("roles")}</h2>
-          <RolesForm userId={userId} roles={person.roles} />
+          <RolesForm userId={userId} roles={person.roles} canGrantOwner={isOwner(access.actor)} />
         </div>
         <div className="rounded-2xl border p-5">
           <h2 className="mb-3 text-lg font-semibold">{t("scopes")}</h2>

@@ -10,10 +10,10 @@ Bir kişi birden çok role sahip olabilir; menü rollerinize göre oluşur. Kims
 ### Organizasyon ve personel
 - **Sistem → Organizasyon yapısı**: departman, bölüm ve pozisyonları tanımlayın. Pozisyonun yaka tipi ortak eğitimleri belirler.
 - **Sistem → Personel**:
-  - **Ekle**: tek kişi; yeni işe girenler için "eğitim gerekli" işaretlenir.
-  - **Excel'den aktar**: şablonu indirin, doldurun, yükleyin. Önce önizleme gösterilir; onaylayınca hesaplar açılır ve geçici şifre fişleri (PDF) bir kez indirilir — fişler sunucuda saklanmaz.
+  - **Ekle**: tek kişi; yeni işe girenler için "eğitim gerekli" işaretlenir. **Davet kanalı** seçin: **E-posta** (bağlantı kişiye gider; e-posta gönderimi açıkken), **WhatsApp** (kaydettikten sonra **WhatsApp'ta gönder**'e basın; mesaj kendi telefonunuzda yazılmış hâlde açılır, siz gönderirsiniz — telefon numarası gerekir) ya da **Basılı kağıt** (QR + 8 haneli kod; PDF'i yazdırıp elden verin). Kişi şifresini kendisi belirler; siz şifre görmezsiniz. Davet 72 saat geçerlidir.
+  - **Excel'den aktar**: şablonu indirin, doldurun, yükleyin. Önce önizleme gösterilir; onaylayınca hesaplar açılır ve etkinleştirme kağıtları (QR + kod, PDF) bir kez indirilir — kağıtlar sunucuda saklanmaz.
   - TC kimlik no maskeli görünür; tamamını yalnızca İK görür ve her görüntüleme kayda geçer.
-  - **Şifre sıfırla**: geçici şifre fişi üretir; kişi ilk girişte değiştirir.
+  - **Hesap durumu ve yeniden davet**: kişi sayfasında hesabın durumu görünür (etkin / davet bekliyor / davet kullanılamıyor). Şifresini unutan, kağıdını kaybeden ya da daveti dolan kişi için **Yeniden davet** → kanal → **Davet oluştur**. Eski şifre ve eski davet hemen geçersiz olur.
 
 ### Eğitim ataması
 - Yeni giren personel pozisyonun yayındaki planına otomatik atanır. Kişi sayfasından **pratik eğitmeni** ve **hedef tarihi** seçin; eğitmen seçilmeden pratik modüller açılmaz.
@@ -108,7 +108,8 @@ Yalnızca kapsamınızdaki birimlerin personelini ve içeriklerini görürsünü
 
 ## 5. Sistem yöneticisi
 
-- **Roller ve kapsam**: Sistem → Personel → kişi → **Roller**. Bölüm sorumlusunun hangi departman/bölümleri yönettiği de burada seçilir.
+- **Roller ve kapsam**: Sistem → Personel → kişi → **Roller**. Bölüm sorumlusunun hangi departman/bölümleri yönettiği de burada seçilir. İK ve sistem yöneticisi rollerinde kişinin e-postası kayıtlı ve başka kimsede olmamalıdır (bu roller e-postayla da giriş yapar).
+- **Üst yönetici**: geliştirici ve kurum yöneticisi içindir; her ekranı görür ve her işlemi yapar. Bu rolü yalnızca bir üst yönetici verebilir; son üst yönetici kaldırılamaz. İSG onayı, pratik sınav imzası ve işe başlama kararı gibi işlemleri ilgili rolü olmadan yaparsanız ekranda uyarı çıkar ve işlem ayrıca kaydedilir. Kendi kaydınızı onaylayamazsınız; iki adımlı onayın iki adımını birden veremezsiniz.
 - **Sistem → Ortak cihazlar**: eğitim odası bilgisayarlarını ("Ortak bilgisayar"; girişte ortak mod) ve kapıdaki ziyaretçi tabletini ("Kapı tableti"; `/kiosk` yalnızca bu cihazda açılır) kayıt yapılacak cihazın tarayıcısından tanımlayın. Tableti ekran sabitleme / kiosk tarayıcı modunda kullanın.
 - **Sistem → Denetim kaydı**: kim, ne zaman, hangi kaydı değiştirdi; eski ve yeni değerler (hassas alanlar maskeli). Salt okunur.
 - **Sistem → Parametreler**: sınav, eğitim, giriş, bildirim (hangi olayların e-postayla, hangilerinin telefona push olarak da gideceği; push yeniden deneme sayısı ve bekleme süresi), dosya ve saklama süresi ayarları. **Değiştir** → yeni değer → **Kaydet**; **Varsayılana dön** ile ilk değere dönülür. Her değişiklik denetim kaydına yazılır. Saklama sürelerinde gerekçe zorunludur (hukuk onayının tarihi ve dayanağı). Plan bazındaki sınav ayarları plan tasarımcısında değiştirilir; saat dilimi ekrandan değiştirilemez.

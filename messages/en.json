@@ -115,7 +115,8 @@
     "ohs_specialist": "OHS specialist",
     "hr": "Human resources",
     "security": "Security",
-    "sysadmin": "System administrator"
+    "sysadmin": "System administrator",
+    "owner": "Owner"
   },
   "offline": {
     "title": "No connection",
