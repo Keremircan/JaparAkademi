@@ -69,7 +69,7 @@ async function Content() {
             <h2 id="push-title" className="text-lg font-semibold">
               {t("push.title")}
             </h2>
-            <p className="mt-2 text-sm text-muted-foreground">{t("push.blocked.server")}</p>
+            <p role="status" className="mt-2 text-sm text-muted-foreground">{t("push.blocked.server")}</p>
           </section>
         ))}
 
