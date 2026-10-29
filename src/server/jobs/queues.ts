@@ -15,6 +15,8 @@ export const QUEUES = {
   certificateRender: "certificate.render",
   /** E-posta kuyruğunu gönderir (dakikada bir; SPEC 10.2). */
   mailDispatch: "mail.dispatch",
+  /** Push kuyruğunu gönderir (dakikada bir; iş paketi 2.6). */
+  pushDispatch: "push.dispatch",
   /** Saklama süresi dolan bildirimleri siler (günlük). */
   notificationsPurge: "notifications.purge",
   /** Saklama süreleri: personel anonimleştirme, imza görselleri, eski denetim kaydı (her gece; SPEC 12.3). */

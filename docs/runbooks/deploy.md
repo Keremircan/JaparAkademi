@@ -67,6 +67,19 @@ curl -s https://$APP_DOMAIN/api/health     # {"status":"ok","database":true,"sto
 
 Tarayıcıda `https://APP_DOMAIN` → sicil `000001` ve `SEED_ADMIN_PASSWORD` ile giriş → şifre değiştirme → KVKK onayı.
 
+### Web push (telefona bildirim)
+
+Push yalnızca "Yeni bildiriminiz var" ve bildirim kimliğini taşır (karar #176). Anahtarları bir kez üretin ve `docker/.env.production`'a ekleyin:
+
+```bash
+$C run --rm --no-deps migrate node_modules/.bin/tsx scripts/push-keys.ts >> docker/.env.production
+nano docker/.env.production     # PUSH_TRANSPORT=webpush ve VAPID_SUBJECT=mailto:<BT adresi>; eski boş VAPID_ satırlarını silin
+$C up -d                         # app ve worker yeni ayarla yeniden başlar
+```
+
+Gizli anahtar (`VAPID_PRIVATE_KEY`) yalnızca sunucuda kalır; dosyanın kasadaki kopyasını güncelleyin. Anahtar değişirse kişilerin bildirimleri profilden yeniden açması gerekir.
+Worker loglarında `PUSH_TRANSPORT=log` uyarısı görünüyorsa push kapalıdır.
+
 ## 4. Güncelleme (yeni sürüm)
 
 `main`'e birleştirilen her değişiklik CI'da test edilir; geçerse imajlar `ghcr.io/<sahip>/japar-akademi-{app,worker}:latest` ve `:<commit>` etiketleriyle gönderilir.

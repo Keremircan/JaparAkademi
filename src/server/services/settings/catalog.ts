@@ -11,7 +11,7 @@ export type SettingInput =
   | { kind: "boolean" }
   | { kind: "hazardClass" }
   | { kind: "perHazardClass" }
-  | { kind: "events" }
+  | { kind: "events"; channel: "email" | "push" }
   | { kind: "visitorTypes" }
   | { kind: "list" }
   | { kind: "readonly" };
@@ -72,9 +72,12 @@ export const SETTINGS_CATALOG: Partial<Record<SettingKey, Entry>> = {
   "auth.reset_max_per_hour": { group: "auth", input: int },
 
   // Olay × kanal: uygulama içi her zaman, e-posta seçilen olaylarda (karar #119)
-  "notify.email_events": { group: "notify", input: { kind: "events" } },
+  "notify.email_events": { group: "notify", input: { kind: "events", channel: "email" } },
+  "notify.push_events": { group: "notify", input: { kind: "events", channel: "push" } },
   "notify.retention_days": { group: "notify", input: int },
   "mail.max_attempts": { group: "notify", input: int },
+  "push.max_attempts": { group: "notify", input: int },
+  "push.ttl_hours": { group: "notify", input: int },
 
   "verify.ip_max_requests": { group: "certificate", input: int },
   "verify.ip_window_min": { group: "certificate", input: int },

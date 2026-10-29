@@ -65,3 +65,40 @@ const serwist = new Serwist({
 });
 
 serwist.addEventListeners();
+
+/**
+ * Web push (iş paketi 2.6, karar #176, #184): push yalnızca bildirim kimliğini ve genel bir metni taşır.
+ * Dokununca /api/notifications/<kimlik> açılır; sunucu oturumu ve sahipliği kontrol edip ilgili ekrana yönlendirir.
+ */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+self.addEventListener("push", (event) => {
+  let data: { id?: unknown; title?: unknown; body?: unknown } = {};
+  try {
+    data = event.data?.json() ?? {};
+  } catch {
+    data = {};
+  }
+  const id = typeof data.id === "string" && UUID.test(data.id) ? data.id : null;
+  const title = typeof data.title === "string" && data.title ? data.title.slice(0, 80) : "JAPAR Akademi";
+  const body = typeof data.body === "string" ? data.body.slice(0, 200) : "";
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      // Aynı bildirim tazelenirse tek kart kalır
+      tag: id ?? "japar-akademi",
+      data: { url: id ? `/api/notifications/${id}` : "/notifications" },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const raw = (event.notification.data as { url?: unknown } | null)?.url;
+  const path = typeof raw === "string" && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/notifications";
+  const url = new URL(path, self.location.origin).href;
+  // Açık sekme yönlendirilmez (kişi o sırada sınavda ya da formda olabilir); yeni pencere açılır
+  event.waitUntil(self.clients.openWindow(url).then(() => undefined));
+});

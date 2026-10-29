@@ -357,7 +357,11 @@
     "visitor_id_required": "Ziyaretçinin kimlik numarasını girin.",
     "visit_not_inside": "Ziyaretçi içeride değil.",
     "rollcall_open": "Açık bir yoklama var; önce onu bitirin.",
-    "rollcall_ended": "Bu yoklama bitti; değiştirilemez."
+    "rollcall_ended": "Bu yoklama bitti; değiştirilemez.",
+    "shared_device": "Ortak cihazda bu işlem yapılamaz.",
+    "push_unavailable": "Bildirimler bu sunucuda henüz açılmadı.",
+    "push_endpoint": "Bu tarayıcının bildirim servisi desteklenmiyor.",
+    "push_failed": "Bildirimler açılamadı. Sayfayı yenileyip tekrar deneyin."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -2196,7 +2200,25 @@
         "ohs_expired": "Süresi dolan İSG eğitimleri var"
       }
     },
-    "pagination": "Bildirim sayfaları"
+    "pagination": "Bildirim sayfaları",
+    "push": {
+      "title": "JAPAR Akademi",
+      "body": "Yeni bildiriminiz var"
+    }
+  },
+  "push": {
+    "title": "Bu cihazda bildirimler",
+    "loading": "Bildirim durumu kontrol ediliyor…",
+    "offHint": "Bu cihaza bildirim gönderilmiyor. Açarsanız yeni bir bildiriminiz olduğunda telefonunuza ya da bilgisayarınıza haber verilir. Bildirimde kişisel bilgi yer almaz.",
+    "onHint": "Bu cihaza bildirim gönderiliyor. Çıkış yaptığınızda bu cihaza bildirim gönderimi durur.",
+    "enable": "Bildirimleri aç",
+    "disable": "Bildirimleri kapat",
+    "blocked": {
+      "unsupported": "Bu tarayıcı bildirimleri desteklemiyor. Telefonunuzda Chrome ya da Safari ile deneyebilirsiniz.",
+      "ios_install": "iPhone'da bildirim almak için önce uygulamayı ana ekrana ekleyin: Safari'de Paylaş düğmesine, ardından \"Ana Ekrana Ekle\"ye dokunun. Sonra uygulamayı ana ekrandaki simgeden açıp bu sayfaya dönün.",
+      "denied": "Bu cihazda bildirim izni kapalı. Açmak için tarayıcının site ayarlarından (adres çubuğundaki kilit simgesi) bildirimlere izin verin, sonra sayfayı yenileyin.",
+      "server": "Bildirimler bu sunucuda henüz açılmadı. Uygulama içi bildirimler gelmeye devam eder."
+    }
   },
   "reports": {
     "intro": "Raporlar yetkinize ve kapsamınıza göre süzülür. Ekranda önizleyebilir, Excel ya da PDF olarak indirebilirsiniz; her indirme kayda geçer.",
@@ -2526,7 +2548,8 @@
     },
     "events": {
       "legend": "E-postayla da gönderilecek olaylar (uygulama içi bildirim her zaman gider)",
-      "none": "Hiçbiri (yalnızca uygulama içi)"
+      "none": "Hiçbiri (yalnızca uygulama içi)",
+      "pushLegend": "Push bildirimi de gönderilecek olaylar (yalnızca \"Yeni bildiriminiz var\" yazar; uygulama içi bildirim her zaman gider)"
     },
     "groups": {
       "org": "Kurum",
@@ -2716,6 +2739,21 @@
         "label": "E-posta yeniden deneme sayısı",
         "hint": "Gönderilemeyen e-posta bu kadar denemeden sonra başarısız sayılır.",
         "unit": "{n} deneme"
+      },
+      "notify_push_events": {
+        "label": "Push bildirimi gönderilen olaylar",
+        "hint": "Seçilen olaylarda, bildirimleri açmış kişinin cihazına \"Yeni bildiriminiz var\" uyarısı gider.",
+        "unit": "{n}"
+      },
+      "push_max_attempts": {
+        "label": "Push yeniden deneme sayısı",
+        "hint": "Ulaştırılamayan push bu kadar denemeden sonra bırakılır.",
+        "unit": "{n} deneme"
+      },
+      "push_ttl_hours": {
+        "label": "Push bekleme süresi",
+        "hint": "Cihaz kapalıysa push servisi bildirimi bu süre boyunca bekletir, sonra bırakır.",
+        "unit": "{n} saat"
       },
       "verify_ip_max_requests": {
         "label": "Belge doğrulama istek sınırı",

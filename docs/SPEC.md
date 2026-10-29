@@ -362,7 +362,7 @@ Tüm raporlar ekranda filtrelenebilir ve **Excel (xlsx) / PDF** olarak dışa ak
 \* "Satın alma" ayrı bir rol değildir. Bu rapor, İSG veya İK tarafından dışa aktarılarak paylaşılır.
 
 ### 10.2 Bildirimler
-Kanallar: **uygulama içi** (her zaman), **web push** (PWA, Faz 2) ve **e-posta** (Microsoft Graph; kullanıcının e-postası varsa). **SMS yoktur.** Her olay türü için hangi kanalların kullanılacağı sysadmin parametresidir. Kullanıcı push bildirimlerini kapatabilir; zorunlu olaylarda uygulama içi bildirim her zaman gider.
+Kanallar: **uygulama içi** (her zaman), **web push** (PWA, Faz 2) ve **e-posta** (Microsoft Graph; kullanıcının e-postası varsa). **SMS yoktur.** Her olay türü için hangi kanalların kullanılacağı sysadmin parametresidir. Kullanıcı push bildirimlerini cihaz bazında açıp kapatır (Profil); uygulama içi bildirim her zaman gider. Push yalnızca "Yeni bildiriminiz var" yazar (kararlar #175–184).
 
 | Alıcı | Olay | Faz |
 |---|---|---|
@@ -592,7 +592,8 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `notifications`: user_id, kind (olay türü), subject_key (konu; aynı konu için okunmamış tek bildirim), params (jsonb; metin gösterimde mesaj dosyasından üretilir), link (uygulama içi yol), read_at
 - `email_outbox`: notification_id, kind, to_address, subject, body_text, body_html, status (`pending`|`sent`|`failed`|`skipped`), attempts, last_error, next_attempt_at, sent_at — adres ve gövde denetim kaydına maskeli yazılır
 - `password_reset_tokens`: user_id, token_hash (SHA-256; token saklanmaz), expires_at, used_at, ip
-- `notification_prefs`, `push_subscriptions` (F2)
+- `push_subscriptions`: user_id, session_id (oturum silinince silinir), endpoint (tekil), p256dh, auth, user_agent (kısa), last_success_at, failure_count — endpoint, anahtarlar ve tarayıcı bilgisi denetim kaydına maskeli yazılır. Tercih cihaz bazındadır; ayrı `notification_prefs` tablosu yok (karar #177)
+- `push_outbox`: notification_id, user_id, status, attempts, last_error, next_attempt_at, sent_at (karar #179)
 - `import_batches` (dosya, mod: `existing_staff`|`new_hires`, durum, sayılar), `import_rows` (normalleştirilmiş satır; TC yalnızca korumalı hâliyle; onaylanınca değiştirilemez). Onaylanmamış aktarımların satırları 24 saat sonra silinir (worker işi `imports.cleanup`)
 - `corrections`: target_table, target_id, field, old_value, new_value, reason, created_by, created_at
 - `report_exports`: actor_id, report (`training`|`exams`|`ohs`|`onboarding`), format (`xlsx`|`pdf`), filters (jsonb), row_count, at — **değiştirilemez** (her rapor dışa aktarması)
@@ -686,6 +687,8 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | `notify.email_events` | sınav sonucu ve sistem alarmı dışındaki bütün olaylar | — | sysadmin |
 | `notify.retention_days` | 180 | — | sysadmin |
 | `mail.max_attempts` | 5 | — | sysadmin |
+| `notify.push_events` | bütün olaylar | — | sysadmin |
+| `push.max_attempts` / `push.ttl_hours` | 3 / 24 | — | sysadmin |
 | `auth.reset_link_minutes` / `auth.reset_max_per_hour` | 60 / 3 | — | sysadmin |
 | `reports.max_rows` | 10000 | — | sysadmin |
 | `session.shared_idle_min` | 10 | — | sysadmin |
@@ -705,7 +708,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | `visitor.selfreg_max` / `visitor.selfreg_window_min` | 20 / 60 | — | sysadmin |
 | `visitor.kiosk_reset_seconds` | 20 | — | sysadmin |
 | `retention.*` | Bölüm 12.3 tablosu | — | sysadmin (hukuk onayıyla) |
-| `notify.email_events` | Bölüm 10.2 (karar #119; push 2.6'da) | — | sysadmin |
+| `notify.email_events` / `notify.push_events` | Bölüm 10.2 (kararlar #119, #180) | — | sysadmin |
 
 ---
 
@@ -947,6 +950,16 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 172 | Faz 2 bildirimleri | Kursiyer: `recert_started`, `reread_assigned`. Eğitmen: `tasks_unmarked` (son işaret ya da açılıştan `trainer.unmarked_alert_days` sonra, bekleme dönemi başına bir kez, işaretleyince kapanır). Bölüm sorumlusu: `training_overdue` (atama başına bir kez), `weekly_summary` (yalnızca sayılar; e-postada kişi adı yok, kapsamı boşsa gönderilmez). İSG: `ohs_expired` (günlük tek özet, rapora bağlantı). `notify(…, once)` okunmuş olsa da tekrar göndermez |
 | 173 | Zamanlama | `training.daily` her gün 06:00 (tekrar eğitimi, hedefi geçen, işaretlenmeyen görev, süresi dolan İSG; adımlar birbirinden bağımsız), `training.weekly` Pazartesi 08:00 (Europe/Istanbul). Kayıtlı `notify.email_events` değerine yeni türler kendiliğinden eklenmez |
 | 174 | Barındırma konumu | Türkiye'de barındırma zorunluluğu kaldırıldı (proje sahibi kararı, 2026-10-28). Üretim: Hostinger VPS, Almanya – Düsseldorf (AB). Gecikme Türkiye'den ~50 ms. Başka üçüncü taraf servis yasağı sürer. Yurt dışına aktarım için KVKK md. 9 dayanağı ve aydınlatma metni güncellemesi gerçek veri girilmeden önce hukukça tamamlanır |
+| 175 | Web push kütüphanesi ve anahtarlar | `web-push` paketi (MPL-2.0; VAPID imzası + şifreli gönderim). Ortam: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (`npm run push:keys`). `PUSH_TRANSPORT=log\|webpush`: geliştirme/testte `log`, üretimde `webpush`. Genel anahtar tanımlı değilse profilde "bu sunucuda kapalı" açıklaması görünür |
+| 176 | Push içeriği | Push yalnızca bildirimin rastgele kimliğini ve genel bir metni ("JAPAR Akademi – Yeni bildiriminiz var") taşır; tarayıcıya şifreli gider. Dokununca `/api/notifications/<kimlik>` açılır: oturum ve sahiplik kontrol edilir, bildirim okundu sayılır, ilgili ekrana gidilir; kimlik kişinin değilse bildirim listesi açılır |
+| 177 | Tercih = cihaz aboneliği | Ayrı `notification_prefs` tablosu yok. Profil → "Bu cihazda bildirimler" aç/kapat; kapatınca abonelik tarayıcıda ve sunucuda silinir. `push_subscriptions`: kullanıcı, oturum, endpoint (tekil), şifreleme anahtarları, kısa tarayıcı bilgisi, son başarılı gönderim, hata sayısı. Endpoint ve anahtarlar denetim kaydına maskeli yazılır. Aynı tarayıcıda başka kişi abone olursa adres yeni kişiye geçer |
+| 178 | Ortak cihaz ve çıkış | Ortak cihaz oturumunda bölüm görünmez, sunucu aboneliği reddeder (`shared_device`). Abonelik oturuma bağlıdır (`ON DELETE CASCADE`): çıkışta ve oturum sona erince silinir |
+| 179 | Gönderim | `notify()` yeni bildirim için olayla aynı transaction'da `push_outbox` satırı yazar (tür `notify.push_events` listesindeyse ve kişinin aboneliği varsa). Tazelenen bildirim ikinci push açmaz. `push.dispatch` dakikada bir çalışır; gönderim anında okunmuş bildirim atlanır. 404/410 → abonelik silinir; 429/5xx/ağ hatası → üstel beklemeyle `push.max_attempts` kez; diğer 4xx → hemen bırakılır. Bir cihaza ulaşan bildirim gönderilmiş sayılır. Yalnızca bilinen push servislerine (Google, Mozilla, Apple, Microsoft) gönderilir |
+| 180 | Push parametreleri | `notify.push_events` (varsayılan bütün türler; Parametreler ekranında olay seçicisi), `push.max_attempts` (3), `push.ttl_hours` (24; cihaz kapalıysa push servisinin bekleteceği süre); hepsi sysadmin |
+| 181 | Desteklenmeyen durumlar | Tarayıcı desteklemiyorsa, iPhone'da uygulama ana ekrana eklenmemişse (iOS 16.4+ yalnızca kurulu PWA'da push alır) ya da izin reddedilmişse düğme yerine ne yapılacağını anlatan açıklama gösterilir |
+| 182 | KVKK ve saklama | Anonimleştirme oturumları sildiği için abonelikler de silinir (`app_anonymize_people` değişmedi). Aktif olmayan personele push yazılmaz. Eski push kayıtları bildirim saklama süresiyle (`notify.retention_days`) silinir |
+| 183 | Dış servisler | Google, Mozilla, Apple ve Microsoft push servislerine yalnızca şifreli kimlik ve genel metin gider (karar #110). Sunucudan giden HTTPS trafiği açıktır (ufw yalnızca geleni sınırlar); CSP değişmez |
+| 184 | Service worker | `sw.ts`'e `push` (bildirimi göster; aynı bildirim tek kart) ve `notificationclick` (yeni pencere açar; açık sekme yönlendirilmez — kişi sınavda olabilir) olayları eklendi; önbellek kuralları değişmedi |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

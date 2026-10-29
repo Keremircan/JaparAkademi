@@ -36,7 +36,17 @@ const serverEnvSchema = z.object({
   GRAPH_CLIENT_SECRET: z.preprocess((v) => (v === "" ? undefined : v), z.string().optional()),
   /** Gönderen posta kutusu (M365 kiracısında Mail.Send izni verilmiş adres). */
   MAIL_FROM: z.preprocess((v) => (v === "" ? undefined : v), z.email().optional()),
+  /** Web push: geliştirme/testte "log" (gönderilmez); canlı ortamda "webpush" (karar #175). */
+  PUSH_TRANSPORT: z.enum(["log", "webpush"]).default("log"),
+  /** VAPID anahtarları (`npm run push:keys`). Genel anahtar tarayıcıya verilir; boşsa push bölümü kapalı görünür. */
+  VAPID_PUBLIC_KEY: z.preprocess((v) => (v === "" ? undefined : v), z.string().regex(/^[A-Za-z0-9_-]{80,100}$/, "base64url VAPID genel anahtarı olmalı").optional()),
+  VAPID_PRIVATE_KEY: z.preprocess((v) => (v === "" ? undefined : v), z.string().regex(/^[A-Za-z0-9_-]{40,50}$/, "base64url VAPID gizli anahtarı olmalı").optional()),
+  /** Push servislerinin sorun olduğunda ulaşacağı adres (mailto: ya da https:). */
+  VAPID_SUBJECT: z.preprocess((v) => (v === "" ? undefined : v), z.string().regex(/^(mailto:|https:\/\/)/, "mailto: ya da https:// ile başlamalı").optional()),
 }).refine(
+  (e) => e.PUSH_TRANSPORT !== "webpush" || (!!e.VAPID_PUBLIC_KEY && !!e.VAPID_PRIVATE_KEY && !!e.VAPID_SUBJECT),
+  { message: "PUSH_TRANSPORT=webpush için VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY ve VAPID_SUBJECT zorunlu", path: ["PUSH_TRANSPORT"] },
+).refine(
   (e) => e.MAIL_TRANSPORT !== "graph" || (!!e.GRAPH_TENANT_ID && !!e.GRAPH_CLIENT_ID && !!e.GRAPH_CLIENT_SECRET && !!e.MAIL_FROM),
   { message: "MAIL_TRANSPORT=graph için GRAPH_TENANT_ID, GRAPH_CLIENT_ID, GRAPH_CLIENT_SECRET ve MAIL_FROM zorunlu", path: ["MAIL_TRANSPORT"] },
 );
