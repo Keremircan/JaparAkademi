@@ -15,6 +15,7 @@ import { secondSignatureQueue } from "@/server/services/practice";
 import { decisionQueue, readinessQueue, type PendingPerson } from "@/server/services/readiness";
 import { hasRole } from "@/server/authz/policy";
 import { listClassroomSessions } from "@/server/services/classroom";
+import { OwnerActingNotice } from "@/features/admin/owner-notice";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("content.queue");
@@ -49,6 +50,9 @@ async function Content() {
   return (
     <section className="max-w-4xl">
       <PageHeader title={t("title")} description={t("description")} back={{ href: "/manage", label: tNav("title") }} />
+      <div className="mb-4">
+        <OwnerActingNotice actor={access.actor} permission="content.approve_ohs" role="ohs_specialist" />
+      </div>
       {classroom.length > 0 && (
         <section aria-labelledby="classroom-heading" className="mb-8">
           <h2 id="classroom-heading" className="mb-3 text-lg font-semibold">

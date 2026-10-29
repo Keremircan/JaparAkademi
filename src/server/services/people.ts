@@ -1,14 +1,11 @@
 import { and, asc, count, eq, ilike, inArray, ne, or, type SQL } from "drizzle-orm";
-import { getAuth } from "@/server/auth/auth";
-import { generateTempPassword } from "@/server/auth/temp-password";
 import type { Actor } from "@/server/authz/actor";
-import { assertCan, assertUser, hasRole } from "@/server/authz/policy";
+import { assertCan, assertUser, hasRole, isOwner } from "@/server/authz/policy";
 import type { Role } from "@/server/authz/roles";
 import { inOrgScope, orgScopeFor } from "@/server/authz/scope";
 import { decryptNationalId, protectNationalId } from "@/server/crypto/national-id";
 import { db } from "@/server/db/client";
 import {
-  accounts,
   dataAccessLog,
   orgUnits,
   personnel,
@@ -21,8 +18,10 @@ import {
 import { withActor } from "@/server/db/with-actor";
 import { syncAssignmentForPerson } from "@/server/services/assignments/engine";
 import { ForbiddenError, NotFoundError, uniqueViolation, ValidationError } from "@/server/errors";
-import { createAccount } from "@/server/services/accounts";
-import { getSetting } from "@/server/services/settings";
+import { insertAccount, prepareInvitedAccount } from "@/server/services/accounts";
+import { issueInvitation, type IssuedInvite } from "@/server/services/invitations";
+import { type InviteChannel, normalizePhone } from "@/server/state/invitations";
+import { activeRoleCount, assertLoginEmailUsable, EMAIL_LOGIN_ROLES } from "@/server/services/roles";
 
 /**
  * Personel yönetimi (SPEC 4.1, ekran 15). İK ve sistem yöneticisi.
@@ -216,32 +215,47 @@ function cleanOptional(value: string | null | undefined): string | null {
   return v ? v : null;
 }
 
-/** Yeni personel (elle). Geçici şifre döner; ekranda bir kez gösterilir. */
+/** Telefon `+90…` biçiminde saklanır (karar #188); çözülemeyen numara hata verir. */
+function cleanPhone(value: string | null | undefined): string | null {
+  const raw = cleanOptional(value);
+  if (!raw) return null;
+  const phone = normalizePhone(raw);
+  if (!phone) throw new ValidationError("phone_invalid");
+  return phone;
+}
+
+/**
+ * Yeni personel (elle). Hesap şifresiz açılır ve seçilen kanaldan davet verilir (kararlar #185–188);
+ * kişi şifresini etkinleştirirken kendisi belirler. Davet bilgisi (bağlantı/kod) yalnızca bu çağrının sonucunda döner.
+ */
 export async function createPerson(
   actor: Actor,
-  input: PersonInput & { sicilNo: string },
-): Promise<{ userId: string; tempPassword: string }> {
+  input: PersonInput & { sicilNo: string; channel: InviteChannel },
+): Promise<IssuedInvite> {
   assertCan(actor, "people.manage");
   await assertActivePosition(input.positionId);
   const nationalId = protectOrThrow(input.nationalId);
-  const minLength = await getSetting("auth.password_min_length");
-  const tempPassword = generateTempPassword(minLength, input.sicilNo.trim());
+  const phone = cleanPhone(input.phone);
+  const prepared = await prepareInvitedAccount({
+    sicilNo: input.sicilNo,
+    fullName: input.fullName,
+    positionId: input.positionId ?? null,
+    nationalId,
+    phone,
+    email: cleanOptional(input.email)?.toLowerCase() ?? null,
+    employmentType: input.employmentType,
+    hireDate: input.hireDate || null,
+    source: "manual",
+    trainingRequired: input.trainingRequired,
+  });
+  const [existing] = await db().select({ id: users.id }).from(users).where(eq(users.username, prepared.sicilNo)).limit(1);
+  if (existing) throw new ValidationError("sicil_taken");
+  const createdBy = actor.kind === "user" ? actor.userId : null;
   try {
-    const { userId } = await createAccount(actor, {
-      sicilNo: input.sicilNo,
-      fullName: input.fullName,
-      password: tempPassword,
-      mustChangePassword: true,
-      positionId: input.positionId ?? null,
-      nationalId,
-      phone: cleanOptional(input.phone),
-      email: cleanOptional(input.email)?.toLowerCase() ?? null,
-      employmentType: input.employmentType,
-      hireDate: input.hireDate || null,
-      source: "manual",
-      trainingRequired: input.trainingRequired,
+    return await withActor(actor, async (tx) => {
+      const userId = await insertAccount(tx, prepared, createdBy);
+      return issueInvitation(tx, { userId, channel: input.channel, createdBy });
     });
-    return { userId, tempPassword };
   } catch (err) {
     if (/national_?id/i.test(uniqueViolation(err) ?? "")) throw new ValidationError("national_id_taken");
     throw err;
@@ -255,6 +269,7 @@ export async function updatePerson(actor: Actor, userId: string, input: PersonIn
   const fullName = input.fullName.trim().replace(/\s+/g, " ");
   if (fullName.length < 2) throw new ValidationError("invalid_full_name");
   const nationalId = protectOrThrow(input.nationalId);
+  const phone = cleanPhone(input.phone);
 
   try {
     await withActor(actor, async (tx) => {
@@ -263,7 +278,7 @@ export async function updatePerson(actor: Actor, userId: string, input: PersonIn
         .set({
           fullName,
           positionId: input.positionId ?? null,
-          phone: cleanOptional(input.phone),
+          phone,
           email: cleanOptional(input.email)?.toLowerCase() ?? null,
           employmentType: input.employmentType,
           hireDate: input.hireDate || null,
@@ -276,6 +291,9 @@ export async function updatePerson(actor: Actor, userId: string, input: PersonIn
         .returning({ userId: personnel.userId });
       if (updated.length === 0) throw new NotFoundError("person");
       await tx.update(users).set({ name: fullName }).where(eq(users.id, userId));
+      // E-postayla giriş yapan rollerde e-posta kayıtlı ve tekil kalmalı (karar #189)
+      const roles = await tx.select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, userId));
+      if (roles.some((r) => (EMAIL_LOGIN_ROLES as readonly string[]).includes(r.role))) await assertLoginEmailUsable(userId, tx);
       // Pozisyon değiştiyse atama yenilenir (FG-3.3); eğitimi gerekene plan atanır (FG-3.2)
       await syncAssignmentForPerson(tx, userId, actor.kind === "user" ? actor.userId : null);
     });
@@ -296,6 +314,14 @@ export async function setPersonStatus(
     throw new ValidationError("cannot_deactivate_self");
   }
   if (input.status === "terminated" && !input.endDate) throw new ValidationError("end_date_required");
+  if (input.status !== "active") {
+    const own = await db().select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, userId));
+    // Son aktif üst yönetici pasife alınamaz (karar #193); üst yöneticiyi yalnızca üst yönetici pasife alır
+    if (own.some((r) => r.role === "owner")) {
+      if (!isOwner(actor) && actor.kind !== "system") throw new ValidationError("owner_only");
+      if ((await activeRoleCount("owner")) <= 1) throw new ValidationError("last_owner");
+    }
+  }
 
   await withActor(actor, async (tx) => {
     const updated = await tx
@@ -309,38 +335,6 @@ export async function setPersonStatus(
     if (updated.length === 0) throw new NotFoundError("person");
     if (input.status !== "active") await tx.delete(sessions).where(eq(sessions.userId, userId));
   });
-}
-
-/**
- * İK şifre sıfırlaması: yeni geçici şifre üretir, ilk girişte değiştirme zorunlu olur,
- * kilit kalkar, tüm oturumlar kapanır. Kendi şifresi için profil sayfası kullanılır.
- */
-export async function resetPassword(actor: Actor, userId: string): Promise<{ tempPassword: string }> {
-  assertCan(actor, "people.manage");
-  if (actor.kind === "user" && actor.userId === userId) throw new ValidationError("cannot_reset_self");
-  const [person] = await db()
-    .select({ sicilNo: personnel.sicilNo, status: personnel.status })
-    .from(personnel)
-    .where(eq(personnel.userId, userId))
-    .limit(1);
-  if (!person) throw new NotFoundError("person");
-
-  const minLength = await getSetting("auth.password_min_length");
-  const tempPassword = generateTempPassword(minLength, person.sicilNo);
-  const hash = await (await getAuth().$context).password.hash(tempPassword);
-
-  await withActor(actor, async (tx) => {
-    await tx
-      .update(accounts)
-      .set({ password: hash })
-      .where(and(eq(accounts.userId, userId), eq(accounts.providerId, "credential")));
-    await tx
-      .update(personnel)
-      .set({ mustChangePassword: true, failedLoginCount: 0, lockedUntil: null })
-      .where(eq(personnel.userId, userId));
-    await tx.delete(sessions).where(eq(sessions.userId, userId));
-  });
-  return { tempPassword };
 }
 
 /** Tam TC kimlik numarasını gösterir. Yalnızca İK; her görüntüleme data_access_log'a yazılır (KVKK). */

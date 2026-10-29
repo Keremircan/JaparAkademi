@@ -5,7 +5,7 @@ import { db } from "@/server/db/client";
 import { importBatches, importRows, personnel } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { ForbiddenError, isImmutableViolation } from "@/server/errors";
-import { signIn } from "@/server/services/auth";
+import { activateWithToken, verifyInviteCode } from "@/server/services/invitations";
 import {
   buildImportTemplate,
   cancelImport,
@@ -31,7 +31,7 @@ async function setup() {
 describe("FG-1.4 Excel personel aktarımı", () => {
   it("doğrulama: geçerli ve hatalı satırları kaydeder; mevcut sicil güncelleme olarak işaretlenir", async () => {
     const { hr } = await setup();
-    await createPerson(hr.actor, { sicilNo: "7002", fullName: "Var Olan", employmentType: "employee", trainingRequired: false });
+    await createPerson(hr.actor, { sicilNo: "7002", fullName: "Var Olan", employmentType: "employee", trainingRequired: false, channel: "print" });
     const buffer = await buildPeopleXlsx([
       ["7001", "Ayşe Yılmaz", "Üretim", "Pres Operatörü", "05.01.2026", "Mavi", "10000000146"],
       ["7002", "Var Olan Güncel", "uretim", "PRES-OP", "06.01.2026", "Mavi"],
@@ -53,9 +53,9 @@ describe("FG-1.4 Excel personel aktarımı", () => {
     expect(rows[0]!.nationalIdMasked).toBe("100******46");
   });
 
-  it("onay: yeni hesaplar açılır (geçici şifreyle giriş), mevcutlar güncellenir, hatalı satır atlanır", async () => {
+  it("onay: yeni hesaplar açılır (basılı davet), mevcutlar güncellenir, hatalı satır atlanır", async () => {
     const { org, hr } = await setup();
-    const existing = await createPerson(hr.actor, { sicilNo: "7102", fullName: "Var Olan", employmentType: "employee", trainingRequired: false });
+    const existing = await createPerson(hr.actor, { sicilNo: "7102", fullName: "Var Olan", employmentType: "employee", trainingRequired: false, channel: "print" });
     const buffer = await buildPeopleXlsx([
       ["7101", "Yeni Kişi", "Üretim", "Pres Operatörü", "05.01.2026", "Mavi"],
       ["7102", "Var Olan Güncel", "Üretim", "Pres Operatörü", "06.01.2026", "Mavi"],
@@ -65,11 +65,13 @@ describe("FG-1.4 Excel personel aktarımı", () => {
     const result = await commitImport(hr.actor, batchId);
 
     expect(result).toMatchObject({ created: 1, updated: 1, unchanged: 0 });
-    expect(result.credentials).toHaveLength(1);
-    expect(result.credentials[0]).toMatchObject({ sicilNo: "7101", fullName: "Yeni Kişi", positionName: "Pres Operatörü" });
+    expect(result.invites).toHaveLength(1);
+    expect(result.invites[0]).toMatchObject({ sicilNo: "7101", fullName: "Yeni Kişi", positionName: "Pres Operatörü", channel: "print" });
 
-    const login = await signIn({ sicilNo: "7101", password: result.credentials[0]!.tempPassword, sharedDevice: false }, meta());
-    expect(login).toMatchObject({ ok: true, mustChangePassword: true });
+    // Karar #185: kağıttaki kodla etkinleştirilir, kişi şifresini kendisi belirler
+    const { token } = await verifyInviteCode({ sicilNo: "7101", code: result.invites[0]!.code! }, meta());
+    const login = await activateWithToken({ token, newPassword: "Pres-Hatti-2026", sharedDevice: false }, meta());
+    expect(login).toMatchObject({ ok: true, mustChangePassword: false });
 
     const [created] = await db().select().from(personnel).where(eq(personnel.sicilNo, "7101"));
     expect(created).toMatchObject({ source: "excel", trainingRequired: true, positionId: org.positions.presOp, hireDate: "2026-01-05" });
@@ -91,7 +93,7 @@ describe("FG-1.4 Excel personel aktarımı", () => {
     expect(p?.trainingRequired).toBe(false);
 
     const second = await validateImport(hr.actor, { fileName: "a.xlsx", buffer, mode: "existing_staff" });
-    expect(await commitImport(hr.actor, second.batchId)).toMatchObject({ created: 0, updated: 0, unchanged: 1, credentials: [] });
+    expect(await commitImport(hr.actor, second.batchId)).toMatchObject({ created: 0, updated: 0, unchanged: 1, invites: [] });
   });
 
   it("onaylanan aktarım tekrar onaylanamaz ve satırları değiştirilemez", async () => {
@@ -136,7 +138,7 @@ describe("FG-1.4 Excel personel aktarımı", () => {
 
   it("başka personele kayıtlı TC satırı hatalıdır", async () => {
     const { hr } = await setup();
-    await createPerson(hr.actor, { sicilNo: "7501", fullName: "TC Sahibi", nationalId: "10000000146", employmentType: "employee", trainingRequired: false });
+    await createPerson(hr.actor, { sicilNo: "7501", fullName: "TC Sahibi", nationalId: "10000000146", employmentType: "employee", trainingRequired: false, channel: "print" });
     const buffer = await buildPeopleXlsx([["7502", "Başka", "Üretim", "Pres Operatörü", "05.01.2026", "Mavi", "10000000146"]]);
     const { batchId } = await validateImport(hr.actor, { fileName: "a.xlsx", buffer, mode: "new_hires" });
     const { rows } = await getImportBatch(hr.actor, batchId);

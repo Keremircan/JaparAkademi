@@ -12,6 +12,7 @@ import { AppError } from "@/server/errors";
 import { toActor } from "@/server/services/auth";
 import { assetsInfo } from "@/server/services/media";
 import { getPracticalExam } from "@/server/services/practice";
+import { OwnerActingNotice } from "@/features/admin/owner-notice";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("practice.form");
@@ -39,7 +40,13 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
   const t = await getTranslations("practice.form");
   const isTrainee = view.trainee.userId === user.userId;
   const back = isTrainee ? { href: "/learn", label: t("backLearn") } : { href: "/trainer", label: t("backTrainer") };
-  const header = <PageHeader title={view.title} description={t("subtitle", { name: view.trainee.name, n: view.attemptNo })} back={back} />;
+  const header = (
+    <>
+      <PageHeader title={view.title} description={t("subtitle", { name: view.trainee.name, n: view.attemptNo })} back={back} />
+      {view.can.edit && <OwnerActingNotice actor={toActor(user)} permission="practice.mark" role="trainer" />}
+      {view.can.secondSign && <OwnerActingNotice actor={toActor(user)} permission="practice.second_signature" role="section_manager" />}
+    </>
+  );
 
   if (view.can.edit) {
     const photos = await assetsInfo(view.photoAssetIds);

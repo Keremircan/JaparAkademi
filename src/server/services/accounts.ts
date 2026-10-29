@@ -1,4 +1,5 @@
 import { syncAssignmentForPerson } from "@/server/services/assignments/engine";
+import { randomBytes } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { getAuth, SICIL_PATTERN, syntheticEmail } from "@/server/auth/auth";
 import { checkPassword } from "@/server/auth/password-policy";
@@ -49,6 +50,20 @@ export async function prepareAccount(input: CreateAccountInput, minPasswordLengt
   const rest: Partial<CreateAccountInput> = { ...input };
   delete rest.password;
   return { ...(rest as Omit<CreateAccountInput, "password">), sicilNo, fullName, passwordHash };
+}
+
+/**
+ * Davetle açılacak hesap (iş paketi 2.6b): şifre kimsenin bilmediği rastgele bir değerdir; kişi etkinleştirirken
+ * kendi şifresini belirler. Şifre değiştirme zorunluluğu yoktur.
+ */
+export async function prepareInvitedAccount(input: Omit<CreateAccountInput, "password" | "mustChangePassword">): Promise<PreparedAccount> {
+  const sicilNo = input.sicilNo.trim();
+  const fullName = input.fullName.trim();
+  if (!SICIL_PATTERN.test(sicilNo)) throw new ValidationError("invalid_sicil");
+  if (fullName.length < 2) throw new ValidationError("invalid_full_name");
+  const ctx = await getAuth().$context;
+  const passwordHash = await ctx.password.hash(randomBytes(32).toString("base64url"));
+  return { ...input, sicilNo, fullName, mustChangePassword: false, passwordHash };
 }
 
 /** Hazırlanmış hesabı verilen transaction içinde yazar (users + credential account + personnel + roller). */

@@ -97,6 +97,8 @@ export const SETTINGS = {
   "push.ttl_hours": def({ schema: positiveInt.max(24 * 7), default: 24, managedBy: SYS }),
   "auth.reset_link_minutes": def({ schema: positiveInt.max(24 * 60), default: 60, managedBy: SYS }),
   "auth.reset_max_per_hour": def({ schema: positiveInt.max(100), default: 3, managedBy: SYS }),
+  "auth.invite_valid_hours": def({ schema: positiveInt.max(24 * 30), default: 72, managedBy: SYS }),
+  "auth.invite_code_attempts": def({ schema: positiveInt.max(20), default: 5, managedBy: SYS }),
 
   // Raporlar (SPEC 10.1, karar #96)
   "reports.max_rows": def({ schema: positiveInt.max(100_000), default: 10_000, managedBy: SYS }),

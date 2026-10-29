@@ -2,6 +2,7 @@ import { and, asc, desc, eq, inArray, isNotNull, ne, or, sql } from "drizzle-orm
 import { alias } from "drizzle-orm/pg-core";
 import type { Actor, UserActor } from "@/server/authz/actor";
 import { assertUser, hasRole } from "@/server/authz/policy";
+import { recordOwnerAction } from "@/server/services/owner-actions";
 import { isPersonInScope } from "@/server/authz/scope";
 import { db, type DbOrTx, type Tx } from "@/server/db/client";
 import {
@@ -232,6 +233,7 @@ export async function markTask(
     if (!(await canEvaluate(actor, a, tx))) throw new ForbiddenError("practice.mark");
     if (a.status !== "active" || !["available", "in_progress", "review_required"].includes(am.status)) throw new ValidationError("practice_module_closed");
     if (!am.pinnedTaskIds.includes(taskId)) throw new NotFoundError("task");
+    await recordOwnerAction(tx, actor, "practice.mark", { type: "assignment_module", id: am.id });
 
     // Aynı göreve eşzamanlı işaretleme sırayı bozmasın
     await tx.select({ id: assignmentModules.id }).from(assignmentModules).where(eq(assignmentModules.id, am.id)).for("update");
@@ -608,6 +610,7 @@ export async function signPracticalExam(
     const signed: ResultRow = { ...r, criteria, note: cleanNote(input.note), photoAssetIds: photos, score: result.score, passed: result.passed, failReason: result.failReason };
     const hash = subjectHash(signedSubject(signed, a.userId));
     const base = { subjectType: SUBJECT, subjectId: r.id, hash, capturedBy: actor.userId, ip: input.ip, userAgent: input.userAgent };
+    await recordOwnerAction(tx, actor, "practice.mark", { type: SUBJECT, id: r.id });
     const traineeSig = await createSignature(tx, { ...base, image: traineeImage, signerUserId: a.userId, role: "trainee" });
     const trainerSig = await createSignature(tx, { ...base, image: trainerImage, signerUserId: actor.userId, role: "trainer" });
     await tx
@@ -644,6 +647,7 @@ async function awaitingSecond(tx: Tx, actor: UserActor, id: string) {
   if (row.r.status !== "awaiting_second_signature") throw new ValidationError("practical_not_awaiting");
   if (row.a.userId === actor.userId || row.r.evaluatorId === actor.userId) throw new ForbiddenError("self_action");
   if (!(await canSecondSign(actor, row.a, row.r, tx))) throw new ForbiddenError("practice.second_signature");
+  await recordOwnerAction(tx, actor, "practice.second_signature", { type: SUBJECT, id: row.r.id });
   return row;
 }
 

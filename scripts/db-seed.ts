@@ -1,6 +1,7 @@
 /**
  * Başlangıç verisi (tekrar çalıştırılabilir; var olan kayıtlar atlanır).
- *  - İlk sistem yöneticisi: SEED_ADMIN_SICIL / SEED_ADMIN_PASSWORD (ilk girişte şifre değiştirmek zorunda)
+ *  - İlk sistem yöneticisi: SEED_ADMIN_SICIL / SEED_ADMIN_PASSWORD (ilk girişte şifre değiştirmek zorunda);
+ *    sistemde üst yönetici yoksa bu hesap aynı zamanda üst yönetici (owner) olur (karar #193)
  *  - Yalnızca geliştirme:
  *      · örnek organizasyon ağacı ve pozisyonlar (Üretim → Pres Hattı → Pres Operatörü vb.)
  *      · her rol için bir demo kullanıcı (SEED_DEMO_PASSWORD, şifre değiştirme zorunlu değil) ve pozisyonları
@@ -23,6 +24,7 @@ import { withActor } from "../src/server/db/with-actor";
 import { parseEnv } from "../src/server/env";
 import { ValidationError } from "../src/server/errors";
 import { createAccount } from "../src/server/services/accounts";
+import { bootstrapOwner } from "../src/server/services/roles";
 import { createContent, createTag, saveDraft, submitForApproval } from "../src/server/services/content";
 import { createDraft, publishText } from "../src/server/services/legal";
 import { createModule, saveTasks, setModuleContents } from "../src/server/services/modules";
@@ -490,6 +492,7 @@ async function main() {
     roles: ["sysadmin"],
     mustChangePassword: true,
   });
+  if ((await bootstrapOwner(actor, cfg.SEED_ADMIN_SICIL)) === "granted") console.log(`✓ ${cfg.SEED_ADMIN_SICIL} üst yönetici (owner)`);
 
   if (!isDev) return;
   await seedOrg();

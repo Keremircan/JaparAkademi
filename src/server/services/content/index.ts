@@ -1,7 +1,8 @@
 import { and, asc, count, desc, eq, exists, inArray, isNotNull, isNull, max, or, sql, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { Actor } from "@/server/authz/actor";
-import { assertNotSelf, assertUser, can, hasRole } from "@/server/authz/policy";
+import { assertNotSelf, assertUser, can, hasOwnRole, hasRole } from "@/server/authz/policy";
+import { assertDifferentApprover, recordOwnerAction } from "@/server/services/owner-actions";
 import { db, type DbOrTx, type Tx } from "@/server/db/client";
 import {
   approvals,
@@ -615,7 +616,8 @@ export async function submitForApproval(actor: Actor, contentId: string, input: 
     const result = onSubmit({
       isOhs: content.isOhs,
       submitterCanApproveSection: canApproveSection(access, content),
-      submitterIsOhsSpecialist: hasRole(actor, "ohs_specialist"),
+      // Üst yönetici İSG kısayolundan yararlanmaz (karar #196): İSG adımı ayrıca onaylanır
+      submitterIsOhsSpecialist: hasOwnRole(actor, "ohs_specialist"),
     });
 
     const now = new Date();
@@ -664,6 +666,7 @@ async function loadPendingVersion(tx: Tx, actor: Actor, versionId: string) {
   const allowed = step === "section" ? canApproveSection(access, content) : canApproveOhs(access);
   if (!allowed) throw new ForbiddenError(step === "section" ? "content.approve_section" : "content.approve_ohs");
   if (version.submittedBy) assertNotSelf(actor, version.submittedBy);
+  if (step === "ohs") await assertDifferentApprover(tx, actor, { type: "content_version", id: version.id, since: version.submittedAt });
   return { version, content, step };
 }
 
@@ -671,6 +674,7 @@ export async function approveVersion(actor: Actor, versionId: string, comment?: 
   assertUser(actor);
   return withActor(actor, async (tx) => {
     const { version, content, step } = await loadPendingVersion(tx, actor, versionId);
+    if (step === "ohs") await recordOwnerAction(tx, actor, "content.approve_ohs", { type: "content_version", id: version.id });
     await tx.insert(approvals).values({
       subjectType: "content_version",
       subjectId: version.id,
@@ -697,6 +701,7 @@ export async function rejectVersion(actor: Actor, versionId: string, comment: st
   if (reason.length > 2000) throw new ValidationError("comment_too_long");
   await withActor(actor, async (tx) => {
     const { version, step } = await loadPendingVersion(tx, actor, versionId);
+    if (step === "ohs") await recordOwnerAction(tx, actor, "content.approve_ohs", { type: "content_version", id: version.id });
     await resolveNotifications(tx, `content:${version.id}`);
     await tx.insert(approvals).values({
       subjectType: "content_version",

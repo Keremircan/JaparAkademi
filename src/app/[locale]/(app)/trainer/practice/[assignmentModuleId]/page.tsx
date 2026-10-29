@@ -9,6 +9,7 @@ import { requireUser } from "@/server/auth/current-user";
 import { AppError } from "@/server/errors";
 import { toActor } from "@/server/services/auth";
 import { practiceModule } from "@/server/services/practice";
+import { OwnerActingNotice } from "@/features/admin/owner-notice";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("practice");
@@ -41,6 +42,7 @@ async function Content({ params }: { params: Promise<{ assignmentModuleId: strin
         description={`${view.trainee.name}${view.trainee.positionName ? ` · ${view.trainee.positionName}` : ""}`}
         back={{ href: "/trainer", label: t("backTrainer") }}
       />
+      <OwnerActingNotice actor={toActor(user)} permission="practice.mark" role="trainer" />
       <p className="text-muted-foreground" role="status">
         {t("progress", { done: view.independent, total: view.tasks.length })}
         {view.status === "completed" && ` · ${t("moduleDone")}`}

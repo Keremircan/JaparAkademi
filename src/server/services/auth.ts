@@ -1,10 +1,11 @@
-import { and, count, eq, gt, ne } from "drizzle-orm";
+import { and, count, eq, gt, inArray, notInArray, sql } from "drizzle-orm";
 import { getAuth } from "@/server/auth/auth";
 import { checkPassword, type PasswordIssue } from "@/server/auth/password-policy";
 import { systemActor, type UserActor } from "@/server/authz/actor";
-import { isRole, type Role } from "@/server/authz/roles";
+import { effectiveRoles, isRole, type Role } from "@/server/authz/roles";
 import { db } from "@/server/db/client";
 import { loginAttempts, personnel, sessions, userRoles, users } from "@/server/db/schema";
+import { EMAIL_LOGIN_ROLES } from "@/server/services/roles";
 import { withActor } from "@/server/db/with-actor";
 import { ValidationError } from "@/server/errors";
 import { logger } from "@/server/logger";
@@ -22,7 +23,7 @@ export type SignInResult =
 
 type AttemptResult = (typeof loginAttempts.$inferInsert)["result"];
 
-async function recordAttempt(
+export async function recordAttempt(
   sicilInput: string,
   result: AttemptResult,
   meta: RequestMeta,
@@ -44,8 +45,35 @@ function userActorStub(userId: string): UserActor {
   return { kind: "user", userId, roles: [] };
 }
 
+/** Aynı IP'den son `auth.ip_window_min` içinde `auth.ip_max_failures` başarısız deneme (giriş veya davet kodu) var mı. */
+export async function isIpBlocked(ip: string | null): Promise<boolean> {
+  if (!ip) return false;
+  const cfg = await getSettings(["auth.ip_max_failures", "auth.ip_window_min"]);
+  const since = new Date(Date.now() - cfg["auth.ip_window_min"] * 60_000);
+  const [row] = await db()
+    .select({ n: count() })
+    .from(loginAttempts)
+    .where(and(eq(loginAttempts.ip, ip), notInArray(loginAttempts.result, ["success", "activated"]), gt(loginAttempts.at, since)));
+  return (row?.n ?? 0) >= cfg["auth.ip_max_failures"];
+}
+
 /**
- * Sicil no + şifre ile giriş (SPEC 11.4).
+ * Girişte yazılan değeri sicil no'ya çevirir. `@` içeriyorsa ve e-postayla giriş rolündeki (owner, sysadmin, hr)
+ * tek bir kişiye aitse o kişinin sicili döner (karar #189); değilse null (bilinmeyen kullanıcı gibi davranılır).
+ */
+async function resolveLoginId(input: string): Promise<string | null> {
+  if (!input.includes("@")) return input;
+  const email = input.toLowerCase();
+  const rows = await db()
+    .selectDistinct({ sicilNo: personnel.sicilNo })
+    .from(personnel)
+    .innerJoin(userRoles, eq(userRoles.userId, personnel.userId))
+    .where(and(sql`lower(${personnel.email}) = ${email}`, inArray(userRoles.role, [...EMAIL_LOGIN_ROLES])));
+  return rows.length === 1 ? rows[0]!.sicilNo : null;
+}
+
+/**
+ * Sicil no (yöneticide e-posta da olabilir) + şifre ile giriş (SPEC 11.4).
  * Sıra: IP sınırı → hesap kilidi → şifre doğrulama → hesap durumu.
  * Başarılı olursa istemciye yazılacak Set-Cookie başlıklarını döner.
  */
@@ -53,25 +81,19 @@ export async function signIn(
   input: { sicilNo: string; password: string; sharedDevice: boolean },
   meta: RequestMeta,
 ): Promise<SignInResult> {
-  const sicilNo = input.sicilNo.trim();
-  const cfg = await getSettings([
-    "auth.lockout_attempts",
-    "auth.lockout_min",
-    "auth.ip_max_failures",
-    "auth.ip_window_min",
-  ]);
+  const loginInput = input.sicilNo.trim();
+  const cfg = await getSettings(["auth.lockout_attempts", "auth.lockout_min"]);
   const now = new Date();
 
-  if (meta.ip) {
-    const since = new Date(now.getTime() - cfg["auth.ip_window_min"] * 60_000);
-    const [row] = await db()
-      .select({ n: count() })
-      .from(loginAttempts)
-      .where(and(eq(loginAttempts.ip, meta.ip), ne(loginAttempts.result, "success"), gt(loginAttempts.at, since)));
-    if ((row?.n ?? 0) >= cfg["auth.ip_max_failures"]) {
-      await recordAttempt(sicilNo, "rate_limited", meta);
-      return { ok: false, reason: "rate_limited" };
-    }
+  if (await isIpBlocked(meta.ip)) {
+    await recordAttempt(loginInput, "rate_limited", meta);
+    return { ok: false, reason: "rate_limited" };
+  }
+
+  const sicilNo = await resolveLoginId(loginInput);
+  if (!sicilNo) {
+    await recordAttempt(loginInput, "unknown_user", meta);
+    return { ok: false, reason: "invalid_credentials" };
   }
 
   const [person] = await db()
@@ -88,12 +110,12 @@ export async function signIn(
     .limit(1);
 
   if (!person) {
-    await recordAttempt(sicilNo, "unknown_user", meta);
+    await recordAttempt(loginInput, "unknown_user", meta);
     return { ok: false, reason: "invalid_credentials" };
   }
 
   if (person.lockedUntil && person.lockedUntil > now) {
-    await recordAttempt(sicilNo, "locked", meta, person.userId);
+    await recordAttempt(loginInput, "locked", meta, person.userId);
     return { ok: false, reason: "locked", lockedUntil: person.lockedUntil };
   }
 
@@ -111,7 +133,7 @@ export async function signIn(
         .set({ failedLoginCount: lock ? 0 : failed, lockedUntil })
         .where(eq(personnel.userId, person.userId)),
     );
-    await recordAttempt(sicilNo, "bad_password", meta, person.userId);
+    await recordAttempt(loginInput, "bad_password", meta, person.userId);
     return lock && lockedUntil
       ? { ok: false, reason: "locked", lockedUntil }
       : { ok: false, reason: "invalid_credentials" };
@@ -122,7 +144,7 @@ export async function signIn(
   if (person.status !== "active") {
     // Şifre doğru ama hesap aktif değil: açılan oturum hemen kapatılır.
     await withActor(authActor, (tx) => tx.delete(sessions).where(eq(sessions.token, token)));
-    await recordAttempt(sicilNo, "inactive", meta, person.userId);
+    await recordAttempt(loginInput, "inactive", meta, person.userId);
     return { ok: false, reason: "inactive" };
   }
 
@@ -136,7 +158,7 @@ export async function signIn(
       .set({ sharedDevice: input.sharedDevice, lastSeenAt: now })
       .where(eq(sessions.token, token));
   });
-  await recordAttempt(sicilNo, "success", meta, person.userId);
+  await recordAttempt(loginInput, "success", meta, person.userId);
 
   return { ok: true, setCookieHeaders: signInResult.headers, mustChangePassword: person.mustChangePassword };
 }
@@ -154,7 +176,10 @@ export type SessionUser = {
   sessionId: string;
   sicilNo: string;
   fullName: string;
+  /** Geçerli roller (`owner` ise bütün roller, karar #192). */
   roles: Role[];
+  /** Kişiye atanmış roller (profilde gösterilir). */
+  baseRoles: Role[];
   mustChangePassword: boolean;
   sharedDevice: boolean;
 };
@@ -202,12 +227,14 @@ export async function loadSessionUser(sessionId: string): Promise<SessionUser | 
     .from(userRoles)
     .where(eq(userRoles.userId, row.userId));
 
+  const baseRoles = roleRows.map((r) => r.role).filter(isRole);
   return {
     userId: row.userId,
     sessionId: row.sessionId,
     sicilNo: row.sicilNo,
     fullName: row.fullName,
-    roles: roleRows.map((r) => r.role).filter(isRole),
+    roles: effectiveRoles(baseRoles),
+    baseRoles,
     mustChangePassword: row.mustChangePassword,
     sharedDevice: row.sharedDevice,
   };
@@ -250,7 +277,7 @@ export async function changePassword(
   await withActor(userActorStub(user.userId), async (tx) => {
     await tx
       .update(personnel)
-      .set({ mustChangePassword: false, passwordChangedAt: new Date() })
+      .set({ mustChangePassword: false, passwordChangedAt: new Date(), activatedAt: sql`coalesce(${personnel.activatedAt}, now())` })
       .where(eq(personnel.userId, user.userId));
     if (newToken) {
       await tx
@@ -270,5 +297,5 @@ export async function signOut(meta: RequestMeta): Promise<{ setCookieHeaders: He
 }
 
 export function toActor(user: SessionUser): UserActor {
-  return { kind: "user", userId: user.userId, roles: user.roles };
+  return { kind: "user", userId: user.userId, roles: user.roles, baseRoles: user.baseRoles };
 }

@@ -1,6 +1,5 @@
 import ExcelJS from "exceljs";
 import { and, asc, eq, inArray, lt } from "drizzle-orm";
-import { generateTempPassword } from "@/server/auth/temp-password";
 import type { Actor } from "@/server/authz/actor";
 import { assertCan } from "@/server/authz/policy";
 import { hmacNationalId, protectNationalId } from "@/server/crypto/national-id";
@@ -9,8 +8,8 @@ import { importBatches, importRows, orgUnits, personnel, positions, users } from
 import { withActor } from "@/server/db/with-actor";
 import { syncAssignmentForPerson } from "@/server/services/assignments/engine";
 import { NotFoundError, ValidationError } from "@/server/errors";
-import { insertAccount, prepareAccount } from "@/server/services/accounts";
-import { getSetting } from "@/server/services/settings";
+import { insertAccount, prepareInvitedAccount } from "@/server/services/accounts";
+import { issueInvitation, type IssuedInvite } from "@/server/services/invitations";
 import {
   checkRows,
   MAX_IMPORT_BYTES,
@@ -173,7 +172,6 @@ export async function getImportBatch(actor: Actor, batchId: string) {
   return { batch, rows: preview };
 }
 
-export type IssuedCredential = { sicilNo: string; fullName: string; positionName: string; tempPassword: string };
 
 async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
   const out: R[] = new Array(items.length);
@@ -190,13 +188,13 @@ async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promis
 }
 
 /**
- * Onay: geçerli satırları uygular (tek transaction). Yeni hesapların geçici şifreleri yalnızca
- * bu çağrının sonucunda döner; saklanmaz.
+ * Onay: geçerli satırları uygular (tek transaction). Yeni hesaplar şifresiz açılır ve basılı kanaldan davet
+ * alır (karar #185); kodlar yalnızca bu çağrının sonucunda döner, saklanmaz.
  */
 export async function commitImport(
   actor: Actor,
   batchId: string,
-): Promise<{ created: number; updated: number; unchanged: number; credentials: IssuedCredential[] }> {
+): Promise<{ created: number; updated: number; unchanged: number; invites: IssuedInvite[] }> {
   assertCan(actor, "people.manage");
   if (actor.kind !== "user") throw new ValidationError("user_required");
   const [batch] = await db().select().from(importBatches).where(eq(importBatches.id, batchId)).limit(1);
@@ -211,19 +209,13 @@ export async function commitImport(
   const sicils = valid.map((r) => r.sicilNo!);
   const existing = await db().select({ id: users.id, username: users.username }).from(users).where(inArray(users.username, sicils));
   const userBySicil = new Map(existing.map((u) => [u.username!, u.id]));
-  const posNames = new Map((await db().select({ id: positions.id, name: positions.name }).from(positions)).map((p) => [p.id, p.name]));
 
-  const minLength = await getSetting("auth.password_min_length");
   const toCreate = valid.filter((r) => !userBySicil.has(r.sicilNo!));
   const prepared = await mapLimit(toCreate, 8, async (row) => {
     const d = row.data as StoredRowData;
-    const tempPassword = generateTempPassword(minLength, d.sicilNo);
-    const account = await prepareAccount(
-      {
+    const account = await prepareInvitedAccount({
         sicilNo: d.sicilNo!,
         fullName: d.fullName!,
-        password: tempPassword,
-        mustChangePassword: true,
         positionId: d.positionId!,
         nationalId: d.nationalId ?? null,
         phone: d.phone ?? null,
@@ -231,13 +223,11 @@ export async function commitImport(
         hireDate: d.hireDate!,
         source: "excel",
         trainingRequired: batch.mode === "new_hires",
-      },
-      minLength,
-    );
-    return { rowId: row.id, account, tempPassword };
+    });
+    return { rowId: row.id, account };
   });
 
-  const credentials: IssuedCredential[] = [];
+  const invites: IssuedInvite[] = [];
   let updated = 0;
   let unchanged = 0;
   const now = new Date();
@@ -248,12 +238,7 @@ export async function commitImport(
     for (const p of prepared) {
       const userId = await insertAccount(tx, p.account, actor.userId);
       resultByRow.set(p.rowId, { status: "created", userId });
-      credentials.push({
-        sicilNo: p.account.sicilNo,
-        fullName: p.account.fullName,
-        positionName: posNames.get(p.account.positionId!) ?? "",
-        tempPassword: p.tempPassword,
-      });
+      invites.push(await issueInvitation(tx, { userId, channel: "print", createdBy: actor.userId }));
     }
 
     for (const row of valid) {
@@ -307,13 +292,13 @@ export async function commitImport(
         status: "committed",
         committedBy: actor.userId,
         committedAt: now,
-        createdCount: credentials.length,
+        createdCount: invites.length,
         updatedCount: updated,
       })
       .where(eq(importBatches.id, batchId));
   });
 
-  return { created: credentials.length, updated, unchanged, credentials };
+  return { created: invites.length, updated, unchanged, invites };
 }
 
 /** İptal: satırlar (kişisel veri) silinir, aktarım kaydı "iptal" olarak kalır. */

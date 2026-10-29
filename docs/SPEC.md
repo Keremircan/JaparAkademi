@@ -57,9 +57,10 @@ Her kullanıcı bir **personel** kaydıdır. Roller personelin üzerine eklenir 
 | `trainer` | Pratik eğitmen / mentor | Usta, şef | Kendisine atanan kursiyerlerin pratik görevlerini işaretler, pratik sınavı değerlendirir, gözetmen kodu üretir, sınıf eğitimi kaydeder | Soru bankası (göremez, düzenleyemez); kendisine atanmamış kursiyerler |
 | `section_manager` | Bölüm sorumlusu | Departman/bölüm/vardiya amiri | Kapsamındaki pozisyon kartlarını ve içerikleri hazırlar, onaylar; soru bankasını yönetir; ekibinin ilerlemesini izler; işe başlama onayı verir | Kapsamı dışındaki bölümlerin kişisel sonuçları |
 | `ohs_specialist` | İSG uzmanı | İş güvenliği uzmanı, işyeri hekimi | Tüm İSG içeriklerini ve ziyaretçi bilgilendirmesini yönetir, İSG içerik/sorularını onaylar, "uzaktan verilebilir mi" alanını belirler, tehlike sınıfını ayarlar, İSG kayıtlarını raporlar | — |
-| `hr` | İK | İnsan kaynakları | Personel kaydı ve Excel aktarımı, pozisyon atama, eğitim planı başlatma, şifre sıfırlama, tüm raporlar, ortak (İSG dışı) içerik yönetimi | Soru içeriklerini değiştiremez (yalnızca görür) |
+| `hr` | İK | İnsan kaynakları | Personel kaydı ve Excel aktarımı, pozisyon atama, eğitim planı başlatma, hesaba davet ve yeniden davet (karar #185), tüm raporlar, ortak (İSG dışı) içerik yönetimi | Soru içeriklerini değiştiremez (yalnızca görür) |
 | `security` | Güvenlik / resepsiyon | Kapı görevlisi | Ziyaretçi kaydı, bilgilendirme durumu, giriş-çıkış, tahliye yoklaması (Faz 2) | Personel eğitim verisi |
 | `sysadmin` | Sistem yöneticisi | BT | Kullanıcı, rol, parametre, entegrasyon ve cihaz (kiosk) ayarları, denetim kaydı görüntüleme | — (her erişimi denetim kaydına yazılır) |
+| `owner` | Üst yönetici | Geliştirici ve kurum yöneticisi (patron) | Diğer bütün rollerin yapabildiği her şey, bütün org ağacı (kararlar #192–196) | Kendi kaydını onaylayamaz; değiştirilemez kayıtları değiştiremez; iki adımlı onayın iki adımını birden veremez |
 
 **Ziyaretçi** bir rol değildir; hesabı yoktur. Kendisine özel bağlantı, kapı tableti veya QR ile tek seferlik oturum açar (Faz 2).
 
@@ -72,6 +73,8 @@ Her kullanıcı bir **personel** kaydıdır. Roller personelin üzerine eklenir 
 - **Kursiyer** sınavdan sonra puanını, geçti/kaldı sonucunu ve konu bazında doğru/yanlış özetini görür. Doğru cevaplar gösterilmez, böylece soru bankası sızmaz.
 
 ### 2.3 Yetki Matrisi (özet)
+`owner` (üst yönetici) tablodaki her yeteneğe sahiptir (karar #192); tabloda ayrı sütun olarak gösterilmez.
+
 | Yetenek | personnel | trainer | section_manager | ohs_specialist | hr | security | sysadmin |
 |---|---|---|---|---|---|---|---|
 | Kendi eğitimini alma, sınava girme | ✅ (ataması varsa) | ✅* | ✅* | ✅* | ✅* | ✅* | ✅* |
@@ -90,7 +93,7 @@ Her kullanıcı bir **personel** kaydıdır. Roller personelin üzerine eklenir 
 \* Her rol aynı zamanda personeldir. Kendisine eğitim atanmışsa kursiyer ekranlarını kullanır.
 
 ### 2.4 Kendi Kaydına Onay Yasağı
-Bir kişi kendisiyle ilgili sınav değerlendirmesi, pratik görev işaretlemesi veya işe başlama onayı yapamaz. Örneğin kursiyer olan bir eğitmen kendi görevlerini işaretleyemez.
+Bir kişi kendisiyle ilgili sınav değerlendirmesi, pratik görev işaretlemesi veya işe başlama onayı yapamaz. Örneğin kursiyer olan bir eğitmen kendi görevlerini işaretleyemez. Bu kural `owner` için de geçerlidir. İki adımlı onaylarda iki adımı aynı kişi veremez (karar #195).
 
 ---
 
@@ -136,7 +139,7 @@ Ziyaretçi bilgilendirmeyi tamamlayıp kuralları onaylamadan ziyaretçi kartı 
 - **FG-1.4** Personel listesi Excel'den içe aktarılır (Faz 1). JAPAR İK uygulamasından otomatik aktarım Faz 3'te gelir.
   - Zorunlu sütunlar: sicil no, ad soyad, departman, pozisyon, işe giriş tarihi, yaka tipi. Opsiyonel sütunlar: TC kimlik no, telefon, e-posta.
   - Akış: dosya yükle → önizleme ve satır bazında doğrulama → onayla. Kayıtlar sicil no'ya göre eklenir veya güncellenir. Bilinmeyen departman/pozisyon satırı hatalı sayılır; otomatik oluşturulmaz.
-  - Yeni hesaplara geçici şifre üretilir. İK bunları yazdırılabilir bir PDF listesi olarak **yalnızca bir kez** görür. Personel ilk girişte şifresini değiştirir.
+  - Yeni hesaplar şifresiz açılır ve basılı davet alır: İK etkinleştirme kağıtlarını (QR + 8 haneli kod) yazdırılabilir bir PDF olarak **yalnızca bir kez** görür. Personel kağıtla hesabını etkinleştirip şifresini kendisi belirler (karar #185; 2.6b'den önce geçici şifre).
 
 ### 4.2 İçerik Kütüphanesi
 - **FG-2.1** İçerik tipleri: `text` (zengin metin sayfası), `pdf`, `video`, `gallery` (görsel/fotoğraf galerisi), `instruction` (adım adım, fotoğraflı talimat), `checklist` (kontrol listesi), `form_template` (ör. vardiya raporu örneği).
@@ -329,7 +332,7 @@ Kursiyer ve pratik eğitmen ekranları telefon ve tablette rahat kullanılmalıd
 | 12 | İçerik kütüphanesi | İçerik sahipleri | PC | Yükle, etiketle, sürümle, ara, onay kuyruğu | `/manage/library` | 1 |
 | 13 | Eğitim planı tasarımcısı | İK, b. sorumlusu | PC | Modülleri sürükle-bırak sırala, ön koşul, süre, sınav parametreleri | `/manage/positions/[id]/plan` | 1 |
 | 14 | Soru bankası | İSG, b. sorumlusu (İK okur) | PC | Soru ekle, etiketle, Excel'den içe aktar, onay | `/manage/questions` | 1 |
-| 15 | Personel listesi ve atama | İK | PC | Excel içe aktarma, pozisyon ata, plan başlat, şifre sıfırla, karar bekleyenler | `/admin/people` | 1 |
+| 15 | Personel listesi ve atama | İK | PC | Excel içe aktarma, pozisyon ata, plan başlat, davet / yeniden davet, hesap durumu, karar bekleyenler | `/admin/people` | 1 |
 | 16 | Yetkinlik matrisi | Yöneticiler | PC | Personel × yetkinlik, süresi dolanlar renkli | `/reports/competency` | 3 |
 | 17 | Ziyaretçi kayıt ve kapı | Güvenlik, ev sahibi | PC, tablet | Ön kayıt; kapıda giriş-çıkış, kart no, KKD | `/security/visits`, `/security/gate`, `/visits` (ev sahibi) | 2 |
 | 18 | Ziyaretçi bilgilendirme | Ziyaretçi | Kapı tableti, telefon | Dil seçimi, kartlar, sorular, onay/imza; kiosk kodu; QR ile kendi kaydı | `/kiosk`, `/v/[token]`, `/visit` | 2 |
@@ -440,11 +443,12 @@ Kanallar: **uygulama içi** (her zaman), **web push** (PWA, Faz 2) ve **e-posta*
 - Entegrasyon testleri her rol için "göremez/yapamaz" senaryolarını kapsar (Bölüm 13.2).
 
 ### 11.4 Kimlik Doğrulama ve Oturum
-- Giriş: **sicil no + şifre.** Açık kayıt yoktur; hesapları yalnızca İK (veya sysadmin) açar.
+- Giriş: **sicil no + şifre.** `owner`, `sysadmin` ve `hr` rolündekiler kayıtlı e-postalarıyla da girebilir (kararlar #189, #197). Açık kayıt yoktur; hesapları yalnızca İK (veya sysadmin) açar.
+- Hesaba davet (iş paketi 2.6b, kararlar #185–191): hesap açılırken e-posta, WhatsApp (paylaş bağlantısı) ya da basılı QR + kod ile tek kullanımlık, süreli etkinleştirme daveti verilir; kişi şifresini kendisi belirler.
 - Şifre politikası (parametre): en az 8 karakter, yaygın şifre listesi kontrolü. Yalnızca rakamdan oluşan şifreye izin verilir (düşük okuryazarlık için), ama 8 haneden kısa olamaz.
 - 5 hatalı denemeden sonra 15 dk kilit (`auth.lockout_*`); aynı IP'den 15 dk içinde 20 başarısız deneme sonrası geçici engel (`auth.ip_*`). Tüm denemeler değiştirilemez `login_attempts` tablosuna yazılır (sonuç: başarılı, bilinmeyen sicil, yanlış şifre, kilitli, pasif, IP sınırı). Yanlış şifre ve bilinmeyen sicil kullanıcıya aynı genel mesajla bildirilir.
-- İlk girişte ve İK sıfırlamasından sonra şifre değiştirmek zorunludur.
-- Şifre sıfırlama: İK geçici şifre üretir (Faz 1). E-postası olan kullanıcı e-posta bağlantısıyla kendi sıfırlayabilir (Faz 1). **SMS yoktur.**
+- Seed ile açılan ilk yönetici ilk girişte şifre değiştirmek zorundadır.
+- Şifre sıfırlama: İK yeniden davet eder (2.6b'den önce geçici şifre üretirdi). E-postası olan kullanıcı e-posta bağlantısıyla kendi sıfırlayabilir (Faz 1). **SMS yoktur.**
 - Oturum: kişisel cihazda 30 gün (kayan süre), ortak cihazda 10 dk işlemsizlik. Pasif personelin tüm oturumları sonlandırılır.
   - Süre, oturumun `last_seen_at` alanıyla sunucuda uygulanır (`session.*` parametreleri). Better Auth'un kendi yenilemesi kapalıdır; çerezin mutlak üst sınırı 1 yıldır.
   - Şifre değişince diğer tüm oturumlar kapanır; mevcut cihazın ortak cihaz bilgisi korunur.
@@ -508,7 +512,7 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `org_units`: id, parent_id, kind (`department`|`section`), name, code (unique, büyük harf ASCII), responsible_user_id, is_active — iki seviye: departmanın üst düğümü yok, bölümün üst düğümü bir departman (veritabanı kısıtı); aynı üst düğümde ad benzersiz
 - `positions`: id, org_unit_id, name, code (unique), supervisor_position_id, deputy_position_id, collar_type (`blue`|`white`), shift_pattern, status (`active`|`passive`)
 - `users` (Better Auth: `user`, `session`, `account`, `verification`)
-- `personnel`: user_id (PK), sicil_no (unique, değiştirilemez), full_name, national_id_enc (AES-256-GCM, `v<anahtar sürümü>:<base64>`), national_id_hmac (unique), national_id_masked, phone, email, position_id (boş olabilir: pozisyonsuz personele eğitim atanamaz), employment_type (`employee`|`intern`), hire_date, end_date (ayrılanda zorunlu), status (`active`|`passive`|`terminated`), source (`excel`|`manual`|`hr_sync`), training_required (yeni işe giren → 1.4'te plan atanır), must_change_password, anonymized_at (saklama süresi dolunca; karar #120)
+- `personnel`: user_id (PK), sicil_no (unique, değiştirilemez), full_name, national_id_enc (AES-256-GCM, `v<anahtar sürümü>:<base64>`), national_id_hmac (unique), national_id_masked, phone (`+90…`), email, position_id (boş olabilir: pozisyonsuz personele eğitim atanamaz), employment_type (`employee`|`intern`), hire_date, end_date (ayrılanda zorunlu), status (`active`|`passive`|`terminated`), source (`excel`|`manual`|`hr_sync`), training_required (yeni işe giren → 1.4'te plan atanır), must_change_password, activated_at (davet etkinleştirilince; karar #187), anonymized_at (saklama süresi dolunca; karar #120)
 - `user_roles`: user_id, role, granted_by, granted_at
 - `role_scopes`: user_id, role (yalnızca `section_manager`, veritabanı kısıtı), org_unit_id
 - `data_access_log`: id, at, actor_id, subject_user_id, field (ör. `national_id`), request_id — **değiştirilemez** (tam TC görüntüleme kaydı)
@@ -592,6 +596,8 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `notifications`: user_id, kind (olay türü), subject_key (konu; aynı konu için okunmamış tek bildirim), params (jsonb; metin gösterimde mesaj dosyasından üretilir), link (uygulama içi yol), read_at
 - `email_outbox`: notification_id, kind, to_address, subject, body_text, body_html, status (`pending`|`sent`|`failed`|`skipped`), attempts, last_error, next_attempt_at, sent_at — adres ve gövde denetim kaydına maskeli yazılır
 - `password_reset_tokens`: user_id, token_hash (SHA-256; token saklanmaz), expires_at, used_at, ip
+- `owner_actions`: at, actor_id, permission, subject_type, subject_id — **değiştirilemez** (karar #196)
+- `account_invitations`: user_id, channel (`email`|`whatsapp`|`print`), token_hash (SHA-256), code_hash (HMAC; yalnızca basılı), expires_at, used_at, revoked_at, failed_attempts, created_by — özetler denetim kaydına maskeli yazılır (kararlar #185, #186)
 - `push_subscriptions`: user_id, session_id (oturum silinince silinir), endpoint (tekil), p256dh, auth, user_agent (kısa), last_success_at, failure_count — endpoint, anahtarlar ve tarayıcı bilgisi denetim kaydına maskeli yazılır. Tercih cihaz bazındadır; ayrı `notification_prefs` tablosu yok (karar #177)
 - `push_outbox`: notification_id, user_id, status, attempts, last_error, next_attempt_at, sent_at (karar #179)
 - `import_batches` (dosya, mod: `existing_staff`|`new_hires`, durum, sayılar), `import_rows` (normalleştirilmiş satır; TC yalnızca korumalı hâliyle; onaylanınca değiştirilemez). Onaylanmamış aktarımların satırları 24 saat sonra silinir (worker işi `imports.cleanup`)
@@ -690,6 +696,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | `notify.push_events` | bütün olaylar | — | sysadmin |
 | `push.max_attempts` / `push.ttl_hours` | 3 / 24 | — | sysadmin |
 | `auth.reset_link_minutes` / `auth.reset_max_per_hour` | 60 / 3 | — | sysadmin |
+| `auth.invite_valid_hours` / `auth.invite_code_attempts` | 72 / 5 | — | sysadmin |
 | `reports.max_rows` | 10000 | — | sysadmin |
 | `session.shared_idle_min` | 10 | — | sysadmin |
 | `session.personal_days` | 30 | — | sysadmin |
@@ -722,7 +729,8 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | JAPAR İK uygulaması | İK → Akademi | Personel, pozisyon, işe giriş/çıkış (otomatik). Teknoloji ve bağlantı yöntemi Faz 3'te belirlenecek. Aktarım sözleşmesi Excel sütunlarıyla aynı alanlar + çıkış tarihi; günlük senkron + değişiklikte tetikleme | 3 |
 | Kartlı geçiş / turnike | Akademi → geçiş sistemi | Eğitimi geçersiz personelin/taşeronun girişini engelleme (`GET /api/access/eligibility/{kartNo}` + değişiklik webhook'u) | 3 |
 | OSGB | Dışa aktarım | İSG eğitim kayıtları (xlsx/CSV) | 3 |
-| ~~SMS sağlayıcı~~ | — | **Kullanılmayacak** (maliyet). Ziyaretçi bağlantısı e-posta veya QR/kiosk ile; şifre sıfırlama İK veya e-posta ile | — |
+| ~~SMS sağlayıcı~~ | — | **Kullanılmayacak** (maliyet). Ziyaretçi bağlantısı e-posta veya QR/kiosk ile; şifre sıfırlama İK'nın yeniden daveti veya e-posta ile | — |
+| ~~WhatsApp Business API~~ | — | **Kullanılmayacak** (ücret + kişisel veri Meta'ya gider). Davet için yalnızca İK'nın cihazında açılan `wa.me` paylaş bağlantısı (karar #188) | — |
 
 ---
 
@@ -760,6 +768,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | **2.4 Tahliye ve ziyaretçi raporları** | `/security/evacuation` (bağlantısız okunabilir liste, PDF), ziyaretçi kayıt defteri, taşeron uygunluk raporu |
 | **2.5 Tekrar eğitimi ve bildirimler** | Otomatik tekrar eğitimi ataması, süresi dolacak eğitimler raporu, Faz 2 bildirimleri, haftalık özet, içerik güncellik raporu |
 | **2.6 Web push** | VAPID, push abonelikleri, kullanıcı tercihi, service worker |
+| **2.6b Davet ve hesap etkinleştirme** | `account_invitations`, üç kanal (e-posta, WhatsApp paylaş, basılı QR + kod), `/activate`, geçici şifrenin kaldırılması, İK'da yeniden davet ve davet durumu, yönetici e-postayla girişi, `owner` rolü ve iki adımlı onayda dört göz (kararlar #185–197) |
 | **2.7 İngilizce içerik ve yeni soru tipleri** | İçerik sürümünde dil (TR/EN), arayüzün İngilizce metinleri, eşleştirme ve görselde işaretleme soruları; Faz 2 yayını ve kılavuzlar |
 
 "Tüm bölümlerin pozisyon kartları" içerik girişidir; kod paketi değildir (pilot kontrol listesinde izlenir).
@@ -809,7 +818,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 31 | Org ağacı derinliği | İki seviye: departman → bölüm; pozisyon ikisinden birine bağlı |
 | 32 | KVKK metni yönetimi | İK. Yeni sürüm yayınlanınca herkes bir sonraki girişte yeniden onaylar; giriş sırası: şifre değiştirme → KVKK onayı → uygulama |
 | 33 | Pozisyonsuz personel | İzinli (ör. BT), ekranda uyarı gösterilir; Excel aktarımında pozisyon zorunlu |
-| 34 | Geçici şifre | 8 haneli rastgele rakam (politikadan geçer). Saklanmaz; yalnızca oluşturma/sıfırlama/aktarım anında ekranda ve PDF fişte (A4'te 8 fiş) bir kez verilir |
+| 34 | Geçici şifre | ~~8 haneli rastgele rakam, PDF fiş~~ — 2.6b'de kaldırıldı; yerine hesaba davet (kararlar #185–187). Etkinleştirme kağıdı A4'te 4 adet, QR + 8 haneli kod |
 | 35 | Excel eşleştirme | Departman ad/kod, pozisyon ad (departman ve bölümlerinde) veya kodla; büyük/küçük harf ve Türkçe karakter farkı yok sayılır. Aynı adda iki pozisyon varsa kod istenir. En fazla 2 MB / 5.000 satır |
 | 36 | Zengin metin düzenleyici | TipTap; yalnızca kalın, italik, H2/H3, listeler, alıntı. Gövde JSON saklanır, HTML enjekte edilmeden React ile gösterilir (iş paketi 1.2) |
 | 37 | Etiket ekleme | Taslak hazırlayabilen herkes 4 sabit türe (makine, bölüm, risk, vardiya) yeni etiket ekleyebilir |
@@ -960,6 +969,19 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 182 | KVKK ve saklama | Anonimleştirme oturumları sildiği için abonelikler de silinir (`app_anonymize_people` değişmedi). Aktif olmayan personele push yazılmaz. Eski push kayıtları bildirim saklama süresiyle (`notify.retention_days`) silinir |
 | 183 | Dış servisler | Google, Mozilla, Apple ve Microsoft push servislerine yalnızca şifreli kimlik ve genel metin gider (karar #110). Sunucudan giden HTTPS trafiği açıktır (ufw yalnızca geleni sınırlar); CSP değişmez |
 | 184 | Service worker | `sw.ts`'e `push` (bildirimi göster; aynı bildirim tek kart) ve `notificationclick` (yeni pencere açar; açık sekme yönlendirilmez — kişi sınavda olabilir) olayları eklendi; önbellek kuralları değişmedi |
+| 185 | Hesaba davet ve etkinleştirme | Açık kayıt yok (değişmedi). İK/sysadmin hesabı açarken (ve "yeniden davet"te) üç kanaldan birini seçer: **e-posta** (davet bağlantısı), **WhatsApp** (paylaş bağlantısı, karar #188), **basılı** (QR + 8 haneli kod). Üçü de aynı daveti üretir; kişi şifresini **kendisi** belirler. İK geçici şifre görmez; geçici şifre ve geçici şifre PDF'i kaldırılır (İK'nın "şifre sıfırla" işlemi yerine "yeniden davet"). Excel aktarımında kanal basılıdır: aktarılan kişilerin etkinleştirme kağıtları tek PDF |
+| 186 | Davet kaydı | `account_invitations`: token 32 bayt rastgele, yalnızca SHA-256 özetiyle saklanır; basılı kanalın 8 haneli kodu HMAC ile saklanır (anahtar `BETTER_AUTH_SECRET`'tan türetilir; veritabanı ele geçse de kod denenemez). Kod doğrulanınca davetin bağlantısı yenilenir ve kişi bağlantı ekranına yönlendirilir. Davet kaydı kişi verisi içermez; anonimleştirmede değişmez (davet e-postaları e-posta kuyruğuyla silinir). Süre `auth.invite_valid_hours`; tek kullanımlık; yeni davet açılınca kişinin eski davetleri iptal olur. Kod ile etkinleştirmede `auth.invite_code_attempts` hatalı denemede davet kilitlenir; IP sınırı (`auth.ip_*`) burada da geçerli. Davet açılırken hesabın şifresi kimsenin bilmediği rastgele bir değerdir: kişi etkinleştirmeden giriş yapamaz |
+| 187 | Etkinleştirme ekranı | `/activate/<token>` (e-posta, WhatsApp, QR) ya da girişteki "Hesabımı etkinleştir" → `/activate` (sicil no + kod). Kişi adını görür, şifre politikasına uygun şifresini iki kez girer; `personnel.activated_at` yazılır, oturum açılır (ortak cihaz kuralları geçerli), ardından KVKK onayı gelir. Geçersiz/süresi dolmuş davet tek genel mesajla bildirilir ("İK'ya başvurun"). Etkinleştirme `login_attempts`'a ayrı sonuçla yazılır |
+| 188 | WhatsApp kanalı | Sunucu WhatsApp/Meta ile **bağlantı kurmaz** (Business API yok: ücret + kişisel veri üçüncü tarafa gider). Sistem `https://wa.me/<telefon>?text=<hazır mesaj>` bağlantısı üretir; İK düğmeye basınca kendi telefonundaki WhatsApp açılır, mesajı kendisi gönderir. Mesajda kişinin adı ve etkinleştirme bağlantısı bulunur. Telefon `+90…` biçiminde saklanır; telefonu olmayan kişide kanal seçilemez. Bağlantının İK'nın cihazı üzerinden WhatsApp'a gitmesi pilot listesinde KVKK açısından not edilir |
+| 189 | Yönetici e-postayla girişi | Giriş ekranı tek: girilen değerde `@` varsa ve kişi `sysadmin` ya da `hr` rolündeyse e-posta ile bulunur, sonra sicil no girişiyle aynı akış (kilit, IP sınırı, deneme kaydı) çalışır. Diğer roller yalnızca sicil no ile girer; onların e-postası girişte bilinmeyen sicil gibi davranır (genel hata mesajı). Bu rolleri almak için kişinin e-postası kayıtlı ve aktif personel arasında tekil (büyük/küçük harf duyarsız) olmalıdır; servis denetler |
+| 190 | Yönetici iki adımlı doğrulama | Şimdilik yok. Faz 3'te Microsoft 365 tek oturumla birlikte değerlendirilir |
+| 191 | E-posta kanalı ve mevcut hesaplar | E-posta kanalı yalnızca `MAIL_TRANSPORT=graph` iken seçilebilir (aksi hâlde açıklamayla kapalı). İlk sistem yöneticisi seed ile açılır (değişmedi). Daha önce geçici şifreyle açılmış ve şifresini değiştirmemiş hesaplar çalışmaya devam eder; İK isterse yeniden davet eder |
+| 192 | Üst yönetici rolü (`owner`) | Geliştirici ve kurum yöneticisi (patron) için. `owner` bütün yetkilere sahiptir (`can()` her izin için doğru), kapsamı bütün org ağacıdır; İK, sysadmin ve diğer rollerin yapabildiği her şeyi yapar, tam TC görüntüleme dahil (her görüntüleme `data_access_log`'a yazılır). Onay/karar bildirimleri `owner`'a otomatik gitmez (bildirim yükü); kuyrukları ekranlardan görür |
+| 193 | `owner` rolünün verilmesi | Yalnızca bir `owner` başka bir kişiye `owner` rolü verebilir veya alabilir; sysadmin veremez. Son aktif `owner`'ın rolü alınamaz ve hesabı pasife alınamaz. İlk `owner` seed/sistem yöneticisi hesabına bir kez tanımlanır |
+| 194 | `owner` için de geçerli kurallar | Kimse kendi kaydını değerlendiremez/onaylayamaz; değiştirilemez kayıtlar `owner` için de değiştirilemez (yalnızca gerekçeli düzeltme kaydı); her işlem denetim kaydına yazılır, `audit_log`'u kimse silemez |
+| 195 | İki adımlı onayda dört göz | İki adımlı onaylarda (içerik/kart: bölüm onayı → İSG onayı; soru: sürüm → İSG onayı) ikinci adımı birinci adımı veren kişi veremez (`same_approver`). Pratik sınavda değerlendiren ile ikinci imza zaten farklı kişidir. Birden çok role sahip kişiler ve `owner` için gereklidir |
+| 196 | Mesleki imzalar ve `owner` | İSG içerik/soru onayı, pratik sınav imzaları ve işe başlama kararı normalde ilgili rolün (İSG uzmanı, değerlendiren, bölüm sorumlusu) yetkisindedir. Bu rol olmadan `owner` olarak yapılırken ekranda uyarı gösterilir ve işlem değiştirilemez `owner_actions` tablosuna yazılır (kişi, izin, kayıt). `owner` İSG kısayolundan yararlanmaz: hazırladığı İSG içeriği/sorusu kendiliğinden onaylı sayılmaz, İSG adımını başka biri verir |
+| 197 | Yönetici girişi ve iki adımlı doğrulama (güncelleme) | E-postayla giriş `owner`, `sysadmin` ve `hr` için (karar #189). `owner` dahil iki adımlı doğrulama şimdilik yok (karar #190); Faz 3'te M365 tek oturumla değerlendirilir |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

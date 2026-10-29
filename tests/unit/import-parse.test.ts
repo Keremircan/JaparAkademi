@@ -76,7 +76,7 @@ describe("FG-1.4 satır doğrulama", () => {
       positionId: "p-pres",
       hireDate: "2026-01-05",
       nationalId: "10000000146",
-      phone: "5321112233",
+      phone: "+905321112233",
       email: "ayse@japar.com.tr",
     });
   });
@@ -145,9 +145,9 @@ describe("Yardımcılar", () => {
   });
 
   it("telefon biçimleri 10 haneye iner", () => {
-    expect(normalizePhone("+90 532 111 22 33")).toBe("5321112233");
-    expect(normalizePhone("0532 111 22 33")).toBe("5321112233");
-    expect(normalizePhone("5321112233")).toBe("5321112233");
+    expect(normalizePhone("+90 532 111 22 33")).toBe("+905321112233");
+    expect(normalizePhone("0532 111 22 33")).toBe("+905321112233");
+    expect(normalizePhone("5321112233")).toBe("+905321112233");
     expect(normalizePhone("12345")).toBeNull();
   });
 });

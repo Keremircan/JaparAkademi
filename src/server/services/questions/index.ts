@@ -1,7 +1,8 @@
 import { and, asc, count, desc, eq, ilike, inArray, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { Actor } from "@/server/authz/actor";
-import { assertCan, assertNotSelf, assertUser, can, hasRole } from "@/server/authz/policy";
+import { assertCan, assertNotSelf, assertUser, can, hasOwnRole, hasRole, isOwner } from "@/server/authz/policy";
+import { recordOwnerAction } from "@/server/services/owner-actions";
 import { inOrgScope, orgScopeFor, type OrgScope } from "@/server/authz/scope";
 import { db, type DbOrTx, type Tx } from "@/server/db/client";
 import { approvals, assignmentModules, assignments, examAttemptItems, examAttempts, mediaAssets, modules, orgUnits, questionModules, questions, questionVersions, users } from "@/server/db/schema";
@@ -33,7 +34,8 @@ function canView(a: Access, q: Pick<QuestionRow, "ownerOrgUnitId" | "isOhs">): b
 }
 
 function canEdit(a: Access, q: Pick<QuestionRow, "ownerOrgUnitId" | "isOhs">): boolean {
-  if (a.actor.kind === "system") return true;
+  // Üst yönetici her soruyu düzenler; İSG sorusu yine İSG onayına gider (karar #196)
+  if (a.actor.kind === "system" || isOwner(a.actor)) return true;
   if (q.isOhs && hasRole(a.actor, "ohs_specialist")) return true;
   return hasRole(a.actor, "section_manager") && !!q.ownerOrgUnitId && !a.scope.all && inOrgScope(a.scope, q.ownerOrgUnitId);
 }
@@ -142,7 +144,8 @@ export async function createQuestion(
     if (!canEdit(a, { ownerOrgUnitId: input.ownerOrgUnitId, isOhs: input.isOhs })) throw new ForbiddenError("questions.edit");
     await validateRefs(tx, actor, v, null);
     const [q] = await tx.insert(questions).values({ ownerOrgUnitId: input.ownerOrgUnitId, isOhs: input.isOhs, createdBy: actor.userId }).returning();
-    const pending = needsOhsApproval(input, v) && !hasRole(actor, "ohs_specialist");
+    // Üst yönetici İSG kısayolundan yararlanmaz (karar #196)
+    const pending = needsOhsApproval(input, v) && !hasOwnRole(actor, "ohs_specialist");
     const [ver] = await tx
       .insert(questionVersions)
       .values({ ...versionValues(v), questionId: q!.id, version: 1, status: pending ? "ohs_review" : "active", createdBy: actor.userId })
@@ -169,7 +172,7 @@ export async function updateQuestion(actor: Actor, questionId: string, input: Qu
     const [latest] = await tx.select().from(questionVersions).where(eq(questionVersions.questionId, q.id)).orderBy(desc(questionVersions.version)).limit(1).for("update");
     await validateRefs(tx, actor, v, latest?.mediaAssetId ?? null);
     await setModules(tx, q.id, v.moduleIds);
-    const pending = needsOhsApproval(q, v) && !hasRole(actor, "ohs_specialist");
+    const pending = needsOhsApproval(q, v) && !hasOwnRole(actor, "ohs_specialist");
     const status = pending ? ("ohs_review" as const) : ("active" as const);
 
     if (latest && (latest.status === "ohs_review" || latest.status === "rejected")) {
@@ -204,6 +207,7 @@ async function loadPending(tx: Tx, actor: Actor & { kind: "user" }, versionId: s
   if (ver.status !== "ohs_review") throw new ValidationError("version_not_pending");
   if (!hasRole(actor, "ohs_specialist")) throw new ForbiddenError("content.approve_ohs");
   assertNotSelf(actor, ver.createdBy);
+  await recordOwnerAction(tx, actor, "content.approve_ohs", { type: "question_version", id: ver.id });
   return { q, ver };
 }
 

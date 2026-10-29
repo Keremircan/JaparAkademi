@@ -10,10 +10,16 @@ Uygulama telefonda, tablette ve bilgisayarda çalışır. Telefonunuzun ana ekra
 1. Tarayıcıda JAPAR Akademi adresini açın.
 2. **Sicil no** ve **şifrenizi** yazın, **Giriş yap**'a dokunun.
 3. Eğitim odasındaki ortak bilgisayarda **"Ortak cihaz"** kutusunu işaretleyin; işiniz bitince oturum kendiliğinden kapanır.
-4. İlk girişte geçici şifrenizi değiştirmeniz istenir. Yeni şifre en az 8 karakter olmalı, sicil numaranızı içermemelidir.
+4. Yöneticiler sicil no yerine kayıtlı e-posta adreslerini de yazabilir.
 5. Kişisel verilerin korunması (KVKK) metnini okuyup **Okudum, onaylıyorum**'a dokunun.
 
-**Şifrenizi unuttuysanız:** girişte **Şifremi unuttum** → sicil numaranızı yazın. E-posta adresiniz kayıtlıysa şifre yenileme bağlantısı gelir (60 dakika geçerlidir, bir kez kullanılır). E-postanız kayıtlı değilse İK şifrenizi yeniler.
+**İlk kez giriş (hesabı etkinleştirme):** İK hesabınızı açınca size bir davet verir: e-posta, WhatsApp mesajı ya da QR kodlu bir kağıt.
+- **E-posta veya WhatsApp:** mesajdaki bağlantıya dokunun.
+- **Kağıt:** telefonunuzun kamerasıyla QR kodu okutun. Telefonunuz yoksa giriş ekranında **Hesabımı etkinleştir**'e dokunun, sicil numaranızı ve kağıttaki 8 haneli kodu yazın.
+
+Açılan ekranda adınızı görürsünüz. Kendinize bir şifre belirleyip iki kez yazın (en az 8 karakter, sicil numaranızı içermemeli) ve **Hesabımı etkinleştir**'e dokunun. Davet 72 saat geçerlidir ve bir kez kullanılır; süresi dolduysa ya da kağıdı kaybettiyseniz İK'dan yeni davet isteyin.
+
+**Şifrenizi unuttuysanız:** girişte **Şifremi unuttum** → sicil numaranızı yazın. E-posta adresiniz kayıtlıysa şifre yenileme bağlantısı gelir (60 dakika geçerlidir, bir kez kullanılır). E-postanız kayıtlı değilse İK size yeni bir davet verir.
 
 ---
 

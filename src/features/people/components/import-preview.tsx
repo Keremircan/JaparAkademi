@@ -39,7 +39,7 @@ export function ImportPreview({
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CommitImportResult | null>(null);
   const [errorsOnly, setErrorsOnly] = useState(counts.errors > 0);
-  const fileName = `gecici-sifreler-${new Date().toISOString().slice(0, 10)}.pdf`;
+  const fileName = `etkinlestirme-kagitlari-${new Date().toISOString().slice(0, 10)}.pdf`;
 
   if (result) {
     return (
@@ -49,10 +49,10 @@ export function ImportPreview({
           <h2 className="text-xl font-semibold">{t("committedTitle")}</h2>
         </div>
         <p>{t("committedSummary", { created: result.created, updated: result.updated, unchanged: result.unchanged })}</p>
-        {result.slipPdf && (
+        {result.sheetPdf && (
           <>
             <p className="text-muted-foreground">{t("pdfDownloaded")}</p>
-            <Button variant="outline" className="self-start" onClick={() => downloadBase64(fileName, result.slipPdf!, "application/pdf")}>
+            <Button variant="outline" className="self-start" onClick={() => downloadBase64(fileName, result.sheetPdf!, "application/pdf")}>
               <Download aria-hidden="true" />
               {t("downloadAgain")}
             </Button>
@@ -88,7 +88,7 @@ export function ImportPreview({
                 startTransition(async () => {
                   const r = await commitImportAction(batchId);
                   if (!r.ok) return setError(r.error);
-                  if (r.data.slipPdf) downloadBase64(fileName, r.data.slipPdf, "application/pdf");
+                  if (r.data.sheetPdf) downloadBase64(fileName, r.data.sheetPdf, "application/pdf");
                   setResult(r.data);
                 });
               }}

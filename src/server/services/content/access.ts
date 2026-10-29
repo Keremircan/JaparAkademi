@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { Actor } from "@/server/authz/actor";
-import { hasAnyRole, hasRole } from "@/server/authz/policy";
+import { hasAnyRole, hasRole, isOwner } from "@/server/authz/policy";
 import { inOrgScope, orgScopeFor, type OrgScope } from "@/server/authz/scope";
 import { db, type DbOrTx } from "@/server/db/client";
 import { orgUnits, personnel, positions } from "@/server/db/schema";
@@ -58,7 +58,8 @@ export function canViewContent(a: ContentAccess, c: ContentRef): boolean {
 }
 
 export function canDraftContent(a: ContentAccess, c: ContentRef): boolean {
-  if (a.actor.kind === "system") return true;
+  // Üst yönetici her içeriği hazırlayabilir ve bölüm adımını onaylayabilir (karar #192)
+  if (a.actor.kind === "system" || isOwner(a.actor)) return true;
   if (c.isOhs && hasRole(a.actor, "ohs_specialist")) return true;
   if (c.ownerOrgUnitId === null) return hasRole(a.actor, "hr");
   const ms = managerScope(a);
@@ -67,7 +68,7 @@ export function canDraftContent(a: ContentAccess, c: ContentRef): boolean {
 }
 
 export function canApproveSection(a: ContentAccess, c: ContentRef): boolean {
-  if (a.actor.kind === "system") return true;
+  if (a.actor.kind === "system" || isOwner(a.actor)) return true;
   if (c.ownerOrgUnitId === null) return hasRole(a.actor, "hr");
   const ms = managerScope(a);
   return !!ms && !ms.all && inOrgScope(ms, c.ownerOrgUnitId);

@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 import { adminAccess } from "@/features/admin/guard";
 import { PersonForm } from "@/features/people/components/person-form";
+import { inviteMailEnabled } from "@/server/services/invitations";
 import { listPositionOptions } from "@/server/services/org";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -28,7 +29,7 @@ async function Content() {
   return (
     <section>
       <PageHeader title={t("form.new")} back={{ href: "/admin/people", label: t("title") }} />
-      <PersonForm positions={positions.map((p) => ({ id: p.id, label: p.label }))} />
+      <PersonForm positions={positions.map((p) => ({ id: p.id, label: p.label }))} mailEnabled={inviteMailEnabled()} />
     </section>
   );
 }

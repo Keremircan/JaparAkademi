@@ -19,7 +19,7 @@ Yeni bir özelliğe, tabloya veya ekrana başlamadan önce SPEC.md'nin ilgili b�
 - **Tek kurum (JAPAR).** Multi-tenant yapı, `org_id`/`tenant_id` kolonu YOK.
 - **Veriler kendi sunucumuzda.** Bütün veriler kurumun VPS'inde (Hostinger, Almanya) durur; Türkiye'de barındırma zorunluluğu kaldırıldı (karar #174). Kişisel veri veya içerik başka bir üçüncü taraf servise gönderilmez: Vercel, Supabase Cloud, Cloudflare/Mux, bulut TTS, harici analitik veya hata takibi kullanılmaz. İstisnalar: kurumun Microsoft 365 kiracısı (yalnızca e-posta; Faz 3'te SSO) ve web push servisleri (yalnızca şifreli bildirim kimliği, karar #110). Yurt dışına aktarım KVKK md. 9'a göre hukukça güvenceye alınır (pilot listesi).
 - **SMS yok.** Hiçbir fazda SMS sağlayıcısı eklenmez. Kanallar: uygulama içi, web push, e-posta.
-- **Roller:** `personnel` (herkes), `trainer`, `section_manager`, `ohs_specialist`, `hr`, `security`, `sysadmin`. Bir kişi birden çok role sahip olabilir. "Kursiyer" bir rol değildir; aktif eğitim ataması olan personeldir. Ziyaretçinin hesabı yoktur.
+- **Roller:** `personnel` (herkes), `trainer`, `section_manager`, `ohs_specialist`, `hr`, `security`, `sysadmin`, `owner` (üst yönetici: geliştirici + kurum yöneticisi; her yetki, bütün ağaç — karar #192). `owner` rolünü yalnızca bir `owner` verir. Bir kişi birden çok role sahip olabilir. "Kursiyer" bir rol değildir; aktif eğitim ataması olan personeldir. Ziyaretçinin hesabı yoktur.
 - **Yetki tek yerde:** `src/server/authz`. Veriye yalnızca `src/server/services` üzerinden erişilir; bileşen veya Server Action doğrudan Drizzle sorgusu yazmaz. Her servis fonksiyonu önce yetki ve kapsam kontrolü yapar. `proxy.ts` yalnızca iyimser yönlendirme içindir; yetki kontrolü değildir.
 - **Görünürlük sınırları:**
   - Kursiyer soru bankasını ve başkasının sonucunu göremez; sınavdan sonra doğru cevapları görmez.
@@ -27,7 +27,7 @@ Yeni bir özelliğe, tabloya veya ekrana başlamadan önce SPEC.md'nin ilgili b�
   - Bölüm sorumlusu yalnızca kapsamındaki org düğümlerini (alt düğümler dahil) görür.
   - İK soruları değiştiremez.
   - Güvenlik personel eğitim verisini göremez.
-- **Kimse kendi kaydını değerlendiremez veya onaylayamaz** (sınav, pratik görev, işe başlama).
+- **Kimse kendi kaydını değerlendiremez veya onaylayamaz** (sınav, pratik görev, işe başlama) — `owner` dahil. İki adımlı onayın iki adımını aynı kişi veremez.
 - **Kayıtlar değiştirilemez:** teslim edilmiş sınav denemesi, pratik işaretleme, pratik sınav sonucu, imza, onay/ret, işe başlama kararı, sertifika, KVKK onayı.
   - Bu tablolarda UPDATE/DELETE veritabanı trigger'ıyla engellenir. Düzeltme = yeni `corrections` kaydı + gerekçe.
   - Silme yerine arşivleme yapılır.
@@ -72,7 +72,7 @@ Yeni bir özelliğe, tabloya veya ekrana başlamadan önce SPEC.md'nin ilgili b�
 - Yönetim sayfaları: `adminAccess("<yetki>")` null ise `<NotFoundView />`; servis `NotFoundError`'u `orNull()` ile 404 görünümüne çevrilir.
 - Kapsam: `orgScopeFor(actor)` / `isPersonInScope()` (`src/server/authz/scope.ts`). İK ve sysadmin tüm ağacı görür.
 - TC kimlik no yalnızca `src/server/crypto/national-id.ts` ile işlenir (`protectNationalId`, `decryptNationalId`); tam TC görüntüleme `data_access_log`'a yazılır.
-- Kişiye verilen tek seferlik çıktılar (geçici şifre PDF'i) sunucuda saklanmaz; eylem sonucu base64 döner, istemci `downloadBase64` ile indirir.
+- Kişiye verilen tek seferlik çıktılar (etkinleştirme kağıdı PDF'i) sunucuda saklanmaz; eylem sonucu base64 döner, istemci `downloadBase64` ile indirir.
 - PDF: `@react-pdf/renderer` + `src/server/pdf/fonts/Geist-Regular.ttf` (Türkçe karakter); Excel: `exceljs`. İkisi de `serverExternalPackages`'ta.
 - Metinler `messages/tr.json`'da; `en.json`'da olmayan anahtar Türkçeye düşer (`src/i18n/request.ts`).
 - İçerik kütüphanesi: erişim kuralları `src/server/services/content/access.ts` (SQL karşılığı `visibilityFilter`), yayın akışı `src/server/state/content.ts`. Gövde şemaları `services/content/body.ts` (taslak gevşek, onaya gönderim katı). Sayfalar `libraryAccess()` ile korunur.
@@ -97,6 +97,9 @@ Yeni bir özelliğe, tabloya veya ekrana başlamadan önce SPEC.md'nin ilgili b�
 - Kapı `services/visitors/gate.ts` (`gateList`, `checkIn` — kimlik birleştirme + kara liste reddi `visit_denials`, `checkOut`, `activeClearanceUntil`). Girişten sonra `visits` trigger'la kilitli (`visit_gate_guard`); testte tarihi değiştirmek için trigger tablo sahibiyle geçici kapatılır.
 - Tahliye `services/visitors/evacuation.ts` (`insideNow`, yoklama `startRollcall`/`refreshRollcall`/`setSafe`/`endRollcall`, `evacuationPdf`); bağlantısız son liste `src/lib/evacuation-cache.ts` (IndexedDB) + çevrimdışı sayfası. Ziyaretçi raporları rapor altyapısında (`visitors`, `contractors`; `hasOrgFilters` false).
 - Web push `services/push/` (`subscribePush`/`unsubscribePush`/`isSubscribed`; `queuePush` `notify()` içinde `push_outbox`'a yazar; `dispatch.ts` → `push.dispatch` kuyruğu, `PUSH_TRANSPORT=log|webpush`, testte sahte `PushSender` verilir). Saf kurallar `state/push.ts` (yanıt sınıflama, izinli push servisleri). Abonelik oturuma bağlı (çıkışta silinir), ortak cihazda reddedilir; push yalnızca bildirim kimliği + genel metin taşır, dokununca `/api/notifications/[id]`. Profil bileşeni `features/push/`, olaylar `src/app/sw.ts`.
+- Hesaba davet `services/invitations.ts` (`issueInvitation(tx, …)` hesap açma ve Excel aktarımında aynı transaction'da; `reinvite`, `inviteStatus`; hesapsız `verifyInviteCode` → `activateWithToken`). Kanallar e-posta (`MAIL_TRANSPORT=graph` iken), WhatsApp (`wa.me` paylaş bağlantısı; sunucu WhatsApp'a bağlanmaz), basılı (QR + kod, `src/server/pdf/activation.tsx`). Saf kurallar `state/invitations.ts` (telefon `+90…`). Ekranlar `/activate`, `/activate/[token]`; İK bileşenleri `features/people/components/invite-controls.tsx`. Geçici şifre yok.
+- Üst yönetici (`owner`): oturumda `effectiveRoles` bütün rolleri verir (`SessionUser.roles`), kişinin kendi rolleri `baseRoles`. `hasRole`/`can` owner için doğru döner; mesleki kısayollarda (İSG uzmanının kendi onayı vb.) `hasOwnRole` kullanılır. Mesleki imzada `recordOwnerAction(tx, actor, izin, kayıt)` + ekranda `<OwnerActingNotice />`. İki adımlı onayda `assertDifferentApprover`. Owner rolünü yalnızca owner verir (`setRoles`), ilk owner `npm run owner:grant -- <sicil>`.
+- Yönetici e-postayla girişi: `signIn` girdide `@` görürse `EMAIL_LOGIN_ROLES` (owner, sysadmin, hr) içinde tekil e-postayı sicile çevirir; bu rolleri verirken `assertLoginEmailUsable`.
 - Tekrar eğitimi `services/assignments/recert.ts` (`runRecert`: son tamamlanış + `recert.lead_days`, `createAssignment(…, { renew })`, `assignment_modules.renews_id`) + saf kurallar `state/recert.ts`. Zamanlanmış eğitim bildirimleri `services/assignments/alerts.ts` (`training.daily` 06:00, `training.weekly` Pazartesi 08:00). Bir kez gidecek bildirimde `notify(…, { once: true })`; önek ile kapatma `resolveNotificationsByPrefix`.
 - Worker esbuild ile `dist/worker.mjs` (ESM) olarak derlenir (`scripts/build-worker.mjs`); tsx CJS modu @react-pdf'i yükleyemez. Tek seferlik PDF denemeleri için geçici bir Vitest testi kullanın.
 - Oturum/ortam okuyan sunucu kodu önce istek verisini okur (`await headers()` / `connection()`), sonra env'e veya veritabanına dokunur; aksi halde Docker derlemesindeki prerender env doğrulamasında düşer.
@@ -119,6 +122,7 @@ Kurulum ayrıntıları: `docs/runbooks/local-dev.md`.
 - `npm run lint` / `npm run typecheck` / `npm test` (birim) / `npm run test:integration` (gerçek test DB) / `npm run test:e2e` (Playwright, mobil + masaüstü)
 - `npm run icons` — PWA ikonlarını üretir
 - `npm run push:keys` — web push VAPID anahtarları üretir
+- `npm run owner:grant -- <sicil>` — sistemde üst yönetici yoksa ilkini tanımlar
 - `node scripts/audit-check.mjs` — üretim bağımlılıklarının güvenlik taraması (CI ile aynı)
 - Üretim yığını: `docker compose -f docker/compose.prod.yml --env-file docker/.env.production …` (bkz. `docs/runbooks/deploy.md`)
 - Bu Windows makinesinde Next/SWC için `SWC_NATIVE_BINDING_CACHE` kullanıcı ortam değişkeni gerekir (runbook'a bakın).

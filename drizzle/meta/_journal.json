@@ -260,6 +260,20 @@
       "when": 1793278116340,
       "tag": "0036_web_push_triggers",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1793301391969,
+      "tag": "0037_invitations_owner",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1793301433019,
+      "tag": "0038_invitations_owner_triggers",
+      "breakpoints": true
     }
   ]
 }

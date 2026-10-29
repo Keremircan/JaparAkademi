@@ -22,7 +22,8 @@
     "worker": "node scripts/build-worker.mjs && node --enable-source-maps --env-file-if-exists=.env dist/worker.mjs",
     "worker:dev": "node scripts/build-worker.mjs --watch",
     "icons": "tsx scripts/generate-icons.ts",
-    "push:keys": "tsx scripts/push-keys.ts"
+    "push:keys": "tsx scripts/push-keys.ts",
+    "owner:grant": "tsx --env-file-if-exists=.env scripts/grant-owner.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1156.0",

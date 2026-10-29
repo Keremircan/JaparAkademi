@@ -2,6 +2,7 @@ import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { Actor, UserActor } from "@/server/authz/actor";
 import { assertCan, assertUser, hasRole } from "@/server/authz/policy";
+import { recordOwnerAction } from "@/server/services/owner-actions";
 import { isPersonInScope } from "@/server/authz/scope";
 import { db, type DbOrTx, type Tx } from "@/server/db/client";
 import {
@@ -281,6 +282,7 @@ export async function approveReadiness(actor: Actor, assignmentId: string, comme
     const a = await lockAssignment(tx, assignmentId);
     if (a.userId === actor.userId) throw new ForbiddenError("self_action");
     if (!(await canDecideReadiness(actor, a, tx))) throw new ForbiddenError("readiness.decide");
+    await recordOwnerAction(tx, actor, "readiness.decide", { type: "assignment", id: a.id });
     if (a.status !== "awaiting_readiness") throw new ValidationError("readiness_not_pending");
     await tx.insert(readinessDecisions).values({ assignmentId: a.id, decision: "approved", comment: cleanText(comment, false), decidedBy: actor.userId });
     await resolveNotifications(tx, `readiness:${a.id}`);
@@ -298,6 +300,7 @@ export async function rejectReadiness(actor: Actor, assignmentId: string, input:
     const a = await lockAssignment(tx, assignmentId);
     if (a.userId === actor.userId) throw new ForbiddenError("self_action");
     if (!(await canDecideReadiness(actor, a, tx))) throw new ForbiddenError("readiness.decide");
+    await recordOwnerAction(tx, actor, "readiness.decide", { type: "assignment", id: a.id });
     if (a.status !== "awaiting_readiness") throw new ValidationError("readiness_not_pending");
     await reopenForReview(tx, actor, a, input.reopenModuleIds, comment);
     await resolveNotifications(tx, `readiness:${a.id}`);
@@ -325,6 +328,7 @@ export async function decideProcess(actor: Actor, assignmentId: string, input: P
     const a = await lockAssignment(tx, assignmentId);
     if (a.userId === actor.userId) throw new ForbiddenError("self_action");
     if (!(await canDecideProcess(actor, a, tx))) throw new ForbiddenError("process.decide");
+    await recordOwnerAction(tx, actor, "process.decide", { type: "assignment", id: a.id });
     if (a.status !== "awaiting_decision") throw new ValidationError("decision_not_pending");
     const mods = await tx.select().from(assignmentModules).where(eq(assignmentModules.assignmentId, a.id));
     await resolveNotifications(tx, `decision:${a.id}`);

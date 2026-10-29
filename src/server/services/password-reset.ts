@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import { createTranslator } from "next-intl";
-import { and, count, eq, gt, isNull } from "drizzle-orm";
+import { and, count, eq, gt, isNull, sql } from "drizzle-orm";
 import { getAuth } from "@/server/auth/auth";
 import { checkPassword } from "@/server/auth/password-policy";
 import { systemActor } from "@/server/authz/actor";
@@ -109,7 +109,13 @@ export async function resetPasswordWithToken(input: { token: string; newPassword
     await tx.update(accounts).set({ password: hash }).where(and(eq(accounts.userId, row.userId), eq(accounts.providerId, "credential")));
     await tx
       .update(personnel)
-      .set({ mustChangePassword: false, passwordChangedAt: new Date(), failedLoginCount: 0, lockedUntil: null })
+      .set({
+        mustChangePassword: false,
+        passwordChangedAt: new Date(),
+        activatedAt: sql`coalesce(${personnel.activatedAt}, now())`,
+        failedLoginCount: 0,
+        lockedUntil: null,
+      })
       .where(eq(personnel.userId, row.userId));
     await tx.delete(sessions).where(eq(sessions.userId, row.userId));
   });

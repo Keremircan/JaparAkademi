@@ -15,7 +15,8 @@ async function rolesOf(userId: string) {
 describe("Rol ve kapsam yönetimi (karar #3: yalnızca sistem yöneticisi)", () => {
   it("sistem yöneticisi rolleri tam liste olarak ayarlar; personel rolü hep kalır", async () => {
     const admin = await createTestUser({ roles: ["sysadmin"] });
-    const u = await createTestUser({ roles: ["trainer"] });
+    // E-postayla giriş rolleri (İK, sysadmin) kayıtlı e-posta ister (karar #189)
+    const u = await createTestUser({ roles: ["trainer"], email: "roller-u@japar.test" });
     await setRoles(admin.actor, u.userId, ["hr", "section_manager"]);
     expect(await rolesOf(u.userId)).toEqual(["hr", "personnel", "section_manager"]);
     await setRoles(admin.actor, u.userId, []);
@@ -34,7 +35,7 @@ describe("Rol ve kapsam yönetimi (karar #3: yalnızca sistem yöneticisi)", () 
     const a = await createTestUser({ roles: ["sysadmin"] });
     await expect(setRoles(a.actor, a.userId, [])).rejects.toMatchObject({ code: "cannot_remove_own_sysadmin" });
 
-    const b = await createTestUser({ roles: ["sysadmin"] });
+    const b = await createTestUser({ roles: ["sysadmin"], email: "roller-b@japar.test" });
     await setRoles(a.actor, b.userId, []); // a hâlâ sysadmin
     expect(await rolesOf(b.userId)).toEqual(["personnel"]);
 

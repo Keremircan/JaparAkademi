@@ -10,6 +10,9 @@ Her satırda sorumlu ve durum doldurulur.
 | 1.1 | Pilot bölüm ve pozisyonların seçimi | Yönetim | ☐ |
 | 1.2 | Sunucu: Hostinger VPS, Almanya (karar #174) ✓; yedek için ikinci depolama seçimi | BT | ☐ |
 | 1.2a | Yurt dışına aktarım için KVKK md. 9 dayanağı (ör. Hostinger ile standart sözleşme + Kurum'a bildirim) ve aydınlatma metinlerinde yurt dışı aktarım bilgisi — gerçek veri girilmeden önce | Hukuk / KVKK sorumlusu | ☐ |
+| 1.2b | `owner` (üst yönetici) hesabı olan geliştirici için kurumla gizlilik / veri işleme taahhüdü (tüm personel verisine erişim; karar #192) | Hukuk / KVKK sorumlusu | ☐ |
+| 1.2c | WhatsApp ile davet: bağlantı ve kişinin adı İK'nın cihazından WhatsApp (Meta) üzerinden gider (karar #188). Aydınlatma metninde belirtilmesi ya da bu kanalın kullanılmaması kararı | Hukuk / KVKK sorumlusu | ☐ |
+| 1.2d | İlk üst yönetici sunucuda tanımlandı (`grant-owner.ts`); kurum yöneticisine uygulamadan üst yönetici rolü verildi | BT | ☐ |
 | 1.3 | Alan adları: `APP_DOMAIN`, `FILES_DOMAIN` | BT | ☐ |
 | 1.4 | M365 uygulama kaydı (Graph `Mail.Send`, uygulama izni) ve gönderen posta kutusu | BT | ☐ |
 | 1.5 | KVKK aydınlatma metni (personel) — hukuk onayı | Hukuk / KVKK sorumlusu | ☐ |
@@ -51,7 +54,7 @@ Her satırda sorumlu ve durum doldurulur.
 | 3.8 | Soru bankası: pozisyon başına en az 40 soru; plan tasarımcısında havuz uyarısı yok | İSG + bölüm sorumluları | ☐ |
 | 3.9 | Sertifika şablonu: imza yetkilileri ve taranmış imzalar | İK + İSG | ☐ |
 | 3.10 | Logonun vektörel (SVG) ve şeffaf PNG hâli (şu an JPG'den türetilmiş PNG kullanılıyor) | Kurumsal iletişim | ☐ |
-| 3.11 | Pilot personelin Excel ile aktarımı; geçici şifre fişleri dağıtıldı | İK | ☐ |
+| 3.11 | Pilot personelin Excel ile aktarımı; etkinleştirme kağıtları dağıtıldı ve hesaplar etkinleştirildi (karar #185) | İK | ☐ |
 | 3.12 | Pratik eğitmen ve hedef tarihler atandı | İK | ☐ |
 
 ## 4. Kabul (SPEC 16.3)

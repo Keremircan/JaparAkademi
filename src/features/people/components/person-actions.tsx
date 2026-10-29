@@ -6,8 +6,7 @@ import { useState } from "react";
 import { ActionButton } from "@/components/forms/action-button";
 import { Field } from "@/components/forms/field";
 import { Input } from "@/components/ui/input";
-import { resetPasswordAction, revealNationalIdAction, setPersonStatusAction } from "../actions";
-import { TempPasswordPanel } from "./temp-password-panel";
+import { revealNationalIdAction, setPersonStatusAction } from "../actions";
 
 /** TC'nin tamamını gösterme (yalnızca İK; her görüntüleme kaydedilir). */
 export function RevealNationalId({ userId, masked }: { userId: string; masked: string }) {
@@ -27,27 +26,6 @@ export function RevealNationalId({ userId, masked }: { userId: string; masked: s
       </ActionButton>
       <span className="text-sm text-muted-foreground">{t("revealNotice")}</span>
     </span>
-  );
-}
-
-export function ResetPasswordControl({ userId, sicilNo }: { userId: string; sicilNo: string }) {
-  const t = useTranslations("admin.people.detail");
-  const [result, setResult] = useState<{ tempPassword: string; slipPdf: string } | null>(null);
-  if (result) {
-    return (
-      <TempPasswordPanel
-        title={t("resetDone")}
-        description={t("resetConfirm")}
-        sicilNo={sicilNo}
-        tempPassword={result.tempPassword}
-        slipPdf={result.slipPdf}
-      />
-    );
-  }
-  return (
-    <ActionButton action={resetPasswordAction.bind(null, userId)} confirmText={t("resetConfirm")} onSuccess={setResult}>
-      {t("resetPassword")}
-    </ActionButton>
   );
 }
 

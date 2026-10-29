@@ -81,10 +81,14 @@ export function LoginForm() {
         {pending ? t("login.submitting") : t("login.submit")}
       </Button>
 
+      <Button variant="outline" size="lg" className="w-full" nativeButton={false} render={<Link href="/activate" />}>
+        {t("login.activate")}
+      </Button>
       <Link href="/forgot-password" className="inline-flex min-h-12 items-center justify-center underline underline-offset-4">
         {t("login.forgot")}
       </Link>
       <p className="text-center text-sm text-muted-foreground">{t("login.help")}</p>
+      <p className="text-center text-sm text-muted-foreground">{t("login.adminHint")}</p>
     </form>
   );
 }
