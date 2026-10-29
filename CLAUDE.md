@@ -13,11 +13,11 @@ Yeni bir özelliğe, tabloya veya ekrana başlamadan önce SPEC.md'nin ilgili b�
 - Tailwind CSS 4 + shadcn/ui (base-nova) + vaul, next-intl (varsayılan `tr`), Zod
 - `@react-pdf/renderer` + `qrcode` (sertifika), `exceljs` (içe/dışa aktarma), Microsoft Graph (e-posta), Serwist (PWA kabuğu), Web Speech API (sesli okuma)
 - Test: Vitest (birim + gerçek Postgres ile entegrasyon), Playwright (mobil + masaüstü)
-- Barındırma: Türkiye'de Linux VM, Docker Compose (`app`, `worker`, `postgres`, `garage`, `caddy`)
+- Barındırma: Hostinger VPS (Almanya – Düsseldorf, AB), Docker Compose (`app`, `worker`, `postgres`, `garage`, `caddy`) — karar #174
 
 ## Değişmez kurallar
 - **Tek kurum (JAPAR).** Multi-tenant yapı, `org_id`/`tenant_id` kolonu YOK.
-- **Veriler Türkiye'de.** Kişisel veri veya içerik yurt dışındaki bir servise gönderilmez: Vercel, Supabase Cloud, Cloudflare/Mux, bulut TTS, yurt dışı analitik veya hata takibi kullanılmaz. Tek istisna kurumun Microsoft 365 kiracısıdır (yalnızca e-posta; Faz 3'te SSO).
+- **Veriler kendi sunucumuzda.** Bütün veriler kurumun VPS'inde (Hostinger, Almanya) durur; Türkiye'de barındırma zorunluluğu kaldırıldı (karar #174). Kişisel veri veya içerik başka bir üçüncü taraf servise gönderilmez: Vercel, Supabase Cloud, Cloudflare/Mux, bulut TTS, harici analitik veya hata takibi kullanılmaz. İstisnalar: kurumun Microsoft 365 kiracısı (yalnızca e-posta; Faz 3'te SSO) ve web push servisleri (yalnızca şifreli bildirim kimliği, karar #110). Yurt dışına aktarım KVKK md. 9'a göre hukukça güvenceye alınır (pilot listesi).
 - **SMS yok.** Hiçbir fazda SMS sağlayıcısı eklenmez. Kanallar: uygulama içi, web push, e-posta.
 - **Roller:** `personnel` (herkes), `trainer`, `section_manager`, `ohs_specialist`, `hr`, `security`, `sysadmin`. Bir kişi birden çok role sahip olabilir. "Kursiyer" bir rol değildir; aktif eğitim ataması olan personeldir. Ziyaretçinin hesabı yoktur.
 - **Yetki tek yerde:** `src/server/authz`. Veriye yalnızca `src/server/services` üzerinden erişilir; bileşen veya Server Action doğrudan Drizzle sorgusu yazmaz. Her servis fonksiyonu önce yetki ve kapsam kontrolü yapar. `proxy.ts` yalnızca iyimser yönlendirme içindir; yetki kontrolü değildir.

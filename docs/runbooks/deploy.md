@@ -1,6 +1,6 @@
 # Kurulum ve yayın (üretim)
 
-JAPAR Akademi, Türkiye'deki bir Linux sunucuda Docker Compose ile çalışır (SPEC 11.1, 13.1).
+JAPAR Akademi, Hostinger VPS'te (Almanya – Düsseldorf, karar #174) Docker Compose ile çalışır (SPEC 11.1, 13.1).
 Servisler: `postgres`, `garage` (dosya deposu), `migrate` (tek seferlik), `app`, `worker`, `caddy` (HTTPS), `backup`.
 Dosyalar: `docker/compose.prod.yml`, `docker/Dockerfile`, `docker/caddy/Caddyfile`, `docker/backup/`, `docker/postgres/init-prod/`.
 
@@ -99,4 +99,4 @@ Migration'lar geri alınmaz; şema değişikliği içeren bir sürümü geri alm
 - Veritabanı ve Garage portları dışarı açılmaz; yalnızca Caddy 80/443 dinler.
 - Caddy güvenlik başlıklarını ekler (HSTS, CSP, X-Frame-Options, Permissions-Policy, Referrer-Policy).
 - CI her değişiklikte bağımlılık güvenlik taraması yapar (`scripts/audit-check.mjs`); düzeltmesi olmayan ve incelenen istisnalar `audit-allowlist.json`'dadır ve gerekçeleri yazılıdır.
-- Kişisel veri yurt dışına gönderilmez. İmajlar GHCR'de durur ama yalnızca kod içerir. E-posta kurumun M365 kiracısından gider (Graph `Mail.Send`).
+- Kişisel veri sunucu dışındaki üçüncü taraf servislere gönderilmez. İmajlar GHCR'de durur ama yalnızca kod içerir. E-posta kurumun M365 kiracısından gider (Graph `Mail.Send`).

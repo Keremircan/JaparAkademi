@@ -21,7 +21,7 @@ JAPAR Akademi, JAPAR'a yeni başlayan her personelin işe başlamadan önce pozi
 2. **Tek kaynak.** Pozisyon kartı hem iş tanımı hem eğitim içeriğidir. İş tanımı değişirse eğitim de değişir.
 3. **Karar insana bırakılır.** Sistem personeli otomatik olarak işten çıkarmaz, reddetmez. Tüm haklarda başarısız olan personel için bildirim gönderir, kararı İK ve bölüm sorumlusu verir.
 4. **Herkes için kullanılabilir.** Okuma-yazma seviyesi düşük personel için büyük butonlar, görsel ağırlıklı içerik ve sesli okuma sunulur.
-5. **Veri Türkiye'de.** Kişisel veri yurt dışındaki bir servise gönderilmez. Tek istisna, kurumun kendi Microsoft 365 kiracısıdır (e-posta).
+5. **Veri kendi sunucumuzda.** Bütün veriler kurumun VPS'indedir (Hostinger, Almanya; karar #174). Kişisel veri başka bir üçüncü taraf servise gönderilmez. İstisnalar: kurumun Microsoft 365 kiracısı (e-posta) ve web push servisleri (yalnızca şifreli bildirim kimliği).
 6. **Her eşik bir parametredir.** Sınav notları, süreler, haklar ve geçerlilik süreleri kodda sabit yazılmaz.
 
 ### 1.4 Kapsam
@@ -41,7 +41,7 @@ JAPAR Akademi, JAPAR'a yeni başlayan her personelin işe başlamadan önce pozi
 
 ### 1.5 Kurulum Modeli
 - Tek kurum (JAPAR). Çok kiracılı (multi-tenant) yapı yoktur.
-- Barındırma: **Türkiye'deki bir bulut sağlayıcısında Linux VM + Docker Compose.** Sağlayıcı henüz seçilmedi; mimari sağlayıcıdan bağımsızdır.
+- Barındırma: **Hostinger VPS (Almanya – Düsseldorf) + Docker Compose** (karar #174). Mimari sağlayıcıdan bağımsızdır.
 - Ortamlar: `staging` ve `production` (ayrı VM'ler veya ayrı Compose projeleri).
 
 ---
@@ -400,7 +400,7 @@ Kanallar: **uygulama içi** (her zaman), **web push** (PWA, Faz 2) ve **e-posta*
 | Doğrulama | Zod (tüm Server Action ve Route Handler girdileri) |
 | i18n | next-intl (`tr` varsayılan, `en`; URL'de `tr` öneki yok) |
 | Test | Vitest (birim + entegrasyon, gerçek Postgres konteyneri), Playwright (mobil + masaüstü) |
-| Barındırma | Türkiye'de Linux VM, Docker Compose: `app`, `worker`, `postgres`, `garage`, `caddy` (HTTPS, Let's Encrypt) |
+| Barındırma | Hostinger VPS (Almanya), Docker Compose: `app`, `worker`, `postgres`, `garage`, `caddy` (HTTPS, Let's Encrypt) |
 | Gözlemlenebilirlik | Yapılandırılmış JSON loglar (pino), iş hatası alarmı (uygulama içi bildirim). Self-hosted hata takibi (GlitchTip) pilot sonrası (karar #104) |
 
 ### 11.2 Mimari
@@ -629,8 +629,8 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 | Erişilebilirlik | WCAG 2.1 AA, min 48px dokunma alanı, büyük yazı seçeneği, sesli okuma, ikon + metin birlikte |
 | Zayıf bağlantı | HLS uyarlanabilir video + elle düşük kalite seçeneği. Uygulama kabuğu önbellekte; ilk yükleme JS < 250 KB gzip |
 | Güvenlik | HTTPS (HSTS), CSP, rol bazlı yetki (Bölüm 11.3), tüm değişiklikler denetim kaydında, private depolama + imzalı URL, şifre politikası + kilit, gizli anahtarlar `.env` dosyasında (repo dışı), bağımlılık güvenlik taraması CI'da |
-| Yedekleme | Günlük `pg_dump` + Garage bucket aynalama (S3 senkronu). Yedekler ayrı bir depolamada (Türkiye) ve şifreli tutulur. **Üç ayda bir geri dönüş testi** (runbook: `docs/runbooks/restore.md`) |
-| Barındırma | Veriler Türkiye'de. Yurt dışı servis kullanılmaz (tek istisna: kurumun M365 kiracısı, yalnızca e-posta) |
+| Yedekleme | Günlük `pg_dump` + Garage bucket aynalama (S3 senkronu). Yedekler ayrı bir depolamada ve şifreli tutulur. **Üç ayda bir geri dönüş testi** (runbook: `docs/runbooks/restore.md`) |
+| Barındırma | Veriler kurumun VPS'inde (Hostinger, Almanya; karar #174). Başka üçüncü taraf servis kullanılmaz (istisnalar: kurumun M365 kiracısı — e-posta; web push servisleri — şifreli bildirim kimliği). Yurt dışına aktarım KVKK md. 9'a göre güvenceye alınır |
 | Dağıtım | Docker image'ları CI'da üretilir (GHCR). Sunucuda `docker compose pull && up` (`docker/compose.prod.yml`, runbook: `docs/runbooks/deploy.md`). Migration'lar dağıtım adımında `migrate` servisiyle otomatik çalışır. Staging → production |
 | CI | GitHub Actions: bağımlılık taraması, lint, typecheck, unit + entegrasyon testleri (Postgres servisiyle), migration kontrolü, build, worker derlemesi, Playwright, imaj derleme |
 
@@ -773,7 +773,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 
 | # | Konu | Karar |
 |---|---|---|
-| 1 | Barındırma | Türkiye'de bulut sunucu (Linux VM + Docker Compose). Sağlayıcı henüz seçilmedi; mimari sağlayıcıdan bağımsız |
+| 1 | Barındırma | Linux VM + Docker Compose; mimari sağlayıcıdan bağımsız. Sağlayıcı ve konum karar #174'te belirlendi |
 | 2 | Backend | Next.js + PostgreSQL + Drizzle + Better Auth + Garage (S3) + pg-boss. Supabase ve Vercel kullanılmaz |
 | 3 | Cihaz | Kişisel telefon + şirket cihazları. Sınav için gözetmen kodu (plan bazında) |
 | 4 | Giriş | Sicil no + şifre. Şifre sıfırlama İK veya e-posta ile. M365 tek oturum Faz 3 |
@@ -875,7 +875,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 100 | Üretim imajları | Tek `docker/Dockerfile`: `app` hedefi (Next standalone, yalnızca Docker derlemesinde `NEXT_OUTPUT=standalone`) ve `worker` hedefi (ffmpeg). Worker esbuild ile tek ESM dosyasına derlenir (`dist/worker.mjs`; tsx @react-pdf'i yükleyemiyor). Tek seferlik `migrate` servisi depo düzenini ve migration'ları worker imajıyla çalıştırır; app ve worker onun başarısını bekler |
 | 101 | Dosya alan adı | Garage, Caddy üzerinden ayrı alt alan adında (`FILES_DOMAIN`) yayınlanır; imzalı URL'ler bu adrese üretilir |
 | 102 | İmaj deposu | İmajlar CI'da derlenir; `main`'e gönderimde GHCR'ye `latest` ve commit etiketiyle itilir (yalnızca kod, kişisel veri yok). Geri alma = önceki commit etiketi |
-| 103 | Yedekleme | `backup` servisi her gece 02:30: `pg_dump` (custom) → `age` ile şifreli; dosya deposu rclone crypt ile şifreli artımlı kopya. Günlük 30 gün, aylık 12 ay. İsteğe bağlı `BACKUP_REMOTE` (Türkiye) uzak kopya. Açma anahtarları sunucuda değil kasada |
+| 103 | Yedekleme | `backup` servisi her gece 02:30: `pg_dump` (custom) → `age` ile şifreli; dosya deposu rclone crypt ile şifreli artımlı kopya. Günlük 30 gün, aylık 12 ay. İsteğe bağlı `BACKUP_REMOTE` uzak kopya (şifreli). Açma anahtarları sunucuda değil kasada |
 | 104 | Hata takibi | GlitchTip pilot sonrasına ertelendi. Pilotta pino JSON loglar, Docker log döndürme (10 × 20 MB) ve uygulama içi e-posta hatası alarmı |
 | 105 | Güvenlik başlıkları | Caddy ekler: HSTS, nosniff, Referrer-Policy, X-Frame-Options DENY, Permissions-Policy, CSP (`script/style 'self' 'unsafe-inline'`, görsel/medya/bağlantı/çerçeve için `FILES_DOMAIN`; nonce yok). CI'da `npm audit --omit=dev` yüksek/kritik bulguda başarısız olur; düzeltmesi olmayan incelenmiş istisnalar gerekçesiyle `audit-allowlist.json`'da |
 | 106 | Kılavuzlar | Markdown, `docs/guides/` (kullanıcı ve yönetici), Türkçe, "siz" hitabı; ekran görüntüleri pilotta gerçek veriyle eklenir |
@@ -946,6 +946,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 171 | İçerik güncellik raporu | `reports.content` (bölüm sorumlusu kapsamında, İK). Yayındaki kartlardan son gözden geçirmesi (yayın ya da "gözden geçirdim") `content.review_max_age_months`'tan eski olanlar; tarih filtresi yok |
 | 172 | Faz 2 bildirimleri | Kursiyer: `recert_started`, `reread_assigned`. Eğitmen: `tasks_unmarked` (son işaret ya da açılıştan `trainer.unmarked_alert_days` sonra, bekleme dönemi başına bir kez, işaretleyince kapanır). Bölüm sorumlusu: `training_overdue` (atama başına bir kez), `weekly_summary` (yalnızca sayılar; e-postada kişi adı yok, kapsamı boşsa gönderilmez). İSG: `ohs_expired` (günlük tek özet, rapora bağlantı). `notify(…, once)` okunmuş olsa da tekrar göndermez |
 | 173 | Zamanlama | `training.daily` her gün 06:00 (tekrar eğitimi, hedefi geçen, işaretlenmeyen görev, süresi dolan İSG; adımlar birbirinden bağımsız), `training.weekly` Pazartesi 08:00 (Europe/Istanbul). Kayıtlı `notify.email_events` değerine yeni türler kendiliğinden eklenmez |
+| 174 | Barındırma konumu | Türkiye'de barındırma zorunluluğu kaldırıldı (proje sahibi kararı, 2026-10-28). Üretim: Hostinger VPS, Almanya – Düsseldorf (AB). Gecikme Türkiye'den ~50 ms. Başka üçüncü taraf servis yasağı sürer. Yurt dışına aktarım için KVKK md. 9 dayanağı ve aydınlatma metni güncellemesi gerçek veri girilmeden önce hukukça tamamlanır |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:
@@ -958,7 +959,7 @@ Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken 
 7. Pozisyon kartında 9. bölüm (İSG) değiştiyse kart İSG onayına gider.
 8. Stajyer, ziyaretçi değil `intern` istihdam tipli personeldir.
 9. Tahliye listesi Faz 2'de yalnızca ziyaretçi ve taşeronları içerir; personel PDKS entegrasyonuyla Faz 3'te eklenir.
-10. Hata takibi self-hosted GlitchTip ile yapılır (veri Türkiye'de kalır). Pilot sonrasına ertelendi (karar #104).
+10. Hata takibi self-hosted GlitchTip ile yapılır (veri kendi sunucumuzda kalır). Pilot sonrasına ertelendi (karar #104).
 11. Personel eğitim kayıtlarının saklama süresi iş ilişkisi bitişi + 15 yıl olarak varsayıldı (**hukuk teyidi gerekli**).
 
 ---
@@ -978,5 +979,5 @@ Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken 
 | Sertifika ve katılım belgesi şablonu | İK + İSG | Logo, imza yetkilileri, taranmış imzalar |
 | Logonun vektörel (SVG) ve şeffaf arka planlı (PNG) hâli | Kurumsal iletişim | PWA ikonları, karanlık mod ve PDF'ler için. Şu an yalnızca JPG var (`public/brand/japar-academy-logo.jpg`) |
 | Pilot bölüm ve pozisyonların seçimi | Yönetim | Faz 1 pilotundan önce |
-| Türkiye'deki bulut sağlayıcısının seçimi | BT | Faz 1 sonunda staging'e geçmeden önce |
+| Yurt dışına aktarım için KVKK md. 9 dayanağı (ör. Hostinger ile standart sözleşme + Kurum'a bildirim) ve aydınlatma metinlerine eklenmesi | Hukuk / KVKK sorumlusu | Gerçek veri girilmeden önce |
 | M365 uygulama kaydı (Graph `Mail.Send`) ve gönderen adres | BT | İş paketi 1.8'den önce |

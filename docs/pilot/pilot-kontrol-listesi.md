@@ -8,7 +8,8 @@ Her satırda sorumlu ve durum doldurulur.
 | # | İş | Sorumlu | Durum |
 |---|---|---|---|
 | 1.1 | Pilot bölüm ve pozisyonların seçimi | Yönetim | ☐ |
-| 1.2 | Türkiye'deki bulut sağlayıcısının seçimi (sunucu + yedek için ikinci depolama) | BT | ☐ |
+| 1.2 | Sunucu: Hostinger VPS, Almanya (karar #174) ✓; yedek için ikinci depolama seçimi | BT | ☐ |
+| 1.2a | Yurt dışına aktarım için KVKK md. 9 dayanağı (ör. Hostinger ile standart sözleşme + Kurum'a bildirim) ve aydınlatma metinlerinde yurt dışı aktarım bilgisi — gerçek veri girilmeden önce | Hukuk / KVKK sorumlusu | ☐ |
 | 1.3 | Alan adları: `APP_DOMAIN`, `FILES_DOMAIN` | BT | ☐ |
 | 1.4 | M365 uygulama kaydı (Graph `Mail.Send`, uygulama izni) ve gönderen posta kutusu | BT | ☐ |
 | 1.5 | KVKK aydınlatma metni (personel) — hukuk onayı | Hukuk / KVKK sorumlusu | ☐ |
