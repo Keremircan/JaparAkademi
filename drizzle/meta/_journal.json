@@ -246,6 +246,20 @@
       "when": 1793193968631,
       "tag": "0034_recert",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1793278099947,
+      "tag": "0035_web_push",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1793278116340,
+      "tag": "0036_web_push_triggers",
+      "breakpoints": true
     }
   ]
 }

@@ -34,3 +34,13 @@ test("SPEC 11.4 şifremi unuttum: sicil girilince aynı genel mesaj gösterilir"
   await page.goto(`/reset-password/${"x".repeat(43)}`);
   await expect(page.getByText("Bu bağlantı geçersiz ya da süresi dolmuş.")).toBeVisible();
 });
+
+test("karar #177, #181: kişisel cihazda profilde 'Bu cihazda bildirimler' bölümü ve durumu görünür", async ({ page }, testInfo) => {
+  await login(page, sicil("TR", testInfo.project.name), E2E_PASSWORD);
+  await acceptConsentIfAsked(page);
+  await page.goto("/profile");
+  const section = page.getByRole("region", { name: "Bu cihazda bildirimler" }).filter({ visible: true });
+  await expect(section).toBeVisible();
+  // Sunucu ve tarayıcıya göre: aç düğmesi ya da nedenini anlatan açıklama (geliştirmede service worker kapalı)
+  await expect(section.getByRole("button", { name: "Bildirimleri aç" }).or(section.getByRole("status")).first()).toBeVisible();
+});

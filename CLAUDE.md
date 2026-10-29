@@ -13,11 +13,11 @@ Yeni bir özelliğe, tabloya veya ekrana başlamadan önce SPEC.md'nin ilgili b�
 - Tailwind CSS 4 + shadcn/ui (base-nova) + vaul, next-intl (varsayılan `tr`), Zod
 - `@react-pdf/renderer` + `qrcode` (sertifika), `exceljs` (içe/dışa aktarma), Microsoft Graph (e-posta), Serwist (PWA kabuğu), Web Speech API (sesli okuma)
 - Test: Vitest (birim + gerçek Postgres ile entegrasyon), Playwright (mobil + masaüstü)
-- Barındırma: Türkiye'de Linux VM, Docker Compose (`app`, `worker`, `postgres`, `garage`, `caddy`)
+- Barındırma: Hostinger VPS (Almanya – Düsseldorf, AB), Docker Compose (`app`, `worker`, `postgres`, `garage`, `caddy`) — karar #174
 
 ## Değişmez kurallar
 - **Tek kurum (JAPAR).** Multi-tenant yapı, `org_id`/`tenant_id` kolonu YOK.
-- **Veriler Türkiye'de.** Kişisel veri veya içerik yurt dışındaki bir servise gönderilmez: Vercel, Supabase Cloud, Cloudflare/Mux, bulut TTS, yurt dışı analitik veya hata takibi kullanılmaz. Tek istisna kurumun Microsoft 365 kiracısıdır (yalnızca e-posta; Faz 3'te SSO).
+- **Veriler kendi sunucumuzda.** Bütün veriler kurumun VPS'inde (Hostinger, Almanya) durur; Türkiye'de barındırma zorunluluğu kaldırıldı (karar #174). Kişisel veri veya içerik başka bir üçüncü taraf servise gönderilmez: Vercel, Supabase Cloud, Cloudflare/Mux, bulut TTS, harici analitik veya hata takibi kullanılmaz. İstisnalar: kurumun Microsoft 365 kiracısı (yalnızca e-posta; Faz 3'te SSO) ve web push servisleri (yalnızca şifreli bildirim kimliği, karar #110). Yurt dışına aktarım KVKK md. 9'a göre hukukça güvenceye alınır (pilot listesi).
 - **SMS yok.** Hiçbir fazda SMS sağlayıcısı eklenmez. Kanallar: uygulama içi, web push, e-posta.
 - **Roller:** `personnel` (herkes), `trainer`, `section_manager`, `ohs_specialist`, `hr`, `security`, `sysadmin`. Bir kişi birden çok role sahip olabilir. "Kursiyer" bir rol değildir; aktif eğitim ataması olan personeldir. Ziyaretçinin hesabı yoktur.
 - **Yetki tek yerde:** `src/server/authz`. Veriye yalnızca `src/server/services` üzerinden erişilir; bileşen veya Server Action doğrudan Drizzle sorgusu yazmaz. Her servis fonksiyonu önce yetki ve kapsam kontrolü yapar. `proxy.ts` yalnızca iyimser yönlendirme içindir; yetki kontrolü değildir.
@@ -96,6 +96,7 @@ Yeni bir özelliğe, tabloya veya ekrana başlamadan önce SPEC.md'nin ilgili b�
 - Ziyaretçi ekranları (hesapsız) `src/app/[locale]/(public)/{v/[token],kiosk,visit}` + `features/visitor-flow/`. Yetki ziyaret belirteciyle `services/visitors/session.ts` (`visitForToken`) ya da kiosk çereziyle (`recognizeKiosk`); akış `services/visitors/flow.ts`, aktör `systemActor("visitor")`. Sunucu süreyi ve sırayı doğrular, doğru cevap dönmez. Bu sayfalar önce `connection()` çağırır. Ziyaretçi metinleri `messages/en.json`'da da olmalı.
 - Kapı `services/visitors/gate.ts` (`gateList`, `checkIn` — kimlik birleştirme + kara liste reddi `visit_denials`, `checkOut`, `activeClearanceUntil`). Girişten sonra `visits` trigger'la kilitli (`visit_gate_guard`); testte tarihi değiştirmek için trigger tablo sahibiyle geçici kapatılır.
 - Tahliye `services/visitors/evacuation.ts` (`insideNow`, yoklama `startRollcall`/`refreshRollcall`/`setSafe`/`endRollcall`, `evacuationPdf`); bağlantısız son liste `src/lib/evacuation-cache.ts` (IndexedDB) + çevrimdışı sayfası. Ziyaretçi raporları rapor altyapısında (`visitors`, `contractors`; `hasOrgFilters` false).
+- Web push `services/push/` (`subscribePush`/`unsubscribePush`/`isSubscribed`; `queuePush` `notify()` içinde `push_outbox`'a yazar; `dispatch.ts` → `push.dispatch` kuyruğu, `PUSH_TRANSPORT=log|webpush`, testte sahte `PushSender` verilir). Saf kurallar `state/push.ts` (yanıt sınıflama, izinli push servisleri). Abonelik oturuma bağlı (çıkışta silinir), ortak cihazda reddedilir; push yalnızca bildirim kimliği + genel metin taşır, dokununca `/api/notifications/[id]`. Profil bileşeni `features/push/`, olaylar `src/app/sw.ts`.
 - Tekrar eğitimi `services/assignments/recert.ts` (`runRecert`: son tamamlanış + `recert.lead_days`, `createAssignment(…, { renew })`, `assignment_modules.renews_id`) + saf kurallar `state/recert.ts`. Zamanlanmış eğitim bildirimleri `services/assignments/alerts.ts` (`training.daily` 06:00, `training.weekly` Pazartesi 08:00). Bir kez gidecek bildirimde `notify(…, { once: true })`; önek ile kapatma `resolveNotificationsByPrefix`.
 - Worker esbuild ile `dist/worker.mjs` (ESM) olarak derlenir (`scripts/build-worker.mjs`); tsx CJS modu @react-pdf'i yükleyemez. Tek seferlik PDF denemeleri için geçici bir Vitest testi kullanın.
 - Oturum/ortam okuyan sunucu kodu önce istek verisini okur (`await headers()` / `connection()`), sonra env'e veya veritabanına dokunur; aksi halde Docker derlemesindeki prerender env doğrulamasında düşer.
@@ -117,6 +118,7 @@ Kurulum ayrıntıları: `docs/runbooks/local-dev.md`.
 - `npm run dev` / `npm run build` / `npm run start` / `npm run worker` (`worker:dev` izlemeli, `worker:build` yalnızca derler)
 - `npm run lint` / `npm run typecheck` / `npm test` (birim) / `npm run test:integration` (gerçek test DB) / `npm run test:e2e` (Playwright, mobil + masaüstü)
 - `npm run icons` — PWA ikonlarını üretir
+- `npm run push:keys` — web push VAPID anahtarları üretir
 - `node scripts/audit-check.mjs` — üretim bağımlılıklarının güvenlik taraması (CI ile aynı)
 - Üretim yığını: `docker compose -f docker/compose.prod.yml --env-file docker/.env.production …` (bkz. `docs/runbooks/deploy.md`)
 - Bu Windows makinesinde Next/SWC için `SWC_NATIVE_BINDING_CACHE` kullanıcı ortam değişkeni gerekir (runbook'a bakın).

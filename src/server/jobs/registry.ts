@@ -8,6 +8,7 @@ import { processMediaAsset } from "@/server/services/media/process";
 import { finalizeExpiredAttempt } from "@/server/services/exams";
 import { renderCertificate } from "@/server/services/certificates/render";
 import { dispatchEmails } from "@/server/services/notifications/dispatch";
+import { dispatchPush } from "@/server/services/push/dispatch";
 import { purgeOldNotifications } from "@/server/services/notifications";
 import { runRetention } from "@/server/services/retention";
 import { runTrainingDaily, sendWeeklySummaries } from "@/server/services/assignments/alerts";
@@ -39,6 +40,14 @@ export async function registerJobs(boss: PgBoss) {
     if (r.sent || r.failed) logger.info(r, "E-posta kuyruğu işlendi");
   });
   await boss.schedule(QUEUES.mailDispatch, "* * * * *", null, { tz: "Europe/Istanbul" });
+
+  // Web push kuyruğu (dakikada bir; karar #179)
+  if (env().PUSH_TRANSPORT === "log") logger.warn("PUSH_TRANSPORT=log: push bildirimleri gönderilmiyor, yalnızca loga yazılıyor");
+  await boss.work(QUEUES.pushDispatch, { batchSize: 1 }, async () => {
+    const r = await dispatchPush();
+    if (r.sent || r.failed) logger.info(r, "Push kuyruğu işlendi");
+  });
+  await boss.schedule(QUEUES.pushDispatch, "* * * * *", null, { tz: "Europe/Istanbul" });
   await boss.work(QUEUES.notificationsPurge, async () => {
     const n = await purgeOldNotifications(systemActor("worker:notifications.purge"));
     if (n > 0) logger.info({ notifications: n }, "Eski bildirimler silindi");

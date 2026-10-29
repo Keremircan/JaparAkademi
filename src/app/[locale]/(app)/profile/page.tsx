@@ -8,6 +8,8 @@ import { NotFoundView } from "@/components/app-shell/not-found-view";
 import { getSectionUser } from "@/server/auth/current-user";
 import { toActor } from "@/server/services/auth";
 import { getOwnPlacement } from "@/server/services/people";
+import { pushPublicKey } from "@/server/services/push";
+import { PushToggle } from "@/features/push/components/push-toggle";
 import { Suspense } from "react";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 
@@ -28,6 +30,7 @@ async function Content() {
   const user = await getSectionUser("profile");
   if (!user) return <NotFoundView />;
   const [t, placement] = await Promise.all([getTranslations(), getOwnPlacement(toActor(user))]);
+  const publicKey = pushPublicKey();
 
   return (
     <section className="max-w-xl">
@@ -56,6 +59,19 @@ async function Content() {
       </dl>
 
       {user.sharedDevice && <p className="mt-4 text-sm text-muted-foreground">{t("profile.sharedDevice")}</p>}
+
+      {/* Push tercihi cihaz bazında; ortak cihazda gösterilmez (kararlar #177–178) */}
+      {!user.sharedDevice &&
+        (publicKey ? (
+          <PushToggle publicKey={publicKey} />
+        ) : (
+          <section aria-labelledby="push-title" className="mt-6 rounded-2xl border p-5">
+            <h2 id="push-title" className="text-lg font-semibold">
+              {t("push.title")}
+            </h2>
+            <p role="status" className="mt-2 text-sm text-muted-foreground">{t("push.blocked.server")}</p>
+          </section>
+        ))}
 
       <div className="mt-6 flex flex-col gap-3">
         {/* Ziyaretçi ön kaydı her personele açıktır (iş paketi 2.2, karar #130) */}

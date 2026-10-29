@@ -1,6 +1,6 @@
 # Kurulum ve yayın (üretim)
 
-JAPAR Akademi, Türkiye'deki bir Linux sunucuda Docker Compose ile çalışır (SPEC 11.1, 13.1).
+JAPAR Akademi, Hostinger VPS'te (Almanya – Düsseldorf, karar #174) Docker Compose ile çalışır (SPEC 11.1, 13.1).
 Servisler: `postgres`, `garage` (dosya deposu), `migrate` (tek seferlik), `app`, `worker`, `caddy` (HTTPS), `backup`.
 Dosyalar: `docker/compose.prod.yml`, `docker/Dockerfile`, `docker/caddy/Caddyfile`, `docker/backup/`, `docker/postgres/init-prod/`.
 
@@ -67,6 +67,19 @@ curl -s https://$APP_DOMAIN/api/health     # {"status":"ok","database":true,"sto
 
 Tarayıcıda `https://APP_DOMAIN` → sicil `000001` ve `SEED_ADMIN_PASSWORD` ile giriş → şifre değiştirme → KVKK onayı.
 
+### Web push (telefona bildirim)
+
+Push yalnızca "Yeni bildiriminiz var" ve bildirim kimliğini taşır (karar #176). Anahtarları bir kez üretin ve `docker/.env.production`'a ekleyin:
+
+```bash
+$C run --rm --no-deps migrate node_modules/.bin/tsx scripts/push-keys.ts >> docker/.env.production
+nano docker/.env.production     # PUSH_TRANSPORT=webpush ve VAPID_SUBJECT=mailto:<BT adresi>; eski boş VAPID_ satırlarını silin
+$C up -d                         # app ve worker yeni ayarla yeniden başlar
+```
+
+Gizli anahtar (`VAPID_PRIVATE_KEY`) yalnızca sunucuda kalır; dosyanın kasadaki kopyasını güncelleyin. Anahtar değişirse kişilerin bildirimleri profilden yeniden açması gerekir.
+Worker loglarında `PUSH_TRANSPORT=log` uyarısı görünüyorsa push kapalıdır.
+
 ## 4. Güncelleme (yeni sürüm)
 
 `main`'e birleştirilen her değişiklik CI'da test edilir; geçerse imajlar `ghcr.io/<sahip>/japar-akademi-{app,worker}:latest` ve `:<commit>` etiketleriyle gönderilir.
@@ -99,4 +112,4 @@ Migration'lar geri alınmaz; şema değişikliği içeren bir sürümü geri alm
 - Veritabanı ve Garage portları dışarı açılmaz; yalnızca Caddy 80/443 dinler.
 - Caddy güvenlik başlıklarını ekler (HSTS, CSP, X-Frame-Options, Permissions-Policy, Referrer-Policy).
 - CI her değişiklikte bağımlılık güvenlik taraması yapar (`scripts/audit-check.mjs`); düzeltmesi olmayan ve incelenen istisnalar `audit-allowlist.json`'dadır ve gerekçeleri yazılıdır.
-- Kişisel veri yurt dışına gönderilmez. İmajlar GHCR'de durur ama yalnızca kod içerir. E-posta kurumun M365 kiracısından gider (Graph `Mail.Send`).
+- Kişisel veri sunucu dışındaki üçüncü taraf servislere gönderilmez. İmajlar GHCR'de durur ama yalnızca kod içerir. E-posta kurumun M365 kiracısından gider (Graph `Mail.Send`).

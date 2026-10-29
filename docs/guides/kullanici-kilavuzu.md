@@ -55,6 +55,8 @@ Bölüm sorumlunuz "İşe başlayabilir" onayını verince **pozisyon yetkinlik 
 ### Bildirimler
 Üst çubuktaki **zil** okunmamış bildirim sayısını gösterir. Bildirime dokununca ilgili ekran açılır. E-posta adresiniz kayıtlıysa bazı bildirimler e-postayla da gelir (e-postada ayrıntı yer almaz).
 
+**Telefona bildirim (push):** **Profil → Bu cihazda bildirimler → Bildirimleri aç**. Tarayıcı izin isterse **İzin ver** deyin. Bundan sonra yeni bir bildiriminiz olduğunda telefonunuzda "Yeni bildiriminiz var" uyarısı çıkar; dokununca ilgili ekran açılır. Uyarıda kişisel bilgi yer almaz. Ayar cihaz başınadır: her telefon ya da bilgisayarda ayrı açılır, çıkış yapınca o cihazda kapanır. iPhone'da önce Safari'de **Paylaş → Ana Ekrana Ekle** ile uygulamayı ekleyip simgeden açmanız gerekir. Ortak cihazlarda bu ayar yoktur.
+
 ---
 
 ## 3. Pratik eğitmen

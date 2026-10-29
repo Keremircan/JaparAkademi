@@ -4,12 +4,13 @@ import type { Actor } from "@/server/authz/actor";
 import { assertUser } from "@/server/authz/policy";
 import type { Role } from "@/server/authz/roles";
 import { db, type DbOrTx, type Tx } from "@/server/db/client";
-import { emailOutbox, notifications, orgUnits, personnel, positions, roleScopes, userRoles, users } from "@/server/db/schema";
+import { emailOutbox, notifications, orgUnits, pushOutbox, personnel, positions, roleScopes, userRoles, users } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { NotFoundError } from "@/server/errors";
 import { env } from "@/server/env";
 import { emailHtml, type NotificationKind } from "@/server/state/notifications";
 import messages from "../../../../messages/tr.json";
+import { queuePush } from "../push";
 import { getSettings } from "../settings";
 
 /**
@@ -17,6 +18,8 @@ import { getSettings } from "../settings";
  *  - Olayla aynı transaction'da yazılır: olay geri alınırsa bildirim de oluşmaz.
  *  - Aynı kişiye aynı konu için okunmamış tek bildirim tutulur; yeni olay mevcut bildirimi tazeler (e-posta tekrar gitmez).
  *  - E-posta yalnızca `notify.email_events` türlerinde ve kişinin e-postası varsa; içerik genel başlık + bağlantıdır.
+ *  - Push yalnızca `notify.push_events` türlerinde ve kişinin aboneliği varsa; içerik yalnızca bildirim kimliğidir (karar #176).
+ *    Tazelenen bildirim için ikinci push gitmez.
  */
 
 export type NotifyInput = {
@@ -60,6 +63,7 @@ export async function notify(tx: Tx, input: NotifyInput): Promise<void> {
         ).map((r) => [r.userId, r.email]),
       )
     : new Map<string, string | null>();
+  const created: { notificationId: string; userId: string }[] = [];
 
   for (const userId of ids) {
     const [existing] = await tx
@@ -83,12 +87,14 @@ export async function notify(tx: Tx, input: NotifyInput): Promise<void> {
       .insert(notifications)
       .values({ userId, kind: input.kind, subjectKey: input.subjectKey, params: input.params ?? {}, link: input.link })
       .returning({ id: notifications.id });
+    created.push({ notificationId: n!.id, userId });
     const to = emails.get(userId);
     if (wantsEmail && to) {
       const c = emailContent(input.kind, input.link, input.params ?? {});
       await tx.insert(emailOutbox).values({ notificationId: n!.id, kind: input.kind, toAddress: to, subject: c.subject, bodyText: c.text, bodyHtml: c.html });
     }
   }
+  await queuePush(tx, input.kind, created);
 }
 
 /**
@@ -243,6 +249,7 @@ export async function purgeOldNotifications(actor: Actor): Promise<number> {
       .where(lt(notifications.updatedAt, before))
       .returning({ id: notifications.id });
     await tx.delete(emailOutbox).where(and(lt(emailOutbox.createdAt, before), inArray(emailOutbox.status, ["sent", "skipped", "failed"])));
+    await tx.delete(pushOutbox).where(and(lt(pushOutbox.createdAt, before), inArray(pushOutbox.status, ["sent", "skipped", "failed"])));
     return rows.length;
   });
 }

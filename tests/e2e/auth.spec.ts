@@ -43,6 +43,8 @@ test("ilk giriş → şifre değiştir → KVKK onayı → rol menüsü → çı
   // Profil: ortak cihaz modu ve çıkış
   await page.goto("/profile");
   await expect(page.getByText("ortak cihaz modunda")).toBeVisible();
+  // Ortak cihazda push bölümü yok (karar #178)
+  await expect(page.getByRole("heading", { name: "Bu cihazda bildirimler" })).toHaveCount(0);
   await page.getByRole("main").getByRole("button", { name: "Çıkış yap" }).click();
   await expect(page).toHaveURL(/\/login$/);
 

@@ -91,6 +91,10 @@ export const SETTINGS = {
   "notify.email_events": def({ schema: z.array(z.enum(NOTIFICATION_KINDS)), default: DEFAULT_EMAIL_EVENTS, managedBy: SYS }),
   "notify.retention_days": def({ schema: positiveInt.max(3650), default: 180, managedBy: SYS }),
   "mail.max_attempts": def({ schema: positiveInt.max(20), default: 5, managedBy: SYS }),
+  // Web push (iş paketi 2.6, karar #180): varsayılan bütün türler; push yalnızca "Yeni bildiriminiz var" taşır
+  "notify.push_events": def({ schema: z.array(z.enum(NOTIFICATION_KINDS)), default: [...NOTIFICATION_KINDS], managedBy: SYS }),
+  "push.max_attempts": def({ schema: positiveInt.max(10), default: 3, managedBy: SYS }),
+  "push.ttl_hours": def({ schema: positiveInt.max(24 * 7), default: 24, managedBy: SYS }),
   "auth.reset_link_minutes": def({ schema: positiveInt.max(24 * 60), default: 60, managedBy: SYS }),
   "auth.reset_max_per_hour": def({ schema: positiveInt.max(100), default: 3, managedBy: SYS }),
 

@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { index, integer, jsonb, pgEnum, pgTable, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
-import { users } from "./auth";
+import { sessions, users } from "./auth";
 import { createdAt, id, tstz, updatedAt } from "./_shared";
 
 /**
@@ -73,4 +73,59 @@ export const passwordResetTokens = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index("password_reset_tokens_user_idx").on(t.userId, t.createdAt)],
+);
+
+// ---- Web push (SPEC 10.2, iş paketi 2.6, kararlar #175–184) ----
+
+/**
+ * Bu cihazdaki push aboneliği. Abonelik oturuma bağlıdır: çıkışta, oturum sona erince ya da kişi
+ * anonimleştirilince (oturumlar silinir) abonelik de silinir. Ortak cihaz oturumunda abonelik açılmaz.
+ */
+export const pushSubscriptions = pgTable(
+  "push_subscriptions",
+  {
+    id: id(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    sessionId: uuid()
+      .notNull()
+      .references(() => sessions.id, { onDelete: "cascade" }),
+    /** Push servisinin adresi (tarayıcı + cihaz başına tekil). */
+    endpoint: text().notNull().unique(),
+    p256dh: text().notNull(),
+    auth: text().notNull(),
+    /** Kısaltılmış tarayıcı bilgisi (profilde "bu cihaz" gösterimi için). */
+    userAgent: text(),
+    lastSuccessAt: tstz("last_success_at"),
+    failureCount: integer().notNull().default(0),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("push_subscriptions_user_idx").on(t.userId)],
+);
+
+/**
+ * Gönderilecek push'lar (bildirim başına bir satır; kişinin bütün cihazlarına gider). Bildirim silinince
+ * satır da silinir. Push yalnızca bildirim kimliğini taşır (karar #110, #176).
+ */
+export const pushOutbox = pgTable(
+  "push_outbox",
+  {
+    id: id(),
+    notificationId: uuid()
+      .notNull()
+      .references(() => notifications.id, { onDelete: "cascade" }),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    status: emailStatus().notNull().default("pending"),
+    attempts: integer().notNull().default(0),
+    lastError: text(),
+    nextAttemptAt: tstz("next_attempt_at").notNull().defaultNow(),
+    sentAt: tstz("sent_at"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("push_outbox_pending_idx").on(t.status, t.nextAttemptAt)],
 );

@@ -146,7 +146,7 @@ export function SettingEditor({
 
       {input.kind === "events" && (
         <fieldset>
-          <legend className="mb-2 text-base font-medium">{t("events.legend")}</legend>
+          <legend className="mb-2 text-base font-medium">{t(input.channel === "push" ? "events.pushLegend" : "events.legend")}</legend>
           <ul className="flex flex-col">
             {eventKinds.map((k) => {
               const selected = (draft as string[]).includes(k);
