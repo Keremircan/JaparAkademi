@@ -1,17 +1,25 @@
 name: CI
 
+# Testler PR'da bir kez çalışır; main'e birleştirince yalnızca imajlar derlenip gönderilir (aynı kod iki kez
+# test edilmez). Güvenlik ağı: her gece main'de bütün testler; elle de başlatılabilir (Actions → CI → Run workflow).
 on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    - cron: "0 1 * * *"
+  workflow_dispatch:
 
 concurrency:
-  group: ci-${{ github.ref }}
+  # Olay türü de grupta: gece testi main'e gönderilen imaj işini (ya da tersini) iptal etmesin
+  group: ci-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   verify:
     name: Lint, tip, test, build, e2e
+    # main'e push'ta çalışmaz: kod PR'da test edildi (dal güncel olmadan merge edilemez — branch protection)
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -104,12 +112,11 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-  # Üretim imajları (karar #102): her PR'da derlenir; main'e birleştirince GitHub Container Registry'ye gönderilir.
-  # İmajlarda yalnızca kod vardır; kişisel veri Türkiye'deki sunucuda kalır.
+  # Üretim imajları (karar #102): PR'da testlerle aynı anda derlenir (gönderilmez); main'e birleştirince derlenip
+  # GitHub Container Registry'ye gönderilir. İmajlarda yalnızca kod vardır; kişisel veri kurumun sunucusunda kalır.
   images:
     name: Docker imajları
-    # Test işi geçmeden imaj gönderilmez
-    needs: verify
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     permissions:
