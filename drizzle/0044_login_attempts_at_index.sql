@@ -1,0 +1,1 @@
+CREATE INDEX "login_attempts_at_idx" ON "login_attempts" USING btree ("at");

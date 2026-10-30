@@ -146,6 +146,8 @@ export const SETTINGS = {
   "retention.contractor_years": def({ schema: positiveInt.max(20), default: 2, managedBy: SYS }),
   "retention.blacklist_years_after_lift": def({ schema: positiveInt.max(20), default: 2, managedBy: SYS }),
   "retention.audit_years": def({ schema: positiveInt.max(50), default: 15, managedBy: SYS }),
+  // Giriş kayıtları (karar #216): en az 30 gün; gece silinir
+  "retention.login_attempt_days": def({ schema: positiveInt.min(30).max(3650), default: 365, managedBy: SYS }),
 } as const;
 
 export type SettingKey = keyof typeof SETTINGS;
