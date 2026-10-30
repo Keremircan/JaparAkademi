@@ -2,10 +2,11 @@ import { and, asc, count, eq, ilike, inArray, isNotNull, isNull, or, sql, type S
 import type { Actor } from "@/server/authz/actor";
 import { assertUser, hasRole } from "@/server/authz/policy";
 import { db, type DbOrTx } from "@/server/db/client";
-import { contents, moduleContents, modules, orgUnits, planModules, practiceTasks } from "@/server/db/schema";
+import { competencies, contents, moduleContents, modules, orgUnits, planModules, practiceTasks } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/server/errors";
 import { canDraftContent, canUseLibrary, canViewContent, contentAccessFor, type ContentAccess } from "./content/access";
+import { assertCompetenciesLinkable, competencyOptionsForUnit } from "./competencies";
 
 /**
  * Modül kütüphanesi (SPEC 4.3, FG-3.1). Modüller birden fazla planda kullanılır; sürümsüzdür
@@ -123,7 +124,9 @@ export async function commonModulesFor(collarType: "blue" | "white", conn: DbOrT
 export type ModuleDetail = ModuleListItem & {
   description: string | null;
   contents: { id: string; title: string; type: string; published: boolean; archived: boolean }[];
-  tasks: { id: string; title: string; description: string | null; isCritical: boolean }[];
+  tasks: { id: string; title: string; description: string | null; isCritical: boolean; competencyId: string | null; competencyName: string | null }[];
+  /** Görevlere bağlanabilecek yetkinlikler (pratik modülde; karar #219). */
+  competencyOptions: { id: string; name: string; kind: "machine" | "task" }[];
   usedInPlans: number;
   can: { edit: boolean; editRemote: boolean; archive: boolean };
 };
@@ -139,8 +142,16 @@ export async function getModule(actor: Actor, moduleId: string): Promise<ModuleD
       .where(eq(moduleContents.moduleId, m.id))
       .orderBy(asc(moduleContents.sortOrder)),
     db()
-      .select({ id: practiceTasks.id, title: practiceTasks.title, description: practiceTasks.description, isCritical: practiceTasks.isCritical })
+      .select({
+        id: practiceTasks.id,
+        title: practiceTasks.title,
+        description: practiceTasks.description,
+        isCritical: practiceTasks.isCritical,
+        competencyId: practiceTasks.competencyId,
+        competencyName: competencies.name,
+      })
       .from(practiceTasks)
+      .leftJoin(competencies, eq(competencies.id, practiceTasks.competencyId))
       .where(and(eq(practiceTasks.moduleId, m.id), isNull(practiceTasks.archivedAt)))
       .orderBy(asc(practiceTasks.sortOrder)),
     db().select({ n: count() }).from(planModules).where(eq(planModules.moduleId, m.id)),
@@ -164,6 +175,7 @@ export async function getModule(actor: Actor, moduleId: string): Promise<ModuleD
     itemCount: m.kind === "practice" ? tasks.length : contentRows.length,
     contents: contentRows.map((c) => ({ id: c.id, title: c.title, type: c.type, published: c.publishedId !== null, archived: c.archivedAt !== null })),
     tasks,
+    competencyOptions: m.kind === "practice" ? await competencyOptionsForUnit(db(), m.ownerOrgUnitId) : [],
     usedInPlans: Number(usage?.n ?? 0),
     can: {
       edit,
@@ -287,7 +299,8 @@ export async function setModuleContents(actor: Actor, moduleId: string, contentI
   });
 }
 
-export type TaskInput = { id?: string; title: string; description: string | null; isCritical: boolean };
+/** `competencyId`: görev bu yetkinliğe bağlıdır (karar #219); boş = bağsız. */
+export type TaskInput = { id?: string; title: string; description: string | null; isCritical: boolean; competencyId?: string | null };
 
 /** Pratik görevler: listeden çıkarılan görev arşivlenir (geçmiş işaretlemeler korunur). */
 export async function saveTasks(actor: Actor, moduleId: string, tasks: TaskInput[]): Promise<void> {
@@ -302,6 +315,7 @@ export async function saveTasks(actor: Actor, moduleId: string, tasks: TaskInput
     const { module: m, access } = await loadModule(actor, moduleId, tx);
     if (m.archivedAt || !canEdit(access, m)) throw new ForbiddenError("modules.edit");
     if (m.kind !== "practice") throw new ValidationError("module_kind_invalid");
+    await assertCompetenciesLinkable(tx, m.ownerOrgUnitId, clean.map((t) => t.competencyId).filter((x): x is string => !!x));
     const current = await tx.select({ id: practiceTasks.id }).from(practiceTasks).where(and(eq(practiceTasks.moduleId, m.id), isNull(practiceTasks.archivedAt)));
     const currentIds = new Set(current.map((c) => c.id));
     const keep = new Set(clean.filter((t) => t.id).map((t) => t.id!));
@@ -313,10 +327,12 @@ export async function saveTasks(actor: Actor, moduleId: string, tasks: TaskInput
       if (t.id) {
         await tx
           .update(practiceTasks)
-          .set({ title: t.title, description: t.description, isCritical: t.isCritical, sortOrder: i })
+          .set({ title: t.title, description: t.description, isCritical: t.isCritical, sortOrder: i, competencyId: t.competencyId ?? null })
           .where(eq(practiceTasks.id, t.id));
       } else {
-        await tx.insert(practiceTasks).values({ moduleId: m.id, title: t.title, description: t.description, isCritical: t.isCritical, sortOrder: i });
+        await tx
+          .insert(practiceTasks)
+          .values({ moduleId: m.id, title: t.title, description: t.description, isCritical: t.isCritical, sortOrder: i, competencyId: t.competencyId ?? null });
       }
     }
   });

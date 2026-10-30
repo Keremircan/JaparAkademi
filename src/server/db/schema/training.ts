@@ -144,6 +144,8 @@ export const practiceTasks = pgTable(
     description: text(),
     isCritical: boolean().notNull().default(false),
     sortOrder: integer().notNull(),
+    /** Görev "tek başına" tamamlanıp işe başlama onaylanınca bu yetkinlik verilir (karar #219). */
+    competencyId: uuid(),
     archivedAt: tstz("archived_at"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),

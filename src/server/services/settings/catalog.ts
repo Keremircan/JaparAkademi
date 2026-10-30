@@ -57,6 +57,7 @@ export const SETTINGS_CATALOG: Partial<Record<SettingKey, Entry>> = {
   "theory.video_watch_ratio": { group: "training", input: { kind: "decimal", step: 0.05 } },
   "assignment.daily_training_minutes": { group: "training", input: int },
   "recert.lead_days": { group: "training", input: int },
+  "competency.alert_days": { group: "training", input: int },
   "reread.due_days": { group: "training", input: int },
   "trainer.unmarked_alert_days": { group: "training", input: int },
   "content.review_max_age_months": { group: "training", input: int },

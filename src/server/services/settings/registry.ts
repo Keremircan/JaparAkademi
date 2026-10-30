@@ -106,6 +106,8 @@ export const SETTINGS = {
 
   // Süre ve hatırlatmalar
   "recert.lead_days": def({ schema: positiveInt.max(365), default: 30, managedBy: SYS }),
+  // Yetkinlik süresi yaklaşıyor uyarısı ve matristeki sarı renk (karar #220)
+  "competency.alert_days": def({ schema: positiveInt.max(365), default: 30, managedBy: SYS }),
   "reread.due_days": def({ schema: positiveInt.max(365), default: 14, managedBy: SYS }),
   "trainer.unmarked_alert_days": def({ schema: positiveInt.max(60), default: 3, managedBy: SYS }),
   "content.review_max_age_months": def({ schema: positiveInt.max(60), default: 12, managedBy: SYS }),

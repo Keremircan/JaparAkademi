@@ -43,6 +43,11 @@ export const PERMISSIONS = {
   // Belge şablonu: imza yetkilileri (karar #79)
   "certificates.template": ["hr", "sysadmin"],
   "classroom.record": ["trainer", "section_manager", "ohs_specialist", "hr"],
+  // Yetkinlik matrisi (FG-7.4, iş paketi 3.1): tanım bölüm sorumlusu (kapsam) + İSG uzmanı (hepsi),
+  // elle verme/geri alma bölüm sorumlusu (kapsam), matrisi görme yöneticiler
+  "competencies.manage": ["section_manager", "ohs_specialist"],
+  "competencies.grant": ["section_manager"],
+  "competencies.view": ["section_manager", "ohs_specialist", "hr", "sysadmin"],
   // Raporlar
   "reports.view": ["section_manager", "ohs_specialist", "hr", "security", "sysadmin"],
   // Faz 1 raporları (SPEC 10.1, karar #91): eğitim ve sınav İK + bölüm sorumlusu (kapsam), İSG defteri İSG + İK, işe başlama süresi İK

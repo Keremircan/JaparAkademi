@@ -1,4 +1,5 @@
-import { index, integer, jsonb, pgEnum, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { check, index, integer, jsonb, pgEnum, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { users } from "./auth";
 import { mediaAssets } from "./content";
 import { assignmentModules, assignments } from "./learning";
@@ -115,15 +116,32 @@ export const certificates = pgTable(
 
 export const competencyKind = pgEnum("competency_kind", ["machine", "task"]);
 
-export const competencies = pgTable("competencies", {
-  id: id(),
-  name: text().notNull(),
-  kind: competencyKind().notNull(),
-  orgUnitId: uuid().references(() => orgUnits.id, { onDelete: "restrict" }),
-  archivedAt: tstz("archived_at"),
-  createdAt: createdAt(),
-  updatedAt: updatedAt(),
-});
+/**
+ * Yetkinlik tanımı (FG-7.4, karar #218): makine ya da iş. `orgUnitId` boşsa bütün birimlerde geçerli (yalnızca İSG
+ * uzmanı tanımlar). `validityMonths` boşsa süresiz. Silinmez, arşivlenir.
+ */
+export const competencies = pgTable(
+  "competencies",
+  {
+    id: id(),
+    name: text().notNull(),
+    kind: competencyKind().notNull(),
+    description: text(),
+    orgUnitId: uuid().references(() => orgUnits.id, { onDelete: "restrict" }),
+    validityMonths: integer(),
+    createdBy: uuid().references(() => users.id, { onDelete: "restrict" }),
+    archivedAt: tstz("archived_at"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("competencies_org_unit_idx").on(t.orgUnitId),
+    check("competencies_validity_check", sql`${t.validityMonths} is null or ${t.validityMonths} between 1 and 240`),
+  ],
+);
+
+/** training: işe başlama onayında pratik görevlerden; manual: bölüm sorumlusu gerekçeyle (karar #219). */
+export const competencyGrantSource = pgEnum("competency_grant_source", ["training", "manual"]);
 
 export const competencyGrants = pgTable(
   "competency_grants",
@@ -137,8 +155,16 @@ export const competencyGrants = pgTable(
       .references(() => competencies.id, { onDelete: "restrict" }),
     certificateId: uuid().references(() => certificates.id, { onDelete: "restrict" }),
     validUntil: tstz("valid_until"),
+    source: competencyGrantSource().notNull().default("training"),
+    /** Elle verilişte gerekçe (zorunlu). */
+    reason: text(),
+    grantedBy: uuid().references(() => users.id, { onDelete: "restrict" }),
+    /** Geri alma: bir kez, gerekçeli (kilit `revoked_at`). */
+    revokedAt: tstz("revoked_at"),
+    revokedBy: uuid().references(() => users.id, { onDelete: "restrict" }),
+    revokeReason: text(),
     createdAt: createdAt(),
   },
-  (t) => [index("competency_grants_user_idx").on(t.userId)],
+  (t) => [index("competency_grants_user_idx").on(t.userId), index("competency_grants_competency_idx").on(t.competencyId, t.userId)],
 );
 

@@ -22,6 +22,7 @@ import { QUEUES } from "@/server/jobs/queues";
 import { certificateState, createRateLimiter, documentNo, earliestExpiry, maskName, type CertificateState } from "@/server/state/certification";
 import { canViewPerson } from "../assignments";
 import { getSettings } from "../settings";
+import { grantFromTraining } from "../competencies";
 
 /**
  * Sertifika ve katılım belgesi (FG-7.2, karar #77–80).
@@ -153,6 +154,8 @@ export async function issuePositionCertificate(tx: Tx, input: { assignmentId: st
       issuedBy: input.approvedBy,
     })
     .returning({ id: certificates.id });
+  // Tek başına tamamlanan pratik görevlerin yetkinlikleri (karar #219)
+  await grantFromTraining(tx, { assignmentId: a.id, certificateId: row!.id, grantedBy: input.approvedBy });
   await queueRender(row!.id);
   return row!.id;
 }

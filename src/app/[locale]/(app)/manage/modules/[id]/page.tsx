@@ -86,7 +86,7 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
           />
           {m.kind === "theory" && !m.isCardModule && <ModuleContentsEditor key={m.contents.map((c) => c.id).join()} moduleId={m.id} initial={m.contents} />}
           {m.kind === "theory" && <QuizEditor key={quiz.map((q) => q.id).join()} moduleId={m.id} initial={quiz} />}
-          {m.kind === "practice" && <ModuleTasksEditor key={m.tasks.map((x) => x.id).join()} moduleId={m.id} initial={m.tasks} />}
+          {m.kind === "practice" && <ModuleTasksEditor key={m.tasks.map((x) => x.id).join()} moduleId={m.id} initial={m.tasks} competencies={m.competencyOptions} />}
         </div>
       ) : (
         <div className="flex flex-col gap-6">
@@ -128,6 +128,7 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
                   <span className="text-sm text-muted-foreground">{i + 1}.</span>
                   <span className="flex-1">{x.title}</span>
                   {x.isCritical && <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-sm text-destructive">{t("items.critical")}</span>}
+                  {x.competencyName && <span className="rounded-full bg-muted px-2 py-0.5 text-sm">{x.competencyName}</span>}
                 </li>
               ))}
             </ol>

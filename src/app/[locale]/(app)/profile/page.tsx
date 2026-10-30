@@ -1,6 +1,6 @@
 import { KeyRound, LogOut, UserRoundPlus } from "lucide-react";
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getFormatter, getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import { signOutAction } from "@/features/auth/actions";
 import { Link } from "@/i18n/navigation";
@@ -8,6 +8,7 @@ import { NotFoundView } from "@/components/app-shell/not-found-view";
 import { getSectionUser } from "@/server/auth/current-user";
 import { toActor } from "@/server/services/auth";
 import { getOwnPlacement } from "@/server/services/people";
+import { myCompetencies } from "@/server/services/competencies";
 import { pushPublicKey } from "@/server/services/push";
 import { PushToggle } from "@/features/push/components/push-toggle";
 import { LanguageSelect } from "@/features/profile/components/language-select";
@@ -30,7 +31,12 @@ export default function ProfilePage() {
 async function Content() {
   const user = await getSectionUser("profile");
   if (!user) return <NotFoundView />;
-  const [t, placement] = await Promise.all([getTranslations(), getOwnPlacement(toActor(user))]);
+  const [t, placement, competencies, format] = await Promise.all([
+    getTranslations(),
+    getOwnPlacement(toActor(user)),
+    myCompetencies(toActor(user)),
+    getFormatter(),
+  ]);
   const publicKey = pushPublicKey();
 
   return (
@@ -60,6 +66,31 @@ async function Content() {
       </dl>
 
       <LanguageSelect current={user.locale} />
+
+      {/* Yetkinliklerim (karar #221) */}
+      {competencies.length > 0 && (
+        <section aria-labelledby="competencies-title" className="mt-6 rounded-2xl border p-5">
+          <h2 id="competencies-title" className="text-lg font-semibold">
+            {t("competencies.mine.title")}
+          </h2>
+          <ul className="mt-3 flex flex-col gap-2">
+            {competencies.map((c) => (
+              <li key={c.id} className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span className="flex-1 font-medium">{c.name}</span>
+                <span
+                  className={`rounded-full px-3 py-1 text-sm ${
+                    c.state === "expired" ? "bg-destructive/15 text-destructive" : c.state === "expiring" ? "bg-amber-400/25" : "bg-emerald-500/15"
+                  }`}
+                >
+                  {c.validUntil
+                    ? t(c.state === "expired" ? "competencies.mine.expired" : "competencies.mine.until", { date: format.dateTime(c.validUntil, { dateStyle: "medium" }) })
+                    : t("competencies.matrix.unlimited")}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {user.sharedDevice && <p className="mt-4 text-sm text-muted-foreground">{t("profile.sharedDevice")}</p>}
 
