@@ -32,6 +32,13 @@ Sistem kimseyi otomatik reddetmez; karar sizindir ve değiştirilemez.
 - Kişi sayfasındaki **Sertifikalar ve belgeler** listesinden indirin; gerekirse gerekçeyle **İptal et** (geri alınamaz; doğrulama sayfası "iptal edildi" gösterir).
 - **Sistem → Sertifika şablonu**: belgelerde görünen imza yetkilileri (en fazla 3; ad, unvan, taranmış imza). Değişiklik yalnızca yeni belgelere yansır.
 
+### Periyodik eğitimler (eski personel)
+- **Yönetim → Periyodik eğitimler**: eski personelin süreli teorik eğitimleri (ör. yıllık İSG). Her kişide modül başına durum: *Tarih yok*, *Son: … · açılış: …*, *Eğitimde*.
+- **Son eğitim tarihi**: kişileri seçin, modülü ve kağıt kayıttaki son eğitim tarihini girip **Tarihi kaydet**. Çok kişi için **Şablonu indir** → "Son eğitim tarihi" sütununu doldurun → yükleyin → önizleme → kaydet. İSG uzmanı yalnızca İSG modüllerine tarih girer. Yanlış tarih yeni tarih girilerek düzeltilir.
+- Tarihi girilen kişiye eğitim, bitişe 30 gün kala (Parametreler → Tekrar eğitimi ön süresi) gece kendiliğinden açılır.
+- Tarihi bilinmeyenleri seçip **Şimdi başlat** ile hemen eğitime alın.
+- Periyodik eğitimde pratik ve işe başlama onayı yoktur; modüller bitince tamamlanır.
+
 ### Raporlar ve KVKK
 - **Raporlar**: eğitim ilerleme, sınav sonuçları, İSG eğitim kayıt defteri, işe başlama süresi, süresi dolacak eğitim ve sertifikalar (İSG + İK; 30/60/90 gün ya da süresi dolmuş), içerik güncellik (bölüm sorumlusu + İK). Filtreleyin, önizleyin, Excel/PDF indirin; her indirme kayda geçer.
 - **Tekrar eğitimi** otomatik açılır: süreli modülün bitişine `recert.lead_days` (varsayılan 30) gün kala kişiye yalnızca o modüller ve bağlı sınavlar atanır. Kişinin açık eğitimi varsa o bitince açılır (size bildirim gelir). Pratik modül varsa kişinin eğitimine eğitmen seçin. İptal ettiğiniz tekrar eğitimi yeniden açılmaz. Bitince bölüm sorumlusu onaylar ve yeni sertifika düzenlenir.

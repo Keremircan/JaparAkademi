@@ -405,7 +405,8 @@
     "question_translation_invalid": "İngilizce metin eksik ya da hatalı: soru metni en az 5 karakter olmalı; şık ve çiftlerin hepsi dolu, Türkçeyle aynı sayıda ve birbirinden farklı olmalı. Çeviri istemiyorsanız İngilizce alanları boş bırakın.",
     "competency_name_invalid": "Yetkinlik adı 2–200 karakter olmalı.",
     "competency_archived": "Bu yetkinlik arşivlenmiş.",
-    "competency_invalid": "Seçilen yetkinlik bu modülün birimine ait değil ya da arşivlenmiş."
+    "competency_invalid": "Seçilen yetkinlik bu modülün birimine ait değil ya da arşivlenmiş.",
+    "prior_date_invalid": "Son eğitim tarihi geçersiz ya da bugünden sonra."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -730,6 +731,10 @@
       "competencies": {
         "title": "Yetkinlikler",
         "description": "Makine ve iş yetkinlikleri, geçerlilik süreleri; pratik görevlere bağlama."
+      },
+      "periodic": {
+        "title": "Periyodik eğitimler",
+        "description": "Eski personelin süreli eğitimleri: son eğitim tarihleri ve toplu başlatma."
       }
     },
     "pendingCount": "{count} kayıt onay bekliyor"
@@ -1492,7 +1497,8 @@
       "new_hire": "Yeni giriş",
       "position_change": "Pozisyon değişikliği",
       "recertification": "Tekrar eğitimi",
-      "extra_training": "Ek eğitim"
+      "extra_training": "Ek eğitim",
+      "periodic": "Periyodik eğitim"
     },
     "progress": "%{percent} tamamlandı",
     "startedOn": "Başlangıç: {date}",
@@ -3575,6 +3581,69 @@
       "title": "Yetkinliklerim",
       "until": "{date} tarihine kadar",
       "expired": "Süresi doldu ({date})"
+    }
+  },
+  "periodic": {
+    "title": "Periyodik eğitimler",
+    "description": "Eski personelin süreli teorik eğitimleri. Son eğitim tarihi girilen kişiye, bitişe {days} gün kala eğitim gece kendiliğinden açılır. Tarihi olmayanları seçip hemen başlatabilirsiniz. Periyodik eğitim işe başlama onayı istemez; modüller bitince tamamlanır.",
+    "filters": {
+      "q": "Ad ya da sicil no",
+      "unit": "Birim",
+      "module": "Modül",
+      "state": "Durum",
+      "all": "Tümü",
+      "apply": "Uygula",
+      "states": {
+        "none": "Tarih yok",
+        "scheduled": "Tarihi belli",
+        "open": "Eğitimde"
+      }
+    },
+    "truncated": "İlk 500 kişi gösteriliyor; listeyi daraltmak için süzgeci kullanın.",
+    "selected": "{count, plural, =0 {Kişi seçin} other {# kişi seçildi}}",
+    "module": "Modül",
+    "choose": "Seçin",
+    "lastDate": "Son eğitim tarihi",
+    "note": "Not",
+    "notePlaceholder": "Ör. kağıt katılım formu, 2025 dosyası",
+    "record": "Tarihi kaydet",
+    "start": "Şimdi başlat",
+    "startHint": "Seçilen kişilere, tarihi ve sistem kaydı olmayan süreli eğitimleri hemen açar. Açık eğitimi olan kişi atlanır.",
+    "startConfirm": "{count, plural, other {# kişiye}} periyodik eğitim açılsın mı?",
+    "recorded": "{saved} kişiye tarih kaydedildi; {skipped} kişi atlandı (bu modül planlarında yok).",
+    "started": "{started} kişiye periyodik eğitim açıldı; {skipped} kişi atlandı (açık eğitimi var ya da açılacak eğitimi yok).",
+    "empty": "Süreli eğitimi olan personel bulunamadı.",
+    "selectAll": "Tümünü seç",
+    "states": {
+      "open": "Eğitimde",
+      "none": "Tarih yok",
+      "scheduled": "Son: {last} · açılış: {opens}",
+      "noExpiry": "Son: {last}"
+    },
+    "fromPrior": "girilen tarih",
+    "import": {
+      "heading": "Excel'den son eğitim tarihleri",
+      "intro": "Şablonu indirin: tarihi girilmemiş her kişi × modül bir satırdır. \"Son eğitim tarihi\" sütununu kağıt kayıtlardan doldurup yükleyin. Önce önizleme gösterilir; onayladığınızda geçerli satırlar kaydedilir.",
+      "template": "Şablonu indir",
+      "file": "Excel dosyası (.xlsx)",
+      "checking": "Kontrol ediliyor…",
+      "preview": "Önizle",
+      "previewHeading": "{valid} geçerli, {invalid} hatalı satır",
+      "row": "Satır",
+      "person": "Kişi",
+      "module": "Modül",
+      "date": "Tarih",
+      "result": "Sonuç",
+      "ok": "Geçerli",
+      "rowErrors": {
+        "sicil_missing": "Sicil no boş.",
+        "person_not_found": "Bu sicil numarasıyla personel yok.",
+        "module_not_found": "Bu modül kişinin süreli eğitimleri arasında değil.",
+        "not_permitted": "Bu modüle tarih girme yetkiniz yok (İSG uzmanı yalnızca İSG modüllerine girer).",
+        "date_invalid": "Tarih geçersiz ya da ileri bir tarih (gg.aa.yyyy)."
+      },
+      "commit": "{count} tarihi kaydet",
+      "done": "{saved} tarih kaydedildi, {skipped} satır atlandı."
     }
   }
 }

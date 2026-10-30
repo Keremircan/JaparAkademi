@@ -55,6 +55,7 @@ export async function anonymizeDuePersonnel(actor: Actor, now: Date = new Date()
     if (n > 0) {
       // Yetkinlik kayıtlarındaki gerekçe metinleri (karar #219)
       await tx.execute(sql`select app_anonymize_competency_grants(array[${sql.join(rows.map((r) => sql`${r.id}`), sql`, `)}]::uuid[])`);
+      await tx.execute(sql`select app_anonymize_prior_trainings(array[${sql.join(rows.map((r) => sql`${r.id}`), sql`, `)}]::uuid[])`);
       await notify(tx, {
         kind: "retention_completed",
         userIds: await usersWithRole(tx, "sysadmin"),

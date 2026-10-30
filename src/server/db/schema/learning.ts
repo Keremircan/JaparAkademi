@@ -28,7 +28,8 @@ import { createdAt, id, tstz, updatedAt } from "./_shared";
  * Böylece plan, modül veya içerik sonradan değişse de süren atama etkilenmez.
  */
 
-export const assignmentReason = pgEnum("assignment_reason", ["new_hire", "position_change", "recertification", "extra_training"]);
+/** periodic: eski personelin süreli teorik eğitimleri (iş paketi 3.2, karar #224) — işe başlama onayı istemez. */
+export const assignmentReason = pgEnum("assignment_reason", ["new_hire", "position_change", "recertification", "extra_training", "periodic"]);
 export const assignmentStatus = pgEnum("assignment_status", ["active", "awaiting_readiness", "awaiting_decision", "completed", "cancelled"]);
 
 export const assignments = pgTable(
@@ -115,6 +116,8 @@ export const assignmentModules = pgTable(
     carriedFromId: uuid(),
     /** Tekrar eğitiminde yenilenen tamamlanış (karar #166): aynı tamamlanış için ikinci tekrar eğitimi açılmaz. */
     renewsId: uuid().references((): AnyPgColumn => assignmentModules.id, { onDelete: "restrict" }),
+    /** Periyodik eğitimde yenilenen son eğitim tarihi kaydı (karar #223); FK `drizzle/0048`. */
+    renewsPriorId: uuid(),
     /** Geçerlilik bitişi (completed_at + geçerlilik ayı) */
     expiresAt: tstz("expires_at"),
     updatedAt: updatedAt(),
@@ -123,6 +126,7 @@ export const assignmentModules = pgTable(
     unique("assignment_modules_assignment_module_unique").on(t.assignmentId, t.moduleId),
     index("assignment_modules_module_idx").on(t.moduleId),
     index("assignment_modules_renews_idx").on(t.renewsId),
+    index("assignment_modules_renews_prior_idx").on(t.renewsPriorId),
     check("assignment_modules_completed_check", sql`(${t.status} = 'completed') = (${t.completedAt} is not null)`),
   ],
 );
@@ -307,3 +311,30 @@ export const devices = pgTable("devices", {
   revokedAt: tstz("revoked_at"),
   revokedBy: uuid().references(() => users.id, { onDelete: "restrict" }),
 });
+
+/**
+ * Sistem dışında alınmış son eğitim tarihi (iş paketi 3.2, karar #223): eski personelin süreli modülleri için İK / İSG
+ * uzmanı girer. Değiştirilemez; düzeltme yeni kayıtla yapılır (kişi × modülde en son girilen geçerlidir).
+ */
+export const priorTrainingSource = pgEnum("prior_training_source", ["screen", "excel"]);
+
+export const priorTrainings = pgTable(
+  "prior_trainings",
+  {
+    id: id(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    moduleId: uuid()
+      .notNull()
+      .references(() => modules.id, { onDelete: "restrict" }),
+    completedOn: date({ mode: "string" }).notNull(),
+    note: text(),
+    source: priorTrainingSource().notNull(),
+    enteredBy: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    createdAt: createdAt(),
+  },
+  (t) => [index("prior_trainings_user_module_idx").on(t.userId, t.moduleId, t.createdAt)],
+);

@@ -24,6 +24,9 @@ export const PERMISSIONS = {
   "devices.manage": ["sysadmin"],
   // Eğitim atamaları: başlatma, eğitmen ve hedef tarih, iptal (FG-3.2)
   "assignments.manage": ["hr"],
+  // Eski personelin periyodik eğitimleri (iş paketi 3.2, karar #225): İSG uzmanı yalnızca İSG modüllerinde tarih girer
+  "periodic.view": ["hr", "ohs_specialist"],
+  "periodic.record": ["hr", "ohs_specialist"],
   // İçerik ve pozisyon kartı
   "content.draft": ["trainer", "section_manager", "ohs_specialist", "hr"],
   "content.approve_section": ["section_manager", "hr"],
