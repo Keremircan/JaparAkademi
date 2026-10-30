@@ -18,8 +18,8 @@ export async function GET(req: NextRequest) {
   const actor = toActor(user);
   if (!can(actor, "logins.view")) return new NextResponse(null, { status: 404 });
   const filters = parseLoginLogFilters(Object.fromEntries(req.nextUrl.searchParams));
-  // Yönetim ekranı Türkçedir (karar #209)
-  const t = createTranslator({ locale: "tr", messages: messagesFor("tr"), namespace: "logins" });
+  // İndiren kişinin dilinde (karar #217)
+  const t = createTranslator({ locale: user.locale, messages: messagesFor(user.locale), namespace: "logins" });
   try {
     const { buffer } = await exportLoginAttempts(actor, filters, {
       sheet: t("title"),

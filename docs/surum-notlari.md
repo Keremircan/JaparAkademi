@@ -27,6 +27,7 @@ Faz 2'nin kod kapsamı tamamlandı (SPEC 16.4). Kabul kriteri: bir hafta boyunca
 - **KVKK:** personel aydınlatma metni TR + EN birlikte yayınlanır; kişi kendi dilindeki metni onaylar.
 - **Bildirimler:** e-posta, push ve şifre sıfırlama e-postası alıcının dilinde.
 - **Sesli okuma:** metnin dilinde.
+- **Bütün arayüz İngilizce (karar #217):** İngilizce seçen kişi yönetim, İK, güvenlik, eğitmen ve rapor ekranlarını da İngilizce görür; Excel/PDF çıktıları indiren kişinin dilindedir. Sertifikalar ve davet mesajları Türkçe kalır.
 - **Düzeltme:** Excel'den eşleştirme sorusu aktarımında çiftler kaydedilmiyordu (aktarım veritabanı kuralına takılıyordu); düzeltildi.
 
 ### Güncelleme

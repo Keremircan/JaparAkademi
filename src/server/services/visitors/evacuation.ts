@@ -8,7 +8,8 @@ import { evacuationMarks, evacuationRollcalls, reportExports, users, visitors, v
 import { withActor } from "@/server/db/with-actor";
 import { NotFoundError, ValidationError } from "@/server/errors";
 import { renderReportPdf } from "@/server/pdf/report";
-import messages from "../../../../messages/tr.json";
+import { toAppLocale, type AppLocale } from "@/lib/locale";
+import { messagesFor } from "@/server/i18n/messages";
 import { getSettings } from "../settings";
 
 /**
@@ -162,14 +163,16 @@ export async function endRollcall(actor: Actor, id: string): Promise<void> {
 /**
  * Kağıt yedeği (karar #161): içeridekiler ya da bir yoklamanın sonucu, A4 PDF. Her indirme `report_exports`'a yazılır.
  */
-export async function evacuationPdf(actor: Actor, rollcallId: string | null): Promise<{ buffer: Buffer; fileName: string }> {
+export async function evacuationPdf(actor: Actor, rollcallId: string | null, locale: AppLocale = "tr"): Promise<{ buffer: Buffer; fileName: string }> {
   assertCan(actor, "evacuation.manage");
   assertUser(actor);
   const { "org.timezone": tz } = await getSettings(["org.timezone"]);
-  const t = createTranslator({ locale: "tr", messages, namespace: "evacuation.pdf" });
-  const tt = createTranslator({ locale: "tr", messages, namespace: "visitors.types" });
-  const appName = createTranslator({ locale: "tr", messages, namespace: "app" })("name");
-  const time = (d: Date) => new Intl.DateTimeFormat("tr-TR", { dateStyle: "short", timeStyle: "short", timeZone: tz }).format(d);
+  // İndiren kişinin dilinde (karar #217)
+  const messages = messagesFor(locale);
+  const t = createTranslator({ locale: toAppLocale(locale), messages, namespace: "evacuation.pdf" });
+  const tt = createTranslator({ locale: toAppLocale(locale), messages, namespace: "visitors.types" });
+  const appName = createTranslator({ locale: toAppLocale(locale), messages, namespace: "app" })("name");
+  const time = (d: Date) => new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "tr-TR", { dateStyle: "short", timeStyle: "short", timeZone: tz }).format(d);
   const rollcall = rollcallId ? await getRollcall(actor, rollcallId) : null;
   const people = rollcall ? rollcall.people : (await insideNow(actor)).map((p) => ({ ...p, safeAt: null as Date | null }));
   const title = rollcall ? t("rollcallTitle", { kind: t(`kinds.${rollcall.kind}`) }) : t("insideTitle");

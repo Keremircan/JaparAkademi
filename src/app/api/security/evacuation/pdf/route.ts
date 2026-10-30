@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user || user.mustChangePassword) return new NextResponse(null, { status: 401 });
   try {
-    const file = await evacuationPdf(toActor(user), rollcall.data);
+    const file = await evacuationPdf(toActor(user), rollcall.data, user.locale);
     return new NextResponse(new Uint8Array(file.buffer), {
       headers: {
         "Content-Type": "application/pdf",

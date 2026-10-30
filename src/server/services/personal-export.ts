@@ -21,7 +21,8 @@ import {
 import { withActor } from "@/server/db/with-actor";
 import { ForbiddenError, NotFoundError } from "@/server/errors";
 import { documentNo } from "@/server/state/certification";
-import messages from "../../../messages/tr.json";
+import { toAppLocale, type AppLocale } from "@/lib/locale";
+import { messagesFor } from "@/server/i18n/messages";
 import { formatCell, type Translate } from "./reports/format";
 import { getSettings } from "./settings";
 
@@ -31,7 +32,7 @@ import { getSettings } from "./settings";
  * yolla dışa aktaramaz (talep İK'ya iletilir).
  */
 
-export async function exportPersonalData(actor: Actor, userId: string): Promise<{ base64: string; fileName: string }> {
+export async function exportPersonalData(actor: Actor, userId: string, locale: AppLocale = "tr"): Promise<{ base64: string; fileName: string }> {
   assertUser(actor);
   assertCan(actor, "people.export_personal");
   if (actor.userId === userId) throw new ForbiddenError("self_action");
@@ -45,10 +46,12 @@ export async function exportPersonalData(actor: Actor, userId: string): Promise<
   if (!p) throw new NotFoundError("person");
 
   const { "org.timezone": tz } = await getSettings(["org.timezone"]);
-  const t = createTranslator({ locale: "tr", messages, namespace: "personalExport" }) as unknown as Translate;
-  const tr = createTranslator({ locale: "tr", messages, namespace: "reports" }) as unknown as Translate;
+  // İndiren kişinin dilinde (karar #217)
+  const messages = messagesFor(locale);
+  const t = createTranslator({ locale: toAppLocale(locale), messages, namespace: "personalExport" }) as unknown as Translate;
+  const tr = createTranslator({ locale: toAppLocale(locale), messages, namespace: "reports" }) as unknown as Translate;
   // Kodlar okunur metne çevrilir (kişiye verilen belge)
-  const T = createTranslator({ locale: "tr", messages }) as unknown as Translate;
+  const T = createTranslator({ locale: toAppLocale(locale), messages }) as unknown as Translate;
   const v = (value: string | number | boolean | Date | null, column = "") => (value instanceof Date || typeof value === "boolean" || value === null ? formatCell(column, value, tr, tz) : String(value));
 
   const roles = await db().select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, userId));
