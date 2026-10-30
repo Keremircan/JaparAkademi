@@ -56,7 +56,10 @@ Yalnızca kapsamınızdaki birimlerin personelini ve içeriklerini görürsünü
 - Kart onaylanıp yayımlanınca bekleyen yeni girişlere plan otomatik atanır.
 
 ### Soru bankası
-- **Yönetim → Soru bankası**: soru ekleyin ya da Excel'den aktarın. Her soru en az bir teorik modüle bağlanır; konu ve zorluk girilir.
+- **Yönetim → Soru bankası**: soru ekleyin ya da Excel'den aktarın. Her soru en az bir teorik modüle bağlanır; konu ve zorluk girilir. Soru tipleri:
+  - **Çoktan seçmeli** (2–5 şık) ve **Doğru/Yanlış**.
+  - **Eşleştirme:** 3–6 çift yazın (sol ↔ sağ). Sınavda sağ sütun karışık gelir; bütün çiftler doğruysa soru doğru sayılır. Excel'de Tip "Eşleştirme", A–F hücrelerine `sol = sağ`.
+  - **Görselde işaretleme:** görsel yükleyin, hazır olunca doğru bölgeyi görselin üzerinde sürükleyerek çizin (dikdörtgen veya daire; birden çok bölge olabilir). Kursiyerin dokunduğu nokta bölgelerden birindeyse doğru sayılır. Yalnızca ekrandan girilir.
 - "İSG kritik" sorular İSG uzmanı onayıyla etkinleşir. Sınavda kullanılmış soru düzenlenince yeni sürüm açılır.
 
 ### Onaylar ve değerlendirme

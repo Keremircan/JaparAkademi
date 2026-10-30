@@ -73,6 +73,7 @@ export function QuestionImport({ owners }: { owners: { common: boolean; ohsOnly:
             className="min-h-12 rounded-lg border border-input px-3 py-2 text-base file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1.5"
           />
         </label>
+        <p className="text-sm text-muted-foreground">{t("typesHint")}</p>
         {state && !state.ok && <FormError error={state.error} details={state.details} />}
         <Button type="submit" size="lg" disabled={pending || !owner} className="self-start">
           <Upload aria-hidden="true" />

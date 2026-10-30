@@ -393,7 +393,10 @@
     "login_email_taken": "Bu e-posta adresi başka bir aktif personelde kayıtlı. Yönetici rolleri için e-posta tekil olmalı.",
     "same_approver": "Bu kaydın önceki onay adımını siz verdiniz. İki adımlı onayın ikinci adımını başka bir kişi vermeli.",
     "invite_batch_empty": "Davet edilebilecek kişi seçilmedi.",
-    "invite_batch_too_large": "Bir seferde en fazla {max} kişi davet edilebilir."
+    "invite_batch_too_large": "Bir seferde en fazla {max} kişi davet edilebilir.",
+    "question_pairs_invalid": "Eşleştirmede 3–6 çift olmalı; her çiftin iki tarafı dolu ve aynı öğe iki kez yazılmamış olmalı.",
+    "question_regions_invalid": "Görsel üzerinde en az bir doğru bölge çizin (en fazla 5).",
+    "question_image_required": "Görselde işaretleme sorusu için görsel yükleyin."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -1646,7 +1649,35 @@
       "modulesHint": "Soru, bu modüllerden sonra gelen sınavlarda çıkar.",
       "filterModules": "Modül ara",
       "approvalNote": "Bu soru kaydedildiğinde İSG uzmanı onayına gider; onaylanana kadar sınavlarda çıkmaz.",
-      "savedPending": "Kaydedildi. İSG uzmanı onayından sonra etkin olacak."
+      "savedPending": "Kaydedildi. İSG uzmanı onayından sonra etkin olacak.",
+      "matching": "Eşleştirme",
+      "hotspotType": "Görselde işaretleme",
+      "imageRequired": "Görsel (zorunlu)",
+      "pairs": "Eşleştirme çiftleri",
+      "pairsHint": "Her satıra bir çift yazın ({min}–{max} çift). Sınavda sağ sütun karışık gösterilir; bütün çiftler doğru eşlenirse soru doğru sayılır.",
+      "pairLeft": "{n}. çift, sol",
+      "pairRight": "{n}. çift, sağ",
+      "removePair": "{n}. çifti kaldır",
+      "addPair": "Çift ekle",
+      "regions": "Doğru bölgeler",
+      "imageProcessing": "Görsel hazırlanıyor; hazır olunca bölgeleri çizebilirsiniz.",
+      "regionsNeedImage": "Önce görsel yükleyin, sonra doğru bölgeyi görselin üzerine çizin.",
+      "hotspot": {
+        "shape": "Bölge şekli",
+        "rect": "Dikdörtgen",
+        "ellipse": "Daire",
+        "hint": "Görselin üzerinde sürükleyerek doğru bölgeyi çizin. Dairede başladığınız nokta merkezdir. Birden çok doğru bölge çizebilirsiniz.",
+        "full": "En fazla {max} bölge çizilebilir.",
+        "regionN": "{n}. bölge ({shape})",
+        "remove": "{n}. bölgeyi kaldır"
+      },
+      "typeLabels": {
+        "single_choice": "Çoktan seçmeli",
+        "true_false": "Doğru/Yanlış",
+        "matching": "Eşleştirme",
+        "hotspot": "Görselde işaretleme"
+      },
+      "correctPair": "Doğru eşleşme"
     },
     "importer": {
       "owner": "Ait olduğu birim",
@@ -1672,10 +1703,12 @@
         "difficulty_invalid": "Zorluk \"Kolay\", \"Orta\" veya \"Zor\" (ya da 1–3) olmalı.",
         "critical_invalid": "İSG kritik sütunu \"Evet\" veya \"Hayır\" olmalı.",
         "module_missing": "Modül yazılmamış.",
-        "module_not_found": "Modül bu birimde bulunamadı."
+        "module_not_found": "Modül bu birimde bulunamadı.",
+        "pairs_invalid": "Eşleştirmede A–F hücrelerine 3–6 çift \"sol = sağ\" biçiminde yazılmalı; aynı sol veya sağ iki kez olamaz."
       },
       "done": "{created} soru eklendi ({pending} tanesi İSG onayı bekliyor), {skipped} satır atlandı.",
-      "commit": "{count} soruyu ekle"
+      "commit": "{count} soruyu ekle",
+      "typesHint": "Tip: Çoktan seçmeli, Doğru/Yanlış veya Eşleştirme. Görselde işaretleme soruları ekrandan girilir."
     }
   },
   "exams": {
@@ -1723,7 +1756,12 @@
       "next": "Sonraki",
       "submit": "Sınavı bitir",
       "confirm": "Sınavı bitirmek istiyor musunuz? Teslimden sonra cevaplar değiştirilemez.",
-      "confirmUnanswered": "{count} soru cevapsız. Yine de sınavı bitirmek istiyor musunuz? Teslimden sonra cevaplar değiştirilemez."
+      "confirmUnanswered": "{count} soru cevapsız. Yine de sınavı bitirmek istiyor musunuz? Teslimden sonra cevaplar değiştirilemez.",
+      "matchingHint": "Her öğe için listeden doğru karşılığını seçin. Bir karşılık yalnızca bir öğeye verilebilir.",
+      "matchingChoose": "Seçin",
+      "matchingChoices": "Seçenekler",
+      "hotspotHint": "Görselde doğru yere dokunun. İşareti değiştirmek için başka bir yere dokunabilirsiniz.",
+      "hotspotLabel": "Görselde işaretleme alanı. Ok tuşlarıyla imleci taşıyıp Enter ile işaret koyabilirsiniz."
     },
     "result": {
       "score": "{score} puan",

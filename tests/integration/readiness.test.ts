@@ -17,6 +17,7 @@ import { systemActor } from "@/server/authz/actor";
 import { seedContentPeople } from "../support/content";
 import { createTestUser } from "../support/factories";
 import { moduleInput, publishCard, publishedText } from "../support/training";
+import { choice, opts } from "../support/exam";
 
 type People = Awaited<ReturnType<typeof seedContentPeople>>;
 type Trainee = Awaited<ReturnType<typeof createTestUser>>;
@@ -55,8 +56,8 @@ async function takeExam(u: Trainee, examModuleId: string, pass: boolean) {
   const view = await getAttempt(u.actor, attemptId);
   if (view.state !== "open") throw new Error("açık değil");
   for (const item of view.questions) {
-    const right = item.options.indexOf("Doğru şık");
-    await answerExam(u.actor, attemptId, item.itemId, pass ? right : (right + 1) % item.options.length);
+    const right = opts(item).indexOf("Doğru şık");
+    await answerExam(u.actor, attemptId, item.itemId, choice(pass ? right : (right + 1) % opts(item).length));
   }
   await submitExam(u.actor, attemptId);
 }

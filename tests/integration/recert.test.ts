@@ -20,6 +20,7 @@ import { seedContentPeople } from "../support/content";
 import { owner } from "../support/db";
 import { createTestUser } from "../support/factories";
 import { moduleInput, presTraining, publishCard, publishedText } from "../support/training";
+import { choice, opts } from "../support/exam";
 
 type People = Awaited<ReturnType<typeof seedContentPeople>>;
 type Trainee = Awaited<ReturnType<typeof createTestUser>>;
@@ -65,7 +66,7 @@ async function passExam(u: Trainee, examModuleId: string) {
   const { attemptId } = await startExam(u.actor, am.id, { code: null, ip: null, userAgent: null });
   const view = await getAttempt(u.actor, attemptId);
   if (view.state !== "open") throw new Error("açık değil");
-  for (const item of view.questions) await answerExam(u.actor, attemptId, item.itemId, item.options.indexOf("Doğru şık"));
+  for (const item of view.questions) await answerExam(u.actor, attemptId, item.itemId, choice(opts(item).indexOf("Doğru şık")));
   await submitExam(u.actor, attemptId);
 }
 

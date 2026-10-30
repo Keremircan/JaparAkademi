@@ -5,6 +5,9 @@
  *  - Hak: plan/genel parametre + ek haklar (attempt_grants). Bekleme: son başarısız teslimden itibaren.
  */
 
+import type { ExamAnswer } from "@/server/db/schema";
+import type { HotspotPoint, HotspotRegion } from "@/lib/questions";
+
 export type Rng = () => number;
 
 export function shuffle<T>(items: readonly T[], rng: Rng = Math.random): T[] {
@@ -88,4 +91,49 @@ export function topicSummary(items: readonly { topic: string; isCorrect: boolean
     map.set(i.topic, t);
   }
   return [...map.entries()].map(([topic, v]) => ({ topic, ...v })).sort((a, b) => a.topic.localeCompare(b.topic, "tr"));
+}
+
+// ---------------------------------------------------------------------------
+// Yeni soru tipleri (iş paketi 2.7a, kararlar #203–205)
+// ---------------------------------------------------------------------------
+
+/** Nokta bölgenin içinde mi (sınır dahil). */
+export function pointInRegion(p: HotspotPoint, r: HotspotRegion): boolean {
+  if (r.shape === "rect") return p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h;
+  if (r.rx <= 0 || r.ry <= 0) return false;
+  const dx = (p.x - r.cx) / r.rx;
+  const dy = (p.y - r.cy) / r.ry;
+  return dx * dx + dy * dy <= 1;
+}
+
+export type GradableQuestion = {
+  type: "single_choice" | "true_false" | "matching" | "hotspot";
+  correctIndex: number | null;
+  pairs: readonly unknown[] | null;
+  regions: readonly HotspotRegion[] | null;
+};
+export type GradableAnswer = { answerIndex: number | null; answer: ExamAnswer | null };
+
+/**
+ * Cevap doğru mu. Eşleştirme: bütün çiftler doğruysa doğru (her sol i'nin doğru sağı i'dir; kısmi puan yok, karar #203).
+ * İşaretleme: nokta herhangi bir doğru bölgedeyse doğru (karar #204). Boş cevap yanlış.
+ */
+export function isAnswerCorrect(q: GradableQuestion, a: GradableAnswer): boolean {
+  if (q.type === "matching") {
+    const pairs = a.answer && "pairs" in a.answer ? a.answer.pairs : null;
+    const n = q.pairs?.length ?? 0;
+    return !!pairs && n > 0 && pairs.length === n && pairs.every((right, left) => right === left);
+  }
+  if (q.type === "hotspot") {
+    const point = a.answer && "point" in a.answer ? a.answer.point : null;
+    return !!point && (q.regions ?? []).some((r) => pointInRegion(point, r));
+  }
+  return a.answerIndex !== null && a.answerIndex === q.correctIndex;
+}
+
+/** Cevap verilmiş sayılır mı (gezinme ve "cevapsız" uyarısı için): eşleştirmede bütün sol öğeler eşlenmiş olmalı. */
+export function isAnswered(type: GradableQuestion["type"], a: GradableAnswer): boolean {
+  if (type === "matching") return !!a.answer && "pairs" in a.answer && a.answer.pairs.length > 0 && a.answer.pairs.every((x) => x !== null);
+  if (type === "hotspot") return !!a.answer && "point" in a.answer;
+  return a.answerIndex !== null;
 }

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { acceptConsentIfAsked, login } from "./helpers";
-import { E2E_PASSWORD } from "./global-setup";
+import { E2E_MATCHING_PAIRS, E2E_PASSWORD } from "./global-setup";
 
 const sicil = (kind: string, projectName: string) => `E2E-${process.env.E2E_SUFFIX}-${kind}${projectName[0]}`;
 
@@ -46,8 +46,18 @@ test("FG-6.1 gözetmen kod üretir; kursiyer kodla sınava girer, cevaplar, sonu
   // Havuzda ortak İSG modülünün soruları da olabilir (karar #59): bilinen doğru şık yoksa ilk şık seçilir
   for (let i = 1; i <= 4; i++) {
     await expect(page.getByText(`Soru ${i} / 4`).first()).toBeVisible();
-    const known = page.getByLabel(/Doğru cevap/);
-    await ((await known.count()) ? known : page.getByRole("radio").first()).check();
+    const selects = page.getByRole("combobox").filter({ visible: true });
+    if (await selects.count()) {
+      // Eşleştirme (karar #203; havuz rastgele olduğundan her denemede gelmeyebilir): her sol öğe için karşılığı seçilir
+      for (const pair of E2E_MATCHING_PAIRS) {
+        const select = page.getByLabel(new RegExp(`^\\d+\\. ${pair.left}$`));
+        const option = select.locator("option").filter({ hasText: new RegExp(`^[A-Z]\\. ${pair.right}$`) });
+        await select.selectOption({ value: (await option.getAttribute("value"))! });
+      }
+    } else {
+      const known = page.getByLabel(/Doğru cevap/);
+      await ((await known.count()) ? known : page.getByRole("radio").first()).check();
+    }
     await expect(page.getByText("Cevabınız kaydedildi.")).toBeVisible();
     if (i < 4) await page.getByRole("button", { name: "Sonraki" }).click();
   }
@@ -55,6 +65,7 @@ test("FG-6.1 gözetmen kod üretir; kursiyer kodla sınava girer, cevaplar, sonu
   await page.getByRole("button", { name: "Sınavı bitir" }).click();
 
   // 4) Sonuç: puan, sonuç, konu özeti; sorular ve doğru cevaplar gösterilmez
+  // Havuzda yalnızca bu sorular olduğunda hepsi doğru cevaplanmıştır; ortak modül soruları gelirse sonuç değişebilir
   await expect(page.getByText(/^\d+ puan$/)).toBeVisible();
   await expect(page.getByText(/^(Başarılı|Başarısız)$/)).toBeVisible();
   await expect(page.getByRole("heading", { name: "Konulara göre sonuç" })).toBeVisible();

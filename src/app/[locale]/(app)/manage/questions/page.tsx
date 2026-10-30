@@ -141,7 +141,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
                 <span className="min-w-60 flex-1">
                   <span className="block line-clamp-2 font-medium">{x.stem}</span>
                   <span className="block text-sm text-muted-foreground">
-                    {x.topic} · {t(`form.difficulties.${x.difficulty as 1}`)} · {t(`form.${x.type === "true_false" ? "trueFalse" : "singleChoice"}`)} · {x.ownerName ?? t("form.common")}
+                    {x.topic} · {t(`form.difficulties.${x.difficulty as 1}`)} · {t(`form.typeLabels.${x.type}`)} · {x.ownerName ?? t("form.common")}
                   </span>
                 </span>
                 <span className="flex flex-wrap gap-1 text-xs">

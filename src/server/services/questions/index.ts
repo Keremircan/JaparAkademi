@@ -9,6 +9,7 @@ import { approvals, assignmentModules, assignments, examAttemptItems, examAttemp
 import { withActor } from "@/server/db/with-actor";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/server/errors";
 import { notifyApprovalPending, resolveNotifications } from "../notifications";
+import { HOTSPOT_MAX_REGIONS, MATCHING_MAX_PAIRS, MATCHING_MIN_PAIRS, type HotspotRegion, type MatchingPair, type QuestionType } from "@/lib/questions";
 
 /**
  * Soru bankası (SPEC Bölüm 6, FG-6.1). Görme: bölüm sorumlusu (kapsamı + ortak İSG soruları), İSG uzmanı ve İK (tümü).
@@ -17,7 +18,7 @@ import { notifyApprovalPending, resolveNotifications } from "../notifications";
  * İSG sorusu veya "İSG kritik" soru İSG uzmanı onayıyla aktifleşir (İSG uzmanının kendi sorusu doğrudan aktif).
  */
 
-export type QuestionType = "single_choice" | "true_false";
+export type { QuestionType } from "@/lib/questions";
 type QuestionRow = typeof questions.$inferSelect;
 type VersionRow = typeof questionVersions.$inferSelect;
 
@@ -63,8 +64,13 @@ async function isUsed(conn: DbOrTx, versionId: string): Promise<boolean> {
 export type QuestionInput = {
   type: QuestionType;
   stem: string;
+  /** Çoktan seçmeli ve doğru/yanlış */
   options: string[];
-  correctIndex: number;
+  correctIndex: number | null;
+  /** Eşleştirme (karar #203) */
+  pairs?: MatchingPair[] | null;
+  /** Görselde işaretleme (karar #204) */
+  regions?: HotspotRegion[] | null;
   explanation: string | null;
   topic: string;
   difficulty: number;
@@ -73,21 +79,63 @@ export type QuestionInput = {
   moduleIds: string[];
 };
 
-export function normalizeQuestion(input: QuestionInput): QuestionInput {
-  const stem = input.stem.trim();
-  if (stem.length < 5 || stem.length > 2000) throw new ValidationError("question_stem_invalid");
+const unit = (n: unknown) => typeof n === "number" && Number.isFinite(n) && n >= 0 && n <= 1;
+const MIN_SIZE = 0.01;
+
+/** Tipe göre cevap alanları (karar #205): diğer tiplerin alanları boşaltılır. */
+function normalizeAnswerFields(input: QuestionInput): Pick<QuestionInput, "options" | "correctIndex" | "pairs" | "regions"> {
+  if (input.type === "matching") {
+    const pairs = (input.pairs ?? []).map((p) => ({ left: p.left.trim(), right: p.right.trim() }));
+    if (pairs.length < MATCHING_MIN_PAIRS || pairs.length > MATCHING_MAX_PAIRS) throw new ValidationError("question_pairs_invalid");
+    if (pairs.some((p) => !p.left || !p.right || p.left.length > 200 || p.right.length > 200)) throw new ValidationError("question_pairs_invalid");
+    const key = (x: string) => x.toLocaleLowerCase("tr-TR");
+    if (new Set(pairs.map((p) => key(p.left))).size !== pairs.length || new Set(pairs.map((p) => key(p.right))).size !== pairs.length) {
+      throw new ValidationError("question_pairs_invalid");
+    }
+    return { options: [], correctIndex: null, pairs, regions: null };
+  }
+  if (input.type === "hotspot") {
+    if (!input.mediaAssetId) throw new ValidationError("question_image_required");
+    const regions = input.regions ?? [];
+    if (regions.length < 1 || regions.length > HOTSPOT_MAX_REGIONS) throw new ValidationError("question_regions_invalid");
+    const ok = regions.every((r) =>
+      r.shape === "rect"
+        ? unit(r.x) && unit(r.y) && r.w >= MIN_SIZE && r.h >= MIN_SIZE && r.x + r.w <= 1.0001 && r.y + r.h <= 1.0001
+        : r.shape === "ellipse" && unit(r.cx) && unit(r.cy) && r.rx >= MIN_SIZE / 2 && r.ry >= MIN_SIZE / 2 && r.rx <= 0.5 && r.ry <= 0.5,
+    );
+    if (!ok) throw new ValidationError("question_regions_invalid");
+    const round = (n: number) => Math.round(n * 10_000) / 10_000;
+    return {
+      options: [],
+      correctIndex: null,
+      pairs: null,
+      regions: regions.map((r) =>
+        r.shape === "rect"
+          ? { shape: "rect" as const, x: round(r.x), y: round(r.y), w: round(r.w), h: round(r.h) }
+          : { shape: "ellipse" as const, cx: round(r.cx), cy: round(r.cy), rx: round(r.rx), ry: round(r.ry) },
+      ),
+    };
+  }
   const options = input.options.map((o) => o.trim());
   if ((input.type === "true_false" && options.length !== 2) || options.length < 2 || options.length > 5 || options.some((o) => !o || o.length > 500)) {
     throw new ValidationError("question_options_invalid");
   }
   if (new Set(options.map((o) => o.toLocaleLowerCase("tr-TR"))).size !== options.length) throw new ValidationError("question_options_invalid");
-  if (!Number.isInteger(input.correctIndex) || input.correctIndex < 0 || input.correctIndex >= options.length) throw new ValidationError("question_correct_invalid");
+  const correct = input.correctIndex;
+  if (correct === null || !Number.isInteger(correct) || correct < 0 || correct >= options.length) throw new ValidationError("question_correct_invalid");
+  return { options, correctIndex: correct, pairs: null, regions: null };
+}
+
+export function normalizeQuestion(input: QuestionInput): QuestionInput {
+  const stem = input.stem.trim();
+  if (stem.length < 5 || stem.length > 2000) throw new ValidationError("question_stem_invalid");
+  const answerFields = normalizeAnswerFields(input);
   const topic = input.topic.trim().replace(/\s+/g, " ");
   if (topic.length < 2 || topic.length > 100) throw new ValidationError("question_topic_invalid");
   if (![1, 2, 3].includes(input.difficulty)) throw new ValidationError("question_difficulty_invalid");
   const moduleIds = [...new Set(input.moduleIds)];
   if (moduleIds.length === 0 || moduleIds.length > 20) throw new ValidationError("question_modules_required");
-  return { ...input, stem, options, topic, explanation: input.explanation?.trim() || null, moduleIds };
+  return { ...input, ...answerFields, stem, topic, explanation: input.explanation?.trim() || null, moduleIds };
 }
 
 async function validateRefs(tx: Tx, actor: Actor & { kind: "user" }, input: QuestionInput, existingAssetId: string | null) {
@@ -110,6 +158,8 @@ function versionValues(input: QuestionInput) {
     stem: input.stem,
     options: input.options,
     correctIndex: input.correctIndex,
+    pairs: input.pairs ?? null,
+    regions: input.regions ?? null,
     explanation: input.explanation,
     topic: input.topic,
     difficulty: input.difficulty,
@@ -422,6 +472,8 @@ export async function getQuestion(actor: Actor, questionId: string): Promise<Que
           mediaAssetId: editableRow.v.mediaAssetId,
           options: editableRow.v.options,
           correctIndex: editableRow.v.correctIndex,
+          pairs: editableRow.v.pairs,
+          regions: editableRow.v.regions,
           explanation: editableRow.v.explanation,
           topic: editableRow.v.topic,
           difficulty: editableRow.v.difficulty,
@@ -495,13 +547,22 @@ export async function poolForModules(conn: DbOrTx, moduleIds: string[]): Promise
       topic: questionVersions.topic,
       difficulty: questionVersions.difficulty,
       isOhsCritical: questionVersions.isOhsCritical,
+      type: questionVersions.type,
       options: questionVersions.options,
+      pairs: questionVersions.pairs,
     })
     .from(questionModules)
     .innerJoin(questions, eq(questions.id, questionModules.questionId))
     .innerJoin(questionVersions, eq(questionVersions.id, questions.currentVersionId))
     .where(and(inArray(questionModules.moduleId, moduleIds), isNull(questions.archivedAt), eq(questionVersions.status, "active")));
-  return rows.map((r) => ({ versionId: r.versionId, topic: r.topic, difficulty: r.difficulty, isOhsCritical: r.isOhsCritical, optionCount: r.options.length }));
+  // optionCount: denemede karıştırılan öğe sayısı (şıklar; eşleştirmede sağ sütun; işaretlemede yok)
+  return rows.map((r) => ({
+    versionId: r.versionId,
+    topic: r.topic,
+    difficulty: r.difficulty,
+    isOhsCritical: r.isOhsCritical,
+    optionCount: r.type === "matching" ? (r.pairs?.length ?? 0) : r.type === "hotspot" ? 0 : r.options.length,
+  }));
 }
 
 /** Plan sırasına göre sınavın havuz modülleri: sınavdan önceki teorik modüller. */

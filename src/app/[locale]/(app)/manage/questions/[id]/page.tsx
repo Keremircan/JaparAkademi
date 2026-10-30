@@ -13,6 +13,7 @@ import { QuestionForm } from "@/features/questions/components/question-form";
 import { questionsAccess } from "@/features/questions/guard";
 import { assetsInfo } from "@/server/services/media";
 import { getQuestion, listTopics, questionModuleOptions } from "@/server/services/questions";
+import { ImageStage, RegionShapes } from "@/features/questions/components/hotspot-image";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("questions");
@@ -79,6 +80,8 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
             stem: v.stem,
             options: v.options,
             correctIndex: v.correctIndex,
+            pairs: v.pairs,
+            regions: v.regions,
             explanation: v.explanation ?? "",
             topic: v.topic,
             difficulty: v.difficulty,
@@ -90,17 +93,34 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
         v && (
           <article className="flex flex-col gap-3 rounded-2xl border p-5">
             <p className="text-lg font-medium">{v.stem}</p>
-            {v.mediaAssetId && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={`/api/media/${v.mediaAssetId}/image`} alt="" className="max-h-80 w-full rounded-xl border object-contain" />
+            <p className="text-sm text-muted-foreground">{t(`form.typeLabels.${v.type}`)}</p>
+            {v.type === "hotspot" && v.mediaAssetId ? (
+              // Doğru bölgeler yalnızca soru bankasını görebilenlere gösterilir
+              <ImageStage src={`/api/media/${v.mediaAssetId}/image`} overlay={<RegionShapes regions={v.regions ?? []} />} />
+            ) : (
+              v.mediaAssetId && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={`/api/media/${v.mediaAssetId}/image`} alt="" className="max-h-80 w-full rounded-xl border object-contain" />
+              )
             )}
-            <ol className="flex flex-col gap-1">
-              {v.options.map((o, i) => (
-                <li key={i} className={i === v.correctIndex ? "font-medium text-emerald-700 dark:text-emerald-400" : ""}>
-                  {String.fromCharCode(65 + i)}) {o} {i === v.correctIndex && `(${t("correct")})`}
-                </li>
-              ))}
-            </ol>
+            {v.type === "matching" && (
+              <ol className="flex flex-col gap-1">
+                {(v.pairs ?? []).map((p, i) => (
+                  <li key={i}>
+                    {i + 1}. {p.left} ↔ <span className="font-medium text-emerald-700 dark:text-emerald-400">{p.right}</span>
+                  </li>
+                ))}
+              </ol>
+            )}
+            {(v.type === "single_choice" || v.type === "true_false") && (
+              <ol className="flex flex-col gap-1">
+                {v.options.map((o, i) => (
+                  <li key={i} className={i === v.correctIndex ? "font-medium text-emerald-700 dark:text-emerald-400" : ""}>
+                    {String.fromCharCode(65 + i)}) {o} {i === v.correctIndex && `(${t("correct")})`}
+                  </li>
+                ))}
+              </ol>
+            )}
             <p className="text-sm text-muted-foreground">
               {v.topic} · {t(`form.difficulties.${v.difficulty as 1}`)}
               {v.isOhsCritical && ` · ${t("critical")}`}
