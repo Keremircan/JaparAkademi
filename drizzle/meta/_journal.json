@@ -302,6 +302,20 @@
       "when": 1793361716997,
       "tag": "0042_personnel_locale_question_translations",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1793367417310,
+      "tag": "0043_login_attempts_retention",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1793367442212,
+      "tag": "0044_login_attempts_at_index",
+      "breakpoints": true
     }
   ]
 }

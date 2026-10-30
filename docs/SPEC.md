@@ -516,7 +516,7 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `user_roles`: user_id, role, granted_by, granted_at
 - `role_scopes`: user_id, role (yalnızca `section_manager`, veritabanı kısıtı), org_unit_id
 - `data_access_log`: id, at, actor_id, subject_user_id, field (ör. `national_id`), request_id — **değiştirilemez** (tam TC görüntüleme kaydı)
-- `login_attempts`: id, at, sicil_input, user_id, ip, user_agent, result — **değiştirilemez** (güvenlik kaydı)
+- `login_attempts`: id, at, sicil_input, user_id, ip, user_agent, result — **değiştirilemez** (güvenlik kaydı); ekran `/admin/logins`, saklama `retention.login_attempt_days` (kararlar #215–216)
 - `devices`: id, kind (`shared_pc`|`kiosk`), name, token_hash, registered_by, revoked_at
 
 **İçerik**
@@ -1003,6 +1003,8 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 212 | Personel KVKK metni | TR + EN aynı sürümle yayınlanır (ziyaretçi metni gibi); bağlayıcı metin Türkçedir. Kişi kendi dilindeki metni görür; onay okunan dildeki metne bağlanır (hangi dilde onaylandığı kayıtlı). Aynı sürümün herhangi bir dildeki onayı yeterlidir. Yalnızca Türkçe yayınlanmış eski sürümde İngilizce kullanan Türkçe metni görür |
 | 213 | Bildirim dili | Uygulama içi bildirim gösterildiği dilde (tür + parametre saklandığı için). Bildirim e-postası, push metni ve şifre sıfırlama e-postası alıcının dilinde; bağlantı İngilizce kullanana `/en` adresiyle. Davet e-postası Türkçe (tercih henüz bilinmez) |
 | 214 | Sesli okuma dili | İçerik ve sınav sorusu kendi dilinde okunur (`tr-TR` / `en-GB`); cihazda o dilde ses yoksa uyarı gösterilir |
+| 215 | Giriş kayıtları ekranı | `/admin/logins` (yetki `logins.view`: sistem yöneticisi; üst yönetici her yetkiyle). Salt okunur; `login_attempts` değiştirilemez. Süzgeç: sicil no / ad soyad / IP, sonuç (ya da "başarısız olanların hepsi"), tarih aralığı; sonuçlara göre sayılar. Bilinmeyen kullanıcı denemesinde yazılan metnin yalnızca ilk 3 karakteri gösterilir (kişi şifresini yazmış olabilir); bu metinde arama yapılmaz. Excel indirme (en fazla 10.000 satır) `report_exports`'a yazılır. İK bu ekranı görmez |
+| 216 | Giriş kayıtlarının saklanması | `retention.login_attempt_days` (varsayılan 365 gün, en az 30). Gece `retention.run` süresi geçenleri `app_purge_login_attempts` ile siler; veritabanı son 30 günün kaydını hiçbir koşulda silmez |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

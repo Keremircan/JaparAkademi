@@ -438,6 +438,10 @@
       "settings": {
         "title": "Parametreler",
         "description": "Sınav, eğitim, güvenlik ve saklama süresi ayarları"
+      },
+      "logins": {
+        "title": "Giriş kayıtları",
+        "description": "Kim, ne zaman, hangi IP'den giriş yaptı ya da denedi; başarısız denemeler."
       }
     },
     "org": {
@@ -2942,6 +2946,11 @@
         "label": "Toplu davet sınırı",
         "hint": "Davetler ekranında tek işlemde davet edilebilecek en fazla kişi.",
         "unit": "{n} kişi"
+      },
+      "retention_login_attempt_days": {
+        "label": "Giriş kayıtları",
+        "hint": "Bu süreden eski giriş kayıtları silinir. En az 30 gün.",
+        "unit": "{n} gün"
       }
     },
     "visitorTypes": {
@@ -3432,5 +3441,46 @@
   },
   "owner": {
     "actingNotice": "Bu işlem normalde {role} yetkisindedir. Üst yönetici olarak yapıyorsunuz; kayda böyle işlenecek."
+  },
+  "logins": {
+    "title": "Giriş kayıtları",
+    "description": "Bütün giriş ve hesap etkinleştirme denemeleri. Bu ekran salt okunurdur; kayıtlar değiştirilemez.",
+    "filters": {
+      "q": "Sicil no, ad soyad ya da IP",
+      "result": "Sonuç",
+      "all": "Tümü",
+      "failed": "Başarısız olanların hepsi",
+      "from": "Başlangıç",
+      "to": "Bitiş",
+      "apply": "Uygula"
+    },
+    "results": {
+      "success": "Başarılı giriş",
+      "unknown_user": "Bilinmeyen kullanıcı",
+      "bad_password": "Yanlış şifre",
+      "locked": "Hesap kilitli",
+      "inactive": "Hesap aktif değil",
+      "rate_limited": "Çok fazla deneme (IP engeli)",
+      "bad_invite": "Geçersiz davet kodu",
+      "activated": "Hesap etkinleştirildi"
+    },
+    "summary": "{total} deneme, {failed} başarısız",
+    "byResult": "Sonuçlara göre",
+    "export": "Excel indir",
+    "tooLarge": "Seçilen aralıkta 10.000'den fazla kayıt var. Tarih aralığını ya da süzgeci daraltıp yeniden indirin.",
+    "empty": "Kayıt bulunamadı.",
+    "input": "Yazılan sicil no / e-posta",
+    "ip": "IP adresi",
+    "userAgent": "Tarayıcı",
+    "person": "Kişi",
+    "columns": {
+      "at": "Zaman",
+      "sicil": "Sicil no",
+      "result": "Sonuç"
+    },
+    "retentionNote": "Bilinmeyen kullanıcı denemelerinde yazılan metnin yalnızca ilk 3 karakteri gösterilir (kişi yanlışlıkla şifresini yazmış olabilir). Kayıtlar saklama süresi dolunca gece silinir (Parametreler → Saklama süreleri).",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "pages": "Giriş kaydı sayfaları"
   }
 }

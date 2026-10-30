@@ -86,6 +86,8 @@ export const loginAttempts = pgTable(
   (t) => [
     index("login_attempts_ip_idx").on(t.ip, t.at),
     index("login_attempts_user_idx").on(t.userId, t.at),
+    // Giriş kayıtları ekranı ve saklama silmesi tarihe göre (karar #215–216)
+    index("login_attempts_at_idx").on(t.at),
   ],
 );
 

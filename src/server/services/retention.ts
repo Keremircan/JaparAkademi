@@ -6,6 +6,7 @@ import { withActor } from "@/server/db/with-actor";
 import { todayIn } from "@/lib/dates";
 import { logger } from "@/server/logger";
 import { auditPurgeBefore, personnelAnonymizationCutoff } from "@/server/state/retention";
+import { loginAttemptPurgeBefore } from "@/server/state/login-log";
 import { deleteObjects } from "@/server/storage/client";
 import { notify, usersWithRole } from "./notifications";
 import { getSettings } from "./settings";
@@ -20,7 +21,15 @@ import { purgeExpiredInviteLinks } from "@/server/services/invitation-batches";
 const MAX_PEOPLE_PER_RUN = 200;
 const MAX_IMAGES_PER_RUN = 500;
 
-export type RetentionResult = { anonymized: number; images: number; auditRows: number; visitors: number; blacklist: number; inviteLinks: number };
+export type RetentionResult = {
+  anonymized: number;
+  images: number;
+  auditRows: number;
+  visitors: number;
+  blacklist: number;
+  inviteLinks: number;
+  loginAttempts: number;
+};
 
 /** Süresi dolan ayrılmış personeli anonimleştirir ve sistem yöneticilerine bildirir (karar #125). */
 export async function anonymizeDuePersonnel(actor: Actor, now: Date = new Date()): Promise<number> {
@@ -141,6 +150,16 @@ export async function purgeOldAuditLog(actor: Actor, now: Date = new Date()): Pr
   });
 }
 
+/** Saklama süresini (`retention.login_attempt_days`) geçen giriş kayıtlarını siler (karar #216). */
+export async function purgeOldLoginAttempts(actor: Actor, now: Date = new Date()): Promise<number> {
+  const { "retention.login_attempt_days": days } = await getSettings(["retention.login_attempt_days"]);
+  const before = loginAttemptPurgeBefore(now, days);
+  return withActor(actor, async (tx) => {
+    const r = await tx.execute<{ n: string }>(sql`select app_purge_login_attempts(${before.toISOString()}::timestamptz) as n`);
+    return Number(r[0]?.n ?? 0);
+  });
+}
+
 /** Gece işi: sırayla personel, ziyaretçi ve kara liste anonimleştirme, imza görselleri, denetim kaydı, eski davet bağlantıları. */
 export async function runRetention(actor: Actor, now: Date = new Date()): Promise<RetentionResult> {
   const anonymized = await anonymizeDuePersonnel(actor, now);
@@ -156,5 +175,6 @@ export async function runRetention(actor: Actor, now: Date = new Date()): Promis
   const auditRows = await purgeOldAuditLog(actor, now);
   // Süresi dolan toplu WhatsApp davetlerinin saklanan bağlantıları (karar #201)
   const inviteLinks = await purgeExpiredInviteLinks(actor, now);
-  return { anonymized, images, auditRows, visitors: visitorCount, blacklist, inviteLinks };
+  const loginAttemptRows = await purgeOldLoginAttempts(actor, now);
+  return { anonymized, images, auditRows, visitors: visitorCount, blacklist, inviteLinks, loginAttempts: loginAttemptRows };
 }

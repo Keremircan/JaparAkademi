@@ -11,6 +11,8 @@ export const PERMISSIONS = {
   // Parametreler ekranı: her parametreyi yalnızca yöneten rol görür (registry managedBy, karar #117)
   "settings.view": ["sysadmin", "ohs_specialist"],
   "audit.view": ["sysadmin"],
+  // Giriş kayıtları ekranı (karar #215); owner her yetkiye sahiptir
+  "logins.view": ["sysadmin"],
   "roles.manage": ["sysadmin"],
   // Organizasyon ve personel
   "org.manage": ["hr", "sysadmin"],

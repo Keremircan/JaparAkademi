@@ -97,4 +97,5 @@ export const SETTINGS_CATALOG: Partial<Record<SettingKey, Entry>> = {
   "retention.contractor_years": { group: "retention", input: int, requireNote: true },
   "retention.blacklist_years_after_lift": { group: "retention", input: int, requireNote: true },
   "retention.audit_years": { group: "retention", input: int, requireNote: true },
+  "retention.login_attempt_days": { group: "retention", input: int, requireNote: true },
 };
