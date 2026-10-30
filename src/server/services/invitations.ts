@@ -1,3 +1,4 @@
+import type { AppLocale } from "@/lib/locale";
 import { createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { and, desc, eq, isNotNull, isNull, ne } from "drizzle-orm";
 import { createTranslator } from "next-intl";
@@ -268,7 +269,7 @@ export async function invitationForToken(token: string): Promise<{ fullName: str
  * Ortak cihaz kuralları girişle aynıdır.
  */
 export async function activateWithToken(
-  input: { token: string; newPassword: string; sharedDevice: boolean },
+  input: { token: string; newPassword: string; sharedDevice: boolean; locale?: AppLocale },
   meta: RequestMeta,
 ): Promise<SignInResult> {
   const row = await openInvitation(db(), input.token);
@@ -301,7 +302,14 @@ export async function activateWithToken(
       .where(and(eq(accounts.userId, locked.userId), eq(accounts.providerId, "credential")));
     await tx
       .update(personnel)
-      .set({ activatedAt: now, passwordChangedAt: now, mustChangePassword: false, failedLoginCount: 0, lockedUntil: null })
+      .set({
+        activatedAt: now,
+        passwordChangedAt: now,
+        mustChangePassword: false,
+        failedLoginCount: 0,
+        lockedUntil: null,
+        ...(input.locale ? { locale: input.locale } : {}),
+      })
       .where(eq(personnel.userId, locked.userId));
     await tx.delete(sessions).where(eq(sessions.userId, locked.userId));
   });

@@ -37,6 +37,16 @@ const questionSchema = z.object({
   isOhsCritical: z.boolean(),
   mediaAssetId: uuid.nullable(),
   moduleIds: z.array(uuid).max(20),
+  // İsteğe bağlı İngilizce metin (karar #207)
+  en: z
+    .object({
+      stem: z.string().max(2000),
+      options: z.array(z.string().max(500)).max(5).optional(),
+      pairs: z.array(z.object({ left: z.string().max(200), right: z.string().max(200) })).max(MATCHING_MAX_PAIRS).optional(),
+      explanation: z.string().max(2000).nullable().optional(),
+    })
+    .nullable()
+    .optional(),
 });
 
 const createSchema = questionSchema.extend({ ownerOrgUnitId: uuid.nullable(), isOhs: z.boolean() });

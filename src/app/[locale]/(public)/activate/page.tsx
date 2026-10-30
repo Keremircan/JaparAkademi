@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page() {
   const t = await getTranslations("auth.activate");
   return (
-    <AuthCard title={t("title")}>
+    <AuthCard title={t("title")} languages>
       <ActivationCodeForm />
     </AuthCard>
   );

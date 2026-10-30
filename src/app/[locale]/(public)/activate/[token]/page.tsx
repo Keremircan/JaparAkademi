@@ -33,7 +33,7 @@ async function Content({ params }: { params: Promise<{ token: string }> }) {
   ]);
   if (!invite) {
     return (
-      <AuthCard title={t("title")}>
+      <AuthCard title={t("title")} languages>
         <div className="flex flex-col gap-4">
           <p role="alert">{t("invalid")}</p>
           <Link href="/login" className="inline-flex min-h-12 items-center underline underline-offset-4">
@@ -44,7 +44,7 @@ async function Content({ params }: { params: Promise<{ token: string }> }) {
     );
   }
   return (
-    <AuthCard title={t("welcome", { name: invite.fullName })}>
+    <AuthCard title={t("welcome", { name: invite.fullName })} languages>
       <p className="mb-5">{t("setIntro", { sicil: invite.sicilNo })}</p>
       <ActivatePasswordForm token={token} minLength={minLength} />
     </AuthCard>

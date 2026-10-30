@@ -128,9 +128,12 @@ async function Content({
                 <h2 id="step-heading" className="text-xl font-semibold">
                   {t("module.stepOf", { n: index + 1, total: m.items.length })}: {titleOf(item)}
                 </h2>
-                {(item.kind === "card_section" || ["text", "instruction", "checklist"].includes(item.contentType ?? "")) && <ReadAloud targetId="step-body" />}
+                {(item.kind === "card_section" || ["text", "instruction", "checklist"].includes(item.contentType ?? "")) && <ReadAloud targetId="step-body" lang={item.locale ?? "tr"} />}
               </div>
-              <StepBody item={item} m={m} />
+              {/* İçerik kişinin dilinde; İngilizcesi yoksa ya da pozisyon kartıysa Türkçe (karar #207) */}
+              <div lang={item.locale ?? "tr"}>
+                <StepBody item={item} m={m} />
+              </div>
             </article>
           )}
 

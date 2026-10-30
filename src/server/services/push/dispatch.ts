@@ -3,13 +3,14 @@ import { and, asc, eq, inArray, lte, sql } from "drizzle-orm";
 import webpush from "web-push";
 import { systemActor } from "@/server/authz/actor";
 import { db } from "@/server/db/client";
-import { notifications, pushOutbox, pushSubscriptions } from "@/server/db/schema";
+import { notifications, personnel, pushOutbox, pushSubscriptions } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { env } from "@/server/env";
 import { logger } from "@/server/logger";
 import { nextAttemptDelayMs } from "@/server/state/notifications";
 import { classifyPushStatus, isAllowedPushEndpoint, outboxResult, pushPayload, type PushOutcome } from "@/server/state/push";
-import messages from "../../../../messages/tr.json";
+import { messagesFor } from "@/server/i18n/messages";
+import { toAppLocale } from "@/lib/locale";
 import { getSettings } from "../settings";
 
 /**
@@ -68,8 +69,18 @@ export async function dispatchPush(send: PushSender = sendWebPush): Promise<{ se
   });
   if (claimed.length === 0) return { sent: 0, skipped: 0, failed: 0 };
 
-  const t = createTranslator({ locale: "tr", messages, namespace: "notifications.push" });
-  const text = { title: t("title"), body: t("body") };
+  // Genel metin alıcının dilinde (karar #207); içerik yok, yalnızca bildirim kimliği
+  const textFor = (locale: string) => {
+    const t = createTranslator({ locale: toAppLocale(locale), messages: messagesFor(locale), namespace: "notifications.push" });
+    return { title: t("title"), body: t("body") };
+  };
+  const userIds = [...new Set(claimed.map((r) => r.userId))];
+  const locales = new Map(
+    (await db().select({ userId: personnel.userId, locale: personnel.locale }).from(personnel).where(inArray(personnel.userId, userIds))).map((r) => [
+      r.userId,
+      r.locale,
+    ]),
+  );
   const ttlSeconds = ttlHours * 3600;
   const counts = { sent: 0, skipped: 0, failed: 0 };
 
@@ -82,7 +93,7 @@ export async function dispatchPush(send: PushSender = sendWebPush): Promise<{ se
     const failing: string[] = [];
     for (const s of subs) {
       const outcome = isAllowedPushEndpoint(s.endpoint)
-        ? classifyPushStatus(await send({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, pushPayload(row.notificationId, text), ttlSeconds))
+        ? classifyPushStatus(await send({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, pushPayload(row.notificationId, textFor(locales.get(row.userId) ?? "tr")), ttlSeconds))
         : "gone";
       outcomes.push(outcome);
       (outcome === "ok" ? ok : outcome === "gone" ? gone : failing).push(s.id);

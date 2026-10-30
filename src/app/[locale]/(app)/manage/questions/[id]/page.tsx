@@ -87,6 +87,12 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
             difficulty: v.difficulty,
             isOhsCritical: v.isOhsCritical,
             moduleIds: q.modules.map((m) => m.id),
+            en: {
+              stem: v.translations?.en?.stem ?? "",
+              options: v.translations?.en?.options ?? [],
+              pairs: v.translations?.en?.pairs ?? [],
+              explanation: v.translations?.en?.explanation ?? "",
+            },
           }}
         />
       ) : (
@@ -126,6 +132,24 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
               {v.isOhsCritical && ` · ${t("critical")}`}
             </p>
             {v.explanation && <p className="text-sm">{v.explanation}</p>}
+            {v.translations?.en && (
+              <div lang="en" className="flex flex-col gap-1 rounded-xl border p-3">
+                <p lang="tr" className="text-sm font-medium text-muted-foreground">
+                  {t("form.en.heading")}
+                </p>
+                <p className="font-medium">{v.translations.en.stem}</p>
+                {(v.translations.en.options ?? []).map((o, i) => (
+                  <p key={i} className="text-sm">
+                    {String.fromCharCode(65 + i)}) {o}
+                  </p>
+                ))}
+                {(v.translations.en.pairs ?? []).map((p, i) => (
+                  <p key={i} className="text-sm">
+                    {i + 1}. {p.left} ↔ {p.right}
+                  </p>
+                ))}
+              </div>
+            )}
             <p className="text-sm text-muted-foreground">{q.modules.map((m) => m.title).join(", ")}</p>
           </article>
         )

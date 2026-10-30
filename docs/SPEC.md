@@ -512,7 +512,7 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `org_units`: id, parent_id, kind (`department`|`section`), name, code (unique, büyük harf ASCII), responsible_user_id, is_active — iki seviye: departmanın üst düğümü yok, bölümün üst düğümü bir departman (veritabanı kısıtı); aynı üst düğümde ad benzersiz
 - `positions`: id, org_unit_id, name, code (unique), supervisor_position_id, deputy_position_id, collar_type (`blue`|`white`), shift_pattern, status (`active`|`passive`)
 - `users` (Better Auth: `user`, `session`, `account`, `verification`)
-- `personnel`: user_id (PK), sicil_no (unique, değiştirilemez), full_name, national_id_enc (AES-256-GCM, `v<anahtar sürümü>:<base64>`), national_id_hmac (unique), national_id_masked, phone (`+90…`), email, position_id (boş olabilir: pozisyonsuz personele eğitim atanamaz), employment_type (`employee`|`intern`), hire_date, end_date (ayrılanda zorunlu), status (`active`|`passive`|`terminated`), source (`excel`|`manual`|`hr_sync`), training_required (yeni işe giren → 1.4'te plan atanır), must_change_password, activated_at (davet etkinleştirilince; karar #187), anonymized_at (saklama süresi dolunca; karar #120)
+- `personnel`: user_id (PK), sicil_no (unique, değiştirilemez), full_name, national_id_enc (AES-256-GCM, `v<anahtar sürümü>:<base64>`), national_id_hmac (unique), national_id_masked, phone (`+90…`), email, position_id (boş olabilir: pozisyonsuz personele eğitim atanamaz), employment_type (`employee`|`intern`), hire_date, end_date (ayrılanda zorunlu), status (`active`|`passive`|`terminated`), source (`excel`|`manual`|`hr_sync`), training_required (yeni işe giren → 1.4'te plan atanır), must_change_password, activated_at (davet etkinleştirilince; karar #187), locale (`tr`|`en`, arayüz dili; karar #208), anonymized_at (saklama süresi dolunca; karar #120)
 - `user_roles`: user_id, role, granted_by, granted_at
 - `role_scopes`: user_id, role (yalnızca `section_manager`, veritabanı kısıtı), org_unit_id
 - `data_access_log`: id, at, actor_id, subject_user_id, field (ör. `national_id`), request_id — **değiştirilemez** (tam TC görüntüleme kaydı)
@@ -522,7 +522,7 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 **İçerik**
 - `contents`: id, type, title, owner_org_unit_id (null = ortak), is_ohs, is_common, common_target (`all`|`blue`|`white`), current_published_version_id, archived_at
 - `content_versions`: id, content_id, version, status (`draft`|`section_review`|`ohs_review`|`published`|`rejected`|`superseded`), body (jsonb; tipine göre), change_note, require_reread, created_by, submitted_at, published_at
-- `content_version_locales`: content_version_id, locale, title, body, media_asset_ids
+- `content_version_locales`: content_version_id, locale (`tr` zorunlu, `en` isteğe bağlı; karar #210), title, body — sürümün medyası (`content_version_assets`) iki dilin birleşimidir
 - `media_assets`: id, bucket, object_key, mime, size, kind, status (`pending_upload`|`uploaded`|`processing`|`ready`|`failed`|`purged`), hls_manifest_key, duration_sec, width, height, created_by
 - `tags`, `tag_types`, `content_tags`
 - `approvals`: id, subject_type (`content_version`|`position_card_version`|`question_version`|`classroom_session`), subject_id, step (`section`|`ohs`), decision (`approved`|`rejected`|`auto_self`), comment, decided_by, decided_at — **değiştirilemez**
@@ -549,7 +549,7 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 
 **Sınav**
 - `questions`: id, owner_org_unit_id, is_ohs, current_version_id, archived_at
-- `question_versions`: id, question_id, version, type (`single_choice`|`true_false`|`matching`|`hotspot`), stem, media_asset_id, options (jsonb, metin dizisi), correct_index (yalnızca çoktan seçmeli/DY), pairs (eşleştirme), regions (işaretleme; karar #205), explanation, topic, difficulty (1–3), is_ohs_critical, status (`ohs_review`|`active`|`rejected`|`retired`), created_by — sınavda kullanılmış sürümün yalnızca durumu değişebilir, silinemez (trigger). Onay/ret `approvals` tablosunda
+- `question_versions`: id, question_id, version, type (`single_choice`|`true_false`|`matching`|`hotspot`), stem, media_asset_id, options (jsonb, metin dizisi), correct_index (yalnızca çoktan seçmeli/DY), pairs (eşleştirme), regions (işaretleme; karar #205), translations (jsonb, isteğe bağlı `{ en: { stem, options?, pairs?, explanation? } }`; karar #211), explanation, topic, difficulty (1–3), is_ohs_critical, status (`ohs_review`|`active`|`rejected`|`retired`), created_by — sınavda kullanılmış sürümün yalnızca durumu değişebilir, silinemez (trigger). Onay/ret `approvals` tablosunda
 - `question_modules`: question_id, module_id (en az bir teorik modül; karar #59)
 - `quiz_questions`: ara değerlendirme soruları (aynı yapı, ayrı havuz)
 - `proctor_sessions`: id, proctor_user_id, code_hash (HMAC), location, created_at, expires_at, revoked_at
@@ -773,7 +773,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | **2.6b Davet ve hesap etkinleştirme** | `account_invitations`, üç kanal (e-posta, WhatsApp paylaş, basılı QR + kod), `/activate`, geçici şifrenin kaldırılması, İK'da yeniden davet ve davet durumu, yönetici e-postayla girişi, `owner` rolü ve iki adımlı onayda dört göz (kararlar #185–197) |
 | **2.6c Toplu davet** | Hesap açma ile davetin ayrılması, Davetler ekranı (seçim, süzgeç), akıllı/tek kanal, WhatsApp gönderim listesi (geri açılabilir), toplu basılı PDF, `invitation_batches` (kararlar #198–201) |
 | **2.7a Yeni soru tipleri** | Eşleştirme ve görselde işaretleme soruları: soru bankası editörü (bölge çizimi), Excel aktarımı (eşleştirme), sınav ekranı, puanlama, raporlar (kararlar #202–206) |
-| **2.7b İngilizce ve Faz 2 kapanışı** | Dil tercihi, personel ekranlarının İngilizce metinleri, içerik sürümünde TR/EN, sınav sorusunda isteğe bağlı EN (karar #207); Faz 2 yayını ve kılavuzlar |
+| **2.7b İngilizce ve Faz 2 kapanışı** | Dil tercihi, personel ekranlarının İngilizce metinleri, içerik sürümünde TR/EN, sınav sorusunda isteğe bağlı EN (Excel dahil), personel KVKK metni TR + EN, bildirimlerin alıcının dilinde gitmesi (kararlar #207–214); Faz 2 sürüm notları ve kılavuzlar |
 
 "Tüm bölümlerin pozisyon kartları" içerik girişidir; kod paketi değildir (pilot kontrol listesinde izlenir).
 
@@ -996,6 +996,13 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 205 | Yeni tiplerin kaydı | `question_versions`: `pairs` (eşleştirme çiftleri) ve `regions` (doğru bölgeler) jsonb; `options`/`correct_index` yalnızca çoktan seçmeli ve doğru/yanlışta (tipe göre veritabanı kontrolü). `exam_attempt_items.answer` jsonb: eşleştirmede sol → sağ (özgün indeksler), işaretlemede dokunulan nokta (oran). Eşleştirmede `option_order` sağ sütunun gösterim sırasıdır. Teslimden sonra değiştirilemez (mevcut kilit) |
 | 206 | Yeni tiplerin sınırları | Ara değerlendirme (modül içi) soruları çoktan seçmeli ve doğru/yanlış kalır. Sesli okuma eşleştirmede soru ve sol/sağ öğeleri, işaretlemede yalnızca soru metnini okur. Sonuç ekranında doğru cevap gösterilmez (değişmedi) |
 | 207 | İngilizce kapsamı (2.7b) | Dil tercihi profilde (Türkçe / English), hesapta saklanır, girişte o dille açılır. İngilizce arayüz personel ekranlarını kapsar (giriş, etkinleştirme, profil, eğitimlerim, sınav, pratik görünümü, bildirimler, KVKK); yönetim/İK/güvenlik ekranları Türkçe kalır. İçerik sürümünde TR zorunlu, EN isteğe bağlı, iki dil aynı sürümle onaylanır. Sınav sorusunda isteğe bağlı İngilizce metin/şık; aynı soru, aynı doğru cevap. İngilizcesi olmayan içerik/soru Türkçe gösterilir |
+| 208 | Dil tercihi | `personnel.locale` (`tr`/`en`, varsayılan `tr`). Profilde "Dil / Language" ile değişir; girişte hesabın diliyle açılır. Davetle etkinleştirmede, etkinleştirmenin yapıldığı dil tercih olarak kaydedilir. Hesapsız ekranlarda (giriş, etkinleştirme, şifre sıfırlama) "Türkçe / English" bağlantısı. Oturum açık sayfalarda `akademi_locale` çerezi adresteki dil farklıysa tercih edilen dile yönlendirir (iyimser; asıl kaynak hesap). Ortak cihazda girişte çerez giren kişinin diline geçer |
+| 209 | İngilizcenin sınırı | İngilizce arayüz personel ekranlarıdır (karar #207). Yönetim/İK/güvenlik/eğitmen ekranları, pozisyon kartı içeriği, modül adları, ara değerlendirme soruları, sertifika PDF'i, QR doğrulama sayfası, raporlar ve davet mesajları Türkçe kalır; İngilizce kullanan yönetici yönetim ekranlarında Türkçe metin görür |
+| 210 | İçerikte İngilizce | Editörde "İngilizce sürüm ekle" Türkçenin kopyasını açar; metinler çevrilir, video/PDF/görsel istenirse değiştirilir. Kaldırılabilir. Onaya gönderimde İngilizce varsa o da eksiksiz olmalı (`body_incomplete_en`); onaycı iki dili aynı sayfada görür, tek onay ikisini yayınlar. Kursiyer kendi dilini görür, İngilizcesi yoksa Türkçe; video izleme oranı gösterilen dildeki videoya göre. Arama Türkçe metinle |
+| 211 | Soruda İngilizce | `question_versions.translations.en`: soru metni, çoktan seçmelide şıklar (Türkçeyle aynı sayı ve sıra, tekil), eşleştirmede çiftler (aynı sayı ve sıra), açıklama. Doğru/yanlışta şıklar sabit "True / False", işaretlemede yalnızca metin. Boş çeviri yok sayılır. Çeviri değişikliği yeni soru sürümüdür (mevcut onay kuralı). Excel'de isteğe bağlı "Soru (EN)", "A (EN)"–"F (EN)", "Açıklama (EN)" sütunları. Sınavda kursiyerin dili; doğru cevap, puan ve konu özeti aynı |
+| 212 | Personel KVKK metni | TR + EN aynı sürümle yayınlanır (ziyaretçi metni gibi); bağlayıcı metin Türkçedir. Kişi kendi dilindeki metni görür; onay okunan dildeki metne bağlanır (hangi dilde onaylandığı kayıtlı). Aynı sürümün herhangi bir dildeki onayı yeterlidir. Yalnızca Türkçe yayınlanmış eski sürümde İngilizce kullanan Türkçe metni görür |
+| 213 | Bildirim dili | Uygulama içi bildirim gösterildiği dilde (tür + parametre saklandığı için). Bildirim e-postası, push metni ve şifre sıfırlama e-postası alıcının dilinde; bağlantı İngilizce kullanana `/en` adresiyle. Davet e-postası Türkçe (tercih henüz bilinmez) |
+| 214 | Sesli okuma dili | İçerik ve sınav sorusu kendi dilinde okunur (`tr-TR` / `en-GB`); cihazda o dilde ses yoksa uyarı gösterilir |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:
@@ -1010,6 +1017,7 @@ Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken 
 9. Tahliye listesi Faz 2'de yalnızca ziyaretçi ve taşeronları içerir; personel PDKS entegrasyonuyla Faz 3'te eklenir.
 10. Hata takibi self-hosted GlitchTip ile yapılır (veri kendi sunucumuzda kalır). Pilot sonrasına ertelendi (karar #104).
 11. Personel eğitim kayıtlarının saklama süresi iş ilişkisi bitişi + 15 yıl olarak varsayıldı (**hukuk teyidi gerekli**).
+12. Sertifika ve katılım belgesi PDF'leri resmî belge olduğundan yalnızca Türkçe düzenlenir; İngilizce kullanan personelin belgesi de Türkçedir (karar #209).
 
 ---
 

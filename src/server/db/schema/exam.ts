@@ -19,7 +19,7 @@ import { assignmentModules } from "./learning";
 import { orgUnits } from "./org";
 import { modules } from "./training";
 import { createdAt, id, tstz, updatedAt } from "./_shared";
-import type { HotspotPoint, HotspotRegion, MatchingPair } from "@/lib/questions";
+import type { HotspotPoint, HotspotRegion, MatchingPair, QuestionTranslations } from "@/lib/questions";
 
 /**
  * Soru bankası ve teorik sınav (SPEC Bölüm 6, FG-6.1, iş paketi 1.5).
@@ -74,6 +74,8 @@ export const questionVersions = pgTable(
     correctIndex: integer(),
     pairs: jsonb().$type<MatchingPair[]>(),
     regions: jsonb().$type<HotspotRegion[]>(),
+    /** İsteğe bağlı çeviriler (karar #207): aynı soru, aynı doğru cevap; yalnızca metinler. */
+    translations: jsonb().$type<QuestionTranslations>(),
     explanation: text(),
     topic: text().notNull(),
     difficulty: integer().notNull(),

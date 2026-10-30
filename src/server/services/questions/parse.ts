@@ -7,6 +7,8 @@ import type { QuestionInput } from "./index";
  * Soru Excel'i (karar #64): Soru, Tip, A–E şıkları, Doğru, Konu, Zorluk, İSG kritik, Modül, Açıklama.
  * Eşleştirme (karar #203): Tip "Eşleştirme", A–F hücrelerine "sol = sağ" (3–6 çift), Doğru boş bırakılır.
  * Görselde işaretleme Excel'den aktarılamaz (bölge çizimi gerekir; karar #204).
+ * İsteğe bağlı İngilizce sütunlar (karar #207): "Soru (EN)", "A (EN)"–"F (EN)", "Açıklama (EN)". Doluysa şık/çift sayısı
+ * Türkçeyle aynı olmalıdır; doğru/yanlışta yalnızca soru metni yazılır. Boşsa soru yalnızca Türkçedir.
  * Modül, aktarımın yapıldığı birimin modül adlarıyla eşleşir (büyük/küçük harf ve Türkçe karakter farkı yok sayılır);
  * birden çok modül ";" ile ayrılır. Veritabanına dokunmaz; birim testlenir.
  */
@@ -14,7 +16,26 @@ import type { QuestionInput } from "./index";
 export const MAX_QUESTION_ROWS = 1000;
 export const MAX_QUESTION_BYTES = 2 * 1024 * 1024;
 
-export const QUESTION_HEADERS = ["Soru", "Tip", "A", "B", "C", "D", "E", "F", "Doğru", "Konu", "Zorluk", "İSG kritik", "Modül", "Açıklama"] as const;
+const EN_LETTERS = ["A (EN)", "B (EN)", "C (EN)", "D (EN)", "E (EN)", "F (EN)"] as const;
+export const QUESTION_HEADERS = [
+  "Soru",
+  "Tip",
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "Doğru",
+  "Konu",
+  "Zorluk",
+  "İSG kritik",
+  "Modül",
+  "Açıklama",
+  "Soru (EN)",
+  ...EN_LETTERS,
+  "Açıklama (EN)",
+] as const;
 type Header = (typeof QUESTION_HEADERS)[number];
 
 export type QuestionRowError =
@@ -24,6 +45,7 @@ export type QuestionRowError =
   | "options_duplicate"
   | "correct_invalid"
   | "pairs_invalid"
+  | "translation_invalid"
   | "topic_missing"
   | "difficulty_invalid"
   | "critical_invalid"
@@ -135,6 +157,9 @@ function validateRow(rowNumber: number, get: (h: Header) => string, modulesByKey
   }
   if (type && type !== "matching" && correctIndex < 0) errors.push("correct_invalid");
 
+  const en = parseTranslation(type, get, options, pairs);
+  if (en === "invalid") errors.push("translation_invalid");
+
   const topic = get("Konu").replace(/\s+/g, " ");
   if (topic.length < 2) errors.push("topic_missing");
   const difficultyKey = matchKey(get("Zorluk"));
@@ -171,9 +196,42 @@ function validateRow(rowNumber: number, get: (h: Header) => string, modulesByKey
             isOhsCritical,
             mediaAssetId: null,
             moduleIds: [...new Set(moduleIds as string[])],
+            en: en === "invalid" ? null : en,
           }
         : null,
   };
+}
+
+/** İngilizce sütunlar: boşsa null, eksik/uyumsuzsa "invalid" (karar #207). */
+function parseTranslation(
+  type: QuestionInput["type"] | null,
+  get: (h: Header) => string,
+  options: string[],
+  pairs: MatchingPair[] | null,
+): QuestionInput["en"] | "invalid" {
+  const stem = get("Soru (EN)");
+  const cells = EN_LETTERS.map((l) => get(l));
+  const explanation = get("Açıklama (EN)") || null;
+  if (!stem && cells.every((c) => !c) && !explanation) return null;
+  if (stem.length < 5 || !type) return "invalid";
+  if (type === "single_choice") {
+    const filled = cells.slice(0, options.length);
+    if (filled.some((c) => !c) || cells.slice(options.length).some(Boolean)) return "invalid";
+    if (new Set(filled.map(matchKey)).size !== filled.length) return "invalid";
+    return { stem, options: filled, explanation };
+  }
+  if (type === "matching") {
+    const count = pairs?.length ?? 0;
+    const parsed = cells.filter(Boolean).map((c) => {
+      const i = c.indexOf("=");
+      return i < 0 ? null : { left: c.slice(0, i).trim(), right: c.slice(i + 1).trim() };
+    });
+    if (parsed.length !== count || parsed.some((p) => !p || !p.left || !p.right)) return "invalid";
+    return { stem, pairs: parsed as MatchingPair[], explanation };
+  }
+  // Doğru/yanlış: şıklar sabit (True/False)
+  if (cells.some(Boolean)) return "invalid";
+  return { stem, explanation };
 }
 
 /** Boş şablon (örnek satırlı). */
@@ -184,8 +242,32 @@ export async function buildQuestionTemplate(moduleTitles: string[]): Promise<Buf
   sheet.addRow([...QUESTION_HEADERS]);
   sheet.getRow(1).font = { bold: true };
   sheet.views = [{ state: "frozen", ySplit: 1 }];
-  [50, 16, 22, 22, 22, 22, 22, 22, 10, 20, 9, 11, 30, 40].forEach((w, i) => (sheet.getColumn(i + 1).width = w));
-  sheet.addRow(["Presi çalıştırırken eller nerede olmalıdır?", "Çoktan seçmeli", "İki el kumandasında", "Kalıp alanında", "Cepte", "", "", "", "A", "Pres güvenliği", 1, "Evet", moduleTitles[0] ?? "", "İki el kumandası elleri kalıp alanının dışında tutar."]);
+  [50, 16, 22, 22, 22, 22, 22, 22, 10, 20, 9, 11, 30, 40, 50, 22, 22, 22, 22, 22, 22, 40].forEach((w, i) => (sheet.getColumn(i + 1).width = w));
+  sheet.addRow([
+    "Presi çalıştırırken eller nerede olmalıdır?",
+    "Çoktan seçmeli",
+    "İki el kumandasında",
+    "Kalıp alanında",
+    "Cepte",
+    "",
+    "",
+    "",
+    "A",
+    "Pres güvenliği",
+    1,
+    "Evet",
+    moduleTitles[0] ?? "",
+    "İki el kumandası elleri kalıp alanının dışında tutar.",
+    // İsteğe bağlı İngilizce (karar #207)
+    "Where should your hands be while operating the press?",
+    "On the two-hand control",
+    "In the die area",
+    "In your pockets",
+    "",
+    "",
+    "",
+    "The two-hand control keeps the hands out of the die area.",
+  ]);
   sheet.addRow(["Işık perdesi arızalıyken pres çalıştırılabilir.", "Doğru/Yanlış", "", "", "", "", "", "", "Yanlış", "Pres güvenliği", 1, "Evet", moduleTitles[0] ?? "", ""]);
   sheet.addRow(["Uyarı işaretlerini anlamlarıyla eşleştirin.", "Eşleştirme", "Sarı üçgen = Dikkat", "Mavi daire = Zorunluluk", "Kırmızı daire = Yasak", "", "", "", "", "İşaretler", 1, "Hayır", moduleTitles[0] ?? "", ""]);
   for (let r = 2; r <= 1001; r++) {

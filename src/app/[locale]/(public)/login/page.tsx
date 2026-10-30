@@ -13,7 +13,7 @@ export default async function LoginPage() {
   const t = await getTranslations("auth.login");
 
   return (
-    <AuthCard title={t("title")}>
+    <AuthCard title={t("title")} languages>
       <LoginForm />
       {/* Çıkış yapılmış cihazda tahliye listesi kalmaz (karar #160) */}
       <ClearEvacuationCache />

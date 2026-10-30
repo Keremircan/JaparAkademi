@@ -166,7 +166,11 @@
     "sharedDevice": "Bu oturum ortak cihaz modunda açıldı.",
     "position": "Pozisyon",
     "department": "Departman / bölüm",
-    "noPosition": "Pozisyon atanmamış"
+    "noPosition": "Pozisyon atanmamış",
+    "language": {
+      "title": "Dil / Language",
+      "hint": "Uygulama, girişte seçtiğiniz dilde açılır. İngilizcesi olmayan içerikler Türkçe gösterilir."
+    }
   },
   "roles": {
     "personnel": "Personel",
@@ -396,7 +400,9 @@
     "invite_batch_too_large": "Bir seferde en fazla {max} kişi davet edilebilir.",
     "question_pairs_invalid": "Eşleştirmede 3–6 çift olmalı; her çiftin iki tarafı dolu ve aynı öğe iki kez yazılmamış olmalı.",
     "question_regions_invalid": "Görsel üzerinde en az bir doğru bölge çizin (en fazla 5).",
-    "question_image_required": "Görselde işaretleme sorusu için görsel yükleyin."
+    "question_image_required": "Görselde işaretleme sorusu için görsel yükleyin.",
+    "body_incomplete_en": "İngilizce sürüm eksik. Onaya göndermeden önce İngilizce sekmesindeki zorunlu alanları doldurun ya da İngilizce sürümü kaldırın.",
+    "question_translation_invalid": "İngilizce metin eksik ya da hatalı: soru metni en az 5 karakter olmalı; şık ve çiftlerin hepsi dolu, Türkçeyle aynı sayıda ve birbirinden farklı olmalı. Çeviri istemiyorsanız İngilizce alanları boş bırakın."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -882,6 +888,16 @@
         "quote": "Alıntı",
         "undo": "Geri al",
         "redo": "Yinele"
+      },
+      "languages": {
+        "heading": "Dil",
+        "tr": "Türkçe",
+        "en": "İngilizce",
+        "add": "İngilizce sürüm ekle",
+        "addHint": "İsteğe bağlı. İngilizce sürüm Türkçenin kopyasıyla açılır; metinleri çevirin, isterseniz video, PDF ya da görselleri İngilizcesiyle değiştirin. İngilizcesi olmayan içerik İngilizce kullanan personele Türkçe gösterilir.",
+        "enHint": "İki dil aynı sürümle onaya gider. Onaya göndermeden önce İngilizce sürümün de eksiksiz olması gerekir.",
+        "remove": "İngilizce sürümü kaldır",
+        "removeConfirm": "İngilizce sürüm bu taslaktan kaldırılsın mı? Kaydedince kalıcı olur."
       }
     },
     "media": {
@@ -956,7 +972,8 @@
         "section": "Bölüm onayı",
         "ohs": "İSG onayı"
       },
-      "compareWith": "Sürüm {version} ile karşılaştır"
+      "compareWith": "Sürüm {version} ile karşılaştır",
+      "englishVersion": "İngilizce sürüm"
     },
     "queue": {
       "title": "Onay bekleyenler",
@@ -1643,7 +1660,7 @@
       },
       "ohsCritical": "İSG kritik soru",
       "ohsCriticalHint": "Bu soru yanlış cevaplanırsa puandan bağımsız olarak sınav başarısız sayılır. İSG uzmanı onayı gerekir.",
-      "explanation": "Açıklama (isteğe bağlı)",
+      "explanation": "Açıklama",
       "explanationHint": "Yalnızca yöneticiler görür; kursiyere gösterilmez.",
       "modules": "Bağlı modüller",
       "modulesHint": "Soru, bu modüllerden sonra gelen sınavlarda çıkar.",
@@ -1677,7 +1694,19 @@
         "matching": "Eşleştirme",
         "hotspot": "Görselde işaretleme"
       },
-      "correctPair": "Doğru eşleşme"
+      "correctPair": "Doğru eşleşme",
+      "en": {
+        "heading": "İngilizce metin (isteğe bağlı)",
+        "hint": "İngilizce kullanan personele soru bu metinle gösterilir; doğru cevap ve puanlama aynıdır. Boş bırakırsanız soru Türkçe gösterilir. Şıklar ve çiftler Türkçedeki sırayla eşleşir.",
+        "stem": "Soru metni (İngilizce)",
+        "options": "Şıklar (İngilizce)",
+        "optionN": "{letter} şıkkı (İngilizce)",
+        "trueFalse": "Doğru/yanlış sorusunda şıklar İngilizcede {options} olarak gösterilir.",
+        "pairs": "Çiftler (İngilizce)",
+        "pairLeft": "{n}. çift, sol öğe (İngilizce)",
+        "pairRight": "{n}. çift, sağ öğe (İngilizce)",
+        "explanation": "Açıklama (İngilizce)"
+      }
     },
     "importer": {
       "owner": "Ait olduğu birim",
@@ -1704,11 +1733,12 @@
         "critical_invalid": "İSG kritik sütunu \"Evet\" veya \"Hayır\" olmalı.",
         "module_missing": "Modül yazılmamış.",
         "module_not_found": "Modül bu birimde bulunamadı.",
-        "pairs_invalid": "Eşleştirmede A–F hücrelerine 3–6 çift \"sol = sağ\" biçiminde yazılmalı; aynı sol veya sağ iki kez olamaz."
+        "pairs_invalid": "Eşleştirmede A–F hücrelerine 3–6 çift \"sol = sağ\" biçiminde yazılmalı; aynı sol veya sağ iki kez olamaz.",
+        "translation_invalid": "İngilizce sütunlar eksik ya da uyumsuz: \"Soru (EN)\" dolu olmalı; şıklar Türkçeyle aynı sayıda (eşleştirmede \"sol = sağ\" çiftleri), doğru/yanlışta yalnızca soru metni yazılır. Çeviri istemiyorsanız İngilizce sütunları boş bırakın."
       },
       "done": "{created} soru eklendi ({pending} tanesi İSG onayı bekliyor), {skipped} satır atlandı.",
       "commit": "{count} soruyu ekle",
-      "typesHint": "Tip: Çoktan seçmeli, Doğru/Yanlış veya Eşleştirme. Görselde işaretleme soruları ekrandan girilir."
+      "typesHint": "Tip: Çoktan seçmeli, Doğru/Yanlış veya Eşleştirme. Görselde işaretleme soruları ekrandan girilir. \"(EN)\" ile biten sütunlar isteğe bağlı İngilizce metindir."
     }
   },
   "exams": {

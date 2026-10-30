@@ -7,8 +7,22 @@
     "loading": "Loading…",
     "comingSoon": "This section will open in an upcoming release.",
     "skipToContent": "Skip to content",
+    "save": "Save",
+    "saving": "Saving…",
     "cancel": "Cancel",
-    "save": "Save"
+    "back": "Back",
+    "edit": "Edit",
+    "yes": "Yes",
+    "no": "No",
+    "none": "—",
+    "optional": "optional",
+    "saved": "Saved.",
+    "confirm": "Confirm",
+    "close": "Close",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} / {pages}",
+    "download": "Download"
   },
   "nav": {
     "mainMenu": "Main menu",
@@ -33,7 +47,10 @@
       "sharedDeviceHint": "The session ends automatically after a short period of inactivity.",
       "submit": "Sign in",
       "submitting": "Signing in…",
-      "help": "If you forgot your password, contact HR."
+      "help": "If you forgot your password, contact HR.",
+      "forgot": "I forgot my password",
+      "adminHint": "Administrators can also sign in with their registered email address.",
+      "activate": "Activate my account"
     },
     "errors": {
       "invalid_input": "Enter your employee number and password.",
@@ -66,7 +83,47 @@
       "mismatch": "New passwords do not match.",
       "current_password_invalid": "Current password is incorrect."
     },
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "reset": {
+      "forgotTitle": "I forgot my password",
+      "forgotIntro": "Enter your employee number. If your email address is registered, a password reset link will be sent.",
+      "sicil": "Employee no",
+      "send": "Send link",
+      "sending": "Sending…",
+      "sent": "Your request has been received. If your email address is registered, a link will arrive within a few minutes.",
+      "noEmail": "If your email address is not registered, HR will reset your password.",
+      "backToLogin": "Back to sign in",
+      "resetTitle": "Set a new password",
+      "submit": "Save password",
+      "done": "Your password has been changed. You can now sign in with your new password.",
+      "toLogin": "Sign in",
+      "invalid": "This link is invalid or has expired.",
+      "again": "Request a new link",
+      "email": {
+        "subject": "Your password reset link",
+        "body": "Use the link below to reset your password. The link is valid for {minutes} minutes and can be used once. If you did not make this request, you can ignore this email.",
+        "open": "Reset my password",
+        "footer": "This email was sent automatically by JAPAR Academy."
+      }
+    },
+    "activate": {
+      "title": "Activate my account",
+      "codeIntro": "Enter the 8-digit code on the activation sheet you were given and your employee number.",
+      "qrHint": "If you have a phone, you can simply scan the QR code on the sheet with the camera.",
+      "sicil": "Employee no",
+      "code": "Activation code",
+      "codeHint": "8 digits, for example 1234 5678",
+      "continue": "Continue",
+      "checking": "Checking…",
+      "welcome": "Welcome, {name}",
+      "setIntro": "Employee no: {sicil}. Choose a password; from now on you will sign in with your employee number and this password.",
+      "submit": "Activate my account",
+      "submitting": "Activating…",
+      "invalid": "This link or code is invalid, has expired or has already been used. Contact HR for a new invitation.",
+      "toLogin": "Back to sign in",
+      "missing": "Enter your employee number and the code on the sheet.",
+      "sharedDevice": "Shared device (training room, company tablet)"
+    }
   },
   "home": {
     "greeting": "Hello, {name}",
@@ -106,7 +163,14 @@
     "sicil": "Employee number",
     "roles": "Your roles",
     "changePassword": "Change password",
-    "sharedDevice": "This session was opened in shared device mode."
+    "sharedDevice": "This session was opened in shared device mode.",
+    "position": "Position",
+    "department": "Department / section",
+    "noPosition": "No position assigned",
+    "language": {
+      "title": "Dil / Language",
+      "hint": "The app opens in the language you choose here. Content without an English version is shown in Turkish."
+    }
   },
   "roles": {
     "personnel": "Personnel",
@@ -130,15 +194,40 @@
   "errors": {
     "forbidden": "You are not allowed to do this.",
     "unexpected": "Something went wrong. Please try again.",
+    "not_found": "Not found.",
     "invalid_input": "Please check the information you entered.",
     "invalid_name": "The name must be at least 2 characters.",
+    "legal_text_outdated": "The text has been updated; please reload the page and confirm again.",
+    "upload_too_large": "The file is larger than allowed.",
+    "file_type_not_allowed": "This file type is not supported.",
+    "upload_already_completed": "This upload has already been completed.",
+    "upload_incomplete": "The file was not uploaded completely. Please try again.",
+    "upload_failed": "The upload failed. Check your connection and try again.",
+    "module_locked": "This module is not open yet.",
+    "video_not_ready": "The video is not ready yet.",
+    "not_reached_end": "Please reach the end of the content first.",
+    "quiz_locked": "The review quiz opens once all steps are confirmed.",
+    "quiz_already_answered": "You have already answered this question.",
+    "assignment_closed": "This training assignment is closed.",
+    "proctor_code_required": "Enter the proctor code to start the exam.",
+    "proctor_code_invalid": "The proctor code is invalid or has expired. Ask your proctor for a new code.",
+    "proctor_code_locked": "Too many wrong codes. Try again later or contact your proctor.",
+    "proctor_code_unavailable": "A code could not be generated right now. Please try again.",
+    "exam_no_attempts": "You have no exam attempts left. Your manager will decide the next step.",
+    "exam_cooldown": "You cannot start a new exam before the waiting period ends.",
+    "exam_pool_insufficient": "There are not enough questions for this exam. Please tell your trainer.",
+    "exam_submitted": "This exam has been submitted.",
+    "exam_time_over": "The exam time is over; your answers have been submitted.",
+    "practical_not_draft": "This form has been signed and can no longer be changed.",
+    "practical_incomplete": "Mark all criteria before signing.",
+    "signature_invalid": "The signature could not be read. Please sign again.",
+    "reset_link_invalid": "This link is invalid or has expired. Request a new link.",
+    "legal_locale_missing": "Both the Turkish and the English text of this version are required.",
     "phone_invalid": "The phone number is not valid.",
     "email_invalid": "The e-mail address is not valid.",
-    "company_required": "Please choose your company.",
     "visitor_type_disabled": "This type of visit is not available.",
+    "company_required": "Please choose your company.",
     "visit_locked": "This visit can no longer be changed.",
-    "legal_text_outdated": "The text has been updated; please reload the page and confirm again.",
-    "not_found": "Not found.",
     "briefing_not_ready": "The briefing is not ready yet. Please contact security.",
     "briefing_not_started": "Please start the briefing from the beginning.",
     "briefing_too_fast": "Please take a little more time to read the cards, then try again.",
@@ -146,15 +235,504 @@
     "quiz_not_passed": "Please pass the check questions first.",
     "host_name_required": "Please enter who you are visiting.",
     "contact_required": "Enter at least a phone number or an e-mail address.",
-    "signature_invalid": "The signature could not be read. Please sign again.",
     "not_kiosk": "This device is not registered as a gate tablet.",
     "code_invalid": "No visit for today was found with this code. Please contact security.",
-    "rate_limited": "Too many attempts. Please contact security."
+    "rate_limited": "Too many attempts. Please contact security.",
+    "shared_device": "This action is not available on a shared device.",
+    "push_unavailable": "Notifications are not enabled on this server yet.",
+    "push_endpoint": "This browser's notification service is not supported.",
+    "push_failed": "Notifications could not be turned on. Refresh the page and try again.",
+    "invite_invalid": "The link or code is invalid, has expired or has already been used. Contact HR for a new invitation."
   },
   "notFound": {
     "title": "Page not found",
     "description": "The page does not exist or you are not allowed to view it.",
     "home": "Back to home"
+  },
+  "consent": {
+    "title": "Protection of personal data",
+    "intro": "Before you continue, please read and accept the information notice below.",
+    "accept": "I have read it and I accept",
+    "accepting": "Saving…",
+    "version": "Version {version}"
+  },
+  "modules": {
+    "kinds": {
+      "theory": {
+        "label": "Theory"
+      },
+      "practice": {
+        "label": "Practical"
+      },
+      "theory_exam": {
+        "label": "Theory exam"
+      },
+      "practice_exam": {
+        "label": "Practical exam"
+      }
+    }
+  },
+  "cards": {
+    "sections": {
+      "identity": {
+        "title": "Identity"
+      },
+      "purpose": {
+        "title": "Purpose"
+      },
+      "duties": {
+        "title": "Duties and responsibilities"
+      },
+      "workflow": {
+        "title": "Workflow"
+      },
+      "routines": {
+        "title": "Daily/weekly routines"
+      },
+      "reporting": {
+        "title": "Reporting"
+      },
+      "equipment": {
+        "title": "Equipment and systems"
+      },
+      "critical": {
+        "title": "Critical points"
+      },
+      "ohs": {
+        "title": "OHS"
+      },
+      "competencies": {
+        "title": "Competency requirements"
+      },
+      "kpis": {
+        "title": "Performance indicators"
+      },
+      "contacts": {
+        "title": "Contacts"
+      },
+      "plan": {
+        "title": "Training plan"
+      }
+    }
+  },
+  "learn": {
+    "status": {
+      "locked": "Locked",
+      "available": "Ready to start",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "review_required": "Review required",
+      "waived": "Exempt"
+    },
+    "minutes": "{n} min",
+    "common": "Common",
+    "optional": "Optional",
+    "steps": "{done}/{total} steps",
+    "via": {
+      "online": "Online",
+      "classroom": "Through classroom training",
+      "carried_over": "From earlier training"
+    },
+    "lock": {
+      "trainer": "Opens once your practical trainer is assigned.",
+      "prerequisites": "Complete first: {list}"
+    },
+    "classroomOnly": "Completed only through classroom training",
+    "rereadHeading": "Reading tasks",
+    "due": "Due: {date}",
+    "rereadIntro": "This content has been updated. Please read it and confirm (due: {date}).",
+    "plan": "{position} training plan",
+    "progress": "{percent}% completed",
+    "remaining": "Remaining: {hours} h {minutes} min",
+    "target": "Target completion: {date}",
+    "overdue": "Target date has passed",
+    "trainer": "Your practical trainer: {name}",
+    "allDone": "Congratulations! You have completed all required modules. Your section manager's start-of-work approval is pending.",
+    "nextStep": "Your next step",
+    "start": "Start",
+    "continue": "Continue",
+    "modulesHeading": "My training plan",
+    "module": {
+      "done": "You have completed this module.",
+      "doneClassroom": "This module was completed through classroom training.",
+      "back": "Back to my training",
+      "classroomOnly": "This OHS module is completed only through face-to-face classroom training. You can review the content; it is marked complete once the training record is approved.",
+      "stepsNav": "Steps",
+      "stepDone": "Completed",
+      "stepOf": "Step {n}/{total}",
+      "finishing": "You have completed all steps.",
+      "reviewRequired": "Based on your exam result you need to repeat this module. Complete the steps again and confirm them with \"I have read and understood\"."
+    },
+    "step": {
+      "watched": "Watched part",
+      "watchedPercent": "Watched: {percent}% (required {target}%). Skipped parts do not count.",
+      "download": "Open the form: {name}",
+      "acknowledged": "I have read and understood — confirmed",
+      "acknowledge": "I have read and understood",
+      "hint": {
+        "scroll": "Scroll to the end of the content to confirm.",
+        "video": "Watch the required part of the video to confirm.",
+        "pdf": "Go to the last page to confirm.",
+        "download": "Open the form to confirm."
+      }
+    },
+    "pdf": {
+      "error": "The PDF could not be displayed.",
+      "open": "Open in a new tab",
+      "loading": "Loading PDF…",
+      "page": "Page {current}/{total}",
+      "pageLabel": "Page {n}"
+    },
+    "quiz": {
+      "heading": "Review quiz",
+      "intro": "It does not affect your grade. Answer each question once; if you are wrong you will see the correct answer and its explanation.",
+      "correctOption": "Correct answer",
+      "yourAnswer": "Your answer",
+      "correct": "Correct!",
+      "wrong": "Wrong. The correct answer is marked.",
+      "answer": "Answer"
+    },
+    "readAloud": {
+      "start": "Read aloud",
+      "stop": "Stop",
+      "noVoice": "No voice for this language was found on this device; reading may be in another language."
+    },
+    "practiceLink": "My practical tasks",
+    "awaitingDecision": "You have used all your exam attempts. HR and your section manager will decide the next step and inform you.",
+    "certificatesHeading": "My certificates"
+  },
+  "assignments": {
+    "heading": "Training",
+    "none": "No open training assignment.",
+    "noPosition": "Training cannot be assigned to personnel without a position.",
+    "history": "Earlier assignments ({count})",
+    "planOf": "{position} plan (card v{version})",
+    "status": {
+      "active": "In progress",
+      "awaiting_readiness": "Awaiting start-of-work approval",
+      "awaiting_decision": "Awaiting decision",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "reason": {
+      "new_hire": "New hire",
+      "position_change": "Position change",
+      "recertification": "Refresher training",
+      "extra_training": "Additional training"
+    },
+    "progress": "{percent}% completed",
+    "startedOn": "Started: {date}",
+    "target": "Target: {date}",
+    "overdue": "overdue",
+    "trainer": "Trainer: {name}",
+    "noTrainer": "No trainer assigned",
+    "cancelled": "Cancellation reason: {reason}"
+  },
+  "exams": {
+    "title": "Theory exam",
+    "start": {
+      "heading": "Theory exam",
+      "rules": {
+        "questions": "{count} questions",
+        "duration": "Time: {minutes} minutes",
+        "passScore": "Pass score: {score}",
+        "attempts": "Attempts left: {left} (used: {used})"
+      },
+      "notes": {
+        "oneAtATime": "Questions are shown one at a time; you can go back between questions.",
+        "autosave": "Each answer is saved immediately. If your connection drops, you continue where you left off; the timer keeps running.",
+        "tabLeave": "Switching to another app or tab during the exam is recorded.",
+        "ohsCritical": "If any \"OHS critical\" question is answered wrongly, the exam is failed regardless of the score.",
+        "proctor": "You start the exam with the 6-digit code your proctor gives you."
+      },
+      "last": "Last attempt: {score} points, {passed, select, yes {successful} other {unsuccessful}}.",
+      "viewResult": "View result",
+      "block": {
+        "locked": "The exam opens when you complete the previous modules.",
+        "cooldown": "A new attempt opens after {date}. Complete the modules that need review in the meantime.",
+        "no_attempts": "You have no exam attempts left. Your manager will decide and inform you.",
+        "pool_insufficient": "There are not enough questions for this exam. Please tell your trainer.",
+        "completed": "You have passed the exam."
+      },
+      "code": "Proctor code",
+      "codeHint": "Ask your proctor for the 6-digit code.",
+      "start": "Start exam",
+      "resume": "Continue exam"
+    },
+    "runner": {
+      "timeLeft": "Time left {time}",
+      "questionsNav": "Questions",
+      "goTo": "Question {n}, {state}",
+      "unanswered": "not answered",
+      "answered": "answered",
+      "questionN": "Question {n} / {total}",
+      "readAloud": "Read aloud",
+      "saving": "Saving…",
+      "saved": "Your answer has been saved.",
+      "prev": "Previous",
+      "next": "Next",
+      "submit": "Finish exam",
+      "confirm": "Do you want to finish the exam? Answers cannot be changed after submission.",
+      "confirmUnanswered": "{count} questions are unanswered. Do you still want to finish the exam? Answers cannot be changed after submission.",
+      "matchingHint": "For each item, choose its match from the list. Each match can be used for only one item.",
+      "matchingChoose": "Choose",
+      "matchingChoices": "Choices",
+      "hotspotHint": "Tap the correct place on the image. Tap somewhere else to move your mark.",
+      "hotspotLabel": "Image marking area. Move the cursor with the arrow keys and press Enter to place a mark."
+    },
+    "result": {
+      "score": "{score} points",
+      "passed": "Passed",
+      "failed": "Failed",
+      "passScore": "Pass score: {score}",
+      "ohsCritical": "At least one OHS critical question was answered wrongly.",
+      "timeout": "The exam was submitted automatically because time ran out.",
+      "topics": "Results by topic",
+      "topicScore": "{correct} / {total}",
+      "noAnswers": "For exam security, the questions and correct answers are not shown.",
+      "retryAfter": "Attempts left: {left}. After completing the modules that need review, you can retake the exam from {date}.",
+      "retry": "Attempts left: {left}. You can retake the exam after completing the modules that need review.",
+      "noAttempts": "You have no exam attempts left. Your manager will decide and inform you.",
+      "back": "Back to my training",
+      "sharedLogout": "Shared device: you will be signed out in {seconds} seconds.",
+      "logoutNow": "Sign out now"
+    }
+  },
+  "practice": {
+    "markTitle": "Mark practical tasks",
+    "backTrainer": "Trainer panel",
+    "critical": "Critical",
+    "levels": {
+      "demonstrated": "Demonstrated by the trainer",
+      "supervised": "Done under supervision",
+      "independent": "Done independently",
+      "none": "Not started"
+    },
+    "markAs": "Mark: {level}",
+    "lower": "Lower the level",
+    "lowerTo": "New level",
+    "choose": "Choose",
+    "reason": "Reason (required)",
+    "note": "Note (optional)",
+    "photo": "Photo",
+    "confirmUp": "Save: {level}",
+    "confirmDown": "Lower the level",
+    "cancel": "Cancel",
+    "history": "History ({count})",
+    "lowered": "lowered",
+    "examFail": "Could not do it in the practical exam",
+    "openPhoto": "Open photo",
+    "progress": "{done} of {total} tasks \"done independently\"",
+    "moduleDone": "Module completed",
+    "reviewRequired": "Review required after the practical exam",
+    "readOnly": "You are viewing this trainee's tasks; you are not allowed to mark them.",
+    "notOpen": "This module is not open yet or has been closed.",
+    "signature": {
+      "empty": "{label}: signature box is empty",
+      "signed": "{label}: signed",
+      "hint": "Sign with your finger or a pen.",
+      "clear": "Clear"
+    },
+    "photos": {
+      "remove": "Remove photo {name}"
+    },
+    "mine": {
+      "title": "My practical tasks",
+      "description": "Your trainer marks your tasks: demonstrated → done under supervision → done independently. When all are \"independent\", the practical exam opens.",
+      "empty": "You have no practical tasks.",
+      "locked": "This module opens when the previous steps are finished and your trainer is assigned.",
+      "progress": "{done} of {total} tasks \"done independently\""
+    },
+    "exam": {
+      "heading": "Practical exam",
+      "passScore": "Pass score: {score}",
+      "attempts": "Attempts left: {left} (used: {used})",
+      "notes": {
+        "criteria": "Each practical task is a criterion; your trainer marks it as \"Could do it\" or \"Could not do it\".",
+        "critical": "If any critical task is marked \"Could not do it\", the exam is failed regardless of the score.",
+        "signatures": "The form is signed by you, your trainer and your section manager.",
+        "fail": "If you fail, the tasks you could not do are practised again; a new attempt opens when they are \"independent\" again."
+      },
+      "open": {
+        "draft": "Your trainer is continuing the evaluation.",
+        "awaiting_second_signature": "The evaluation has been signed; the section manager's signature is pending."
+      },
+      "block": {
+        "locked": "The practical exam opens when all your practical tasks are \"done independently\".",
+        "completed": "You have passed the practical exam.",
+        "no_attempts": "You have no exam attempts left. Your manager will decide and inform you.",
+        "no_criteria": "There are no tasks to evaluate for this exam. Please tell your trainer."
+      },
+      "ready": "You are ready for the exam. Your trainer will start the evaluation.",
+      "history": "Evaluations",
+      "attemptN": "Attempt {n}",
+      "score": "{score} points",
+      "passed": "passed",
+      "failed": "failed",
+      "status": {
+        "draft": "Draft",
+        "awaiting_second_signature": "Awaiting 2nd signature",
+        "final": "Final",
+        "returned": "Returned"
+      }
+    },
+    "result": {
+      "status": {
+        "draft": "Draft",
+        "awaiting_second_signature": "Awaiting 2nd signature",
+        "final": "Final",
+        "returned": "Returned"
+      },
+      "evaluator": "Evaluator: {name}",
+      "returned": "Returned by {name}: {reason}",
+      "score": "{score} points",
+      "passed": "Passed",
+      "failed": "Failed",
+      "passScore": "Pass score: {score}",
+      "critical": "At least one critical task could not be done.",
+      "awaitingNote": "The result becomes final when the section manager signs.",
+      "criteria": "Criteria",
+      "criticalTask": "Critical task",
+      "results": {
+        "pass": "Could do it",
+        "fail": "Could not do it",
+        "none": "Not marked"
+      },
+      "note": "General note",
+      "photos": "Photos",
+      "openPhoto": "Open photo",
+      "signatures": "Signatures",
+      "signatureOf": "Signature of {name}",
+      "roles": {
+        "trainee": "Trainee",
+        "trainer": "Evaluator (1st signature)",
+        "manager": "Section manager (2nd signature)"
+      }
+    },
+    "list": {
+      "title": "Practical exam forms",
+      "attemptN": "{title} · attempt {n}",
+      "evaluator": "Evaluator: {name}",
+      "score": "{score} points",
+      "passed": "passed",
+      "failed": "failed",
+      "status": {
+        "draft": "Draft",
+        "awaiting_second_signature": "Awaiting 2nd signature",
+        "final": "Final",
+        "returned": "Returned"
+      }
+    },
+    "readinessReopen": "Reopened by the start-of-work decision"
+  },
+  "certificates": {
+    "list": {
+      "title": "Certificates and documents",
+      "empty": "No documents yet.",
+      "kinds": {
+        "position_competency": "Position competency certificate",
+        "attendance": "Certificate of attendance"
+      },
+      "issued": "Issued on {date}",
+      "expires": "Valid until {date}",
+      "unlimited": "no expiry",
+      "revokedReason": "Revocation reason: {reason}",
+      "state": {
+        "valid": "Valid",
+        "expired": "Expired",
+        "revoked": "Revoked"
+      },
+      "download": "Download PDF",
+      "preparing": "The document is being prepared…",
+      "openReview": "Open the decision screen"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "description": "Your notifications. Tap a notification to open the related screen.",
+    "bell": "Notifications",
+    "bellUnread": "Notifications ({count} unread)",
+    "markAll": "Mark all as read",
+    "empty": "You have no notifications.",
+    "unread": "Unread",
+    "kinds": {
+      "assignment_started": "Your training plan is ready. You can start your first step.",
+      "exam_available": "You can now take the \"{title}\" exam.",
+      "exam_result": "Your \"{title}\" result has been announced.",
+      "certificate_ready": "Your \"{title}\" document is ready.",
+      "trainee_assigned": "{name} has been assigned to you as a trainee.",
+      "practical_exam_available": "\"{title}\" can be started for {name}.",
+      "approval_pending": "{type, select, question {There are questions awaiting OHS approval.} card {Position card awaiting your approval: {title}} other {Content awaiting your approval: {title}}}",
+      "second_signature_pending": "The practical exam form for {name} is awaiting your 2nd signature.",
+      "readiness_pending": "{name} is awaiting your start-of-work approval.",
+      "all_attempts_failed": "{name} has used all attempts for the \"{title}\" exam. A decision is pending.",
+      "blacklist_added": "A new person has been added to the blacklist.",
+      "email_failed": "Some emails could not be sent. Check the email settings and logs.",
+      "retention_completed": "The data of {count} people whose retention period ended has been anonymised.",
+      "visitor_briefed": "{name} has completed the briefing.",
+      "blacklist_denied": "Entry of a blacklisted person was refused at the gate.",
+      "visitor_arrived": "Your visitor {name} has arrived.",
+      "recert_started": "It is time for refresher training. Your expiring trainings have been assigned again.",
+      "reread_assigned": "\"{title}\" has been updated. Please read it and confirm.",
+      "tasks_unmarked": "Practical tasks for {name} have not been marked for {days} days.",
+      "training_overdue": "{name} has passed the target date of their training.",
+      "weekly_summary": "Weekly summary: {active} trainings in progress, {overdue} past target, {readiness} awaiting approval, {expiring} expiring, {rereads} readings pending.",
+      "recert_deferred": "Refresher training is due for {name}; it will start when their open training ends.",
+      "recert_trainer_needed": "{name} has started refresher training. Choose a trainer for the practical module.",
+      "ohs_expired": "The OHS training of {count} people has expired."
+    },
+    "email": {
+      "app": "JAPAR Academy",
+      "body": "Sign in to JAPAR Academy to see the details.",
+      "weeklyBody": "In progress: {active} · Past target: {overdue} · Awaiting approval: {readiness} · Expiring within {days} days: {expiring} · Readings pending: {rereads}. Sign in to JAPAR Academy for details.",
+      "open": "Open in JAPAR Academy",
+      "footer": "This email was sent automatically by JAPAR Academy. For security reasons, notification details are not included in emails.",
+      "kinds": {
+        "assignment_started": "Your training plan is ready",
+        "exam_available": "Your exam is open",
+        "exam_result": "Your exam result has been announced",
+        "certificate_ready": "Your document is ready",
+        "trainee_assigned": "A new trainee has been assigned to you",
+        "practical_exam_available": "A practical exam can be started",
+        "approval_pending": "A record is awaiting your approval",
+        "second_signature_pending": "A practical exam is awaiting your 2nd signature",
+        "readiness_pending": "An employee is awaiting your start-of-work approval",
+        "all_attempts_failed": "An employee is awaiting your decision",
+        "blacklist_added": "A new person has been added to the blacklist",
+        "email_failed": "Email delivery error",
+        "retention_completed": "Personal data past its retention period has been anonymised",
+        "visitor_briefed": "Your visitor has completed the briefing",
+        "blacklist_denied": "A blacklisted person attempted to enter",
+        "visitor_arrived": "Your visitor has arrived",
+        "recert_started": "It is time for refresher training",
+        "reread_assigned": "There is updated content for you to read",
+        "tasks_unmarked": "There are unmarked practical tasks",
+        "training_overdue": "A training has passed its target date",
+        "weekly_summary": "Your team's weekly training summary",
+        "recert_deferred": "A refresher training has been deferred",
+        "recert_trainer_needed": "A trainer must be chosen for refresher training",
+        "ohs_expired": "There are expired OHS trainings"
+      }
+    },
+    "pagination": "Notification pages",
+    "push": {
+      "title": "JAPAR Academy",
+      "body": "You have a new notification"
+    }
+  },
+  "push": {
+    "title": "Notifications on this device",
+    "loading": "Checking notification status…",
+    "offHint": "Notifications are not sent to this device. If you turn them on, your phone or computer will alert you when you have a new notification. Notifications contain no personal information.",
+    "onHint": "Notifications are sent to this device. They stop when you sign out.",
+    "enable": "Turn on notifications",
+    "disable": "Turn off notifications",
+    "blocked": {
+      "unsupported": "This browser does not support notifications. You can try Chrome or Safari on your phone.",
+      "ios_install": "To get notifications on iPhone, first add the app to your home screen: in Safari tap the Share button, then \"Add to Home Screen\". Then open the app from the home screen icon and return to this page.",
+      "denied": "Notification permission is off on this device. To turn it on, allow notifications in the browser's site settings (lock icon in the address bar), then refresh the page.",
+      "server": "Notifications are not enabled on this server yet. In-app notifications will continue to arrive."
+    }
   },
   "visitorFlow": {
     "title": "Visitor safety briefing",
@@ -241,14 +819,6 @@
       "body": "Before your visit on {date}, please complete the short safety briefing. Your visit code: {code}",
       "open": "Open the briefing",
       "footer": "This e-mail was sent automatically by JAPAR Akademi. The link is valid until the end of the visit day."
-    }
-  },
-  "practice": {
-    "signature": {
-      "empty": "{label}: signature box is empty",
-      "signed": "{label}: signed",
-      "hint": "Sign with your finger or a pen.",
-      "clear": "Clear"
     }
   }
 }

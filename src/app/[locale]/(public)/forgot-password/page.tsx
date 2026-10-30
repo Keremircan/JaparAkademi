@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page() {
   const t = await getTranslations("auth.reset");
   return (
-    <AuthCard title={t("forgotTitle")} intro={t("forgotIntro")}>
+    <AuthCard title={t("forgotTitle")} intro={t("forgotIntro")} languages>
       <ForgotPasswordForm />
     </AuthCard>
   );

@@ -9,7 +9,8 @@ import { withActor } from "@/server/db/with-actor";
 import { NotFoundError } from "@/server/errors";
 import { env } from "@/server/env";
 import { emailHtml, type NotificationKind } from "@/server/state/notifications";
-import messages from "../../../../messages/tr.json";
+import { localizedPath, messagesFor } from "@/server/i18n/messages";
+import { toAppLocale } from "@/lib/locale";
 import { queuePush } from "../push";
 import { getSettings } from "../settings";
 
@@ -34,9 +35,10 @@ export type NotifyInput = {
   once?: boolean;
 };
 
-function emailContent(kind: NotificationKind, link: string, params: Record<string, string | number>) {
-  const t = createTranslator({ locale: "tr", messages, namespace: "notifications.email" });
-  const url = new URL(link, env().APP_URL).toString();
+/** E-posta alıcının dilinde (karar #207). */
+function emailContent(kind: NotificationKind, link: string, params: Record<string, string | number>, locale: string) {
+  const t = createTranslator({ locale: toAppLocale(locale), messages: messagesFor(locale), namespace: "notifications.email" });
+  const url = new URL(localizedPath(link, locale), env().APP_URL).toString();
   const subject = t(`kinds.${kind}`);
   // Haftalık özette yalnızca sayılar (kişi adı yok; karar #172)
   const body = kind === "weekly_summary" ? t("weeklyBody", params) : t("body");
@@ -57,12 +59,12 @@ export async function notify(tx: Tx, input: NotifyInput): Promise<void> {
     ? new Map(
         (
           await tx
-            .select({ userId: personnel.userId, email: personnel.email })
+            .select({ userId: personnel.userId, email: personnel.email, locale: personnel.locale })
             .from(personnel)
             .where(and(inArray(personnel.userId, ids), eq(personnel.status, "active")))
-        ).map((r) => [r.userId, r.email]),
+        ).map((r) => [r.userId, r]),
       )
-    : new Map<string, string | null>();
+    : new Map<string, { email: string | null; locale: string }>();
   const created: { notificationId: string; userId: string }[] = [];
 
   for (const userId of ids) {
@@ -88,9 +90,10 @@ export async function notify(tx: Tx, input: NotifyInput): Promise<void> {
       .values({ userId, kind: input.kind, subjectKey: input.subjectKey, params: input.params ?? {}, link: input.link })
       .returning({ id: notifications.id });
     created.push({ notificationId: n!.id, userId });
-    const to = emails.get(userId);
+    const recipient = emails.get(userId);
+    const to = recipient?.email;
     if (wantsEmail && to) {
-      const c = emailContent(input.kind, input.link, input.params ?? {});
+      const c = emailContent(input.kind, input.link, input.params ?? {}, recipient.locale);
       await tx.insert(emailOutbox).values({ notificationId: n!.id, kind: input.kind, toAddress: to, subject: c.subject, bodyText: c.text, bodyHtml: c.html });
     }
   }

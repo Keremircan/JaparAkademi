@@ -41,8 +41,13 @@ export default async function globalSetup() {
   const personnelKind = eq(legalTexts.kind, "kvkk_personnel");
   const [published] = await db().select({ id: legalTexts.id }).from(legalTexts).where(and(personnelKind, isNotNull(legalTexts.publishedAt))).limit(1);
   if (!published) {
-    const draft = await db().select({ id: legalTexts.id }).from(legalTexts).where(personnelKind).limit(1);
-    const id = draft[0]?.id ?? (await createDraft(sys, { title: "E2E Aydınlatma Metni", body: "Uçtan uca test için aydınlatma metni. ".repeat(3) })).id;
+    // Personel metni TR + EN birlikte yayınlanır (karar #207)
+    const drafts = await db().select({ id: legalTexts.id, locale: legalTexts.locale }).from(legalTexts).where(personnelKind);
+    const id =
+      drafts.find((d) => d.locale === "tr")?.id ?? (await createDraft(sys, { title: "E2E Aydınlatma Metni", body: "Uçtan uca test için aydınlatma metni. ".repeat(3) })).id;
+    if (!drafts.some((d) => d.locale === "en")) {
+      await createDraft(sys, { title: "E2E Privacy Notice", body: "Privacy notice for end-to-end tests. ".repeat(3) }, "kvkk_personnel", "en");
+    }
     await publishText(sys, id);
   }
 
@@ -85,6 +90,8 @@ export default async function globalSetup() {
       roles: ["trainer", "hr"],
       mustChangePassword: true,
     });
+    // Dil tercihi akışı kullanıcısı (karar #207)
+    await createAccount(sys, { sicilNo: `E2E-${suffix}-EN${p}`, fullName: "Deneme English", password: E2E_PASSWORD, mustChangePassword: false });
     // İK akışı kullanıcısı
     await createAccount(sys, {
       sicilNo: `E2E-${suffix}-HR${p}`,

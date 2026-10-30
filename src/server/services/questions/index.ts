@@ -9,7 +9,7 @@ import { approvals, assignmentModules, assignments, examAttemptItems, examAttemp
 import { withActor } from "@/server/db/with-actor";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/server/errors";
 import { notifyApprovalPending, resolveNotifications } from "../notifications";
-import { HOTSPOT_MAX_REGIONS, MATCHING_MAX_PAIRS, MATCHING_MIN_PAIRS, type HotspotRegion, type MatchingPair, type QuestionType } from "@/lib/questions";
+import { HOTSPOT_MAX_REGIONS, MATCHING_MAX_PAIRS, MATCHING_MIN_PAIRS, type HotspotRegion, type MatchingPair, type QuestionTranslation, type QuestionType } from "@/lib/questions";
 
 /**
  * Soru bankası (SPEC Bölüm 6, FG-6.1). Görme: bölüm sorumlusu (kapsamı + ortak İSG soruları), İSG uzmanı ve İK (tümü).
@@ -77,6 +77,8 @@ export type QuestionInput = {
   isOhsCritical: boolean;
   mediaAssetId: string | null;
   moduleIds: string[];
+  /** İsteğe bağlı İngilizce metin (karar #207); null/verilmezse yok. */
+  en?: QuestionTranslation | null;
 };
 
 const unit = (n: unknown) => typeof n === "number" && Number.isFinite(n) && n >= 0 && n <= 1;
@@ -126,6 +128,39 @@ function normalizeAnswerFields(input: QuestionInput): Pick<QuestionInput, "optio
   return { options, correctIndex: correct, pairs: null, regions: null };
 }
 
+/**
+ * İngilizce metin (karar #207): aynı soru, aynı doğru cevap. Şık/çift sayısı ve sırası Türkçeyle aynıdır;
+ * doğru/yanlışta şıklar sabit (True/False), işaretlemede yalnızca soru metni çevrilir. Boş metin = çeviri yok.
+ */
+export function normalizeTranslation(
+  type: QuestionType,
+  base: Pick<QuestionInput, "options" | "pairs">,
+  en: QuestionTranslation | null | undefined,
+): QuestionTranslation | null {
+  if (!en) return null;
+  const stem = en.stem.trim();
+  const options = (en.options ?? []).map((o) => o.trim());
+  const pairs = (en.pairs ?? []).map((p) => ({ left: p.left.trim(), right: p.right.trim() }));
+  const empty = !stem && options.every((o) => !o) && pairs.every((p) => !p.left && !p.right) && !en.explanation?.trim();
+  if (empty) return null;
+  const invalid = () => new ValidationError("question_translation_invalid");
+  if (stem.length < 5 || stem.length > 2000) throw invalid();
+  const explanation = en.explanation?.trim() || null;
+  if (type === "single_choice") {
+    if (options.length !== base.options.length || options.some((o) => !o || o.length > 500)) throw invalid();
+    if (new Set(options.map((o) => o.toLowerCase())).size !== options.length) throw invalid();
+    return { stem, options, explanation };
+  }
+  if (type === "matching") {
+    const basePairs = base.pairs ?? [];
+    if (pairs.length !== basePairs.length || pairs.some((p) => !p.left || !p.right || p.left.length > 200 || p.right.length > 200)) throw invalid();
+    const key = (x: string) => x.toLowerCase();
+    if (new Set(pairs.map((p) => key(p.left))).size !== pairs.length || new Set(pairs.map((p) => key(p.right))).size !== pairs.length) throw invalid();
+    return { stem, pairs, explanation };
+  }
+  return { stem, explanation };
+}
+
 export function normalizeQuestion(input: QuestionInput): QuestionInput {
   const stem = input.stem.trim();
   if (stem.length < 5 || stem.length > 2000) throw new ValidationError("question_stem_invalid");
@@ -135,7 +170,8 @@ export function normalizeQuestion(input: QuestionInput): QuestionInput {
   if (![1, 2, 3].includes(input.difficulty)) throw new ValidationError("question_difficulty_invalid");
   const moduleIds = [...new Set(input.moduleIds)];
   if (moduleIds.length === 0 || moduleIds.length > 20) throw new ValidationError("question_modules_required");
-  return { ...input, ...answerFields, stem, topic, explanation: input.explanation?.trim() || null, moduleIds };
+  const en = normalizeTranslation(input.type, answerFields, input.en);
+  return { ...input, ...answerFields, stem, topic, explanation: input.explanation?.trim() || null, moduleIds, en };
 }
 
 async function validateRefs(tx: Tx, actor: Actor & { kind: "user" }, input: QuestionInput, existingAssetId: string | null) {
@@ -165,6 +201,7 @@ function versionValues(input: QuestionInput) {
     difficulty: input.difficulty,
     isOhsCritical: input.isOhsCritical,
     mediaAssetId: input.mediaAssetId,
+    translations: input.en ? { en: input.en } : null,
   };
 }
 
@@ -474,6 +511,7 @@ export async function getQuestion(actor: Actor, questionId: string): Promise<Que
           correctIndex: editableRow.v.correctIndex,
           pairs: editableRow.v.pairs,
           regions: editableRow.v.regions,
+          translations: editableRow.v.translations,
           explanation: editableRow.v.explanation,
           topic: editableRow.v.topic,
           difficulty: editableRow.v.difficulty,

@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { FormError } from "@/components/forms/form-error";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
+import { speak } from "@/features/learning/components/read-aloud";
 import { HotspotAnswer } from "@/features/questions/components/hotspot-image";
 import type { HotspotPoint } from "@/lib/questions";
 import type { AttemptQuestion } from "@/server/services/exams";
@@ -132,11 +133,7 @@ export function ExamRunner({
           ? [q.stem, ...q.left.map((l, i) => `${i + 1}. ${l}`), t("matchingChoices"), ...q.right.map((r, i) => `${String.fromCharCode(65 + i)}. ${r}`)]
           : [q.stem];
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(parts.join(". "));
-    u.lang = "tr-TR";
-    const voice = speechSynthesis.getVoices().find((v) => v.lang.toLowerCase().startsWith("tr"));
-    if (voice) u.voice = voice;
-    speechSynthesis.speak(u);
+    speak(parts.join(". "), q.locale);
     if (!ttsReported.current) {
       ttsReported.current = true;
       void examEventAction(attemptId, "tts");
@@ -189,7 +186,7 @@ export function ExamRunner({
             {t("readAloud")}
           </Button>
         </div>
-        <p className="text-lg font-medium">{q.stem}</p>
+        <p lang={q.locale} className="text-lg font-medium">{q.stem}</p>
 
         {q.type === "hotspot" ? (
           <>

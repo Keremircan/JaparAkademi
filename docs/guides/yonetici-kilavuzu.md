@@ -37,7 +37,7 @@ Sistem kimseyi otomatik reddetmez; karar sizindir ve değiştirilemez.
 - **Tekrar eğitimi** otomatik açılır: süreli modülün bitişine `recert.lead_days` (varsayılan 30) gün kala kişiye yalnızca o modüller ve bağlı sınavlar atanır. Kişinin açık eğitimi varsa o bitince açılır (size bildirim gelir). Pratik modül varsa kişinin eğitimine eğitmen seçin. İptal ettiğiniz tekrar eğitimi yeniden açılmaz. Bitince bölüm sorumlusu onaylar ve yeni sertifika düzenlenir.
 - **Bildirimler (Faz 2):** hedef tarihi geçen eğitim (bölüm sorumlusuna bir kez), işaretlenmeyen pratik görev (eğitmene), süresi dolan İSG eğitimleri (İSG'ye günlük özet), Pazartesi 08:00 haftalık ekip özeti (bölüm sorumlusuna; e-postada yalnızca sayılar).
 - **Kişi verisini dışa aktar** (kişi sayfası): KVKK kapsamındaki talepler için kişinin verilerini Excel olarak verir (TC maskeli). Kendi verinizi bu yolla indiremezsiniz.
-- **Aydınlatma metinleri** (Sistem → Aydınlatma metinleri ve kurallar): personel KVKK metni (yeni sürümde bütün kullanıcılar yeniden onaylar) ve ziyaretçi KVKK metni (Türkçe + İngilizce birlikte yayınlanır).
+- **Aydınlatma metinleri** (Sistem → Aydınlatma metinleri ve kurallar): personel KVKK metni ve ziyaretçi KVKK metni. İkisi de Türkçe + İngilizce birlikte yayınlanır (bağlayıcı metin Türkçedir); yeni sürümde bütün kullanıcılar yeniden onaylar. Personel kendi dilindeki metni onaylar.
 
 ---
 
@@ -49,6 +49,7 @@ Yalnızca kapsamınızdaki birimlerin personelini ve içeriklerini görürsünü
 - **Yönetim → İçerik kütüphanesi**: metin, PDF, video, galeri, talimat, kontrol listesi, form şablonu.
 - Taslak → **Onaya gönder**. Kendi biriminizin içeriğini gönderirken bölüm onayı sizden geçer; İSG içerikleri ayrıca İSG uzmanı onayına gider.
 - Yayındaki içeriği değiştirmek için **Yeni sürüm başlat**. "Tekrar oku ve onayla" seçilirse önceki sürümü okuyan herkese okuma görevi açılır.
+- **İngilizce sürüm (isteğe bağlı):** editörde **İngilizce sürüm ekle** Türkçenin kopyasını açar. Metinleri çevirin; isterseniz video, PDF ya da görselleri İngilizcesiyle değiştirin. İki dil aynı sürümle onaya gider; onaycı ikisini aynı sayfada görür. İngilizce kullanan personel İngilizcesi olmayan içeriği Türkçe görür.
 
 ### Pozisyon kartı ve eğitim planı
 - **Yönetim → Pozisyon kartları ve planlar**: 13 bölümlük kartı doldurun, **Plan** sekmesinde modülleri sürükleyerek sıralayın, sınav ayarlarını yapın.
@@ -60,6 +61,7 @@ Yalnızca kapsamınızdaki birimlerin personelini ve içeriklerini görürsünü
   - **Çoktan seçmeli** (2–5 şık) ve **Doğru/Yanlış**.
   - **Eşleştirme:** 3–6 çift yazın (sol ↔ sağ). Sınavda sağ sütun karışık gelir; bütün çiftler doğruysa soru doğru sayılır. Excel'de Tip "Eşleştirme", A–F hücrelerine `sol = sağ`.
   - **Görselde işaretleme:** görsel yükleyin, hazır olunca doğru bölgeyi görselin üzerinde sürükleyerek çizin (dikdörtgen veya daire; birden çok bölge olabilir). Kursiyerin dokunduğu nokta bölgelerden birindeyse doğru sayılır. Yalnızca ekrandan girilir.
+- **İngilizce metin (isteğe bağlı):** soru formundaki "İngilizce metin" bölümüne soruyu ve şıkları (eşleştirmede çiftleri) aynı sırayla yazın; doğru cevap aynıdır. Doğru/yanlışta şıklar kendiliğinden "True / False" olur, işaretlemede yalnızca metin çevrilir. Excel'de "(EN)" ile biten sütunlar isteğe bağlıdır.
 - "İSG kritik" sorular İSG uzmanı onayıyla etkinleşir. Sınavda kullanılmış soru düzenlenince yeni sürüm açılır.
 
 ### Onaylar ve değerlendirme

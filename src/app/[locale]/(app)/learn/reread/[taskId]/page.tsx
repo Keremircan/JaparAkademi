@@ -51,8 +51,8 @@ async function Content({ params }: { params: Promise<{ taskId: string }> }) {
         description={t("rereadIntro", { date: format.dateTime(new Date(`${task.dueDate}T12:00:00`), { dateStyle: "long" }) })}
         back={{ href: "/learn", label: tl("title") }}
       />
-      <ReadAloud targetId="reread-body" />
-      <div id="reread-body">
+      <ReadAloud targetId="reread-body" lang={task.locale} />
+      <div id="reread-body" lang={task.locale}>
         <ContentRenderer type={task.type} title={task.title} body={task.body} assets={assets} />
       </div>
       {!task.acknowledgedAt && (
