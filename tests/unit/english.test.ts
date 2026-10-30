@@ -17,46 +17,12 @@ function leaves(tree: string | Tree, prefix: string): [string, string][] {
   return Object.entries(tree).flatMap(([k, v]) => leaves(v, `${prefix}.${k}`));
 }
 
-/** İngilizce olması gereken personel ekranları (karar #207); yönetim ekranları Türkçe kalır. */
-const PERSONNEL_SCOPE = [
-  "app",
-  "common",
-  "nav",
-  "auth",
-  "home",
-  "sections",
-  "profile",
-  "roles",
-  "notFound",
-  "offline",
-  "pwa",
-  "consent",
-  "learn",
-  "assignments.heading",
-  "assignments.none",
-  "assignments.status",
-  "assignments.reason",
-  "assignments.progress",
-  "assignments.target",
-  "assignments.trainer",
-  "exams.title",
-  "exams.start",
-  "exams.runner",
-  "exams.result",
-  "practice.levels",
-  "practice.mine",
-  "practice.list",
-  "practice.result",
-  "practice.exam",
-  "practice.signature",
-  "practice.photos",
-  "certificates.list",
-  "notifications",
-  "push",
-  "visitorFlow",
-];
-// Kart bölümlerinin ve modül türlerinin yalnızca başlıkları kursiyere görünür
-const PERSONNEL_TITLES = ["cards.sections", "modules.kinds"];
+/**
+ * Bütün arayüz İngilizcedir (karar #217). Türkçe kalanlar: sertifika PDF'i (resmî belge) ve davet edilen kişiye giden
+ * metinler (WhatsApp/e-posta mesajı, etkinleştirme kağıdı; kişinin dili henüz bilinmez).
+ */
+const TURKISH_ONLY = ["certificates.pdf", "invite.message", "invite.sheet"];
+const isTurkishOnly = (path: string) => TURKISH_ONLY.some((x) => path === x || path.startsWith(`${x}.`));
 
 /** Eşleşen kapanış parantezinin indeksi. */
 function closing(s: string, open: number): number {
@@ -89,14 +55,13 @@ function args(s: string, out = new Set<string>()): Set<string> {
   return out;
 }
 
-describe("İngilizce arayüz (iş paketi 2.7b, karar #207)", () => {
-  it("FG-8.2 personel ekranlarının bütün metinlerinin İngilizcesi vardır ve aynı değişkenleri kullanır", () => {
+describe("İngilizce arayüz (kararlar #207, #217)", () => {
+  it("FG-8.2 bütün arayüz metinlerinin İngilizcesi vardır ve aynı değişkenleri kullanır (karar #217)", () => {
     const missing: string[] = [];
     const mismatched: string[] = [];
-    const paths = [
-      ...PERSONNEL_SCOPE.flatMap((s) => leaves(get(tr as Tree, s)!, s)),
-      ...PERSONNEL_TITLES.flatMap((s) => leaves(get(tr as Tree, s)!, s).filter(([k]) => /\.(title|label)$/.test(k))),
-    ];
+    const paths = Object.keys(tr)
+      .flatMap((ns) => leaves((tr as Tree)[ns]!, ns))
+      .filter(([path]) => !isTurkishOnly(path));
     for (const [path, trText] of paths) {
       const enText = get(en as Tree, path);
       if (typeof enText !== "string") missing.push(path);

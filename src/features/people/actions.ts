@@ -24,9 +24,10 @@ const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
 /** Etkinleştirme kağıtlarını (PDF) base64 olarak üretir; sunucuda saklanmaz. */
 async function sheetsPdfBase64(invites: IssuedInvite[]): Promise<string> {
-  const t = await getTranslations("invite.sheet");
-  const tApp = await getTranslations("app");
-  const format = await getFormatter();
+  // Kağıt davet edilen kişiye verilir; dil tercihi henüz bilinmediği için Türkçe (karar #217)
+  const t = await getTranslations({ locale: "tr", namespace: "invite.sheet" });
+  const tApp = await getTranslations({ locale: "tr", namespace: "app" });
+  const format = await getFormatter({ locale: "tr" });
   const pdf = await renderActivationSheets(
     invites.map((i) => ({
       sicilNo: i.sicilNo,

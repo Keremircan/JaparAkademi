@@ -6,7 +6,8 @@ import { reportExports } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { ValidationError } from "@/server/errors";
 import { renderReportPdf } from "@/server/pdf/report";
-import messages from "../../../../messages/tr.json";
+import { toAppLocale, type AppLocale } from "@/lib/locale";
+import { messagesFor } from "@/server/i18n/messages";
 import { getSettings } from "../settings";
 import { formatCell, formatDate, type Translate } from "./format";
 import { hasDateFilters, runReport, type ReportFilters, type ReportKind } from "./index";
@@ -18,17 +19,25 @@ import { hasDateFilters, runReport, type ReportFilters, type ReportKind } from "
 
 export type ExportFormat = "xlsx" | "pdf";
 
-export async function exportReport(actor: Actor, kind: ReportKind, filters: ReportFilters, format: ExportFormat): Promise<{ buffer: Buffer; fileName: string; contentType: string }> {
+/** `locale`: indiren kişinin dili (karar #217); başlıklar, sütunlar ve değerler o dilde. */
+export async function exportReport(
+  actor: Actor,
+  kind: ReportKind,
+  filters: ReportFilters,
+  format: ExportFormat,
+  locale: AppLocale = "tr",
+): Promise<{ buffer: Buffer; fileName: string; contentType: string }> {
   assertUser(actor);
   const result = await runReport(actor, kind, filters);
   if (result.truncated) throw new ValidationError("report_too_large");
   const { "org.timezone": tz } = await getSettings(["org.timezone"]);
-  const t = createTranslator({ locale: "tr", messages, namespace: "reports" }) as unknown as Translate;
-  const appName = createTranslator({ locale: "tr", messages, namespace: "app" })("name");
+  const messages = messagesFor(locale);
+  const t = createTranslator({ locale: toAppLocale(locale), messages, namespace: "reports" }) as unknown as Translate;
+  const appName = createTranslator({ locale: toAppLocale(locale), messages, namespace: "app" })("name");
   const title = t(`kinds.${kind}.title`);
   const meta = [
     ...(hasDateFilters(kind) ? [t("meta.range", { from: formatDate(filters.from, tz), to: formatDate(filters.to, tz) })] : []),
-    t("meta.generated", { date: new Intl.DateTimeFormat("tr-TR", { dateStyle: "long", timeStyle: "short", timeZone: tz }).format(new Date()) }),
+    t("meta.generated", { date: new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "tr-TR", { dateStyle: "long", timeStyle: "short", timeZone: tz }).format(new Date()) }),
   ];
   const warnings = result.warnings.map((w) => t(`warnings.${w}`));
   const tables = result.tables.map((tbl) => ({

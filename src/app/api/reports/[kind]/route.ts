@@ -23,7 +23,7 @@ export async function GET(req: NextRequest, { params }: RouteContext<"/api/repor
   if (!user || user.mustChangePassword) return new NextResponse(null, { status: 401 });
   try {
     const filters = await parseFilters(kind.data, q.data);
-    const file = await exportReport(toActor(user), kind.data, filters, q.data.format);
+    const file = await exportReport(toActor(user), kind.data, filters, q.data.format, user.locale);
     return new NextResponse(new Uint8Array(file.buffer), {
       headers: {
         "Content-Type": file.contentType,

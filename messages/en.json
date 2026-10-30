@@ -197,18 +197,119 @@
     "not_found": "Not found.",
     "invalid_input": "Please check the information you entered.",
     "invalid_name": "The name must be at least 2 characters.",
+    "invalid_code": "Code must be 2–24 characters: capital letters, digits and hyphens.",
+    "code_taken": "This code is already in use.",
+    "name_taken": "This name is already used at the same level.",
+    "parent_required": "Choose the parent department.",
+    "parent_must_be_department": "A section can only be added under a department.",
+    "parent_inactive": "The parent department is inactive.",
+    "has_active_children": "It has active sections; deactivate them first.",
+    "has_active_positions": "It has active positions; deactivate them first.",
+    "org_unit_inactive": "The unit is inactive.",
+    "self_reference": "A position cannot report to itself.",
+    "has_active_personnel": "Employees are working in this position.",
+    "position_inactive": "The position is inactive.",
+    "invalid_sicil": "Invalid employee number (letters, digits and hyphens).",
+    "invalid_full_name": "Full name must be at least 2 characters.",
+    "sicil_taken": "This employee number is already registered.",
+    "national_id_invalid": "Invalid Turkish ID number.",
+    "national_id_taken": "This Turkish ID number is registered to another employee.",
+    "cannot_deactivate_self": "You cannot deactivate your own account.",
+    "end_date_required": "Enter the leaving date.",
+    "cannot_remove_own_sysadmin": "You cannot remove your own system administrator role.",
+    "last_sysadmin": "The role of the last active system administrator cannot be removed.",
+    "not_section_manager": "This person does not have the section manager role.",
+    "file_empty": "The file is empty.",
+    "file_too_large": "The file is larger than 2 MB.",
+    "file_unreadable": "The file could not be read. Upload an Excel (.xlsx) file.",
+    "missing_columns": "Missing columns: {columns}",
+    "too_many_rows": "The file has more than 5,000 rows; split it and upload in parts.",
+    "no_rows": "The file has no data rows.",
+    "import_not_pending": "This import is no longer pending.",
+    "no_valid_rows": "There are no valid rows to import.",
+    "invalid_title": "Title must be at least 3 characters.",
+    "invalid_body": "The text is too short.",
+    "draft_exists": "A draft already exists for this type; edit that one first.",
+    "already_published": "A published text cannot be changed.",
     "legal_text_outdated": "The text has been updated; please reload the page and confirm again.",
     "upload_too_large": "The file is larger than allowed.",
     "file_type_not_allowed": "This file type is not supported.",
     "upload_already_completed": "This upload has already been completed.",
     "upload_incomplete": "The file was not uploaded completely. Please try again.",
     "upload_failed": "The upload failed. Check your connection and try again.",
+    "version_not_editable": "This version can no longer be edited.",
+    "body_invalid": "The content is invalid. Check the fields.",
+    "body_incomplete": "The content is incomplete. Fill in all required fields before submitting for approval.",
+    "asset_invalid": "The attached file was not found or cannot be used in this content.",
+    "asset_kind_invalid": "This file cannot be added to this content type.",
+    "assets_not_ready": "File processing has not finished. Wait a moment and try again.",
+    "tag_invalid": "One of the selected tags was not found.",
+    "tag_name_invalid": "Tag name must be 2–60 characters.",
+    "tag_type_invalid": "Invalid tag type.",
+    "change_note_required": "A change note is required for a new version.",
+    "change_note_too_long": "The change note is too long.",
+    "content_archived": "The content is archived.",
+    "version_not_pending": "This version is not awaiting approval.",
+    "reject_comment_required": "Write a reason to reject.",
+    "comment_too_long": "The note is too long.",
+    "cannot_discard": "This version cannot be deleted.",
+    "org_unit_invalid": "The selected unit was not found or is inactive.",
+    "duration_invalid": "Duration cannot be less than 1 minute.",
+    "validity_invalid": "Validity must be between 1 and 240 months.",
+    "too_many_items": "There are too many items.",
+    "module_kind_invalid": "This action is not possible for this module type.",
+    "content_invalid": "The selected content was not found, is not published or cannot be used here.",
+    "task_title_invalid": "Task name must be 2–200 characters.",
+    "task_invalid": "Task not found. Refresh the page.",
+    "module_archived": "The module is archived.",
+    "sections_invalid": "One of the card fields is invalid. Check the values.",
+    "card_exists": "This position already has a card.",
+    "plan_duplicate_module": "A module can appear only once in a plan.",
+    "module_invalid": "The selected module cannot be added to this plan.",
+    "plan_card_module_required": "The position card module cannot be removed from the plan.",
+    "plan_common_module": "Common modules are added to the plan automatically; they cannot be added manually.",
+    "plan_prerequisite_invalid": "A prerequisite can only be an earlier module in the plan.",
+    "plan_settings_invalid": "One of the plan parameters is invalid.",
+    "card_incomplete": "Required sections are missing. Fill in the sections below:",
+    "plan_empty": "Add at least one module to the training plan.",
+    "plan_archived_module": "The plan contains an archived module; remove it.",
+    "plan_module_empty": "A theory module in the plan has no content, or a practical module has no tasks.",
+    "plan_practice_exam_order": "There must be at least one practical module before the practical exam.",
+    "card_not_published": "No card is published.",
     "module_locked": "This module is not open yet.",
     "video_not_ready": "The video is not ready yet.",
     "not_reached_end": "Please reach the end of the content first.",
     "quiz_locked": "The review quiz opens once all steps are confirmed.",
     "quiz_already_answered": "You have already answered this question.",
+    "trainer_is_trainee": "A person cannot be their own trainer.",
+    "trainer_invalid": "The selected person is not a trainer or section manager.",
+    "person_inactive": "The employee is not active.",
+    "person_no_position": "Training cannot be assigned to an employee without a position.",
+    "assignment_exists": "The person already has an open training assignment.",
+    "no_published_card": "The position has no published position card.",
     "assignment_closed": "This training assignment is closed.",
+    "cancel_reason_required": "Write a cancellation reason.",
+    "quiz_stem_invalid": "Question text must be 5–1000 characters.",
+    "quiz_options_invalid": "Options cannot be empty or identical (2–6 options).",
+    "quiz_correct_invalid": "Mark the correct option.",
+    "quiz_count_invalid": "A review quiz has either no questions or 3–5 questions.",
+    "quiz_question_invalid": "Question not found. Refresh the page.",
+    "location_invalid": "Enter the location.",
+    "attendee_invalid": "One of the attendees was not found or is not active.",
+    "classroom_not_editable": "This record can no longer be edited.",
+    "scanned_form_required": "Attach the scanned attendance form before submitting for approval.",
+    "attendees_required": "Add at least one attendee.",
+    "classroom_not_pending": "This record is not awaiting approval.",
+    "device_name_invalid": "Device name must be 2–100 characters.",
+    "question_stem_invalid": "Question text must be 5–2000 characters.",
+    "question_options_invalid": "Write 2–5 options; options cannot be empty or identical.",
+    "question_correct_invalid": "Mark the correct option.",
+    "question_topic_invalid": "Enter the topic (at most 100 characters).",
+    "question_difficulty_invalid": "Choose the difficulty level.",
+    "question_modules_required": "Link the question to at least one theory module.",
+    "question_modules_invalid": "One of the selected modules was not found or is not a theory module.",
+    "question_owner_required": "Choose the unit the question belongs to.",
+    "question_archived": "This question is archived.",
     "proctor_code_required": "Enter the proctor code to start the exam.",
     "proctor_code_invalid": "The proctor code is invalid or has expired. Ask your proctor for a new code.",
     "proctor_code_locked": "Too many wrong codes. Try again later or contact your proctor.",
@@ -218,36 +319,365 @@
     "exam_pool_insufficient": "There are not enough questions for this exam. Please tell your trainer.",
     "exam_submitted": "This exam has been submitted.",
     "exam_time_over": "The exam time is over; your answers have been submitted.",
+    "practice_level_skip": "Levels cannot be skipped; mark the task one level higher.",
+    "practice_level_invalid": "The task is already at this level.",
+    "practice_reason_required": "Write a reason to lower the level.",
+    "practice_module_closed": "This practical module is not open for marking.",
+    "too_many_photos": "You can add at most 6 photos.",
+    "practical_no_criteria": "There are no practical tasks to evaluate for this exam.",
     "practical_not_draft": "This form has been signed and can no longer be changed.",
     "practical_incomplete": "Mark all criteria before signing.",
+    "practical_not_awaiting": "This form is not awaiting a 2nd signature.",
     "signature_invalid": "The signature could not be read. Please sign again.",
+    "readiness_not_pending": "This person is not awaiting start-of-work approval.",
+    "reopen_modules_invalid": "Choose at least one completed module to reopen.",
+    "decision_not_pending": "No decision is pending for this person.",
+    "decision_exam_invalid": "Choose the exam to grant an extra attempt for.",
+    "module_not_completed": "A document can only be issued for a completed module.",
+    "certificate_revoked": "This document has already been revoked.",
+    "signatories_invalid": "Enter a name and title for each signatory (at most 3 people).",
     "reset_link_invalid": "This link is invalid or has expired. Request a new link.",
+    "report_range_invalid": "The start date cannot be after the end date.",
+    "report_too_large": "The report exceeds the row limit. Narrow the date range or the unit/position filter.",
+    "invalid_setting": "The value is invalid or outside the allowed range.",
+    "setting_readonly": "This parameter cannot be changed on screen.",
+    "setting_note_required": "Write a reason of at least 10 characters for this parameter.",
     "legal_locale_missing": "Both the Turkish and the English text of this version are required.",
+    "passport_invalid": "Invalid passport details. Enter the country as two letters (e.g. DE) and the number.",
     "phone_invalid": "The phone number is not valid.",
     "email_invalid": "The e-mail address is not valid.",
+    "tax_no_invalid": "The tax number must have 10 or 11 digits.",
+    "tax_no_taken": "A company with this tax number is already registered.",
+    "invalid_date": "Invalid date.",
+    "date_in_past": "The visit date cannot be before today.",
+    "host_not_found": "No active employee was found with this employee number.",
     "visitor_type_disabled": "This type of visit is not available.",
     "company_required": "Please choose your company.",
     "visit_locked": "This visit can no longer be changed.",
+    "reason_required": "Write a reason (at least 10 characters).",
+    "blacklist_exists": "This person is already on the blacklist.",
+    "already_lifted": "This record has already been lifted.",
+    "briefing_no_cards": "Add at least one briefing card.",
+    "briefing_card_incomplete": "Every card must have a Turkish and English title and text.",
+    "briefing_question_incomplete": "Every question must have Turkish and English text and all options filled in.",
+    "briefing_question_invalid": "The Turkish and English option counts of the question must match and the correct option must be selected.",
+    "briefing_not_enough_questions": "There are fewer questions than this visitor type requires.",
+    "briefing_media_not_ready": "An image or video on the cards is not ready yet.",
     "briefing_not_ready": "The briefing is not ready yet. Please contact security.",
     "briefing_not_started": "Please start the briefing from the beginning.",
     "briefing_too_fast": "Please take a little more time to read the cards, then try again.",
     "quiz_incomplete": "Choose one answer for each question.",
     "quiz_not_passed": "Please pass the check questions first.",
+    "visit_no_email": "This visitor has no email address.",
     "host_name_required": "Please enter who you are visiting.",
     "contact_required": "Enter at least a phone number or an e-mail address.",
     "not_kiosk": "This device is not registered as a gate tablet.",
     "code_invalid": "No visit for today was found with this code. Please contact security.",
     "rate_limited": "Too many attempts. Please contact security.",
+    "visit_not_briefed": "The visitor cannot enter before completing the briefing.",
+    "visit_not_today": "This visit is not for today.",
+    "badge_required": "Enter the badge number.",
+    "host_required": "Enter the host's employee number.",
+    "visitor_id_required": "Enter the visitor's ID number.",
+    "visit_not_inside": "The visitor is not inside.",
+    "rollcall_open": "A roll call is open; finish it first.",
+    "rollcall_ended": "This roll call has ended and cannot be changed.",
     "shared_device": "This action is not available on a shared device.",
     "push_unavailable": "Notifications are not enabled on this server yet.",
     "push_endpoint": "This browser's notification service is not supported.",
     "push_failed": "Notifications could not be turned on. Refresh the page and try again.",
-    "invite_invalid": "The link or code is invalid, has expired or has already been used. Contact HR for a new invitation."
+    "invite_invalid": "The link or code is invalid, has expired or has already been used. Contact HR for a new invitation.",
+    "invite_email_missing": "The person has no registered email address. Choose another channel or add the email.",
+    "invite_mail_disabled": "Email sending is not enabled on this server yet. Choose WhatsApp or a printed sheet.",
+    "invite_phone_missing": "The person has no valid registered phone number. Choose another channel or add the phone.",
+    "cannot_invite_self": "You cannot re-invite yourself; change your password from your profile.",
+    "owner_only": "Only an owner can do this.",
+    "last_owner": "At least one active owner must remain in the system.",
+    "login_email_required": "This role signs in with email, so the person's email address must be registered.",
+    "login_email_taken": "This email address is registered to another active employee. Email must be unique for administrator roles.",
+    "same_approver": "You gave the previous approval step for this record. The second step of a two-step approval must be given by someone else.",
+    "invite_batch_empty": "No one who can be invited was selected.",
+    "invite_batch_too_large": "At most {max} people can be invited at once.",
+    "question_pairs_invalid": "A matching question needs 3–6 pairs; both sides of each pair must be filled and no item may appear twice.",
+    "question_regions_invalid": "Draw at least one correct region on the image (at most 5).",
+    "question_image_required": "Upload an image for an image marking question.",
+    "body_incomplete_en": "The English version is incomplete. Fill in the required fields on the English tab before submitting, or remove the English version.",
+    "question_translation_invalid": "The English text is missing or invalid: the question text must be at least 5 characters; all options and pairs must be filled, match the Turkish count and be distinct. Leave the English fields empty if you do not want a translation."
   },
   "notFound": {
     "title": "Page not found",
     "description": "The page does not exist or you are not allowed to view it.",
     "home": "Back to home"
+  },
+  "admin": {
+    "cards": {
+      "org": {
+        "title": "Organisation structure",
+        "description": "Departments, sections and positions"
+      },
+      "people": {
+        "title": "Employees",
+        "description": "Employee records, Excel import, password reset"
+      },
+      "legal": {
+        "title": "Privacy notices and rules",
+        "description": "Employee and visitor privacy notices, visitor rules"
+      },
+      "devices": {
+        "title": "Shared devices",
+        "description": "Training room computers and tablets."
+      },
+      "certificates": {
+        "title": "Certificate template",
+        "description": "Signatories and scanned signatures shown on documents."
+      },
+      "audit": {
+        "title": "Audit log",
+        "description": "Who changed which record and when; old and new values."
+      },
+      "settings": {
+        "title": "Parameters",
+        "description": "Exam, training, security and retention settings"
+      },
+      "logins": {
+        "title": "Sign-in log",
+        "description": "Who signed in or tried to, when and from which IP; failed attempts."
+      }
+    },
+    "org": {
+      "title": "Organisation structure",
+      "intro": "Department → section → position. Nothing is deleted; unused units are deactivated.",
+      "addDepartment": "Add department",
+      "addSection": "Add section",
+      "addPosition": "Add position",
+      "deactivate": "Deactivate",
+      "activate": "Activate",
+      "inactive": "Inactive",
+      "empty": "No departments yet. Add the first department.",
+      "noPositions": "No positions",
+      "activePersonnel": "{count} people",
+      "code": "Code",
+      "kind": {
+        "department": "Department",
+        "section": "Section"
+      },
+      "collar": {
+        "blue": "Blue collar",
+        "white": "White collar"
+      },
+      "positionStatus": {
+        "active": "Active",
+        "passive": "Inactive"
+      },
+      "unitForm": {
+        "newDepartment": "New department",
+        "newSection": "New section",
+        "edit": "Edit unit",
+        "parent": "Parent department",
+        "name": "Name",
+        "code": "Code",
+        "codeHint": "Capital letters and digits, e.g. URETIM. Turkish characters are converted automatically."
+      },
+      "positionForm": {
+        "new": "New position",
+        "edit": "Edit position",
+        "orgUnit": "Unit",
+        "name": "Position name",
+        "code": "Position code",
+        "collarType": "Collar type",
+        "shiftPattern": "Shift pattern",
+        "shiftHint": "e.g. 3 shifts, day shift",
+        "supervisor": "Supervisor position",
+        "deputy": "Deputy position",
+        "none": "None"
+      }
+    },
+    "people": {
+      "title": "Employees",
+      "add": "New employee",
+      "importButton": "Import from Excel",
+      "import": {
+        "title": "Import employees from Excel",
+        "intro": "Download the template and fill it in. Records are added or updated by employee number; rows with an unknown department/position are not imported.",
+        "downloadTemplate": "Download template",
+        "mode": "People in this file",
+        "modes": {
+          "existing_staff": {
+            "label": "Existing employees",
+            "description": "People already working here. No training plan is assigned."
+          },
+          "new_hires": {
+            "label": "New hires",
+            "description": "A training plan will be assigned to the new accounts."
+          }
+        },
+        "file": "Excel file (.xlsx, at most 2 MB, 5,000 rows)",
+        "upload": "Upload and check",
+        "uploading": "Checking…",
+        "previewTitle": "Preview",
+        "summary": "{total} rows: {valid} valid, {errors} with errors",
+        "newCount": "{count} new accounts",
+        "updateCount": "{count} updates",
+        "row": "Row",
+        "action": "Action",
+        "actionNew": "New",
+        "actionUpdate": "Update",
+        "commit": "Import valid rows",
+        "committing": "Importing… This can take a few minutes for large files.",
+        "cancel": "Cancel import",
+        "commitNotice": "Rows with errors are not imported. New accounts are opened; you send the invitations in the next step from the Invitations screen.",
+        "committedTitle": "Import completed",
+        "committedSummary": "{created} new accounts, {updated} updated, {unchanged} unchanged.",
+        "cancelledTitle": "Import cancelled",
+        "alreadyCommitted": "This import has already been completed.",
+        "expired": "This import was cancelled or has expired.",
+        "statuses": {
+          "valid": "Valid",
+          "error": "Error",
+          "created": "Created",
+          "updated": "Updated",
+          "unchanged": "Unchanged"
+        },
+        "rowErrors": {
+          "sicil_missing": "Employee number is empty",
+          "sicil_invalid": "Invalid employee number (letters, digits and hyphens)",
+          "sicil_duplicate_in_file": "Employee number appears more than once in the file",
+          "name_missing": "Full name is empty",
+          "department_missing": "Department is empty",
+          "department_not_found": "Department not found",
+          "department_inactive": "Department is inactive",
+          "position_missing": "Position is empty",
+          "position_not_found": "Position not found in this department",
+          "position_ambiguous": "Several positions have the same name; enter the position code",
+          "position_inactive": "Position is inactive",
+          "hire_date_missing": "Hire date is empty",
+          "hire_date_invalid": "Invalid hire date (dd.mm.yyyy)",
+          "collar_missing": "Collar type is empty",
+          "collar_invalid": "Collar type must be \"Mavi\" (blue) or \"Beyaz\" (white)",
+          "collar_mismatch": "Collar type does not match the position",
+          "national_id_invalid": "Invalid Turkish ID number",
+          "national_id_duplicate_in_file": "Turkish ID number appears more than once in the file",
+          "national_id_taken": "Turkish ID number is registered to another employee",
+          "phone_invalid": "Invalid phone",
+          "email_invalid": "Invalid email"
+        },
+        "inviteNow": "Send invitations to them",
+        "inviteHint": "The accounts are open but no invitations have been sent. People cannot sign in until they set their own password through an invitation."
+      },
+      "search": "Search",
+      "searchPlaceholder": "Employee number or name",
+      "statusFilter": "Status",
+      "statusAll": "All",
+      "statusCurrent": "Working",
+      "status": {
+        "active": "Active",
+        "passive": "Inactive",
+        "terminated": "Left"
+      },
+      "columns": {
+        "sicil": "Employee no",
+        "name": "Full name",
+        "position": "Position",
+        "unit": "Department / section",
+        "status": "Status",
+        "nationalId": "ID no"
+      },
+      "empty": "No records found.",
+      "total": "{count} people",
+      "locked": "Locked",
+      "mustChange": "Awaiting first sign-in",
+      "form": {
+        "new": "New employee",
+        "edit": "Edit details",
+        "sicil": "Employee no",
+        "sicilHint": "This is the sign-in ID; it cannot be changed later.",
+        "fullName": "Full name",
+        "position": "Position",
+        "noPosition": "No position",
+        "noPositionWarning": "A training plan cannot be assigned to an employee without a position.",
+        "nationalId": "Turkish ID number",
+        "nationalIdHint": "11 digits. If left empty when editing, the current value is kept.",
+        "phone": "Phone",
+        "email": "Email",
+        "employmentType": "Employment type",
+        "employmentTypes": {
+          "employee": "Employee",
+          "intern": "Intern"
+        },
+        "hireDate": "Hire date",
+        "trainingRequired": "New hire (a training plan will be assigned)",
+        "trainingRequiredHint": "Do not tick for existing employees."
+      },
+      "detail": {
+        "info": "Personal details",
+        "nationalId": "Turkish ID number",
+        "reveal": "Show in full",
+        "revealNotice": "Viewing is logged (KVKK).",
+        "noNationalId": "Not entered",
+        "account": "Account",
+        "lastLogin": "Last sign-in",
+        "never": "Never signed in",
+        "sourceLabel": "Record source",
+        "source": {
+          "excel": "Excel import",
+          "manual": "Entered manually",
+          "hr_sync": "HR sync"
+        },
+        "statusTitle": "Status",
+        "setPassive": "Deactivate",
+        "setActive": "Activate",
+        "terminate": "Mark as left the company",
+        "endDate": "Leaving date",
+        "statusNotice": "Open sessions of inactive or departed employees are closed and they cannot sign in.",
+        "roles": "Roles",
+        "manageRoles": "Edit roles",
+        "scopes": "Section manager scope"
+      },
+      "waitingButton": "Waiting for training",
+      "invitesButton": "Invitations"
+    },
+    "roles": {
+      "title": "Roles and scope",
+      "intro": "Only a system administrator assigns roles. Everyone has the employee role.",
+      "roles": "Roles",
+      "scopes": "Section manager scope",
+      "scopesHint": "All sections under the selected department are included in the scope.",
+      "noScopes": "No scope assigned: the section manager cannot see any team.",
+      "scopesNeedRole": "Save the Section manager role first to assign a scope.",
+      "saveRoles": "Save roles",
+      "saveScopes": "Save scope"
+    },
+    "legal": {
+      "title": "Privacy notices",
+      "intro": {
+        "kvkk_personnel": "A published text cannot be changed. When a new version is published, all employees accept it again at their next sign-in. Turkish and English are published together.",
+        "kvkk_visitor": "The privacy notice the visitor accepts during the briefing. Turkish and English are published together; a published text cannot be changed.",
+        "visitor_rules": "The site rules the visitor accepts before entry. Turkish and English are published together; a published text cannot be changed."
+      },
+      "newDraft": "Prepare a new version",
+      "version": "Version {version}",
+      "draft": "Draft",
+      "published": "Published: {date}",
+      "current": "Current",
+      "titleField": "Title",
+      "body": "Text",
+      "bodyHint": "Paste the text approved by the legal/KVKK officer. Separate paragraphs with a blank line.",
+      "publish": "Publish",
+      "publishConfirm": "A published text cannot be changed. For the employee notice, all employees are asked to accept again. Publish?",
+      "empty": "No text yet. No acceptance is requested while no text is published.",
+      "kindsLabel": "Text type",
+      "kinds": {
+        "kvkk_personnel": "Employee privacy notice",
+        "kvkk_visitor": "Visitor privacy notice",
+        "visitor_rules": "Visitor rules"
+      },
+      "locales": {
+        "tr": "Turkish",
+        "en": "English"
+      },
+      "addLocale": "Add {locale} text",
+      "missingLocales": "The text in every language is required to publish."
+    }
   },
   "consent": {
     "title": "Protection of personal data",
@@ -256,63 +686,697 @@
     "accepting": "Saving…",
     "version": "Version {version}"
   },
-  "modules": {
-    "kinds": {
-      "theory": {
-        "label": "Theory"
+  "manage": {
+    "cards": {
+      "library": {
+        "title": "Content library",
+        "description": "Text, PDF, video, gallery, instruction, checklist and form templates."
+      },
+      "approvals": {
+        "title": "Awaiting approval",
+        "description": "Content and position card versions awaiting your approval."
+      },
+      "positions": {
+        "title": "Position cards and plans",
+        "description": "Position card (13 sections), training plan, versions and review."
+      },
+      "modules": {
+        "title": "Module library",
+        "description": "Theory, practical and exam modules; common modules."
+      },
+      "team": {
+        "title": "Team progress",
+        "description": "Employees in training, progress and target dates."
+      },
+      "classroom": {
+        "title": "Classroom training",
+        "description": "Face-to-face training records and approvals."
+      },
+      "questions": {
+        "title": "Question bank",
+        "description": "Theory exam questions, OHS approval and Excel import."
+      },
+      "proctor": {
+        "title": "Proctor code",
+        "description": "A short-lived code given to trainees to start an exam."
       },
       "practice": {
-        "label": "Practical"
+        "title": "Practical evaluation",
+        "description": "Practical tasks and practical exams of the trainees in your scope."
+      }
+    },
+    "pendingCount": "{count} records awaiting approval"
+  },
+  "content": {
+    "common": "Common content",
+    "ohs": "OHS",
+    "archived": "Archived",
+    "versionN": "Version {version}",
+    "target": {
+      "all": "All employees",
+      "blue": "Blue collar",
+      "white": "White collar"
+    },
+    "types": {
+      "text": {
+        "label": "Text",
+        "hint": "Text with headings, lists and emphasis."
+      },
+      "pdf": {
+        "label": "PDF",
+        "hint": "Document, procedure or manual."
+      },
+      "video": {
+        "label": "Video",
+        "hint": "Can be watched on a phone with a low-quality option."
+      },
+      "gallery": {
+        "label": "Photo gallery",
+        "hint": "Photos with captions."
+      },
+      "instruction": {
+        "label": "Step-by-step instruction",
+        "hint": "Ordered steps, optional photo."
+      },
+      "checklist": {
+        "label": "Checklist",
+        "hint": "Items; critical ones are marked."
+      },
+      "form_template": {
+        "label": "Form template",
+        "hint": "PDF, Excel or Word to download and fill in."
+      }
+    },
+    "status": {
+      "draft": "Draft (v{version})",
+      "section_review": "Section review (v{version})",
+      "ohs_review": "OHS review (v{version})",
+      "published": "Published (v{version})",
+      "rejected": "Rejected (v{version})"
+    },
+    "tags": {
+      "title": "Tags",
+      "types": {
+        "machine": "Machine",
+        "section": "Section",
+        "risk": "Risk",
+        "shift": "Shift"
+      },
+      "newPlaceholder": "New tag",
+      "newFor": "New {type} tag",
+      "add": "Add tag"
+    },
+    "library": {
+      "title": "Content library",
+      "description": "All content of the units you are authorised for, plus common content.",
+      "new": "New content",
+      "search": "Search",
+      "searchPlaceholder": "Title, text or tag",
+      "type": "Type",
+      "all": "All",
+      "status": "Status",
+      "statusActive": "Not archived",
+      "statusFilter": {
+        "published": "Published",
+        "pending": "Awaiting approval",
+        "draft": "Draft or rejected",
+        "archived": "Archive"
+      },
+      "tag": "Tag",
+      "total": "{count, plural, =0 {No results} one {# item} other {# items}}",
+      "empty": "No content yet.",
+      "noResults": "No content matches your search."
+    },
+    "create": {
+      "heading": "New content",
+      "intro": "First choose the type and owner; you will prepare the content in the next step.",
+      "type": "Content type",
+      "title": "Title",
+      "owner": "Owner",
+      "ownerHint": "The unit that can see and approve the content. Common content is for the whole company.",
+      "choose": "Choose",
+      "common": "Common content (whole company)",
+      "commonTarget": "Audience",
+      "commonTargetHint": "The employee group the common content is assigned to.",
+      "target": {
+        "all": "All employees",
+        "blue": "Blue collar only",
+        "white": "White collar only"
+      },
+      "isOhs": "OHS content",
+      "isOhsHint": "The OHS specialist also approves it before publication.",
+      "submit": "Create and edit",
+      "creating": "Creating…"
+    },
+    "editor": {
+      "heading": "Edit content",
+      "title": "Title",
+      "bodyLabel": {
+        "text": "Text",
+        "pdf": "PDF file",
+        "video": "Video",
+        "gallery": "Photos",
+        "instruction": "Steps",
+        "checklist": "Items",
+        "form_template": "Form file"
+      },
+      "fileLabel": {
+        "pdf": "PDF file",
+        "video": "Video file",
+        "form_template": "Form file (PDF, Excel or Word)"
+      },
+      "description": "Description",
+      "image": "Photo",
+      "caption": "Caption",
+      "captionN": "Caption of photo {n}",
+      "addImage": "Add photo",
+      "stepTitle": "Step title",
+      "stepText": "Description",
+      "addStep": "Add step",
+      "checkItem": "Item",
+      "critical": "Critical item",
+      "addItem": "Add item",
+      "items": {
+        "n": "Item {n}"
+      },
+      "steps": {
+        "n": "Step {n}"
+      },
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "remove": "Remove",
+      "saveDraft": "Save draft",
+      "unsaved": "There are unsaved changes.",
+      "submitHeading": "Submit for approval",
+      "ohsNote": "This is OHS content: after section approval the OHS specialist also approves it.",
+      "changeNote": "Change note",
+      "changeNoteHint": "Briefly describe what changed in this version. The approver and trainees see this note.",
+      "requireReread": "People who completed the previous version must read it again",
+      "requireRereadHint": "Tick this for an important change; people get a \"read again and confirm\" task.",
+      "submit": "Save and submit for approval",
+      "outcome": {
+        "published": "You are authorised to approve this content, so it is published as soon as you submit it.",
+        "ohs_review": "Your submission counts as the section approval; it is published when the OHS specialist approves.",
+        "section_review": "When you submit, it goes to the responsible person for approval; it is published once approved.",
+        "draft": "",
+        "rejected": ""
+      },
+      "toolbar": {
+        "label": "Formatting",
+        "bold": "Bold",
+        "italic": "Italic",
+        "h2": "Heading",
+        "h3": "Subheading",
+        "bulletList": "Bulleted list",
+        "orderedList": "Numbered list",
+        "quote": "Quote",
+        "undo": "Undo",
+        "redo": "Redo"
+      },
+      "languages": {
+        "heading": "Language",
+        "tr": "Turkish",
+        "en": "English",
+        "add": "Add English version",
+        "addHint": "Optional. The English version opens as a copy of the Turkish one; translate the texts and, if you wish, replace the video, PDF or images with English ones. Content without an English version is shown in Turkish to employees who use English.",
+        "enHint": "Both languages are submitted for approval in the same version. The English version must also be complete before submitting.",
+        "remove": "Remove English version",
+        "removeConfirm": "Remove the English version from this draft? It becomes permanent when you save."
+      }
+    },
+    "media": {
+      "optional": "optional",
+      "choose": "Choose file",
+      "replace": "Replace",
+      "remove": "Remove file",
+      "uploading": "Uploading",
+      "uploadingPercent": "Uploading: {percent}%",
+      "pages": "{count} pages",
+      "duration": "{minutes}:{seconds}",
+      "status": {
+        "pending_upload": "Waiting for upload",
+        "uploaded": "Waiting to be processed",
+        "processing": "Processing",
+        "ready": "Ready",
+        "failed": "Could not be processed; try another file",
+        "purged": "Deleted because the retention period ended"
+      }
+    },
+    "video": {
+      "error": "The video could not be played. Check your connection and refresh the page.",
+      "quality": "Quality",
+      "auto": "Auto",
+      "low": "Low quality ({height}p, saves data)"
+    },
+    "viewer": {
+      "missing": "No file attached.",
+      "failed": "The file could not be processed.",
+      "processing": "The file is being processed; it will be ready in a few minutes.",
+      "empty": "This content is still empty.",
+      "pages": "{count} pages",
+      "open": "Open",
+      "download": "Download",
+      "imageAlt": "Photo {n}",
+      "step": "Step {n}",
+      "critical": "Critical"
+    },
+    "approval": {
+      "headingSection": "Section approval",
+      "headingOhs": "OHS approval",
+      "comment": "Note",
+      "commentHint": "A reason is required when rejecting; the author sees this note.",
+      "approve": "Approve",
+      "reject": "Reject",
+      "approveConfirm": "Do you approve this version?"
+    },
+    "detail": {
+      "edit": "Edit",
+      "newVersion": "Start new version",
+      "discard": "Delete draft",
+      "discardConfirm": "Delete this draft version? The published version does not change.",
+      "archive": "Archive",
+      "archiveConfirm": "Archive this content? Archived content cannot be used in new assignments, and this cannot be undone.",
+      "archivedAt": "This content was archived on {date}.",
+      "rejectedBy": "Rejected by {name}:",
+      "waitingSection": "This version is awaiting section approval.",
+      "waitingOhs": "This version is awaiting OHS specialist approval.",
+      "history": "Version history",
+      "current": "Current version",
+      "superseded": "Replaced by a newer version",
+      "createdBy": "{name} · {date}",
+      "publishedAt": "Published: {date}",
+      "changeNote": "Change",
+      "rereadRequired": "People who completed it were asked to read it again.",
+      "decision": {
+        "approved": "{step}: approved by {name} ({date})",
+        "rejected": "{step}: rejected by {name} ({date})",
+        "auto_self": "{step}: approved by {name} when submitting ({date})"
+      },
+      "step": {
+        "section": "Section approval",
+        "ohs": "OHS approval"
+      },
+      "compareWith": "Compare with version {version}",
+      "englishVersion": "English version"
+    },
+    "queue": {
+      "title": "Awaiting approval",
+      "description": "Content and position card versions awaiting your approval. Items you submitted yourself are not shown here.",
+      "empty": "No content is awaiting your approval.",
+      "submittedBy": "{name} · {date}",
+      "step": {
+        "section": "Section approval",
+        "ohs": "OHS approval"
+      },
+      "cardsHeading": "Position cards",
+      "contentsHeading": "Content",
+      "classroomHeading": "Classroom training records",
+      "questionsHeading": "Questions awaiting OHS approval",
+      "practicalHeading": "Practical exams awaiting your 2nd signature",
+      "practicalScore": "{score} points · {passed, select, yes {passed} other {failed}}",
+      "readinessHeading": "Awaiting start-of-work approval",
+      "decisionsHeading": "Awaiting decision (all attempts used)"
+    }
+  },
+  "modules": {
+    "title": "Module library",
+    "description": "Modules used in plans. Changes apply only to new assignments.",
+    "new": "New module",
+    "newIntro": "First choose the type and owner; you add content or tasks in the next step.",
+    "search": "Search",
+    "kind": "Type",
+    "all": "All",
+    "scope": "Scope",
+    "scopeCommon": "Common modules",
+    "scopeUnit": "Unit modules",
+    "empty": "No modules found.",
+    "minutes": "{n} min",
+    "commonFor": "Common ({target})",
+    "targets": {
+      "all": "all employees",
+      "blue": "blue collar",
+      "white": "white collar"
+    },
+    "taskCount": "{n} tasks",
+    "contentCount": "{n} content items",
+    "cardModule": "Position card",
+    "ohs": "OHS",
+    "classroomOnly": "Classroom training only",
+    "validity": "Valid for {n} months",
+    "noValidity": "No expiry",
+    "yes": "Yes",
+    "showActive": "Show non-archived modules",
+    "showArchived": "Show archived modules",
+    "usedInPlans": "{n, plural, =0 {Not in any plan} one {In the plan of # card version} other {In the plans of # card versions}}",
+    "archive": "Archive",
+    "archiveConfirm": "Archive this module? It cannot be added to new plans; existing plans and assignments are not affected.",
+    "archivedNote": "This module is archived.",
+    "changeNote": "This module is used in plans. Changes do not affect existing assignments; new assignments use the current version.",
+    "cardModuleNote": "This module takes the trainee through the position card section by section. Its content comes from the card; only the duration and settings are edited here.",
+    "kinds": {
+      "theory": {
+        "label": "Theory",
+        "hint": "Content from the content library is read/watched."
+      },
+      "practice": {
+        "label": "Practical",
+        "hint": "Task list; the trainer marks each task."
       },
       "theory_exam": {
-        "label": "Theory exam"
+        "label": "Theory exam",
+        "hint": "Timed, automatically scored exam from the question bank."
       },
       "practice_exam": {
-        "label": "Practical exam"
+        "label": "Practical exam",
+        "hint": "Evaluation form derived from the tasks."
       }
+    },
+    "form": {
+      "kind": "Module type",
+      "owner": "Owner",
+      "ownerHint": "Common modules are added to every plan automatically according to collar type.",
+      "choose": "Choose",
+      "common": "Common module (whole company)",
+      "title": "Title",
+      "description": "Description",
+      "durationMin": "Duration (minutes)",
+      "validityMonths": "Validity (months)",
+      "validityHint": "Leave empty for no expiry. Refresher training opens before it expires.",
+      "commonTarget": "Audience",
+      "target": {
+        "all": "All employees",
+        "blue": "Blue collar only",
+        "white": "White collar only"
+      },
+      "commonSortOrder": "Common module order",
+      "commonSortOrderHint": "A smaller number comes first.",
+      "isOhs": "OHS module",
+      "isOhsHint": "For OHS modules, the OHS specialist decides whether they can be given remotely.",
+      "remoteAllowed": "Can be given remotely (online)",
+      "remoteHint": "If off, the module is completed only through a classroom training record.",
+      "remoteLocked": "Only the OHS specialist can change this setting for this OHS module.",
+      "create": "Create"
+    },
+    "picker": {
+      "label": "Search content",
+      "placeholder": "Title",
+      "search": "Search",
+      "empty": "No published content that can be added was found.",
+      "common": "Common",
+      "add": "Add"
+    },
+    "items": {
+      "moveUp": "{item}: move up",
+      "moveDown": "{item}: move down",
+      "remove": "{item}: remove",
+      "contentsHeading": "Content",
+      "contentsEmpty": "No content added yet. Only published content can be added.",
+      "contentUnavailable": "Archived or not published",
+      "tasksHeading": "Practical tasks",
+      "tasksHint": "Recommended: 10–30 tasks per position. If a critical task is \"could not do it\" in the practical exam, the exam is failed. A task removed from the list is archived.",
+      "taskN": "Task {n}",
+      "taskTitle": "Task name",
+      "taskDescription": "Description",
+      "taskCritical": "Critical task",
+      "addTask": "Add task",
+      "critical": "Critical"
+    },
+    "quiz": {
+      "heading": "Review quiz questions",
+      "hint": "Asked at the end of the module; does not affect the grade. There are either no questions or 3–5 questions. On a wrong answer, the correct option and explanation are shown.",
+      "questionN": "Question {n}",
+      "type": "Question type",
+      "singleChoice": "Multiple choice",
+      "trueFalse": "True / false",
+      "remove": "Remove question {n}",
+      "stem": "Question",
+      "options": "Options (mark the correct one)",
+      "markCorrect": "Option {n} is correct",
+      "optionN": "Option {n}",
+      "removeOption": "Remove option {n}",
+      "addOption": "Add option",
+      "explanation": "Explanation",
+      "add": "Add question",
+      "true": "True",
+      "false": "False"
     }
   },
   "cards": {
     "sections": {
       "identity": {
-        "title": "Identity"
+        "title": "Identity",
+        "hint": "Position details come from the organisation structure; contact HR to change them. They are copied to the card when it is published."
       },
       "purpose": {
-        "title": "Purpose"
+        "title": "Purpose",
+        "hint": "Why the position exists (1–2 sentences)."
       },
       "duties": {
-        "title": "Duties and responsibilities"
+        "title": "Duties and responsibilities",
+        "hint": "Duties item by item and how often."
       },
       "workflow": {
-        "title": "Workflow"
+        "title": "Workflow",
+        "hint": "Step by step input → process → output; a flowchart image if available."
       },
       "routines": {
-        "title": "Daily/weekly routines"
+        "title": "Daily/weekly routines",
+        "hint": "List of routines with times."
       },
       "reporting": {
-        "title": "Reporting"
+        "title": "Reporting",
+        "hint": "Which report, to whom, how often, in what format; a filled-in sample form can be linked."
       },
       "equipment": {
-        "title": "Equipment and systems"
+        "title": "Equipment and systems",
+        "hint": "Machines, hand tools, software and forms."
       },
       "critical": {
-        "title": "Critical points"
+        "title": "Critical points",
+        "hint": "Common mistakes, quality-critical points, \"never do\" list."
       },
       "ohs": {
-        "title": "OHS"
+        "title": "OHS",
+        "hint": "Risks, mandatory PPE, instructions, LOTO and emergency duties. If this section changes, OHS specialist approval is required."
       },
       "competencies": {
-        "title": "Competency requirements"
+        "title": "Competency requirements",
+        "hint": "Certificates, licences, vocational qualifications."
       },
       "kpis": {
-        "title": "Performance indicators"
+        "title": "Performance indicators",
+        "hint": "Evaluation criteria."
       },
       "contacts": {
-        "title": "Contacts"
+        "title": "Contacts",
+        "hint": "Whom to contact in which situation."
       },
       "plan": {
-        "title": "Training plan"
+        "title": "Training plan",
+        "hint": ""
       }
+    },
+    "identity": {
+      "position": "Position",
+      "department": "Department",
+      "unit": "Section",
+      "supervisor": "Supervisor",
+      "deputy": "Deputy",
+      "collar": "Collar type",
+      "shift": "Shift pattern",
+      "collars": {
+        "blue": "Blue collar",
+        "white": "White collar"
+      }
+    },
+    "frequency": {
+      "continuous": "Continuous",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly"
+    },
+    "days": {
+      "mon": {
+        "short": "Mon",
+        "long": "Monday"
+      },
+      "tue": {
+        "short": "Tue",
+        "long": "Tuesday"
+      },
+      "wed": {
+        "short": "Wed",
+        "long": "Wednesday"
+      },
+      "thu": {
+        "short": "Thu",
+        "long": "Thursday"
+      },
+      "fri": {
+        "short": "Fri",
+        "long": "Friday"
+      },
+      "sat": {
+        "short": "Sat",
+        "long": "Saturday"
+      },
+      "sun": {
+        "short": "Sun",
+        "long": "Sunday"
+      }
+    },
+    "equipmentKinds": {
+      "machine": "Machine",
+      "tool": "Hand tool",
+      "software": "Software",
+      "form": "Form"
+    },
+    "criticalKinds": {
+      "error": "Common mistake",
+      "quality": "Quality critical",
+      "forbidden": "Never do"
+    },
+    "view": {
+      "empty": "Not filled in."
+    },
+    "editor": {
+      "moveUp": "{item}: move up",
+      "moveDown": "{item}: move down",
+      "remove": "{item}: remove",
+      "ohsMode": "As OHS specialist you can only change section 9 (OHS); the other sections are read-only.",
+      "chars": "{n} / {max} characters",
+      "itemN": "Item {n}",
+      "addDuty": "Add duty",
+      "duty": "Duty",
+      "frequency": "Frequency",
+      "stepN": "Step {n}",
+      "addStep": "Add step",
+      "input": "Input",
+      "process": "Process",
+      "output": "Output",
+      "diagram": "Flowchart image",
+      "addRoutine": "Add routine",
+      "time": "Time",
+      "routine": "Routine",
+      "days": "Days",
+      "addReport": "Add report",
+      "report": "Report",
+      "recipient": "To whom",
+      "reportFrequency": "Frequency",
+      "format": "Format / system",
+      "sample": "Sample form",
+      "unlink": "Remove link",
+      "linkSample": "Link a filled-in sample form (form template content)",
+      "addEquipment": "Add equipment",
+      "equipmentName": "Name",
+      "kind": "Type",
+      "addCritical": "Add critical point",
+      "description": "Description",
+      "risks": "Risks",
+      "ppe": "Mandatory PPE",
+      "instructions": "Instructions",
+      "addRisk": "Add risk",
+      "addPpe": "Add PPE",
+      "addInstruction": "Add instruction",
+      "loto": "LOTO (lockout-tagout)",
+      "emergency": "Emergency duties",
+      "ohsContents": "Related OHS content",
+      "addItem": "Add item",
+      "addContact": "Add person/situation",
+      "situation": "Situation",
+      "contact": "Position/person to contact",
+      "save": "Save card",
+      "unsaved": "There are unsaved changes.",
+      "submitHeading": "Submit for approval",
+      "submitHint": "The card and training plan are submitted for approval together. After section approval, the OHS specialist also approves if section 9 changed (always for the first version).",
+      "changeNote": "Change note",
+      "submit": "Save and submit for approval"
+    }
+  },
+  "plans": {
+    "total": "Total duration: {hours} h {minutes} min",
+    "commonAuto": "Automatic",
+    "minutes": "{n} min",
+    "optional": "Optional",
+    "ohs": "OHS",
+    "archived": "Archived",
+    "after": "Prerequisite: {list}",
+    "settings": {
+      "questionCount": "Number of questions",
+      "durationMin": "Duration (min)",
+      "passScore": "Pass score",
+      "maxAttempts": "Attempts",
+      "cooldownHours": "Waiting period (hours)",
+      "proctorRequired": "Proctor required"
+    },
+    "yes": "Yes",
+    "no": "No",
+    "videoRatio": "Video watch threshold: {percent}%",
+    "ohsMode": "As OHS specialist you can only add, remove and edit OHS modules.",
+    "commonHeading": "Common modules",
+    "commonHint": "Common modules matching the collar type are added automatically at the start of every plan; HR and the OHS specialist set their order.",
+    "modulesHeading": "Position modules",
+    "dragHint": "Drag the handle or use the up/down buttons to reorder. By default the prerequisite is the previous module.",
+    "addModule": "Add module",
+    "choose": "Choose a module",
+    "noCandidates": "No modules can be added (create one in the module library)",
+    "add": "Add",
+    "overridesHeading": "Plan parameters",
+    "videoRatioLabel": "Video watch threshold (%)",
+    "defaultValue": "Default: {value}",
+    "save": "Save plan",
+    "unsaved": "There are unsaved changes.",
+    "dragHandle": "{title}: drag to move",
+    "cardModule": "cannot be removed",
+    "archivedWarning": "This module is archived; remove it from the plan.",
+    "moveUp": "{title}: move up",
+    "moveDown": "{title}: move down",
+    "remove": "{title}: remove from plan",
+    "required": "Required",
+    "prerequisites": "Prerequisites",
+    "examSettings": "Exam settings (empty = general parameter)",
+    "poolOk": "Question pool: {pool} questions",
+    "poolSmall": "The question pool is small: there are {pool} questions and the exam asks {needed}. The same questions will repeat across attempts; at least {recommended} questions are recommended.",
+    "poolInsufficient": "The question pool is insufficient: there are {pool} questions and the exam asks {needed}. The exam cannot start until questions are added."
+  },
+  "positions": {
+    "title": "Position cards",
+    "description": "The position card and training plan are versioned and approved together.",
+    "empty": "There are no positions you can view.",
+    "lastReviewed": "Last reviewed: {date}",
+    "noCard": "No card",
+    "stale": "Out of date",
+    "staleLong": "The review period has passed; review the card and click \"I have reviewed it\" or start a new version.",
+    "create": "Create card",
+    "editCard": "Edit card",
+    "editPlan": "Edit plan",
+    "newVersion": "Start new version",
+    "review": "I have reviewed it",
+    "reviewConfirm": "Record that you reviewed the card and it needs no changes?",
+    "noCardYet": "This position has no card yet. Start with \"Create card\".",
+    "noCardReadonly": "This position has no card yet.",
+    "ohsReason": "OHS specialist approval is required because section 9 (OHS) changed or this is the first version.",
+    "cardTitle": "Position card",
+    "versionN": "Version {version}",
+    "compareWith": "Compare with version {version}",
+    "reviewedBy": "Reviewed by {name} ({date})",
+    "planSubmitHint": "The plan is submitted for approval together with the card.",
+    "goSubmit": "Submit for approval"
+  },
+  "compare": {
+    "title": "Version comparison",
+    "heading": "Version {from} → Version {to}",
+    "empty": "Empty",
+    "added": "Added",
+    "removed": "Removed",
+    "changedCount": "{count, plural, one {# section changed} other {# sections changed}}",
+    "noChanges": "No changes.",
+    "changed": "Changed",
+    "unchanged": "Unchanged",
+    "content": {
+      "title": "Title",
+      "body": "Content",
+      "files": "Files"
     }
   },
   "learn": {
@@ -426,7 +1490,260 @@
     "overdue": "overdue",
     "trainer": "Trainer: {name}",
     "noTrainer": "No trainer assigned",
-    "cancelled": "Cancellation reason: {reason}"
+    "cancelled": "Cancellation reason: {reason}",
+    "controls": {
+      "trainer": "Practical trainer",
+      "trainerNeeded": "The plan has a practical module; practical modules stay locked until a trainer is chosen.",
+      "noTrainer": "Not chosen",
+      "targetDate": "Target completion date",
+      "targetHint": "If left empty, it is calculated from the plan duration.",
+      "start": "Start training",
+      "cancelTitle": "Cancel assignment",
+      "cancelReason": "Cancellation reason",
+      "cancelConfirm": "Cancel this training assignment? Completed modules remain on record.",
+      "cancel": "Cancel"
+    },
+    "waiting": {
+      "title": "Waiting for training",
+      "description": "New hires without a position, or whose position card is not published yet. The plan is assigned automatically when the card is published.",
+      "empty": "No employees are waiting for training.",
+      "reason": {
+        "no_position": "No position",
+        "no_published_card": "Position card not published",
+        "ready": "Can be started"
+      }
+    },
+    "team": {
+      "title": "Team progress",
+      "description": "Employees in training in your scope. Those past their target date are listed first.",
+      "empty": "No employees are in training.",
+      "overdue": "Past target"
+    },
+    "trainerPanel": {
+      "description": "Trainees assigned to you and classroom training records.",
+      "classroom": "Classroom training",
+      "trainees": "My trainees",
+      "empty": "No trainees are assigned to you."
+    }
+  },
+  "classroom": {
+    "title": "Classroom training",
+    "description": "Records of face-to-face training. When approved, the related module is completed for the attendees.",
+    "new": "New record",
+    "newIntro": "Enter the training, the attendees and the scanned attendance form with wet signatures; then submit for approval.",
+    "pending": "Awaiting your approval",
+    "mine": "My records",
+    "empty": "No records yet.",
+    "attendeeCount": "{count} attendees",
+    "ohs": "OHS",
+    "status": {
+      "draft": "Draft",
+      "submitted": "Awaiting approval",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "recordedBy": "Recorded by: {name}",
+    "submit": "Submit for approval",
+    "submitConfirm": "Submit this record for approval? It cannot be edited after submission.",
+    "rejectedBy": "Rejected by {name}:",
+    "approvedNote": "The record was approved; the module is completed for the attendees. The record can no longer be changed.",
+    "minutes": "{n} min",
+    "noModule": "This module is not in their assignment (record only)",
+    "form": {
+      "module": "Module",
+      "choose": "Choose",
+      "ohs": "OHS",
+      "classroomOnly": "This module is completed only through classroom training.",
+      "date": "Date",
+      "duration": "Duration (minutes)",
+      "location": "Location",
+      "trainer": "Given by",
+      "changeTrainer": "Change",
+      "pickTrainer": "Choose who gave the training",
+      "attendees": "Attendees ({count})",
+      "search": "Search employees",
+      "searchPlaceholder": "Name or employee number",
+      "searchButton": "Search",
+      "noResults": "No results.",
+      "select": "Select",
+      "add": "Add",
+      "remove": "{name}: remove",
+      "scannedForm": "Scanned attendance form (PDF or photo)",
+      "notes": "Notes"
+    }
+  },
+  "devices": {
+    "title": "Shared devices",
+    "description": "On a registered device, sign-in is always in shared device mode: short inactivity timeout, \"remember me\" off.",
+    "registerTitle": "Register this browser",
+    "registerHint": "Open this page on the training room computer and register it. The registration applies only to this browser.",
+    "name": "Device name",
+    "namePlaceholder": "e.g. Training room 1",
+    "registered": "This browser has been registered as a shared device.",
+    "register": "Register as shared device",
+    "empty": "No registered devices.",
+    "registeredBy": "{name} · {date}",
+    "lastSeen": "Last used: {date}",
+    "revoked": "Revoked",
+    "revokeConfirm": "Revoke this device registration?",
+    "revoke": "Revoke",
+    "kind": "Device type",
+    "kinds": {
+      "shared_pc": "Shared computer (training room)",
+      "kiosk": "Gate tablet (visitor kiosk)"
+    }
+  },
+  "questions": {
+    "title": "Question bank",
+    "description": "Theory exam questions. Questions are linked to modules; an exam draws from the questions of the earlier modules in the plan.",
+    "new": "New question",
+    "import": "Import from Excel",
+    "importIntro": "Download the template, fill in the questions and upload it. A preview is shown first; valid rows are added when you confirm. OHS questions go to the OHS specialist for approval.",
+    "search": "Search question text",
+    "module": "Module",
+    "all": "All",
+    "topic": "Topic",
+    "status": "Status",
+    "statusAll": "All statuses",
+    "statusFilter": {
+      "active": "Active",
+      "pending": "Awaiting approval",
+      "archived": "Archived"
+    },
+    "total": "{count} questions",
+    "empty": "No questions found.",
+    "ohs": "OHS",
+    "critical": "OHS critical",
+    "pending": "Awaiting approval",
+    "inactive": "Not active",
+    "archived": "Archived",
+    "detailTitle": "Question details",
+    "archiveConfirm": "Archive this question? Archived questions do not appear in new exams; past exam records are kept.",
+    "archiveButton": "Archive",
+    "archivedNote": "This question is archived; it does not appear in new exams.",
+    "pendingNote": "Version {version} is awaiting OHS specialist approval. Until it is approved, exams use the previous active version.",
+    "rejectedBy": "The latest version was rejected by {name}:",
+    "correct": "correct",
+    "versions": "Versions",
+    "versionN": "Version {version}",
+    "versionStatus": {
+      "ohs_review": "Awaiting OHS approval",
+      "active": "Active",
+      "rejected": "Rejected",
+      "retired": "Old version"
+    },
+    "used": "Used in exams",
+    "decision": {
+      "approved": "Approved by {name} · {date}",
+      "rejected": "Rejected by {name} · {date}",
+      "auto_self": "Written by OHS specialist {name}; active directly · {date}"
+    },
+    "form": {
+      "owner": "Unit",
+      "choose": "Choose",
+      "commonOhs": "Common OHS question (all units)",
+      "common": "Common",
+      "isOhs": "OHS question (requires OHS specialist approval)",
+      "type": "Question type",
+      "singleChoice": "Multiple choice",
+      "trueFalse": "True / False",
+      "stem": "Question text",
+      "image": "Image",
+      "options": "Options (mark the correct one)",
+      "markCorrect": "Option {letter} is correct",
+      "optionN": "Option {letter}",
+      "removeOption": "Remove option {letter}",
+      "addOption": "Add option",
+      "topic": "Topic",
+      "topicHint": "Exam questions are spread evenly across topics. You can choose an existing topic or type a new one.",
+      "difficulty": "Difficulty",
+      "difficulties": {
+        "1": "Easy",
+        "2": "Medium",
+        "3": "Hard"
+      },
+      "ohsCritical": "OHS critical question",
+      "ohsCriticalHint": "If this question is answered wrongly, the exam is failed regardless of the score. Requires OHS specialist approval.",
+      "explanation": "Explanation",
+      "explanationHint": "Visible only to managers; not shown to trainees.",
+      "modules": "Linked modules",
+      "modulesHint": "The question appears in exams that come after these modules.",
+      "filterModules": "Search modules",
+      "approvalNote": "When saved, this question goes to the OHS specialist for approval; it does not appear in exams until approved.",
+      "savedPending": "Saved. It will become active after OHS specialist approval.",
+      "matching": "Matching",
+      "hotspotType": "Image marking",
+      "imageRequired": "Image (required)",
+      "pairs": "Matching pairs",
+      "pairsHint": "Write one pair per row ({min}–{max} pairs). In the exam the right column is shuffled; the question counts as correct when all pairs are matched correctly.",
+      "pairLeft": "Pair {n}, left",
+      "pairRight": "Pair {n}, right",
+      "removePair": "Remove pair {n}",
+      "addPair": "Add pair",
+      "regions": "Correct regions",
+      "imageProcessing": "The image is being prepared; you can draw regions when it is ready.",
+      "regionsNeedImage": "Upload an image first, then draw the correct region on it.",
+      "hotspot": {
+        "shape": "Region shape",
+        "rect": "Rectangle",
+        "ellipse": "Circle",
+        "hint": "Drag on the image to draw the correct region. For a circle, the point where you start is the centre. You can draw several correct regions.",
+        "full": "At most {max} regions can be drawn.",
+        "regionN": "Region {n} ({shape})",
+        "remove": "Remove region {n}"
+      },
+      "typeLabels": {
+        "single_choice": "Multiple choice",
+        "true_false": "True/False",
+        "matching": "Matching",
+        "hotspot": "Image marking"
+      },
+      "correctPair": "Correct match",
+      "en": {
+        "heading": "English text (optional)",
+        "hint": "Employees who use English see the question with this text; the correct answer and scoring are the same. If left empty, the question is shown in Turkish. Options and pairs match the Turkish order.",
+        "stem": "Question text (English)",
+        "options": "Options (English)",
+        "optionN": "Option {letter} (English)",
+        "trueFalse": "In English, the options of a true/false question are shown as {options}.",
+        "pairs": "Pairs (English)",
+        "pairLeft": "Pair {n}, left item (English)",
+        "pairRight": "Pair {n}, right item (English)",
+        "explanation": "Explanation (English)"
+      }
+    },
+    "importer": {
+      "owner": "Unit",
+      "choose": "Choose",
+      "common": "Common OHS questions",
+      "isOhs": "OHS questions (require OHS specialist approval)",
+      "template": "Download template",
+      "file": "Excel file (.xlsx)",
+      "checking": "Checking…",
+      "preview": "Preview",
+      "previewHeading": "{valid} valid, {invalid} invalid rows",
+      "row": "Row",
+      "stem": "Question",
+      "result": "Result",
+      "ok": "Valid",
+      "rowErrors": {
+        "stem_missing": "Question text is missing or too short.",
+        "type_invalid": "Type must be \"Çoktan seçmeli\" (multiple choice), \"Doğru/Yanlış\" (true/false) or \"Eşleştirme\" (matching).",
+        "options_missing": "At least two options are required.",
+        "options_duplicate": "The same option is written twice.",
+        "correct_invalid": "The \"Doğru\" column must be A–E (\"Doğru\" or \"Yanlış\" for true/false) and point to a filled option.",
+        "topic_missing": "Topic is missing.",
+        "difficulty_invalid": "Difficulty must be \"Kolay\", \"Orta\" or \"Zor\" (or 1–3).",
+        "critical_invalid": "The \"İSG kritik\" column must be \"Evet\" (yes) or \"Hayır\" (no).",
+        "module_missing": "No module entered.",
+        "module_not_found": "Module not found in this unit.",
+        "pairs_invalid": "For matching, cells A–F must contain 3–6 pairs written as \"left = right\"; the same left or right item cannot appear twice.",
+        "translation_invalid": "English columns are missing or do not match: \"Soru (EN)\" must be filled; options must match the Turkish count (\"left = right\" pairs for matching), and only the question text is written for true/false. Leave the English columns empty if you do not want a translation."
+      },
+      "done": "{created} questions added ({pending} awaiting OHS approval), {skipped} rows skipped.",
+      "commit": "Add {count} questions",
+      "typesHint": "Type: \"Çoktan seçmeli\", \"Doğru/Yanlış\" or \"Eşleştirme\". Image marking questions are entered on screen. Columns ending in \"(EN)\" are optional English text."
+    }
   },
   "exams": {
     "title": "Theory exam",
@@ -496,6 +1813,37 @@
       "back": "Back to my training",
       "sharedLogout": "Shared device: you will be signed out in {seconds} seconds.",
       "logoutNow": "Sign out now"
+    },
+    "proctor": {
+      "title": "Proctor code",
+      "description": "The trainee starts the exam with the code you give. The code is valid for a short time; you are recorded as proctor on the exam record.",
+      "intro": "Generate a code and tell it to the trainee at the start of the exam. The code is shown only once on this screen.",
+      "codeLabel": "Proctor code",
+      "expiresIn": "{minutes, plural, =0 {less than 1 minute left} one {valid for # minute} other {valid for # minutes}}",
+      "shareHint": "Tell the code to the trainee verbally; do not share it in writing.",
+      "location": "Location (optional)",
+      "locationPlaceholder": "E.g. Training room 2",
+      "issue": "Generate code",
+      "newCode": "Generate new code",
+      "active": "Your valid codes",
+      "noLocation": "No location given",
+      "until": "Valid until {time}",
+      "revoke": "Invalidate",
+      "revokeConfirm": "Invalidate this code? Exams already started are not affected."
+    },
+    "attempts": {
+      "title": "Theory exam attempts",
+      "attemptN": "{title} · attempt {n}",
+      "score": "{score} points",
+      "passed": "passed",
+      "failed": "failed",
+      "failedCritical": "failed (OHS critical)",
+      "inProgress": "In progress",
+      "timeout": "time ran out",
+      "proctor": "Proctor: {name}",
+      "noProctor": "No proctor",
+      "tabLeaves": "{count, plural, =0 {no tab switches} one {# tab switch} other {# tab switches}}",
+      "tts": "used read aloud"
     }
   },
   "practice": {
@@ -536,6 +1884,32 @@
     "photos": {
       "remove": "Remove photo {name}"
     },
+    "panel": {
+      "description": "Mark your trainees' practical tasks and evaluate their practical exams.",
+      "proctor": "Proctor code",
+      "evaluate": "Practical evaluation",
+      "empty": "No trainees are awaiting your evaluation.",
+      "independentOf": "{done} / {total} tasks done independently",
+      "moduleStatus": {
+        "locked": "Not open yet",
+        "available": "Ready to start",
+        "in_progress": "In progress",
+        "completed": "Completed",
+        "review_required": "Review required",
+        "waived": "Exempt"
+      },
+      "formStatus": {
+        "draft": "Evaluation draft open",
+        "awaiting_second_signature": "Awaiting section manager signature",
+        "final": "Final",
+        "returned": "Returned"
+      },
+      "viewTasks": "View tasks",
+      "markTasks": "Mark tasks",
+      "continueExam": "Continue evaluation",
+      "viewExam": "View form",
+      "startExam": "Start practical exam"
+    },
     "mine": {
       "title": "My practical tasks",
       "description": "Your trainer marks your tasks: demonstrated → done under supervision → done independently. When all are \"independent\", the practical exam opens.",
@@ -575,6 +1949,44 @@
         "final": "Final",
         "returned": "Returned"
       }
+    },
+    "form": {
+      "title": "Practical evaluation form",
+      "subtitle": "{name} · attempt {n}",
+      "backLearn": "My training",
+      "backTrainer": "Trainer panel",
+      "progress": "{answered} of {total} criteria marked",
+      "saving": "Saving…",
+      "saved": "Draft saved",
+      "critical": "Critical",
+      "pass": "Could do it",
+      "fail": "Could not do it",
+      "criterionNote": "Note (optional)",
+      "generalNote": "General note (optional)",
+      "photos": "Photo",
+      "toSign": "Go to signing",
+      "discard": "Delete draft",
+      "discardConfirm": "Delete the draft? This attempt will not count.",
+      "completeFirst": "Mark all criteria to go to signing.",
+      "scorePreview": "{score} points",
+      "willPass": "The pass score has been reached.",
+      "willFailCritical": "A critical task could not be done; the exam will be failed.",
+      "willFail": "Below the pass score ({passScore}); the exam will be failed.",
+      "signIntro": "First the trainee signs, then you. After signing, the form cannot be changed and goes to the section manager for the 2nd signature.",
+      "traineeSignature": "Trainee signature: {name}",
+      "trainerSignature": "Evaluator signature: {name}",
+      "submitSigned": "Sign and send",
+      "backToForm": "Back to the form"
+    },
+    "second": {
+      "title": "2nd signature",
+      "intro": "Review the evaluation. When you sign, the result becomes final. If you find it incomplete or wrong, return it with a reason; a returned attempt does not count.",
+      "signature": "Section manager signature: {name}",
+      "sign": "Sign and finalise",
+      "return": "Return",
+      "reason": "Reason for returning",
+      "confirmReturn": "Return",
+      "cancel": "Cancel"
     },
     "result": {
       "status": {
@@ -625,7 +2037,115 @@
     },
     "readinessReopen": "Reopened by the start-of-work decision"
   },
+  "readiness": {
+    "title": "Start-of-work approval",
+    "status": {
+      "active": "Training in progress",
+      "awaiting_readiness": "Awaiting start-of-work approval",
+      "awaiting_decision": "All attempts used; awaiting decision",
+      "completed": "Completed (can start work)",
+      "cancelled": "Process closed"
+    },
+    "trainer": "Trainer: {name}",
+    "modules": "Training plan and results",
+    "ohs": "OHS",
+    "kinds": {
+      "theory": "Theory",
+      "practice": "Practical",
+      "theory_exam": "Theory exam",
+      "practice_exam": "Practical exam"
+    },
+    "moduleStatus": {
+      "locked": "Locked",
+      "available": "Ready to start",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "review_required": "Review required",
+      "waived": "Exempt"
+    },
+    "via": {
+      "online": "online",
+      "classroom": "classroom training",
+      "carried_over": "from earlier training"
+    },
+    "validUntil": "Valid until {date}",
+    "attemptsLeft": "{count, plural, =0 {no attempts left} one {# attempt left} other {# attempts left}}",
+    "issueAttendance": "Issue certificate of attendance",
+    "history": "Decision history",
+    "decisions": {
+      "approved": "Start of work approved",
+      "rejected": "Start of work rejected",
+      "extra_attempt": "Extra exam attempt granted",
+      "extra_training": "Additional training assigned",
+      "end_process": "Process ended"
+    },
+    "modulesList": "Modules: {list}",
+    "certificates": "Documents",
+    "panel": {
+      "title": "Decision",
+      "approve": "Can start work",
+      "reject": "Reject",
+      "reopen": "Modules to reopen",
+      "commentOptional": "Note (optional)",
+      "reason": "Reason for rejection (required)",
+      "approveNote": "When approved, the training is completed and a position competency certificate is issued.",
+      "rejectNote": "The selected modules are reopened; a person with no exam attempts left gets 1 extra attempt. When they complete them, it comes back for your approval.",
+      "confirmApprove": "Approve and issue certificate",
+      "confirmReject": "Reject and reopen modules"
+    },
+    "process": {
+      "title": "Process decision",
+      "intro": "The person has used all exam attempts. The system never rejects anyone automatically; you decide. Every decision is recorded with its reason and cannot be changed.",
+      "options": {
+        "extra_attempt": {
+          "label": "Grant extra attempt",
+          "hint": "An extra attempt is granted for the selected exam. Modules reopened after failing must be completed first."
+        },
+        "extra_training": {
+          "label": "Assign additional training",
+          "hint": "The selected modules are reopened and 1 extra attempt is granted for the failed exam."
+        },
+        "end_process": {
+          "label": "End the process",
+          "hint": "The training assignment is closed. The employee record does not change; decisions such as dismissal are made outside the system."
+        }
+      },
+      "exam": "Exam",
+      "extraAttempts": "Extra attempts",
+      "reopen": "Modules to reopen",
+      "reason": "Reason (required)",
+      "endConfirm": "End the training process? This decision cannot be undone.",
+      "confirm": {
+        "extra_attempt": "Grant extra attempt",
+        "extra_training": "Assign additional training",
+        "end_process": "End the process"
+      }
+    },
+    "recertNotice": "This is refresher training. If you approve, a new position certificate is issued with the renewed and still valid modules."
+  },
   "certificates": {
+    "verify": {
+      "title": "Document verification",
+      "rateLimited": "Too many verification requests were sent. Please try again later.",
+      "notFound": "No document was found for this link.",
+      "state": {
+        "valid": "Valid document",
+        "expired": "Expired document",
+        "revoked": "Revoked document"
+      },
+      "name": "Full name",
+      "kind": "Document type",
+      "kinds": {
+        "position_competency": "Position competency certificate",
+        "attendance": "Training attendance certificate"
+      },
+      "scope": "Scope",
+      "documentNo": "Document no",
+      "issuedAt": "Issue date",
+      "expiresAt": "Valid until",
+      "unlimited": "No expiry",
+      "privacy": "To protect personal data, the name is shown abbreviated; ID and employee numbers are not shown."
+    },
     "list": {
       "title": "Certificates and documents",
       "empty": "No documents yet.",
@@ -645,6 +2165,24 @@
       "download": "Download PDF",
       "preparing": "The document is being prepared…",
       "openReview": "Open the decision screen"
+    },
+    "revoke": {
+      "open": "Revoke",
+      "reason": "Reason for revocation (required)",
+      "note": "Revocation cannot be undone. The verification page shows the document as \"revoked\".",
+      "confirm": "Revoke document",
+      "cancel": "Cancel"
+    },
+    "signatories": {
+      "title": "Certificate template",
+      "description": "Signatories shown on certificates and attendance certificates. Changes apply only to documents issued from now on.",
+      "person": "Signatory {n}",
+      "name": "Full name",
+      "titleLabel": "Title",
+      "signature": "Scanned signature (PNG or JPG)",
+      "remove": "Remove",
+      "add": "Add signatory",
+      "hint": "At most 3 signatories can be added. A signature image looks better on the document as a PNG with a transparent background."
     }
   },
   "notifications": {
@@ -734,6 +2272,867 @@
       "server": "Notifications are not enabled on this server yet. In-app notifications will continue to arrive."
     }
   },
+  "reports": {
+    "intro": "Reports are filtered by your permissions and scope. You can preview them on screen or download them as Excel or PDF; every download is recorded.",
+    "kinds": {
+      "training": {
+        "title": "Training progress",
+        "description": "Assigned and completed modules per employee; those past their target date.",
+        "file": "training-progress",
+        "tables": {
+          "people": "Training progress"
+        }
+      },
+      "exams": {
+        "title": "Exam results",
+        "description": "Theory and practical exam attempts and scores; most frequently missed questions.",
+        "file": "exam-results",
+        "tables": {
+          "attempts": "Exam attempts",
+          "wrongQuestions": "Most frequently missed questions"
+        }
+      },
+      "ohs": {
+        "title": "OHS training register",
+        "description": "OHS trainings (topic, date, duration, trainer, validity, method) and annual hours per person.",
+        "file": "ohs-training-register",
+        "tables": {
+          "records": "OHS training records",
+          "hours": "OHS hours per person"
+        }
+      },
+      "onboarding": {
+        "title": "Time to start work",
+        "description": "Days from hire to \"can start work\" approval, by position.",
+        "file": "time-to-start-work",
+        "tables": {
+          "positions": "By position",
+          "people": "By person"
+        }
+      },
+      "expiring": {
+        "title": "Expiring trainings and certificates",
+        "description": "Module trainings and position certificates ending in the selected date range; refresher training status.",
+        "file": "expiring-trainings",
+        "tables": {
+          "items": "Expiring items"
+        }
+      },
+      "content": {
+        "title": "Content freshness",
+        "description": "Published position cards whose last review is older than the period in the parameters.",
+        "file": "content-freshness",
+        "tables": {
+          "cards": "Cards that need review"
+        }
+      },
+      "visitors": {
+        "title": "Visitor register",
+        "description": "Visits in the date range: visitor, company, host, briefing and entry/exit.",
+        "file": "visitor-register",
+        "tables": {
+          "visits": "Visits"
+        }
+      },
+      "contractors": {
+        "title": "Contractor compliance",
+        "description": "Number of workers per company and those with a valid OHS briefing as of the end of the period.",
+        "file": "contractor-compliance",
+        "tables": {
+          "companies": "Companies"
+        }
+      }
+    },
+    "columns": {
+      "sicil": "Employee no",
+      "name": "Full name",
+      "unit": "Unit",
+      "position": "Position",
+      "status": "Status",
+      "startDate": "Start",
+      "targetDate": "Target date",
+      "modulesTotal": "Required modules",
+      "modulesDone": "Completed",
+      "progress": "Progress",
+      "overdue": "Past target",
+      "trainer": "Trainer",
+      "exam": "Exam",
+      "examType": "Type",
+      "attemptNo": "Attempt",
+      "date": "Date",
+      "score": "Score",
+      "result": "Result",
+      "failReason": "Reason for failing",
+      "question": "Question",
+      "topic": "Topic",
+      "asked": "Asked",
+      "wrong": "Wrong",
+      "wrongRate": "Wrong rate",
+      "hours": "Duration (hours)",
+      "validUntil": "Valid until",
+      "method": "Method",
+      "totalHours": "Total hours",
+      "requiredHours": "Minimum hours",
+      "met": "Met",
+      "count": "People",
+      "avgDays": "Average days",
+      "medianDays": "Median days",
+      "minDays": "Min days",
+      "maxDays": "Max days",
+      "hireDate": "Hire date",
+      "approvedAt": "Approval date",
+      "days": "Days",
+      "visitDate": "Visit date",
+      "company": "Company",
+      "visitorType": "Type",
+      "host": "Host",
+      "visitStatus": "Status",
+      "briefedAt": "Briefing",
+      "language": "Language",
+      "quizScore": "Score",
+      "checkedInAt": "Entry",
+      "checkedOutAt": "Exit",
+      "badge": "Badge",
+      "idMasked": "ID",
+      "taxNo": "Tax no",
+      "contractEnd": "Contract end",
+      "archived": "Archived",
+      "workers": "Workers",
+      "validWorkers": "Valid",
+      "invalidWorkers": "Invalid / none",
+      "nextExpiry": "Next expiry",
+      "item": "Training / document",
+      "itemKind": "Type",
+      "isOhs": "OHS",
+      "expiresAt": "Expires",
+      "daysLeft": "Days left",
+      "recertStatus": "Refresher training",
+      "cardVersion": "Card version",
+      "publishedAt": "Published",
+      "lastReviewed": "Last reviewed",
+      "monthsSince": "Months since"
+    },
+    "values": {
+      "yes": "Yes",
+      "no": "No",
+      "result": {
+        "passed": "Passed",
+        "failed": "Failed"
+      },
+      "status": {
+        "active": "In progress",
+        "awaiting_readiness": "Awaiting approval",
+        "awaiting_decision": "Awaiting decision",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "examType": {
+        "theory": "Theory",
+        "practical": "Practical"
+      },
+      "failReason": {
+        "score": "Score",
+        "ohs_critical": "OHS critical question",
+        "critical": "Critical task"
+      },
+      "method": {
+        "online": "Remote",
+        "classroom": "Face to face",
+        "carried_over": "Earlier training"
+      },
+      "visitorType": {
+        "office": "Office",
+        "site": "Site",
+        "contractor": "Contractor"
+      },
+      "visitStatus": {
+        "planned": "Planned",
+        "briefed": "Briefed",
+        "checked_in": "Inside",
+        "checked_out": "Left",
+        "cancelled": "Cancelled"
+      },
+      "language": {
+        "tr": "Turkish",
+        "en": "English"
+      },
+      "itemKind": {
+        "module": "Module",
+        "certificate": "Position certificate"
+      },
+      "recertStatus": {
+        "opened": "Opened",
+        "waiting": "When open training ends",
+        "none": "Not opened"
+      }
+    },
+    "meta": {
+      "range": "Period: {from} – {to}",
+      "generated": "Generated: {date}",
+      "sheet": "Info"
+    },
+    "warnings": {
+      "hazard_class_assumed": "The hazard class is not set; minimum hours were calculated for the \"hazardous\" class. The OHS specialist should set the hazard class."
+    },
+    "filters": {
+      "from": "Start",
+      "to": "End",
+      "unit": "Unit",
+      "position": "Position",
+      "all": "All",
+      "apply": "Apply"
+    },
+    "quick": {
+      "label": "Quick select",
+      "days": "Next {days} days",
+      "expired": "Expired (last 1 year)"
+    },
+    "export": {
+      "xlsx": "Download Excel",
+      "pdf": "Download PDF"
+    },
+    "preview": "Preview: {shown} / {total} rows",
+    "truncated": "The row limit was exceeded; narrow the filter to download.",
+    "empty": "No records for this filter.",
+    "back": "Reports",
+    "none": "There are no reports you can view."
+  },
+  "audit": {
+    "title": "Audit log",
+    "description": "All inserts, changes and deletions in business tables. Sensitive fields are stored masked. This screen is read-only.",
+    "filters": {
+      "table": "Table",
+      "all": "All",
+      "record": "Record ID",
+      "actor": "Performed by (user ID)",
+      "from": "Start",
+      "to": "End",
+      "apply": "Apply"
+    },
+    "actions": {
+      "INSERT": "Insert",
+      "UPDATE": "Change",
+      "DELETE": "Delete"
+    },
+    "system": "System",
+    "field": "Field",
+    "old": "Old",
+    "new": "New",
+    "noChanges": "No changed fields.",
+    "empty": "No records found.",
+    "previous": "Previous",
+    "next": "Next",
+    "record": "Record: {id}"
+  },
+  "personalExport": {
+    "button": "Export personal data",
+    "note": "Downloads the person's personal data in the system as Excel, under KVKK. The Turkish ID number is masked; the export is recorded.",
+    "file": "personal-data",
+    "sheets": {
+      "identity": "Identity and contact",
+      "roles": "Roles",
+      "training": "Trainings",
+      "exams": "Exams",
+      "certificates": "Documents",
+      "consents": "KVKK acceptances"
+    },
+    "columns": {
+      "sicil": "Employee no",
+      "fullName": "Full name",
+      "nationalId": "Turkish ID number (masked)",
+      "phone": "Phone",
+      "email": "Email",
+      "unit": "Unit",
+      "position": "Position",
+      "employmentType": "Employment type",
+      "hireDate": "Hire date",
+      "endDate": "Leaving date",
+      "status": "Status",
+      "role": "Role",
+      "assignmentStart": "Training start",
+      "assignmentStatus": "Training status",
+      "module": "Module",
+      "moduleStatus": "Module status",
+      "completedAt": "Completed",
+      "method": "Method",
+      "validUntil": "Valid until",
+      "exam": "Exam",
+      "examType": "Type",
+      "attemptNo": "Attempt",
+      "date": "Date",
+      "score": "Score",
+      "result": "Result",
+      "documentNo": "Document no",
+      "certificate": "Document",
+      "issuedAt": "Issued",
+      "expiresAt": "Valid until",
+      "certificateStatus": "Status",
+      "legalText": "Text",
+      "version": "Version",
+      "acceptedAt": "Accepted on"
+    }
+  },
+  "settings": {
+    "title": "Parameters",
+    "description": "Only the parameters you manage are shown. Every change is written to the audit log. Plan-level exam settings are changed in the plan designer.",
+    "current": "Current value",
+    "default": "Default",
+    "lastChange": "Last change",
+    "changedBy": "{name}, {date}",
+    "system": "System",
+    "edit": "Change",
+    "newValue": "New value",
+    "save": "Save",
+    "reset": "Reset to default",
+    "cancel": "Cancel",
+    "note": "Reason",
+    "optional": "optional",
+    "noteRequiredHint": "Retention periods change with legal approval. Enter the date and basis of the approval (at least 10 characters).",
+    "readonly": "This parameter cannot be changed on screen. Contact IT if a change is needed.",
+    "yes": "Yes",
+    "no": "No",
+    "retentionHint": "Personal data whose period has ended is anonymised every night; anonymisation cannot be undone.",
+    "hazard": {
+      "unset": "Not set (treated as hazardous)",
+      "low": "Low hazard",
+      "medium": "Hazardous",
+      "high": "Very hazardous"
+    },
+    "events": {
+      "legend": "Events also sent by email (in-app notifications are always sent)",
+      "none": "None (in-app only)",
+      "pushLegend": "Events also sent as push notifications (they only say \"You have a new notification\"; in-app notifications are always sent)"
+    },
+    "groups": {
+      "org": "Organisation",
+      "ohs": "Occupational health and safety",
+      "exam": "Exams",
+      "training": "Training and reminders",
+      "auth": "Sign-in and session",
+      "notify": "Notifications and email",
+      "certificate": "Document verification",
+      "reports": "Reports",
+      "upload": "File upload",
+      "retention": "Retention periods",
+      "visitors": "Visitor screens"
+    },
+    "items": {
+      "org_timezone": {
+        "label": "Time zone",
+        "hint": "All date calculations use this time zone.",
+        "unit": "{n}"
+      },
+      "ohs_hazard_class": {
+        "label": "Workplace hazard class",
+        "hint": "OHS training hours and renewal periods follow this class.",
+        "unit": "{n}"
+      },
+      "ohs_hours_by_class": {
+        "label": "Annual minimum OHS training hours",
+        "hint": "Annual minimum hours per person by hazard class (compared in the OHS register report).",
+        "unit": "{n} hours"
+      },
+      "ohs_renewal_years_by_class": {
+        "label": "OHS training renewal period",
+        "hint": "How often OHS training is repeated, by hazard class.",
+        "unit": "{n} years"
+      },
+      "exam_theory_question_count": {
+        "label": "Theory exam question count",
+        "hint": "Used unless changed at plan level.",
+        "unit": "{n} questions"
+      },
+      "exam_theory_duration_min": {
+        "label": "Theory exam duration",
+        "hint": "Used unless changed at plan level.",
+        "unit": "{n} minutes"
+      },
+      "exam_theory_pass_score": {
+        "label": "Theory exam pass score",
+        "hint": "Out of 100.",
+        "unit": "{n} points"
+      },
+      "exam_theory_max_attempts": {
+        "label": "Theory exam attempts",
+        "hint": "When all attempts are used, HR and the section manager decide.",
+        "unit": "{n} attempts"
+      },
+      "exam_theory_cooldown_hours": {
+        "label": "Theory exam waiting period",
+        "hint": "Time to wait after a failed attempt before a new attempt.",
+        "unit": "{n} hours"
+      },
+      "exam_theory_proctor_required": {
+        "label": "Proctor code required",
+        "hint": "The theory exam starts with a code given by the proctor.",
+        "unit": "{n}"
+      },
+      "exam_practical_pass_score": {
+        "label": "Practical exam pass score",
+        "hint": "Out of 100.",
+        "unit": "{n} points"
+      },
+      "exam_practical_max_attempts": {
+        "label": "Practical exam attempts",
+        "hint": "Used unless changed at plan level.",
+        "unit": "{n} attempts"
+      },
+      "exam_question_pool_min_ratio": {
+        "label": "Question pool ratio",
+        "hint": "The plan designer warns if the pool is smaller than this multiple of the exam question count.",
+        "unit": "{n}×"
+      },
+      "proctor_code_ttl_min": {
+        "label": "Proctor code validity",
+        "hint": "How long a generated code can be used.",
+        "unit": "{n} minutes"
+      },
+      "proctor_code_max_failures": {
+        "label": "Wrong proctor code limit",
+        "hint": "After this many wrong attempts the trainee is temporarily locked.",
+        "unit": "{n} attempts"
+      },
+      "proctor_code_lock_min": {
+        "label": "Wrong code lock duration",
+        "hint": "Waiting time once the wrong code limit is exceeded.",
+        "unit": "{n} minutes"
+      },
+      "decision_extra_attempts_default": {
+        "label": "Default extra attempts",
+        "hint": "The number of attempts suggested when \"Grant extra attempt\" is chosen on the decision screen.",
+        "unit": "{n} attempts"
+      },
+      "theory_video_watch_ratio": {
+        "label": "Video watch ratio",
+        "hint": "A step cannot be completed until this share of the video is watched (0.5–1).",
+        "unit": "{n}"
+      },
+      "assignment_daily_training_minutes": {
+        "label": "Daily training time",
+        "hint": "The suggested target date is calculated from this time (weekends excluded).",
+        "unit": "{n} minutes"
+      },
+      "recert_lead_days": {
+        "label": "Refresher training lead time",
+        "hint": "Refresher training opens this many days before validity ends.",
+        "unit": "{n} days"
+      },
+      "reread_due_days": {
+        "label": "Reading task period",
+        "hint": "Due date of \"read again and confirm\" tasks.",
+        "unit": "{n} days"
+      },
+      "trainer_unmarked_alert_days": {
+        "label": "Unmarked task reminder",
+        "hint": "The trainer is reminded if no task is marked for this many days.",
+        "unit": "{n} days"
+      },
+      "content_review_max_age_months": {
+        "label": "Content review interval",
+        "hint": "Position cards older than this appear in the freshness report.",
+        "unit": "{n} months"
+      },
+      "session_shared_idle_min": {
+        "label": "Inactivity timeout on shared devices",
+        "hint": "On a shared device the session closes after this much inactivity.",
+        "unit": "{n} minutes"
+      },
+      "session_personal_days": {
+        "label": "Session length on personal devices",
+        "hint": "How long the session stays open when \"remember me\" is selected.",
+        "unit": "{n} days"
+      },
+      "auth_password_min_length": {
+        "label": "Minimum password length",
+        "hint": "At least 8.",
+        "unit": "{n} characters"
+      },
+      "auth_lockout_attempts": {
+        "label": "Account lock attempt limit",
+        "hint": "After this many wrong passwords the account is temporarily locked.",
+        "unit": "{n} attempts"
+      },
+      "auth_lockout_min": {
+        "label": "Account lock duration",
+        "hint": "Time after which a locked account opens again.",
+        "unit": "{n} minutes"
+      },
+      "auth_ip_max_failures": {
+        "label": "Failed sign-in limit per IP",
+        "hint": "A temporary block is applied after this many failed sign-ins from the same address.",
+        "unit": "{n} attempts"
+      },
+      "auth_ip_window_min": {
+        "label": "IP limit time window",
+        "hint": "Failed sign-ins per IP are counted within this time.",
+        "unit": "{n} minutes"
+      },
+      "auth_reset_link_minutes": {
+        "label": "Password reset link validity",
+        "hint": "How long the link sent by email is valid.",
+        "unit": "{n} minutes"
+      },
+      "auth_reset_max_per_hour": {
+        "label": "Hourly password reset request limit",
+        "hint": "Number of links that can be sent per person per hour.",
+        "unit": "{n} requests"
+      },
+      "notify_email_events": {
+        "label": "Events sent by email",
+        "hint": "For the selected events, a short email is also sent to people with a registered email.",
+        "unit": "{n}"
+      },
+      "notify_retention_days": {
+        "label": "Read notification retention",
+        "hint": "Read notifications older than this are deleted.",
+        "unit": "{n} days"
+      },
+      "mail_max_attempts": {
+        "label": "Email retry count",
+        "hint": "An email that cannot be sent is marked failed after this many attempts.",
+        "unit": "{n} attempts"
+      },
+      "notify_push_events": {
+        "label": "Events sent as push notifications",
+        "hint": "For the selected events, a \"You have a new notification\" alert goes to the device of people who turned notifications on.",
+        "unit": "{n}"
+      },
+      "push_max_attempts": {
+        "label": "Push retry count",
+        "hint": "A push that cannot be delivered is dropped after this many attempts.",
+        "unit": "{n} attempts"
+      },
+      "push_ttl_hours": {
+        "label": "Push waiting time",
+        "hint": "If the device is off, the push service holds the notification for this long, then drops it.",
+        "unit": "{n} hours"
+      },
+      "verify_ip_max_requests": {
+        "label": "Document verification request limit",
+        "hint": "Number of requests per IP on the public verification page.",
+        "unit": "{n} requests"
+      },
+      "verify_ip_window_min": {
+        "label": "Verification limit time window",
+        "hint": "The time within which the request limit is counted.",
+        "unit": "{n} minutes"
+      },
+      "reports_max_rows": {
+        "label": "Report row limit",
+        "hint": "If exceeded, you are asked to narrow the filter.",
+        "unit": "{n} rows"
+      },
+      "upload_max_video_mb": {
+        "label": "Largest video",
+        "hint": "The largest video file that can be uploaded.",
+        "unit": "{n} MB"
+      },
+      "upload_max_pdf_mb": {
+        "label": "Largest PDF",
+        "hint": "The largest PDF file that can be uploaded.",
+        "unit": "{n} MB"
+      },
+      "upload_max_image_mb": {
+        "label": "Largest image",
+        "hint": "The largest image file that can be uploaded.",
+        "unit": "{n} MB"
+      },
+      "retention_personnel_years_after_exit": {
+        "label": "Employee records",
+        "hint": "After employment ends; when the period ends, personal data is anonymised.",
+        "unit": "{n} years"
+      },
+      "retention_visitor_years": {
+        "label": "Visitor records",
+        "hint": "After the visit date.",
+        "unit": "{n} years"
+      },
+      "retention_contractor_years": {
+        "label": "Contractor worker records",
+        "hint": "After the last validity end.",
+        "unit": "{n} years"
+      },
+      "retention_blacklist_years_after_lift": {
+        "label": "Blacklist records",
+        "hint": "After being lifted.",
+        "unit": "{n} years"
+      },
+      "retention_audit_years": {
+        "label": "Audit log",
+        "hint": "Audit records older than this are deleted.",
+        "unit": "{n} years"
+      },
+      "visitor_types": {
+        "label": "Visitor types",
+        "hint": "Per type: number of check questions, pass score, minimum reading time per card and validity. Validity 0 = visit day only.",
+        "unit": "{n}"
+      },
+      "visitor_code_max_attempts": {
+        "label": "Kiosk code attempt limit",
+        "hint": "Temporary block on the gate tablet after this many wrong codes.",
+        "unit": "{n} attempts"
+      },
+      "visitor_code_window_min": {
+        "label": "Kiosk code time window",
+        "hint": "Wrong code attempts are counted within this time.",
+        "unit": "{n} minutes"
+      },
+      "visitor_selfreg_max": {
+        "label": "Self-registration limit",
+        "hint": "Visitor registrations that can be opened from the same address within this time.",
+        "unit": "{n} registrations"
+      },
+      "visitor_selfreg_window_min": {
+        "label": "Self-registration time window",
+        "hint": "The time within which the self-registration limit is counted.",
+        "unit": "{n} minutes"
+      },
+      "visitor_kiosk_reset_seconds": {
+        "label": "Kiosk reset time",
+        "hint": "After the briefing ends, the gate tablet returns to the start after this time.",
+        "unit": "{n} seconds"
+      },
+      "visitor_ppe_items": {
+        "label": "PPE issued to visitors",
+        "hint": "Personal protective equipment that can be ticked at check-in.",
+        "unit": "{n}"
+      },
+      "auth_invite_valid_hours": {
+        "label": "Invitation validity",
+        "hint": "How long the account activation link and code stay valid.",
+        "unit": "{n} hours"
+      },
+      "auth_invite_code_attempts": {
+        "label": "Activation code attempts",
+        "hint": "After this many wrong codes the invitation becomes unusable; HR invites again.",
+        "unit": "{n} attempts"
+      },
+      "auth_invite_batch_max": {
+        "label": "Bulk invitation limit",
+        "hint": "The maximum number of people that can be invited in one action on the Invitations screen.",
+        "unit": "{n} people"
+      },
+      "retention_login_attempt_days": {
+        "label": "Sign-in log",
+        "hint": "Sign-in records older than this are deleted. At least 30 days.",
+        "unit": "{n} days"
+      }
+    },
+    "visitorTypes": {
+      "enabled": "On",
+      "questionCount": "Number of questions",
+      "passScore": "Pass score",
+      "cardMinSeconds": "Minimum per card (s)",
+      "validityYears": "Validity (years)",
+      "summary": "{type}: {questions} questions, pass {score}, {validity}",
+      "visitDay": "visit day",
+      "years": "{n} years",
+      "off": "{type}: off"
+    },
+    "listHint": "Write one item per line."
+  },
+  "visitors": {
+    "types": {
+      "office": "Office visitor",
+      "site": "Site visitor",
+      "contractor": "Contractor / service"
+    },
+    "status": {
+      "planned": "Planned",
+      "briefed": "Briefed",
+      "checked_in": "Inside",
+      "checked_out": "Left",
+      "cancelled": "Cancelled"
+    },
+    "blacklisted": "Blacklisted",
+    "securityNewHint": "If the host's employee number is left empty, you become the host. If an ID number is entered, the visitor is recognised when they come again.",
+    "cards": {
+      "visits": {
+        "title": "Visits",
+        "description": "Pre-registered and past visits; filter by date and status."
+      },
+      "contractors": {
+        "title": "Contractor companies",
+        "description": "Company card, contract end and registered workers."
+      },
+      "blacklist": {
+        "title": "Blacklist",
+        "description": "People banned from entry. Adding and removing require a reason."
+      },
+      "briefings": {
+        "title": "Briefing packages",
+        "description": "Cards and check questions per visitor type (Turkish + English)."
+      },
+      "gate": {
+        "title": "Gate",
+        "description": "Today's visits and people inside; entry and exit."
+      },
+      "evacuation": {
+        "title": "Evacuation roll call",
+        "description": "List of people on site, assembly point roll call and paper backup."
+      }
+    },
+    "mine": {
+      "title": "My visitors",
+      "description": "Visits you host. Register your visitor in advance; their wait at the gate is shorter.",
+      "new": "Register visitor",
+      "newHint": "Security takes the visitor's ID details at the gate; do not enter them here."
+    },
+    "list": {
+      "empty": "No visits in this range.",
+      "host": "Host: {name}",
+      "from": "Start",
+      "to": "End",
+      "allStatuses": "All statuses",
+      "apply": "Apply"
+    },
+    "form": {
+      "type": "Visitor type",
+      "date": "Visit date",
+      "fullName": "Full name",
+      "companyName": "Company",
+      "contractor": "Contractor company",
+      "chooseCompany": "Choose a company",
+      "noCompanies": "There are no registered contractor companies. Security or the OHS specialist must open the company card.",
+      "phone": "Phone",
+      "email": "Email",
+      "emailHint": "If given, the briefing link is sent to this address.",
+      "note": "Note",
+      "optional": "optional",
+      "idLegend": "Security details",
+      "hostSicil": "Host's employee number",
+      "hostSicilHint": "Enter it if you are registering on behalf of another employee.",
+      "idKind": "ID type",
+      "idNone": "Not entered",
+      "idTc": "Turkish ID number",
+      "idPassport": "Passport",
+      "idCountry": "Country (2 letters)",
+      "idNumber": "ID number",
+      "create": "Save",
+      "save": "Save changes",
+      "saved": "Saved."
+    },
+    "detail": {
+      "status": "Status",
+      "host": "Host",
+      "id": "ID",
+      "edit": "Correct details",
+      "cancel": "Cancel visit",
+      "cancelReason": "Cancellation reason",
+      "cancelConfirm": "Cancel",
+      "history": "Previous visits",
+      "blacklistedWarning": "This person is on the blacklist. Talk to the OHS specialist before letting them in.",
+      "code": "Visit code",
+      "hostWritten": "{name} (written by the visitor)",
+      "resendLink": "Resend briefing link",
+      "briefing": "Briefing",
+      "briefingDone": "{date} · {locale} · score {score}",
+      "briefingDoneNoQuiz": "{date} · {locale}",
+      "briefingPending": "Not completed yet",
+      "gate": "Gate",
+      "checkedIn": "Entry: {time} · badge {badge}",
+      "checkedOut": "Exit: {time} · badge {returned, select, true {returned} other {not returned}}",
+      "ppe": "PPE: {items}"
+    },
+    "companies": {
+      "name": "Company name",
+      "taxNo": "Tax no",
+      "contractEnd": "Contract end",
+      "contractEndShort": "Contract end: {date}",
+      "responsible": "Responsible person",
+      "create": "Add company",
+      "empty": "No contractor companies yet.",
+      "archived": "Archived",
+      "archive": "Archive",
+      "unarchive": "Unarchive",
+      "archiveConfirm": "An archived company cannot be chosen for new pre-registrations. Archive it?",
+      "workers": "Registered workers",
+      "noWorkers": "No registered workers from this company.",
+      "workersHint": "Workers are registered on their first contractor visit; training validity comes with the briefing."
+    },
+    "blacklist": {
+      "reason": "Reason",
+      "reasonHint": "At least 10 characters. The record cannot be changed.",
+      "endsAt": "End date",
+      "endsAtHint": "Leave empty for no end date.",
+      "add": "Add to blacklist",
+      "added": "Added to the blacklist.",
+      "empty": "No one is on the blacklist.",
+      "active": "Active",
+      "lifted": "Lifted",
+      "expired": "Expired",
+      "addedBy": "Added by {name}, {date}",
+      "until": "Until: {date}",
+      "liftedBy": "Lifted by {name}, {date}",
+      "lift": "Remove from blacklist",
+      "liftReason": "Reason for removal",
+      "liftConfirm": "Remove"
+    },
+    "briefings": {
+      "intro": "Cards and check questions for each visitor type. A package cannot be published until Turkish and English are complete; a published version cannot be changed.",
+      "current": "Published: version {version} ({date})",
+      "none": "No published package yet",
+      "typeDisabled": "This type is turned off in the parameters",
+      "newDraft": "Prepare a new version",
+      "editDraft": "Edit draft (version {version})",
+      "editTitle": "{type} · version {version}",
+      "editHint": "The draft is saved; visitors see this version once you publish it.",
+      "cards": "Briefing cards",
+      "cardN": "Card {n}",
+      "titleTr": "Title (Turkish)",
+      "bodyTr": "Text (Turkish)",
+      "titleEn": "Title (English)",
+      "bodyEn": "Text (English)",
+      "media": "Image or video",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "remove": "Remove",
+      "addCard": "Add card",
+      "questions": "Check questions",
+      "questionsRequired": "Visitors of this type are asked {count} questions; at least {count} questions are required.",
+      "questionsNone": "No check questions are asked for this type (can be changed in the parameters).",
+      "questionN": "Question {n}",
+      "stemTr": "Question (Turkish)",
+      "stemEn": "Question (English)",
+      "correct": "Correct option",
+      "correctShort": "Correct",
+      "optionTr": "Option {n} (Turkish)",
+      "optionEn": "Option {n} (English)",
+      "removeOption": "Remove option",
+      "addOption": "Add option",
+      "addQuestion": "Add question",
+      "save": "Save draft",
+      "saved": "Draft saved.",
+      "publish": "Publish",
+      "discard": "Delete draft",
+      "discardConfirm": "Delete the draft?"
+    },
+    "selfRegistered": "Self-registered",
+    "gate": {
+      "search": "Code or name",
+      "searchButton": "Search",
+      "empty": "No visits today.",
+      "inside": "Inside",
+      "since": "Entry: {time}",
+      "badge": "Badge {badge}",
+      "clearance": "Contractor validity: {date}",
+      "noId": "No ID registered",
+      "notBriefed": "Briefing pending",
+      "checkIn": "Check in",
+      "checkInTitle": "Entry",
+      "badgeNo": "Badge no",
+      "ppe": "PPE issued",
+      "hostSicil": "Host's employee number",
+      "hostSicilHint": "The visitor wrote \"{name}\"; choose the actual host.",
+      "confirmCheckIn": "Confirm entry",
+      "denied": "Entry refused: this person is on the blacklist. The OHS specialist has been notified.",
+      "checkedIn": "Checked in.",
+      "checkOut": "Check out",
+      "badgeReturned": "Badge returned",
+      "confirmCheckOut": "Confirm exit",
+      "checkedOut": "Checked out."
+    }
+  },
   "visitorFlow": {
     "title": "Visitor safety briefing",
     "language": "Language",
@@ -820,5 +3219,217 @@
       "open": "Open the briefing",
       "footer": "This e-mail was sent automatically by JAPAR Akademi. The link is valid until the end of the visit day."
     }
+  },
+  "evacuation": {
+    "title": "Evacuation roll call",
+    "description": "Visitors and contractors currently inside. Employees are not on this list.",
+    "inside": "Inside: {count}",
+    "insideEmpty": "No visitors are inside right now.",
+    "start": "Start roll call",
+    "startDrill": "Drill",
+    "startReal": "Real evacuation",
+    "startConfirm": "Start a roll call? Everyone inside will be added to the list.",
+    "kinds": {
+      "drill": "Drill",
+      "real": "Real evacuation"
+    },
+    "open": "Open roll call: {kind} · {time}",
+    "progress": "{safe} / {total} at the assembly point",
+    "missing": "{count} people missing",
+    "safe": "At the assembly point",
+    "markSafe": "At the assembly point",
+    "unmark": "Undo",
+    "refresh": "Refresh list",
+    "refreshed": "{count} people added.",
+    "end": "End roll call",
+    "endConfirm": "End the roll call? Missing people remain on record as \"not at the assembly point\" and the record cannot be changed.",
+    "endConfirmMissing": "{count} people are still missing. End it anyway? The missing people remain on record.",
+    "pdfInside": "People inside (PDF)",
+    "pdfRollcall": "Roll call result (PDF)",
+    "history": "Recent roll calls",
+    "historyRow": "{kind} · {time} · {safe}/{total}",
+    "openNow": "open",
+    "offlineSaved": "The latest list was saved on this device ({time}); it can be read on the offline page if the connection drops.",
+    "offlineTitle": "Latest evacuation list (no connection)",
+    "offlineSavedAt": "Saved: {time}. Marking requires a connection.",
+    "offlineStale": "The saved list is older than 24 hours; it is not shown.",
+    "pdf": {
+      "insideTitle": "List of people on site",
+      "rollcallTitle": "Evacuation roll call ({kind})",
+      "kinds": {
+        "drill": "drill",
+        "real": "real"
+      },
+      "generated": "Generated: {date}",
+      "count": "Number of people: {count}",
+      "started": "Started: {date}",
+      "ended": "Ended: {date}",
+      "table": "People",
+      "cols": {
+        "name": "Full name",
+        "company": "Company",
+        "type": "Type",
+        "host": "Host",
+        "checkedIn": "Entry",
+        "badge": "Badge",
+        "safe": "At the assembly point"
+      }
+    },
+    "pdfShort": "Download PDF"
+  },
+  "invite": {
+    "channel": {
+      "label": "Invitation channel",
+      "email": "Email",
+      "emailHint": "An activation link is sent to the person's email.",
+      "emailDisabled": "Email sending is not enabled on this server yet.",
+      "whatsapp": "WhatsApp",
+      "whatsappHint": "You send the ready message from WhatsApp on your own phone. A phone number is required.",
+      "print": "Printed sheet",
+      "printHint": "You print the sheet with a QR code and an 8-digit code and hand it to the person.",
+      "none": "Do not invite now",
+      "noneHint": "The person is added; you send the invitation later from the Invitations screen or the person's page."
+    },
+    "panel": {
+      "createdTitle": "Employee created",
+      "reinvitedTitle": "New invitation ready",
+      "expires": "The invitation is valid until {date} and can be used once.",
+      "emailSent": "The activation link is being sent to the person's email.",
+      "whatsappIntro": "When you press the button, WhatsApp opens with the message written; just press Send.",
+      "whatsappOpen": "Send on WhatsApp",
+      "copyLink": "Copy link",
+      "copied": "Link copied",
+      "printIntro": "Print the sheet and hand it to the person. The code is shown only now.",
+      "code": "Activation code",
+      "printSheet": "Download activation sheet (PDF)",
+      "toDetail": "Go to employee record",
+      "createdNoInvite": "The person was added. No invitation has been sent yet; you can send it from the Invitations screen or the person's page.",
+      "toInvites": "Go to Invitations"
+    },
+    "status": {
+      "label": "Account status",
+      "active": "Active",
+      "invite_pending": "Invitation pending ({channel}, until {date})",
+      "invite_expired": "Invitation unusable (expired or the code was entered wrongly too many times); invite again",
+      "not_activated": "Awaiting first sign-in",
+      "not_invited": "Not invited"
+    },
+    "reinvite": {
+      "title": "Invite again",
+      "hint": "For someone who forgot their password, lost their invitation or whose invitation expired. The current password and the old invitation become invalid and open sessions are closed.",
+      "submit": "Create invitation",
+      "confirm": "The person's current password will become invalid and their open sessions will be closed. Continue?"
+    },
+    "batch": {
+      "title": "Invitations",
+      "description": "Employees who have not activated their account yet. Select people and send invitations in one go.",
+      "filterState": "Status",
+      "stateAll": "All",
+      "filterUnit": "Unit",
+      "unitAll": "All units",
+      "search": "Name or employee no",
+      "filter": "Filter",
+      "importFilter": "Only the people from one Excel import are shown.",
+      "clearImport": "Show everyone",
+      "empty": "No one is waiting for an invitation.",
+      "selectAll": "Select all",
+      "selected": "{count} people selected",
+      "colPerson": "Person",
+      "colUnit": "Unit / position",
+      "colContact": "Contact",
+      "colState": "Status",
+      "hasEmail": "Email",
+      "hasPhone": "Phone",
+      "noContact": "None",
+      "pendingWarning": "{count} of the selected people have an open invitation; the old one becomes invalid when a new one is created.",
+      "modeLabel": "Channel",
+      "mode": {
+        "smart": "Smart",
+        "smartHint": "Email for those with an email, WhatsApp for those without email but with a phone, printed sheet for those with neither.",
+        "email": "Email",
+        "emailHint": "Those without an email get a printed sheet.",
+        "whatsapp": "WhatsApp",
+        "whatsappHint": "Those without a phone get a printed sheet. You send the messages one by one on the next screen.",
+        "print": "Printed sheet",
+        "printHint": "Everyone's sheet (QR + code) is downloaded as one PDF."
+      },
+      "create": "Create invitations",
+      "creating": "Creating invitations…",
+      "max": "At most {max} people can be invited at once.",
+      "recent": "Recent invitation groups",
+      "recentRow": "{date} · {name} · {total} people",
+      "recentWhatsapp": "WhatsApp: {shared} / {whatsapp} sent",
+      "open": "Open list",
+      "groupTitle": "Invitation group",
+      "groupMeta": "{date} · {name}",
+      "summary": "{total} people: {email} email, {whatsapp} WhatsApp, {print} printed",
+      "skipped": "{count} people were skipped (account already active, inactive or not invitable by you).",
+      "sheetsDownloaded": "The printed sheets were downloaded as a PDF. This PDF cannot be downloaded again; for a lost sheet, invite that person again.",
+      "emailQueued": "Emails are being sent to {count} people.",
+      "whatsappTitle": "WhatsApp send list",
+      "whatsappIntro": "Press \"Send on WhatsApp\" one by one, tap Send in WhatsApp and come back to this page. The list can be reopened here while the invitations are valid.",
+      "progress": "{shared} / {total} sent",
+      "send": "Send on WhatsApp",
+      "sent": "Sent",
+      "sendAgain": "Open again",
+      "rowState": {
+        "open": "",
+        "used": "Account activated",
+        "revoked": "Invitation renewed",
+        "expired": "Expired"
+      },
+      "noWhatsapp": "There are no WhatsApp invitations in this group.",
+      "back": "Invitations",
+      "states": {
+        "not_invited": "Not invited",
+        "invite_pending": "Invitation pending",
+        "invite_expired": "Invitation unusable",
+        "not_activated": "Awaiting first sign-in (old temporary password)"
+      }
+    }
+  },
+  "owner": {
+    "actingNotice": "This action normally belongs to the {role} role. You are doing it as owner; it will be recorded that way."
+  },
+  "logins": {
+    "title": "Sign-in log",
+    "description": "All sign-in and account activation attempts. This screen is read-only; the records cannot be changed.",
+    "filters": {
+      "q": "Employee no, full name or IP",
+      "result": "Result",
+      "all": "All",
+      "failed": "All failed attempts",
+      "from": "Start",
+      "to": "End",
+      "apply": "Apply"
+    },
+    "results": {
+      "success": "Successful sign-in",
+      "unknown_user": "Unknown user",
+      "bad_password": "Wrong password",
+      "locked": "Account locked",
+      "inactive": "Account not active",
+      "rate_limited": "Too many attempts (IP block)",
+      "bad_invite": "Invalid invitation code",
+      "activated": "Account activated"
+    },
+    "summary": "{total} attempts, {failed} failed",
+    "byResult": "By result",
+    "export": "Download Excel",
+    "tooLarge": "There are more than 10,000 records in the selected range. Narrow the date range or the filter and download again.",
+    "empty": "No records found.",
+    "input": "Entered employee no / email",
+    "ip": "IP address",
+    "userAgent": "Browser",
+    "person": "Person",
+    "columns": {
+      "at": "Time",
+      "sicil": "Employee no",
+      "result": "Result"
+    },
+    "retentionNote": "For unknown user attempts only the first 3 characters of the entered text are shown (the person may have typed their password by mistake). Records are deleted at night when the retention period ends (Parameters → Retention periods).",
+    "previous": "Previous",
+    "next": "Next",
+    "pages": "Sign-in log pages"
   }
 }
