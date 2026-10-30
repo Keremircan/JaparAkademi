@@ -330,6 +330,20 @@
       "when": 1793379796683,
       "tag": "0046_competencies_triggers",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1793388860971,
+      "tag": "0047_periodic_training",
+      "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1793388864756,
+      "tag": "0048_periodic_training_triggers",
+      "breakpoints": true
     }
   ]
 }

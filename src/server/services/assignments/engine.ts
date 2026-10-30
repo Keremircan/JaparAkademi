@@ -1,5 +1,5 @@
 import { and, asc, desc, eq, inArray, isNotNull, isNull, ne, notInArray } from "drizzle-orm";
-import type { Tx } from "@/server/db/client";
+import type { DbOrTx, Tx } from "@/server/db/client";
 import {
   assignmentItems,
   assignmentModules,
@@ -43,7 +43,7 @@ export async function today(): Promise<string> {
 }
 
 /** Pozisyonun yayındaki kart sürümü ve planı. */
-async function publishedPlan(tx: Tx, positionId: string) {
+export async function publishedPlan(tx: DbOrTx, positionId: string) {
   const [row] = await tx
     .select({ cardVersionId: positionCardVersions.id, planId: trainingPlans.id, sections: positionCardVersions.sections })
     .from(positionCardVersions)
@@ -85,9 +85,15 @@ function cardSectionKeys(sections: unknown): string[] {
   return keys;
 }
 
+/**
+ * Yenilenen kayıt: sistemdeki tamamlanış (`instanceId`), sistem dışı son eğitim tarihi (`priorId`, karar #223) ya da
+ * hiçbiri (periyodik eğitimin toplu başlatılması, karar #222). `expiresAt` hedef tarih hesabında kullanılır.
+ */
+export type RenewSource = { instanceId: string | null; priorId?: string | null; expiresAt: Date };
+
 export type CreateAssignmentInput = {
   userId: string;
-  reason: "new_hire" | "position_change" | "recertification" | "extra_training";
+  reason: "new_hire" | "position_change" | "recertification" | "extra_training" | "periodic";
   createdBy: string | null;
   trainerUserId?: string | null;
   targetDate?: string | null;
@@ -95,7 +101,7 @@ export type CreateAssignmentInput = {
    * Tekrar eğitimi (karar #164–168): modül kimliği → yenilenen tamamlanış (assignment_modules.id) ve bitişi.
    * Verilirse atamaya yalnızca bu modüller ve bunlara bağlı sınavlar girer; devretme yapılmaz.
    */
-  renew?: ReadonlyMap<string, { instanceId: string; expiresAt: Date }>;
+  renew?: ReadonlyMap<string, RenewSource>;
 };
 
 /**
@@ -203,6 +209,7 @@ export async function createAssignment(tx: Tx, input: CreateAssignmentInput): Pr
         settings: r.settings,
         pinnedTaskIds: tasks.map((t) => t.id),
         renewsId: renew?.get(r.moduleId)?.instanceId ?? null,
+        renewsPriorId: renew?.get(r.moduleId)?.priorId ?? null,
         ...(from
           ? { status: "completed" as const, completedAt: from.completedAt, completedVia: "carried_over" as const, carriedFromId: from.id, expiresAt: from.expiresAt }
           : {}),
@@ -272,6 +279,12 @@ export async function refreshAssignment(tx: Tx, assignmentId: string): Promise<v
         await notify(tx, { kind: "practical_exam_available", userIds: [a.trainerUserId], subjectKey: `practical:${m.id}`, link: "/trainer", params: { name: u?.name ?? "", title: m.title }, exclude: [a.userId] });
       }
     }
+  }
+  // Periyodik eğitim (karar #224): işe başlama onayı ve pozisyon sertifikası yok; modüller bitince tamamlanır
+  if (a.status === "active" && a.reason === "periodic" && allRequiredDone(mods)) {
+    await tx.update(assignments).set({ status: "completed" }).where(eq(assignments.id, assignmentId));
+    await resolveNotifications(tx, `overdue:${a.id}`);
+    return;
   }
   // Tüm zorunlu modüller bitince işe başlama onayı beklenir (1.7)
   if (a.status === "active" && allRequiredDone(mods)) {

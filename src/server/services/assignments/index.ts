@@ -54,7 +54,7 @@ export type AssignmentSummary = {
   sicilNo: string;
   positionName: string;
   cardVersion: number;
-  reason: "new_hire" | "position_change" | "recertification" | "extra_training";
+  reason: "new_hire" | "position_change" | "recertification" | "extra_training" | "periodic";
   status: AssignmentStatus;
   startDate: string;
   targetDate: string | null;

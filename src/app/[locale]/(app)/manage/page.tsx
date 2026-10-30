@@ -1,4 +1,4 @@
-import { Award, Boxes, BriefcaseBusiness, ClipboardCheck, FileQuestion, KeyRound, Library, ListChecks, School, Users } from "lucide-react";
+import { Award, Boxes, CalendarSync, BriefcaseBusiness, ClipboardCheck, FileQuestion, KeyRound, Library, ListChecks, School, Users } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -60,6 +60,7 @@ async function Content() {
     { key: "questions", href: "/manage/questions", icon: FileQuestion, show: can(actor, "questions.view"), badge: null },
     { key: "proctor", href: "/manage/proctor", icon: KeyRound, show: can(actor, "proctor.issue_code"), badge: null },
     { key: "competencies", href: "/manage/competencies", icon: Award, show: can(actor, "competencies.manage"), badge: null },
+    { key: "periodic", href: "/manage/periodic", icon: CalendarSync, show: can(actor, "periodic.view"), badge: null },
   ] as const;
 
   return (

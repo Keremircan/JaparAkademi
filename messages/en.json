@@ -405,7 +405,8 @@
     "question_translation_invalid": "The English text is missing or invalid: the question text must be at least 5 characters; all options and pairs must be filled, match the Turkish count and be distinct. Leave the English fields empty if you do not want a translation.",
     "competency_name_invalid": "Competency name must be 2–200 characters.",
     "competency_archived": "This competency is archived.",
-    "competency_invalid": "The selected competency does not belong to this module's unit or is archived."
+    "competency_invalid": "The selected competency does not belong to this module's unit or is archived.",
+    "prior_date_invalid": "The last training date is invalid or after today."
   },
   "notFound": {
     "title": "Page not found",
@@ -730,6 +731,10 @@
       "competencies": {
         "title": "Competencies",
         "description": "Machine and task competencies, validity periods; linking to practical tasks."
+      },
+      "periodic": {
+        "title": "Periodic training",
+        "description": "Recurring training of existing employees: last training dates and bulk start."
       }
     },
     "pendingCount": "{count} records awaiting approval"
@@ -1492,7 +1497,8 @@
       "new_hire": "New hire",
       "position_change": "Position change",
       "recertification": "Refresher training",
-      "extra_training": "Additional training"
+      "extra_training": "Additional training",
+      "periodic": "Periodic training"
     },
     "progress": "{percent}% completed",
     "startedOn": "Started: {date}",
@@ -3524,6 +3530,69 @@
       "title": "My competencies",
       "until": "Until {date}",
       "expired": "Expired ({date})"
+    }
+  },
+  "periodic": {
+    "title": "Periodic training",
+    "description": "Recurring theory training of existing employees. For people with a last training date, the training opens automatically at night {days} days before it expires. You can select people without a date and start it now. Periodic training needs no start-of-work approval; it completes when the modules are done.",
+    "filters": {
+      "q": "Name or employee no",
+      "unit": "Unit",
+      "module": "Module",
+      "state": "Status",
+      "all": "All",
+      "apply": "Apply",
+      "states": {
+        "none": "No date",
+        "scheduled": "Date known",
+        "open": "In training"
+      }
+    },
+    "truncated": "The first 500 people are shown; use the filter to narrow the list.",
+    "selected": "{count, plural, =0 {Select people} one {# person selected} other {# people selected}}",
+    "module": "Module",
+    "choose": "Choose",
+    "lastDate": "Last training date",
+    "note": "Note",
+    "notePlaceholder": "E.g. paper attendance form, 2025 file",
+    "record": "Save date",
+    "start": "Start now",
+    "startHint": "Opens the recurring trainings that have no date and no system record for the selected people right away. People with an open training are skipped.",
+    "startConfirm": "Open periodic training for {count, plural, one {# person} other {# people}}?",
+    "recorded": "Date saved for {saved} people; {skipped} skipped (module not in their plan).",
+    "started": "Periodic training opened for {started} people; {skipped} skipped (open training or nothing to open).",
+    "empty": "No employees with recurring training were found.",
+    "selectAll": "Select all",
+    "states": {
+      "open": "In training",
+      "none": "No date",
+      "scheduled": "Last: {last} · opens: {opens}",
+      "noExpiry": "Last: {last}"
+    },
+    "fromPrior": "entered date",
+    "import": {
+      "heading": "Last training dates from Excel",
+      "intro": "Download the template: each person × module without a date is one row. Fill in the \"Son eğitim tarihi\" (last training date) column from paper records and upload it. A preview is shown first; valid rows are saved when you confirm.",
+      "template": "Download template",
+      "file": "Excel file (.xlsx)",
+      "checking": "Checking…",
+      "preview": "Preview",
+      "previewHeading": "{valid} valid, {invalid} invalid rows",
+      "row": "Row",
+      "person": "Person",
+      "module": "Module",
+      "date": "Date",
+      "result": "Result",
+      "ok": "Valid",
+      "rowErrors": {
+        "sicil_missing": "Employee number is empty.",
+        "person_not_found": "No employee with this employee number.",
+        "module_not_found": "This module is not among the person's recurring trainings.",
+        "not_permitted": "You may not enter dates for this module (the OHS specialist enters only OHS modules).",
+        "date_invalid": "Invalid or future date (dd.mm.yyyy)."
+      },
+      "commit": "Save {count} dates",
+      "done": "{saved} dates saved, {skipped} rows skipped."
     }
   }
 }
