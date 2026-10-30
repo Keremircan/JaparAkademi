@@ -65,11 +65,15 @@ export function channelProblem(
   return null;
 }
 
-/** Ekrandaki hesap durumu. */
-export type AccountState = "active" | "invite_pending" | "invite_expired" | "not_activated";
+/**
+ * Ekrandaki hesap durumu. `not_activated`: 2.6b'den önce geçici şifreyle açılmış, şifresini henüz değiştirmemiş hesap;
+ * `not_invited`: davetsiz açılmış hesap (karar #198).
+ */
+export type AccountState = "active" | "invite_pending" | "invite_expired" | "not_activated" | "not_invited";
 
 export function accountState(input: {
   activatedAt: Date | null;
+  mustChangePassword?: boolean;
   latestInvite: { usedAt: Date | null; revokedAt: Date | null; expiresAt: Date; failedAttempts: number } | null;
   now: Date;
   maxAttempts: number;
@@ -77,5 +81,27 @@ export function accountState(input: {
   const inv = input.latestInvite;
   if (inv && isInvitationOpen(inv, input.now, input.maxAttempts)) return "invite_pending";
   if (input.activatedAt) return "active";
-  return inv ? "invite_expired" : "not_activated";
+  if (inv) return "invite_expired";
+  return input.mustChangePassword ? "not_activated" : "not_invited";
+}
+
+/** Toplu davet kipi (karar #200). */
+export type InviteBatchMode = "smart" | InviteChannel;
+export const INVITE_BATCH_MODES = ["smart", "email", "whatsapp", "print"] as const satisfies readonly InviteBatchMode[];
+
+/**
+ * Toplu davette kişinin kanalı: "akıllı" kipte e-posta (gönderim açıksa) → WhatsApp (geçerli telefon) → basılı;
+ * tek kanal kipinde kanala uymayan kişi basılıya düşer.
+ */
+export function pickChannel(
+  mode: InviteBatchMode,
+  person: { email: string | null; phone: string | null },
+  mailEnabled: boolean,
+): InviteChannel {
+  if (mode === "smart") {
+    if (!channelProblem("email", person, mailEnabled)) return "email";
+    if (!channelProblem("whatsapp", person, mailEnabled)) return "whatsapp";
+    return "print";
+  }
+  return channelProblem(mode, person, mailEnabled) ? "print" : mode;
 }

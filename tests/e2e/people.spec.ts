@@ -59,7 +59,7 @@ test("karar #185–187: İK personel açar (basılı davet) → kişi kodla hesa
   await expect(page.getByText(/Bu bağlantı ya da kod geçersiz/)).toBeVisible();
 });
 
-test("FG-1.4 İK Excel'den aktarır: önizleme, hatalı satır, onay ve etkinleştirme kağıtları (karar #185)", async ({ page }, testInfo) => {
+test("FG-1.4, karar #198–200: İK Excel'den aktarır (davetsiz), sonra Davetler ekranından hepsine basılı davet", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "desktop", "Aynı dosya iki kez aktarılmasın; masaüstünde çalışır");
 
   await login(page, hrSicil(testInfo.project.name), E2E_PASSWORD);
@@ -74,13 +74,62 @@ test("FG-1.4 İK Excel'den aktarır: önizleme, hatalı satır, onay ve etkinle�
   await expect(page.getByText("3 satır: 2 geçerli, 1 hatalı")).toBeVisible();
   await expect(page.getByText("Departman bulunamadı")).toBeVisible();
 
-  const download = page.waitForEvent("download");
   await page.getByRole("button", { name: "Geçerli satırları aktar" }).click();
-  expect((await download).suggestedFilename()).toMatch(/^etkinlestirme-kagitlari-.*\.pdf$/);
   await expect(page.getByRole("heading", { name: "Aktarım tamamlandı" })).toBeVisible();
   await expect(page.getByText("2 yeni hesap, 0 güncellendi, 0 değişmedi.")).toBeVisible();
 
-  await page.goto(`/admin/people?q=${encodeURIComponent(`E2E-${process.env.E2E_SUFFIX}-X`)}`);
-  await expect(page.getByText("Aktarılan Bir")).toBeVisible();
-  await expect(page.getByText("Aktarılan İki")).toBeVisible();
+  // Aktarılan kişiler davetsiz açıldı → Davetler ekranında yalnızca bu aktarımın kişileri
+  await page.getByRole("button", { name: "Bunlara davet gönder" }).click();
+  await expect(page).toHaveURL(/\/admin\/people\/invites\?import=/);
+  const main = page.getByRole("main").filter({ visible: true });
+  await expect(main.getByText("Aktarılan Bir")).toBeVisible();
+  await expect(main.getByText("Aktarılan İki")).toBeVisible();
+  await main.getByRole("checkbox", { name: "Tümünü seç" }).click();
+  await expect(main.getByText("2 kişi seçildi")).toBeVisible();
+  await main.getByRole("radio", { name: /Basılı kağıt/ }).check();
+
+  const download = page.waitForEvent("download");
+  await main.getByRole("button", { name: "Davet oluştur" }).click();
+  expect((await download).suggestedFilename()).toMatch(/^etkinlestirme-kagitlari-.*\.pdf$/);
+  await expect(page).toHaveURL(/\/admin\/people\/invites\/[0-9a-f-]{36}\?pdf=1$/);
+  await expect(page.getByText("2 kişi: 0 e-posta, 0 WhatsApp, 2 basılı")).toBeVisible();
+});
+
+test("karar #201: WhatsApp gönderim listesi — gönderilen satır işaretlenir, liste yeniden açılınca korunur", async ({ page, context }, testInfo) => {
+  const sicil = `E2E-${process.env.E2E_SUFFIX}-W${testInfo.project.name[0]}`;
+  // Dış servise gidilmez: wa.me isteği kesilir
+  await context.route(/wa\.me/, (route) => route.abort());
+
+  await login(page, hrSicil(testInfo.project.name), E2E_PASSWORD);
+  await acceptConsentIfAsked(page);
+
+  // Varsayılan "Şimdi davet etme" ile eklenir
+  await page.goto("/admin/people/new");
+  await page.getByLabel("Sicil no").fill(sicil);
+  await page.getByLabel("Ad soyad").fill("Whatsapp Deneme");
+  await page.locator("#phone").fill("0532 111 22 33");
+  await expect(page.getByRole("radio", { name: /Şimdi davet etme/ })).toBeChecked();
+  await page.getByRole("button", { name: "Kaydet" }).click();
+  await expect(page.getByText(/Davet henüz gönderilmedi/)).toBeVisible();
+
+  await page.goto(`/admin/people/invites?q=${encodeURIComponent(sicil)}`);
+  const main = page.getByRole("main").filter({ visible: true });
+  await main.getByRole("checkbox", { name: new RegExp(sicil) }).click();
+  await main.getByRole("radio", { name: /^WhatsApp/ }).check();
+  await main.getByRole("button", { name: "Davet oluştur" }).click();
+  await expect(page).toHaveURL(/\/admin\/people\/invites\/[0-9a-f-]{36}$/);
+  const batchUrl = page.url();
+
+  const list = page.getByRole("main").filter({ visible: true });
+  await expect(list.getByText("0 / 1 gönderildi", { exact: true })).toBeVisible();
+  const popup = page.waitForEvent("popup");
+  await list.getByRole("button", { name: "WhatsApp'ta gönder" }).click();
+  await (await popup).close();
+  await expect(list.getByText("1 / 1 gönderildi", { exact: true })).toBeVisible();
+
+  // Liste yeniden açılınca işaret korunur
+  await page.goto(batchUrl);
+  const reopened = page.getByRole("main").filter({ visible: true });
+  await expect(reopened.getByText("1 / 1 gönderildi", { exact: true })).toBeVisible();
+  await expect(reopened.getByRole("button", { name: "Tekrar aç" })).toBeVisible();
 });

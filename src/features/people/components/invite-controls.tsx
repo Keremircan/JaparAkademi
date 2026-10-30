@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, Download, Mail, MessageCircle, Printer, Send } from "lucide-react";
+import { Clock, Copy, Download, Mail, MessageCircle, Printer, Send } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useActionState, useState, type ReactNode } from "react";
 import { FormError } from "@/components/forms/form-error";
@@ -10,16 +10,20 @@ import { downloadBase64 } from "@/lib/download";
 import { type InviteResult, reinviteAction } from "../actions";
 
 type Channel = InviteResult["channel"];
-const ICONS = { email: Mail, whatsapp: MessageCircle, print: Printer } as const;
+const ICONS = { none: Clock, email: Mail, whatsapp: MessageCircle, print: Printer } as const;
 
-/** Davet kanalı seçimi (karar #185). E-posta gönderimi kapalıysa e-posta seçilemez (karar #191). */
-export function ChannelPicker({ mailEnabled, defaultChannel = "print" }: { mailEnabled: boolean; defaultChannel?: Channel }) {
+/**
+ * Davet kanalı seçimi (karar #185). E-posta gönderimi kapalıysa e-posta seçilemez (karar #191).
+ * `allowNone`: personel eklerken "Şimdi davet etme" seçeneği (varsayılan, karar #198).
+ */
+export function ChannelPicker({ mailEnabled, allowNone = false }: { mailEnabled: boolean; allowNone?: boolean }) {
   const t = useTranslations("invite.channel");
-  const [value, setValue] = useState<Channel>(defaultChannel);
+  const [value, setValue] = useState<Channel | "none">(allowNone ? "none" : "print");
+  const options = allowNone ? (["none", "email", "whatsapp", "print"] as const) : (["email", "whatsapp", "print"] as const);
   return (
     <fieldset className="flex flex-col gap-2">
       <legend className="mb-1 text-base font-medium">{t("label")}</legend>
-      {(["email", "whatsapp", "print"] as const).map((c) => {
+      {options.map((c) => {
         const Icon = ICONS[c];
         const disabled = c === "email" && !mailEnabled;
         return (

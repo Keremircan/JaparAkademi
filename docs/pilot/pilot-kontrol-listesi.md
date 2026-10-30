@@ -54,7 +54,7 @@ Her satırda sorumlu ve durum doldurulur.
 | 3.8 | Soru bankası: pozisyon başına en az 40 soru; plan tasarımcısında havuz uyarısı yok | İSG + bölüm sorumluları | ☐ |
 | 3.9 | Sertifika şablonu: imza yetkilileri ve taranmış imzalar | İK + İSG | ☐ |
 | 3.10 | Logonun vektörel (SVG) ve şeffaf PNG hâli (şu an JPG'den türetilmiş PNG kullanılıyor) | Kurumsal iletişim | ☐ |
-| 3.11 | Pilot personelin Excel ile aktarımı; etkinleştirme kağıtları dağıtıldı ve hesaplar etkinleştirildi (karar #185) | İK | ☐ |
+| 3.11 | Pilot personelin Excel ile aktarımı; Davetler ekranından toplu davet (WhatsApp / basılı) gönderildi ve hesaplar etkinleştirildi (kararlar #185, #198–201) | İK | ☐ |
 | 3.12 | Pratik eğitmen ve hedef tarihler atandı | İK | ☐ |
 
 ## 4. Kabul (SPEC 16.3)

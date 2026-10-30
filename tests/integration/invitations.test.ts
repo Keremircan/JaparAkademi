@@ -28,10 +28,16 @@ const base = { employmentType: "employee" as const, trainingRequired: false };
 const NEW_PASSWORD = "Kalip-Degisimi-77";
 const tokenOf = (url: string) => url.split("/activate/")[1]!;
 
+/** Davetle açılan kişi: davet bilgisi + kişi kimliği. */
+async function invited(...args: Parameters<typeof createPerson>) {
+  const r = await createPerson(...args);
+  return { ...r.invite!, userId: r.userId };
+}
+
 describe("İş paketi 2.6b: hesaba davet ve etkinleştirme", () => {
   it("karar #186–187: basılı kod → bağlantı → kişi şifresini belirler, oturum açılır; davet bir kez kullanılır", async () => {
     const hr = await createTestUser({ roles: ["hr"] });
-    const invite = await createPerson(hr.actor, { ...base, sicilNo: "8001", fullName: "Hasan Demir", channel: "print" });
+    const invite = await invited(hr.actor, { ...base, sicilNo: "8001", fullName: "Hasan Demir", channel: "print" });
     expect(await inviteStatus(hr.actor, invite.userId)).toMatchObject({ state: "invite_pending", channel: "print" });
 
     // Kod boşluklu ya da boşluksuz yazılabilir
@@ -62,7 +68,7 @@ describe("İş paketi 2.6b: hesaba davet ve etkinleştirme", () => {
 
   it("karar #186: hatalı kod sayılır; hak dolunca doğru kod da geçmez, her hata aynı mesajı verir", async () => {
     const hr = await createTestUser({ roles: ["hr"] });
-    const invite = await createPerson(hr.actor, { ...base, sicilNo: "8002", fullName: "Fatma Şahin", channel: "print" });
+    const invite = await invited(hr.actor, { ...base, sicilNo: "8002", fullName: "Fatma Şahin", channel: "print" });
     const wrong = invite.code === "0000 0000" ? "1111 1111" : "0000 0000";
     for (let i = 0; i < 5; i++) {
       await expect(verifyInviteCode({ sicilNo: "8002", code: wrong }, meta({ ip: `10.1.0.${i}` }))).rejects.toMatchObject({ code: "invite_invalid" });
@@ -86,7 +92,7 @@ describe("İş paketi 2.6b: hesaba davet ve etkinleştirme", () => {
 
   it("karar #186: süresi dolan davet kullanılamaz", async () => {
     const hr = await createTestUser({ roles: ["hr"] });
-    const invite = await createPerson(hr.actor, { ...base, sicilNo: "8003", fullName: "Süre Dolan", channel: "print" });
+    const invite = await invited(hr.actor, { ...base, sicilNo: "8003", fullName: "Süre Dolan", channel: "print" });
     await owner()`update account_invitations set expires_at = now() - interval '1 minute' where user_id = ${invite.userId}`;
     expect(await invitationForToken(tokenOf(invite.url))).toBeNull();
     await expect(verifyInviteCode({ sicilNo: "8003", code: invite.code! }, meta())).rejects.toMatchObject({ code: "invite_invalid" });
@@ -98,7 +104,7 @@ describe("İş paketi 2.6b: hesaba davet ve etkinleştirme", () => {
     await expect(createPerson(hr.actor, { ...base, sicilNo: "8004", fullName: "Telefonsuz", channel: "whatsapp" })).rejects.toMatchObject({
       code: "invite_phone_missing",
     });
-    const invite = await createPerson(hr.actor, { ...base, sicilNo: "8005", fullName: "Mehmet Kaya", phone: "0532 111 22 33", channel: "whatsapp" });
+    const invite = await invited(hr.actor, { ...base, sicilNo: "8005", fullName: "Mehmet Kaya", phone: "0532 111 22 33", channel: "whatsapp" });
     expect(invite.code).toBeNull();
     const wa = new URL(invite.whatsappUrl!);
     expect(wa.origin + wa.pathname).toBe("https://wa.me/905321112233");
@@ -115,7 +121,7 @@ describe("İş paketi 2.6b: hesaba davet ve etkinleştirme", () => {
     await expect(createPerson(hr.actor, { ...base, sicilNo: "8006", fullName: "E-postasız", channel: "email" })).rejects.toMatchObject({
       code: "invite_email_missing",
     });
-    const invite = await createPerson(hr.actor, { ...base, sicilNo: "8007", fullName: "Ayşe Yılmaz", email: "Ayse@Japar.Test", channel: "email" });
+    const invite = await invited(hr.actor, { ...base, sicilNo: "8007", fullName: "Ayşe Yılmaz", email: "Ayse@Japar.Test", channel: "email" });
     const [mail] = await db().select().from(emailOutbox).where(eq(emailOutbox.toAddress, "ayse@japar.test"));
     expect(mail).toMatchObject({ kind: "account_invite", status: "pending" });
     expect(mail?.bodyText).toContain(invite.url);

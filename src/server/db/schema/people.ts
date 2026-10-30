@@ -140,6 +140,25 @@ export const dataAccessLog = pgTable(
 );
 
 export const inviteChannel = pgEnum("invite_channel", ["email", "whatsapp", "print"]);
+export const inviteBatchMode = pgEnum("invite_batch_mode", ["smart", "email", "whatsapp", "print"]);
+
+/** Toplu davet işlemi (karar #201): Davetler ekranında birlikte oluşturulan davetler. */
+export const invitationBatches = pgTable(
+  "invitation_batches",
+  {
+    id: id(),
+    mode: inviteBatchMode().notNull(),
+    total: integer().notNull(),
+    emailCount: integer().notNull().default(0),
+    whatsappCount: integer().notNull().default(0),
+    printCount: integer().notNull().default(0),
+    createdBy: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    createdAt: createdAt(),
+  },
+  (t) => [index("invitation_batches_created_idx").on(t.createdAt)],
+);
 
 /**
  * Hesaba davet (kararlar #185–187). Token yalnızca SHA-256 özetiyle, basılı kanalın 8 haneli kodu
@@ -153,17 +172,22 @@ export const accountInvitations = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "restrict" }),
     channel: inviteChannel().notNull(),
+    batchId: uuid().references(() => invitationBatches.id, { onDelete: "restrict" }),
     tokenHash: text().notNull().unique(),
     codeHash: text(),
     expiresAt: tstz("expires_at").notNull(),
     usedAt: tstz("used_at"),
     revokedAt: tstz("revoked_at"),
     failedAttempts: integer().notNull().default(0),
+    /** Toplu WhatsApp listesini yeniden açmak için şifreli bağlantı; kullanılınca/iptalde/süre dolunca silinir (karar #201). */
+    linkEnc: text(),
+    /** İK'nın "WhatsApp'ta gönder"e bastığı an (mesajın gittiğini garanti etmez). */
+    sharedAt: tstz("shared_at"),
     createdBy: uuid().references(() => users.id, { onDelete: "restrict" }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
-  (t) => [index("account_invitations_user_idx").on(t.userId, t.createdAt)],
+  (t) => [index("account_invitations_user_idx").on(t.userId, t.createdAt), index("account_invitations_batch_idx").on(t.batchId)],
 );
 
 /**

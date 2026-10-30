@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import type { ActionResult } from "@/features/shared/action-result";
 import { Link } from "@/i18n/navigation";
-import { createPersonAction, type InviteResult, updatePersonAction } from "../actions";
+import { createPersonAction, type CreatePersonResult, updatePersonAction } from "../actions";
 import { ChannelPicker, InvitePanel } from "./invite-controls";
 
 type PositionOption = { id: string; label: string };
@@ -41,7 +41,7 @@ export function PersonForm({
   const t = useTranslations("admin.people");
   const tc = useTranslations("common");
   const isEdit = !!person;
-  type FormState = ActionResult<InviteResult | void> | null;
+  type FormState = ActionResult<CreatePersonResult | void> | null;
   const submit = (isEdit ? updatePersonAction.bind(null, person.userId) : createPersonAction) as (
     prev: FormState,
     formData: FormData,
@@ -52,9 +52,28 @@ export function PersonForm({
   const ti = useTranslations("invite.panel");
 
   if (!isEdit && state?.ok && state.data) {
-    const created = state.data as InviteResult;
+    const created = state.data as CreatePersonResult;
+    const toDetail = (
+      <Button className="self-start" nativeButton={false} render={<Link href={`/admin/people/${created.userId}`} />}>
+        {ti("toDetail")}
+      </Button>
+    );
+    if (!created.invite) {
+      return (
+        <div role="status" className="flex max-w-xl flex-col gap-4 rounded-2xl border border-primary/30 bg-muted p-6">
+          <h2 className="text-xl font-semibold">{ti("createdTitle")}</h2>
+          <p>{ti("createdNoInvite")}</p>
+          <div className="flex flex-wrap gap-2">
+            {toDetail}
+            <Button variant="outline" nativeButton={false} render={<Link href="/admin/people/invites" />}>
+              {ti("toInvites")}
+            </Button>
+          </div>
+        </div>
+      );
+    }
     return (
-      <InvitePanel title={ti("createdTitle")} invite={created}>
+      <InvitePanel title={ti("createdTitle")} invite={created.invite}>
         <Button className="self-start" nativeButton={false} render={<Link href={`/admin/people/${created.userId}`} />}>
           {ti("toDetail")}
         </Button>
@@ -142,7 +161,7 @@ export function PersonForm({
           </span>
         </span>
       </Label>
-      {!isEdit && <ChannelPicker mailEnabled={mailEnabled} />}
+      {!isEdit && <ChannelPicker mailEnabled={mailEnabled} allowNone />}
       <Button type="submit" size="lg" disabled={pending} className="self-start">
         {pending ? tc("saving") : tc("save")}
       </Button>

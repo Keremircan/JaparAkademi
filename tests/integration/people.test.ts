@@ -18,11 +18,17 @@ import { seedTestOrg } from "../support/org";
 
 const base = { employmentType: "employee" as const, trainingRequired: true, channel: "print" as const };
 
+/** Davetle açılan kişi: davet bilgisi + kişi kimliği. */
+async function invited(...args: Parameters<typeof createPerson>) {
+  const r = await createPerson(...args);
+  return { ...r.invite!, userId: r.userId };
+}
+
 describe("Personel kaydı (ekran 15)", () => {
   it("karar #185: İK yeni personel açar; hesap şifresiz açılır ve basılı davet kodu bir kez döner", async () => {
     const org = await seedTestOrg();
     const hr = await createTestUser({ roles: ["hr"] });
-    const invite = await createPerson(hr.actor, {
+    const invite = await invited(hr.actor, {
       ...base,
       sicilNo: "5001",
       fullName: "Yeni Kişi",

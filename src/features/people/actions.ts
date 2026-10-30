@@ -7,7 +7,8 @@ import { actionUser, formText, runAction, type ActionResult } from "@/features/s
 import { redirect } from "@/i18n/navigation";
 import { renderActivationSheets } from "@/server/pdf/activation";
 import { reinvite, type IssuedInvite } from "@/server/services/invitations";
-import { INVITE_CHANNELS } from "@/server/state/invitations";
+import { INVITE_BATCH_MODES, INVITE_CHANNELS } from "@/server/state/invitations";
+import { createInvitationBatch, markInviteShared } from "@/server/services/invitation-batches";
 import { cancelImport, commitImport, validateImport } from "@/server/services/imports";
 import {
   createPerson,
@@ -99,16 +100,43 @@ function readPerson(formData: FormData) {
   });
 }
 
+export type CreatePersonResult = { userId: string; invite: InviteResult | null };
+
 export async function createPersonAction(
-  _prev: ActionResult<InviteResult> | null,
+  _prev: ActionResult<CreatePersonResult> | null,
   formData: FormData,
-): Promise<ActionResult<InviteResult>> {
+): Promise<ActionResult<CreatePersonResult>> {
   const person = readPerson(formData);
   const sicilNo = z.string().min(1).max(32).safeParse(formText(formData, "sicilNo") ?? "");
-  const channel = channelSchema.safeParse(formText(formData, "channel"));
+  // "none": davet sonra gönderilir (karar #198)
+  const channel = z.enum([...INVITE_CHANNELS, "none"]).safeParse(formText(formData, "channel") ?? "none");
   if (!person.success || !sicilNo.success || !channel.success) return { ok: false, error: "invalid_input" };
   const { actor } = await actionUser();
-  return runAction(async () => toResult(await createPerson(actor, { ...person.data, sicilNo: sicilNo.data, channel: channel.data })));
+  return runAction(async () => {
+    const { userId, invite } = await createPerson(actor, { ...person.data, sicilNo: sicilNo.data, channel: channel.data });
+    return { userId, invite: invite ? await toResult(invite) : null };
+  });
+}
+
+// ---- Toplu davet (iş paketi 2.6c) ----
+
+export type BatchActionResult = { batchId: string; sheetPdf: string | null };
+
+/** Seçilen kişilere davet; basılı olanların kağıtları tek PDF olarak bir kez döner. */
+export async function createInvitationBatchAction(userIds: string[], mode: string): Promise<ActionResult<BatchActionResult>> {
+  const parsed = z.object({ userIds: z.array(uuid).min(1).max(1000), mode: z.enum(INVITE_BATCH_MODES) }).safeParse({ userIds, mode });
+  if (!parsed.success) return { ok: false, error: "invalid_input" };
+  const { actor } = await actionUser();
+  return runAction(async () => {
+    const result = await createInvitationBatch(actor, parsed.data);
+    return { batchId: result.batchId, sheetPdf: result.printed.length ? await sheetsPdfBase64(result.printed) : null };
+  });
+}
+
+export async function markInviteSharedAction(invitationId: string): Promise<ActionResult> {
+  if (!uuid.safeParse(invitationId).success) return { ok: false, error: "invalid_input" };
+  const { actor } = await actionUser();
+  return runAction(() => markInviteShared(actor, invitationId));
 }
 
 export async function updatePersonAction(
@@ -189,15 +217,13 @@ export async function uploadImportAction(_prev: ActionResult | null, formData: F
   return redirect({ href: `/admin/people/import/${result.data.batchId}`, locale: await getLocale() });
 }
 
-export type CommitImportResult = { created: number; updated: number; unchanged: number; sheetPdf: string | null };
+export type CommitImportResult = { created: number; updated: number; unchanged: number };
 
 export async function commitImportAction(batchId: string): Promise<ActionResult<CommitImportResult>> {
   if (!uuid.safeParse(batchId).success) return { ok: false, error: "invalid_input" };
   const { actor } = await actionUser();
   return runAction(async () => {
-    const { invites, ...counts } = await commitImport(actor, batchId);
-    const sheetPdf = invites.length ? await sheetsPdfBase64(invites) : null;
-    return { ...counts, sheetPdf };
+    return commitImport(actor, batchId);
   });
 }
 

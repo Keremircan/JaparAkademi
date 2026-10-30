@@ -10,6 +10,7 @@ import { accountInvitations, accounts, emailOutbox, personnel, positions, sessio
 import { withActor } from "@/server/db/with-actor";
 import { NotFoundError, ValidationError } from "@/server/errors";
 import { env } from "@/server/env";
+import { encryptInviteLink } from "@/server/crypto/invite-link";
 import { emailHtml } from "@/server/state/notifications";
 import {
   accountState,
@@ -60,7 +61,14 @@ export async function unusablePasswordHash(): Promise<string> {
   return (await getAuth().$context).password.hash(randomBytes(32).toString("base64url"));
 }
 
+/** İK'nın cihazında açılacak hazır mesajlı WhatsApp bağlantısı (karar #188). */
+export function inviteWhatsappUrl(input: { phone: string; fullName: string; url: string; hours: number }): string {
+  const t = createTranslator({ locale: "tr", messages, namespace: "invite.message" });
+  return whatsappShareUrl(normalizePhone(input.phone)!, t("whatsapp", { name: input.fullName, url: input.url, hours: input.hours }));
+}
+
 export type IssuedInvite = {
+  invitationId: string;
   userId: string;
   sicilNo: string;
   fullName: string;
@@ -80,7 +88,7 @@ export type IssuedInvite = {
  */
 export async function issueInvitation(
   tx: Tx,
-  input: { userId: string; channel: InviteChannel; createdBy: string | null },
+  input: { userId: string; channel: InviteChannel; createdBy: string | null; batchId?: string | null },
   now = new Date(),
 ): Promise<IssuedInvite> {
   const [person] = await tx
@@ -105,21 +113,27 @@ export async function issueInvitation(
   const expiresAt = new Date(now.getTime() + hours * 60 * 60_000);
   await tx
     .update(accountInvitations)
-    .set({ revokedAt: now })
+    .set({ revokedAt: now, linkEnc: null })
     .where(and(eq(accountInvitations.userId, input.userId), isNull(accountInvitations.usedAt), isNull(accountInvitations.revokedAt)));
 
   const token = randomBytes(32).toString("base64url");
   const code = input.channel === "print" ? String(randomInt(0, 100_000_000)).padStart(8, "0") : null;
-  await tx.insert(accountInvitations).values({
-    userId: input.userId,
-    channel: input.channel,
-    tokenHash: hashToken(token),
-    codeHash: code ? hashCode(input.userId, code) : null,
-    expiresAt,
-    createdBy: input.createdBy,
-  });
-
   const url = new URL(`/activate/${token}`, env().APP_URL).toString();
+  const [row] = await tx
+    .insert(accountInvitations)
+    .values({
+      userId: input.userId,
+      channel: input.channel,
+      batchId: input.batchId ?? null,
+      tokenHash: hashToken(token),
+      codeHash: code ? hashCode(input.userId, code) : null,
+      // Toplu WhatsApp listesi yeniden açılabilsin diye bağlantı şifreli saklanır (karar #201)
+      linkEnc: input.batchId && input.channel === "whatsapp" ? encryptInviteLink(url) : null,
+      expiresAt,
+      createdBy: input.createdBy,
+    })
+    .returning({ id: accountInvitations.id });
+
   const t = createTranslator({ locale: "tr", messages, namespace: "invite.message" });
   let whatsappUrl: string | null = null;
   if (input.channel === "email") {
@@ -133,10 +147,11 @@ export async function issueInvitation(
       bodyHtml: emailHtml({ heading: subject, body, linkLabel: t("emailOpen"), url, footer: t("emailFooter") }),
     });
   } else if (input.channel === "whatsapp") {
-    whatsappUrl = whatsappShareUrl(normalizePhone(person.phone)!, t("whatsapp", { name: person.fullName, url, hours }));
+    whatsappUrl = inviteWhatsappUrl({ phone: person.phone!, fullName: person.fullName, url, hours });
   }
 
   return {
+    invitationId: row!.id,
     userId: input.userId,
     sicilNo: person.sicilNo,
     fullName: person.fullName,
@@ -186,7 +201,11 @@ export type InviteStatus = {
 export async function inviteStatus(actor: Actor, userId: string, conn: DbOrTx = db()): Promise<InviteStatus> {
   assertCan(actor, "people.view");
   const [[person], [latest], maxAttempts] = await Promise.all([
-    conn.select({ activatedAt: personnel.activatedAt }).from(personnel).where(eq(personnel.userId, userId)).limit(1),
+    conn
+      .select({ activatedAt: personnel.activatedAt, mustChangePassword: personnel.mustChangePassword })
+      .from(personnel)
+      .where(eq(personnel.userId, userId))
+      .limit(1),
     conn
       .select()
       .from(accountInvitations)
@@ -197,7 +216,13 @@ export async function inviteStatus(actor: Actor, userId: string, conn: DbOrTx = 
   ]);
   if (!person) throw new NotFoundError("person");
   return {
-    state: accountState({ activatedAt: person.activatedAt, latestInvite: latest ?? null, now: new Date(), maxAttempts }),
+    state: accountState({
+      activatedAt: person.activatedAt,
+      mustChangePassword: person.mustChangePassword,
+      latestInvite: latest ?? null,
+      now: new Date(),
+      maxAttempts,
+    }),
     channel: latest?.channel ?? null,
     expiresAt: latest?.expiresAt ?? null,
     createdAt: latest?.createdAt ?? null,
@@ -258,10 +283,10 @@ export async function activateWithToken(
     const locked = await openInvitation(tx, input.token, true);
     if (!locked) throw new ValidationError("invite_invalid");
     const now = new Date();
-    await tx.update(accountInvitations).set({ usedAt: now }).where(eq(accountInvitations.id, locked.id));
+    await tx.update(accountInvitations).set({ usedAt: now, linkEnc: null }).where(eq(accountInvitations.id, locked.id));
     await tx
       .update(accountInvitations)
-      .set({ revokedAt: now })
+      .set({ revokedAt: now, linkEnc: null })
       .where(
         and(
           eq(accountInvitations.userId, locked.userId),

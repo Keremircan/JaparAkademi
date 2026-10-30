@@ -274,6 +274,20 @@
       "when": 1793301433019,
       "tag": "0038_invitations_owner_triggers",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1793346822423,
+      "tag": "0039_invitation_batches",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1793346840698,
+      "tag": "0040_invitation_batches_triggers",
+      "breakpoints": true
     }
   ]
 }

@@ -6,6 +6,7 @@ import {
   isInvitationOpen,
   normalizePhone,
   parseInviteCode,
+  pickChannel,
   whatsappShareUrl,
 } from "@/server/state/invitations";
 
@@ -64,6 +65,20 @@ describe("hesaba davet kuralları (iş paketi 2.6b)", () => {
     expect(accountState({ activatedAt: null, latestInvite: open, now, maxAttempts: 5 })).toBe("invite_pending");
     expect(accountState({ activatedAt: now, latestInvite: { ...open, usedAt: now }, now, maxAttempts: 5 })).toBe("active");
     expect(accountState({ activatedAt: null, latestInvite: { ...open, failedAttempts: 5 }, now, maxAttempts: 5 })).toBe("invite_expired");
-    expect(accountState({ activatedAt: null, latestInvite: null, now, maxAttempts: 5 })).toBe("not_activated");
+    expect(accountState({ activatedAt: null, latestInvite: null, now, maxAttempts: 5 })).toBe("not_invited");
+    expect(accountState({ activatedAt: null, mustChangePassword: true, latestInvite: null, now, maxAttempts: 5 })).toBe("not_activated");
+  });
+
+  it("karar #200: toplu davette kanal seçimi", () => {
+    const both = { email: "a@japar.test", phone: "05321112233" };
+    const phoneOnly = { email: null, phone: "05321112233" };
+    const none = { email: null, phone: null };
+    expect(pickChannel("smart", both, true)).toBe("email");
+    expect(pickChannel("smart", both, false)).toBe("whatsapp");
+    expect(pickChannel("smart", phoneOnly, true)).toBe("whatsapp");
+    expect(pickChannel("smart", none, true)).toBe("print");
+    expect(pickChannel("whatsapp", none, true)).toBe("print");
+    expect(pickChannel("email", phoneOnly, true)).toBe("print");
+    expect(pickChannel("print", both, true)).toBe("print");
   });
 });
