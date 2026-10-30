@@ -2,10 +2,10 @@ import { eq } from "drizzle-orm";
 import ExcelJS from "exceljs";
 import { describe, expect, it } from "vitest";
 import { db } from "@/server/db/client";
-import { importBatches, importRows, personnel } from "@/server/db/schema";
+import { accountInvitations, importBatches, importRows, personnel } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { ForbiddenError, isImmutableViolation } from "@/server/errors";
-import { activateWithToken, verifyInviteCode } from "@/server/services/invitations";
+import { listInvitees } from "@/server/services/invitation-batches";
 import {
   buildImportTemplate,
   cancelImport,
@@ -18,7 +18,7 @@ import { parseWorkbook } from "@/server/services/imports/parse";
 import { createPerson } from "@/server/services/people";
 import { systemActor } from "@/server/authz/actor";
 import { owner } from "../support/db";
-import { createTestUser, meta } from "../support/factories";
+import { createTestUser } from "../support/factories";
 import { seedTestOrg } from "../support/org";
 import { buildPeopleXlsx } from "../support/xlsx";
 
@@ -65,13 +65,11 @@ describe("FG-1.4 Excel personel aktarımı", () => {
     const result = await commitImport(hr.actor, batchId);
 
     expect(result).toMatchObject({ created: 1, updated: 1, unchanged: 0 });
-    expect(result.invites).toHaveLength(1);
-    expect(result.invites[0]).toMatchObject({ sicilNo: "7101", fullName: "Yeni Kişi", positionName: "Pres Operatörü", channel: "print" });
-
-    // Karar #185: kağıttaki kodla etkinleştirilir, kişi şifresini kendisi belirler
-    const { token } = await verifyInviteCode({ sicilNo: "7101", code: result.invites[0]!.code! }, meta());
-    const login = await activateWithToken({ token, newPassword: "Pres-Hatti-2026", sharedDevice: false }, meta());
-    expect(login).toMatchObject({ ok: true, mustChangePassword: false });
+    // Karar #198: hesaplar davetsiz açılır; davet Davetler ekranından gönderilir
+    const [person] = await db().select().from(personnel).where(eq(personnel.sicilNo, "7101"));
+    expect(await db().select().from(accountInvitations).where(eq(accountInvitations.userId, person!.userId))).toHaveLength(0);
+    const invitees = await listInvitees(hr.actor, { importBatchId: batchId });
+    expect(invitees.map((r) => [r.sicilNo, r.state])).toEqual([["7101", "not_invited"]]);
 
     const [created] = await db().select().from(personnel).where(eq(personnel.sicilNo, "7101"));
     expect(created).toMatchObject({ source: "excel", trainingRequired: true, positionId: org.positions.presOp, hireDate: "2026-01-05" });
@@ -93,7 +91,7 @@ describe("FG-1.4 Excel personel aktarımı", () => {
     expect(p?.trainingRequired).toBe(false);
 
     const second = await validateImport(hr.actor, { fileName: "a.xlsx", buffer, mode: "existing_staff" });
-    expect(await commitImport(hr.actor, second.batchId)).toMatchObject({ created: 0, updated: 0, unchanged: 1, invites: [] });
+    expect(await commitImport(hr.actor, second.batchId)).toEqual({ created: 0, updated: 0, unchanged: 1 });
   });
 
   it("onaylanan aktarım tekrar onaylanamaz ve satırları değiştirilemez", async () => {

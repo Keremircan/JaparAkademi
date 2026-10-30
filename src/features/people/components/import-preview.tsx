@@ -1,13 +1,12 @@
 "use client";
 
-import { CheckCircle2, Download } from "lucide-react";
+import { CheckCircle2, Send } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { ActionButton } from "@/components/forms/action-button";
 import { FormError } from "@/components/forms/form-error";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
-import { downloadBase64 } from "@/lib/download";
 import { cancelImportAction, commitImportAction, type CommitImportResult } from "../actions";
 
 export type PreviewRow = {
@@ -39,7 +38,6 @@ export function ImportPreview({
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CommitImportResult | null>(null);
   const [errorsOnly, setErrorsOnly] = useState(counts.errors > 0);
-  const fileName = `etkinlestirme-kagitlari-${new Date().toISOString().slice(0, 10)}.pdf`;
 
   if (result) {
     return (
@@ -49,16 +47,16 @@ export function ImportPreview({
           <h2 className="text-xl font-semibold">{t("committedTitle")}</h2>
         </div>
         <p>{t("committedSummary", { created: result.created, updated: result.updated, unchanged: result.unchanged })}</p>
-        {result.sheetPdf && (
+        {result.created > 0 && (
           <>
-            <p className="text-muted-foreground">{t("pdfDownloaded")}</p>
-            <Button variant="outline" className="self-start" onClick={() => downloadBase64(fileName, result.sheetPdf!, "application/pdf")}>
-              <Download aria-hidden="true" />
-              {t("downloadAgain")}
+            <p className="text-muted-foreground">{t("inviteHint")}</p>
+            <Button size="lg" className="self-start" nativeButton={false} render={<Link href={`/admin/people/invites?import=${batchId}`} />}>
+              <Send aria-hidden="true" />
+              {t("inviteNow")}
             </Button>
           </>
         )}
-        <Button className="self-start" nativeButton={false} render={<Link href="/admin/people" />}>
+        <Button variant="outline" className="self-start" nativeButton={false} render={<Link href="/admin/people" />}>
           {tc("close")}
         </Button>
       </div>
@@ -88,7 +86,6 @@ export function ImportPreview({
                 startTransition(async () => {
                   const r = await commitImportAction(batchId);
                   if (!r.ok) return setError(r.error);
-                  if (r.data.sheetPdf) downloadBase64(fileName, r.data.sheetPdf, "application/pdf");
                   setResult(r.data);
                 });
               }}

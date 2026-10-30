@@ -72,6 +72,7 @@ export const SETTINGS_CATALOG: Partial<Record<SettingKey, Entry>> = {
   "auth.reset_max_per_hour": { group: "auth", input: int },
   "auth.invite_valid_hours": { group: "auth", input: int },
   "auth.invite_code_attempts": { group: "auth", input: int },
+  "auth.invite_batch_max": { group: "auth", input: int },
 
   // Olay × kanal: uygulama içi her zaman, e-posta seçilen olaylarda (karar #119)
   "notify.email_events": { group: "notify", input: { kind: "events", channel: "email" } },

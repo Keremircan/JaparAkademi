@@ -597,7 +597,8 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `email_outbox`: notification_id, kind, to_address, subject, body_text, body_html, status (`pending`|`sent`|`failed`|`skipped`), attempts, last_error, next_attempt_at, sent_at — adres ve gövde denetim kaydına maskeli yazılır
 - `password_reset_tokens`: user_id, token_hash (SHA-256; token saklanmaz), expires_at, used_at, ip
 - `owner_actions`: at, actor_id, permission, subject_type, subject_id — **değiştirilemez** (karar #196)
-- `account_invitations`: user_id, channel (`email`|`whatsapp`|`print`), token_hash (SHA-256), code_hash (HMAC; yalnızca basılı), expires_at, used_at, revoked_at, failed_attempts, created_by — özetler denetim kaydına maskeli yazılır (kararlar #185, #186)
+- `invitation_batches`: created_by, created_at, mode (`smart`|`email`|`whatsapp`|`print`), total, email_count, whatsapp_count, print_count (karar #201). Excel aktarımındaki kişiler `import_rows.user_id` üzerinden süzülür
+- `account_invitations`: user_id, batch_id, channel (`email`|`whatsapp`|`print`), token_hash (SHA-256), code_hash (HMAC; yalnızca basılı), link_enc (yalnızca toplu WhatsApp, kullanılana/süresi dolana kadar), shared_at, expires_at, used_at, revoked_at, failed_attempts, created_by — özetler denetim kaydına maskeli yazılır (kararlar #185, #186)
 - `push_subscriptions`: user_id, session_id (oturum silinince silinir), endpoint (tekil), p256dh, auth, user_agent (kısa), last_success_at, failure_count — endpoint, anahtarlar ve tarayıcı bilgisi denetim kaydına maskeli yazılır. Tercih cihaz bazındadır; ayrı `notification_prefs` tablosu yok (karar #177)
 - `push_outbox`: notification_id, user_id, status, attempts, last_error, next_attempt_at, sent_at (karar #179)
 - `import_batches` (dosya, mod: `existing_staff`|`new_hires`, durum, sayılar), `import_rows` (normalleştirilmiş satır; TC yalnızca korumalı hâliyle; onaylanınca değiştirilemez). Onaylanmamış aktarımların satırları 24 saat sonra silinir (worker işi `imports.cleanup`)
@@ -697,6 +698,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | `push.max_attempts` / `push.ttl_hours` | 3 / 24 | — | sysadmin |
 | `auth.reset_link_minutes` / `auth.reset_max_per_hour` | 60 / 3 | — | sysadmin |
 | `auth.invite_valid_hours` / `auth.invite_code_attempts` | 72 / 5 | — | sysadmin |
+| `auth.invite_batch_max` | 200 | — | sysadmin |
 | `reports.max_rows` | 10000 | — | sysadmin |
 | `session.shared_idle_min` | 10 | — | sysadmin |
 | `session.personal_days` | 30 | — | sysadmin |
@@ -769,6 +771,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | **2.5 Tekrar eğitimi ve bildirimler** | Otomatik tekrar eğitimi ataması, süresi dolacak eğitimler raporu, Faz 2 bildirimleri, haftalık özet, içerik güncellik raporu |
 | **2.6 Web push** | VAPID, push abonelikleri, kullanıcı tercihi, service worker |
 | **2.6b Davet ve hesap etkinleştirme** | `account_invitations`, üç kanal (e-posta, WhatsApp paylaş, basılı QR + kod), `/activate`, geçici şifrenin kaldırılması, İK'da yeniden davet ve davet durumu, yönetici e-postayla girişi, `owner` rolü ve iki adımlı onayda dört göz (kararlar #185–197) |
+| **2.6c Toplu davet** | Hesap açma ile davetin ayrılması, Davetler ekranı (seçim, süzgeç), akıllı/tek kanal, WhatsApp gönderim listesi (geri açılabilir), toplu basılı PDF, `invitation_batches` (kararlar #198–201) |
 | **2.7 İngilizce içerik ve yeni soru tipleri** | İçerik sürümünde dil (TR/EN), arayüzün İngilizce metinleri, eşleştirme ve görselde işaretleme soruları; Faz 2 yayını ve kılavuzlar |
 
 "Tüm bölümlerin pozisyon kartları" içerik girişidir; kod paketi değildir (pilot kontrol listesinde izlenir).
@@ -982,6 +985,10 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 195 | İki adımlı onayda dört göz | İki adımlı onaylarda (içerik/kart: bölüm onayı → İSG onayı; soru: sürüm → İSG onayı) ikinci adımı birinci adımı veren kişi veremez (`same_approver`). Pratik sınavda değerlendiren ile ikinci imza zaten farklı kişidir. Birden çok role sahip kişiler ve `owner` için gereklidir |
 | 196 | Mesleki imzalar ve `owner` | İSG içerik/soru onayı, pratik sınav imzaları ve işe başlama kararı normalde ilgili rolün (İSG uzmanı, değerlendiren, bölüm sorumlusu) yetkisindedir. Bu rol olmadan `owner` olarak yapılırken ekranda uyarı gösterilir ve işlem değiştirilemez `owner_actions` tablosuna yazılır (kişi, izin, kayıt). `owner` İSG kısayolundan yararlanmaz: hazırladığı İSG içeriği/sorusu kendiliğinden onaylı sayılmaz, İSG adımını başka biri verir |
 | 197 | Yönetici girişi ve iki adımlı doğrulama (güncelleme) | E-postayla giriş `owner`, `sysadmin` ve `hr` için (karar #189). `owner` dahil iki adımlı doğrulama şimdilik yok (karar #190); Faz 3'te M365 tek oturumla değerlendirilir |
+| 198 | Hesap açma ile davet ayrı | Personel eklemek davet göndermeyi gerektirmez. Tek kişi eklemede kanal seçeneklerine "Şimdi davet etme" eklenir ve varsayılan odur; Excel aktarımı hesapları davetsiz açar ve sonunda "Bunlara davet gönder" bağlantısı verir (karar #185'in "Excel aktarımında kanal basılıdır" kısmının yerini alır). Davet edilmemiş hesap giriş yapamaz (şifresi kimsenin bilmediği rastgele değer); durumu "Davet edilmedi" (`not_invited`) |
+| 199 | Davetler ekranı | `/admin/people/invites` (yetki `people.manage`, kapsam İK/owner'da bütün ağaç): etkinleşmemiş aktif personel; süzgeç: durum (davet edilmedi / davet bekliyor / kullanılamıyor), birim, pozisyon, aktarım dosyası. Çoklu seçim + "Tümünü seç" → kanal → "Davet oluştur". Açık daveti olan kişi seçilirse eski daveti iptal edilir (ekranda uyarılır). Tek işlemde en fazla `auth.invite_batch_max` kişi |
+| 200 | Toplu davette kanal | "Akıllı": e-postası olana e-posta (yalnızca e-posta gönderimi açıkken), olmayıp geçerli telefonu olana WhatsApp, hiçbiri olmayana basılı. Ya da tek kanal; seçilen kanala uymayan kişiler basılıya düşer ve sonuçta ayrı gösterilir. Basılı olanların kağıtları tek PDF'te bir kez iner (saklanmaz; yeniden almak = yeniden davet) |
+| 201 | Davet grubu ve WhatsApp gönderim listesi | Her toplu işlem bir `invitation_batches` kaydıdır (oluşturan, zaman, kanal kipi, sayılar); davetler gruba bağlanır. WhatsApp listesi: kişi başına satır + "WhatsApp'ta gönder"; basınca satır "Gönderildi" işaretlenir (`shared_at`: İK'nın düğmeye bastığı an; mesajın gittiğini garanti etmez), üstte ilerleme. Liste Davetler ekranından tekrar açılabilir: WhatsApp davetlerinin bağlantısı yalnızca bu amaçla şifreli saklanır (`link_enc`, AES-256-GCM, anahtar `BETTER_AUTH_SECRET`'tan türetilir) ve davet kullanılınca, iptal edilince ya da süresi dolunca silinir (süresi dolanlar her gece). Basılı kodlar ve e-posta bağlantıları saklanmaz |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

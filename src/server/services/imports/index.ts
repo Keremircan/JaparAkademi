@@ -9,7 +9,6 @@ import { withActor } from "@/server/db/with-actor";
 import { syncAssignmentForPerson } from "@/server/services/assignments/engine";
 import { NotFoundError, ValidationError } from "@/server/errors";
 import { insertAccount, prepareInvitedAccount } from "@/server/services/accounts";
-import { issueInvitation, type IssuedInvite } from "@/server/services/invitations";
 import {
   checkRows,
   MAX_IMPORT_BYTES,
@@ -188,13 +187,13 @@ async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promis
 }
 
 /**
- * Onay: geçerli satırları uygular (tek transaction). Yeni hesaplar şifresiz açılır ve basılı kanaldan davet
- * alır (karar #185); kodlar yalnızca bu çağrının sonucunda döner, saklanmaz.
+ * Onay: geçerli satırları uygular (tek transaction). Yeni hesaplar şifresiz ve davetsiz açılır; davet sonra
+ * Davetler ekranından toplu gönderilir (karar #198).
  */
 export async function commitImport(
   actor: Actor,
   batchId: string,
-): Promise<{ created: number; updated: number; unchanged: number; invites: IssuedInvite[] }> {
+): Promise<{ created: number; updated: number; unchanged: number }> {
   assertCan(actor, "people.manage");
   if (actor.kind !== "user") throw new ValidationError("user_required");
   const [batch] = await db().select().from(importBatches).where(eq(importBatches.id, batchId)).limit(1);
@@ -227,7 +226,7 @@ export async function commitImport(
     return { rowId: row.id, account };
   });
 
-  const invites: IssuedInvite[] = [];
+  let created = 0;
   let updated = 0;
   let unchanged = 0;
   const now = new Date();
@@ -238,7 +237,7 @@ export async function commitImport(
     for (const p of prepared) {
       const userId = await insertAccount(tx, p.account, actor.userId);
       resultByRow.set(p.rowId, { status: "created", userId });
-      invites.push(await issueInvitation(tx, { userId, channel: "print", createdBy: actor.userId }));
+      created++;
     }
 
     for (const row of valid) {
@@ -292,13 +291,13 @@ export async function commitImport(
         status: "committed",
         committedBy: actor.userId,
         committedAt: now,
-        createdCount: invites.length,
+        createdCount: created,
         updatedCount: updated,
       })
       .where(eq(importBatches.id, batchId));
   });
 
-  return { created: invites.length, updated, unchanged, invites };
+  return { created, updated, unchanged };
 }
 
 /** İptal: satırlar (kişisel veri) silinir, aktarım kaydı "iptal" olarak kalır. */

@@ -225,13 +225,13 @@ function cleanPhone(value: string | null | undefined): string | null {
 }
 
 /**
- * Yeni personel (elle). Hesap şifresiz açılır ve seçilen kanaldan davet verilir (kararlar #185–188);
- * kişi şifresini etkinleştirirken kendisi belirler. Davet bilgisi (bağlantı/kod) yalnızca bu çağrının sonucunda döner.
+ * Yeni personel (elle). Hesap şifresiz açılır; istenirse seçilen kanaldan hemen davet verilir (kararlar #185–188),
+ * "none" ise davet sonra gönderilir (karar #198). Davet bilgisi (bağlantı/kod) yalnızca bu çağrının sonucunda döner.
  */
 export async function createPerson(
   actor: Actor,
-  input: PersonInput & { sicilNo: string; channel: InviteChannel },
-): Promise<IssuedInvite> {
+  input: PersonInput & { sicilNo: string; channel: InviteChannel | "none" },
+): Promise<{ userId: string; invite: IssuedInvite | null }> {
   assertCan(actor, "people.manage");
   await assertActivePosition(input.positionId);
   const nationalId = protectOrThrow(input.nationalId);
@@ -254,7 +254,8 @@ export async function createPerson(
   try {
     return await withActor(actor, async (tx) => {
       const userId = await insertAccount(tx, prepared, createdBy);
-      return issueInvitation(tx, { userId, channel: input.channel, createdBy });
+      const invite = input.channel === "none" ? null : await issueInvitation(tx, { userId, channel: input.channel, createdBy });
+      return { userId, invite };
     });
   } catch (err) {
     if (/national_?id/i.test(uniqueViolation(err) ?? "")) throw new ValidationError("national_id_taken");

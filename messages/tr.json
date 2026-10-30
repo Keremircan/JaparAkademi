@@ -391,7 +391,9 @@
     "last_owner": "Sistemde en az bir aktif üst yönetici kalmalı.",
     "login_email_required": "Bu rol e-postayla giriş yaptığı için kişinin e-posta adresi kayıtlı olmalı.",
     "login_email_taken": "Bu e-posta adresi başka bir aktif personelde kayıtlı. Yönetici rolleri için e-posta tekil olmalı.",
-    "same_approver": "Bu kaydın önceki onay adımını siz verdiniz. İki adımlı onayın ikinci adımını başka bir kişi vermeli."
+    "same_approver": "Bu kaydın önceki onay adımını siz verdiniz. İki adımlı onayın ikinci adımını başka bir kişi vermeli.",
+    "invite_batch_empty": "Davet edilebilecek kişi seçilmedi.",
+    "invite_batch_too_large": "Bir seferde en fazla {max} kişi davet edilebilir."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -510,11 +512,9 @@
         "commit": "Geçerli satırları aktar",
         "committing": "Aktarılıyor… Büyük dosyalarda birkaç dakika sürebilir.",
         "cancel": "Aktarımı iptal et",
-        "commitNotice": "Hatalı satırlar aktarılmaz. Yeni hesapların etkinleştirme kağıtları (QR + kod) bir kez PDF olarak indirilir; PDF yeniden üretilemez.",
+        "commitNotice": "Hatalı satırlar aktarılmaz. Yeni hesaplar açılır; davetleri bir sonraki adımda Davetler ekranından gönderirsiniz.",
         "committedTitle": "Aktarım tamamlandı",
         "committedSummary": "{created} yeni hesap, {updated} güncellendi, {unchanged} değişmedi.",
-        "pdfDownloaded": "Etkinleştirme kağıtları indirildi. Yazdırıp kişilere elden verin. Bu sayfayı kapatınca PDF yeniden alınamaz; kaybolan kağıt için kişi bazında yeniden davet yapın.",
-        "downloadAgain": "PDF'i tekrar indir",
         "cancelledTitle": "Aktarım iptal edildi",
         "alreadyCommitted": "Bu aktarım daha önce tamamlandı.",
         "expired": "Bu aktarım iptal edilmiş ya da süresi dolmuş.",
@@ -547,7 +547,9 @@
           "national_id_taken": "TC kimlik no başka bir personele kayıtlı",
           "phone_invalid": "Telefon geçersiz",
           "email_invalid": "E-posta geçersiz"
-        }
+        },
+        "inviteNow": "Bunlara davet gönder",
+        "inviteHint": "Hesaplar açıldı ama henüz davet gönderilmedi. Kişiler davetle kendi şifrelerini belirleyene kadar giriş yapamaz."
       },
       "search": "Ara",
       "searchPlaceholder": "Sicil no veya ad",
@@ -618,7 +620,8 @@
         "manageRoles": "Rolleri düzenle",
         "scopes": "Bölüm sorumlusu kapsamı"
       },
-      "waitingButton": "Eğitimi bekleyenler"
+      "waitingButton": "Eğitimi bekleyenler",
+      "invitesButton": "Davetler"
     },
     "roles": {
       "title": "Roller ve kapsam",
@@ -2866,6 +2869,11 @@
         "label": "Etkinleştirme kodu deneme hakkı",
         "hint": "Bu kadar hatalı kod girişinde davet kullanılamaz olur; İK yeniden davet eder.",
         "unit": "{n} deneme"
+      },
+      "auth_invite_batch_max": {
+        "label": "Toplu davet sınırı",
+        "hint": "Davetler ekranında tek işlemde davet edilebilecek en fazla kişi.",
+        "unit": "{n} kişi"
       }
     },
     "visitorTypes": {
@@ -3243,7 +3251,9 @@
       "whatsapp": "WhatsApp",
       "whatsappHint": "Hazır mesajı kendi telefonunuzdaki WhatsApp'tan siz gönderirsiniz. Telefon numarası gerekir.",
       "print": "Basılı kağıt",
-      "printHint": "QR kod ve 8 haneli kod içeren kağıdı yazdırıp kişiye elden verirsiniz."
+      "printHint": "QR kod ve 8 haneli kod içeren kağıdı yazdırıp kişiye elden verirsiniz.",
+      "none": "Şimdi davet etme",
+      "noneHint": "Kişi eklenir; daveti sonra Davetler ekranından ya da kişi sayfasından gönderirsiniz."
     },
     "panel": {
       "createdTitle": "Personel oluşturuldu",
@@ -3257,7 +3267,9 @@
       "printIntro": "Kağıdı yazdırıp kişiye elden verin. Kod yalnızca şimdi gösterilir.",
       "code": "Etkinleştirme kodu",
       "printSheet": "Etkinleştirme kağıdını indir (PDF)",
-      "toDetail": "Personel kaydına git"
+      "toDetail": "Personel kaydına git",
+      "createdNoInvite": "Kişi eklendi. Davet henüz gönderilmedi; Davetler ekranından ya da kişi sayfasından gönderebilirsiniz.",
+      "toInvites": "Davetler ekranına git"
     },
     "sheet": {
       "title": "Hesap etkinleştirme",
@@ -3273,13 +3285,81 @@
       "active": "Etkin",
       "invite_pending": "Davet bekliyor ({channel}, {date} tarihine kadar)",
       "invite_expired": "Davet kullanılamıyor (süresi doldu ya da kod çok kez hatalı girildi); yeniden davet edin",
-      "not_activated": "İlk giriş bekleniyor"
+      "not_activated": "İlk giriş bekleniyor",
+      "not_invited": "Davet edilmedi"
     },
     "reinvite": {
       "title": "Yeniden davet",
       "hint": "Şifresini unutan, davetini kaybeden ya da süresi dolan kişi için. Mevcut şifre ve eski davet geçersiz olur, açık oturumlar kapanır.",
       "submit": "Davet oluştur",
       "confirm": "Kişinin mevcut şifresi geçersiz olacak ve açık oturumları kapanacak. Devam edilsin mi?"
+    },
+    "batch": {
+      "title": "Davetler",
+      "description": "Henüz hesabını etkinleştirmemiş personel. Kişileri seçip tek seferde davet gönderin.",
+      "filterState": "Durum",
+      "stateAll": "Hepsi",
+      "filterUnit": "Birim",
+      "unitAll": "Bütün birimler",
+      "search": "Ad veya sicil",
+      "filter": "Süz",
+      "importFilter": "Yalnızca bir Excel aktarımındaki kişiler gösteriliyor.",
+      "clearImport": "Herkesi göster",
+      "empty": "Davet bekleyen kişi yok.",
+      "selectAll": "Tümünü seç",
+      "selected": "{count} kişi seçildi",
+      "colPerson": "Kişi",
+      "colUnit": "Birim / pozisyon",
+      "colContact": "İletişim",
+      "colState": "Durum",
+      "hasEmail": "E-posta",
+      "hasPhone": "Telefon",
+      "noContact": "Yok",
+      "pendingWarning": "Seçtiklerinizden {count} kişinin açık daveti var; yeni davet açılınca eskisi geçersiz olur.",
+      "modeLabel": "Kanal",
+      "mode": {
+        "smart": "Akıllı",
+        "smartHint": "E-postası olana e-posta, olmayıp telefonu olana WhatsApp, ikisi de olmayana basılı kağıt.",
+        "email": "E-posta",
+        "emailHint": "E-postası olmayanlar basılı kağıda düşer.",
+        "whatsapp": "WhatsApp",
+        "whatsappHint": "Telefonu olmayanlar basılı kağıda düşer. Mesajları sonraki ekranda sırayla gönderirsiniz.",
+        "print": "Basılı kağıt",
+        "printHint": "Herkesin kağıdı (QR + kod) tek PDF olarak iner."
+      },
+      "create": "Davet oluştur",
+      "creating": "Davetler oluşturuluyor…",
+      "max": "Bir seferde en fazla {max} kişi davet edilebilir.",
+      "recent": "Son davet grupları",
+      "recentRow": "{date} · {name} · {total} kişi",
+      "recentWhatsapp": "WhatsApp: {shared} / {whatsapp} gönderildi",
+      "open": "Listeyi aç",
+      "groupTitle": "Davet grubu",
+      "groupMeta": "{date} · {name}",
+      "summary": "{total} kişi: {email} e-posta, {whatsapp} WhatsApp, {print} basılı",
+      "skipped": "{count} kişi atlandı (hesabı etkinleşmiş, pasif ya da sizin için davet edilemez).",
+      "sheetsDownloaded": "Basılı kağıtlar PDF olarak indirildi. Bu PDF yeniden alınamaz; kaybolan kağıt için o kişiyi yeniden davet edin.",
+      "emailQueued": "{count} kişiye e-posta gönderiliyor.",
+      "whatsappTitle": "WhatsApp gönderim listesi",
+      "whatsappIntro": "Sırayla \"WhatsApp'ta gönder\"e basın, WhatsApp'ta Gönder'e dokunup bu sayfaya dönün. Liste davet süresi boyunca buradan tekrar açılabilir.",
+      "progress": "{shared} / {total} gönderildi",
+      "send": "WhatsApp'ta gönder",
+      "sent": "Gönderildi",
+      "sendAgain": "Tekrar aç",
+      "rowState": {
+        "open": "",
+        "used": "Hesap etkinleşti",
+        "revoked": "Davet yenilendi",
+        "expired": "Süresi doldu"
+      },
+      "noWhatsapp": "Bu grupta WhatsApp daveti yok.",
+      "back": "Davetler",
+      "states": {
+        "not_invited": "Davet edilmedi",
+        "invite_pending": "Davet bekliyor",
+        "invite_expired": "Davet kullanılamıyor",
+        "not_activated": "İlk giriş bekleniyor (eski geçici şifre)"
+      }
     }
   },
   "owner": {
