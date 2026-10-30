@@ -40,7 +40,7 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
     getTranslations("content.editor"),
     getTranslations("content"),
     listTags(access.actor),
-    assetsInfo(bodyAssetIds(version.type, version.body)),
+    assetsInfo([...bodyAssetIds(version.type, version.body), ...(version.en ? bodyAssetIds(version.type, version.en.body) : [])]),
   ]);
   return (
     <section>
@@ -54,7 +54,7 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
         type={version.type}
         version={version.version}
         isOhs={version.isOhs}
-        initial={{ title: version.title, body: version.body, tagIds: version.tagIds }}
+        initial={{ title: version.title, body: version.body, tagIds: version.tagIds, en: version.en }}
         assets={[...assets.values()]}
         tagGroups={tags}
         submitHint={t(`outcome.${version.submitOutcome}`)}

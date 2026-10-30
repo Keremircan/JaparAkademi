@@ -28,7 +28,7 @@ async function Content({ params }: { params: Promise<{ token: string }> }) {
   await connection();
   const [t, valid, minLength] = await Promise.all([getTranslations("auth.reset"), isResetTokenValid(token), getSetting("auth.password_min_length")]);
   return (
-    <AuthCard title={t("resetTitle")}>
+    <AuthCard title={t("resetTitle")} languages>
       {valid ? (
         <ResetPasswordForm token={token} minLength={minLength} />
       ) : (

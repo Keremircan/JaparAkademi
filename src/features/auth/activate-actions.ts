@@ -4,7 +4,8 @@ import { getLocale } from "next-intl/server";
 import { cookies } from "next/headers";
 import { z } from "zod";
 import { redirect } from "@/i18n/navigation";
-import { applySetCookies, getRequestMeta } from "@/server/auth/request";
+import { applySetCookies, getRequestMeta, setLocaleCookie } from "@/server/auth/request";
+import { toAppLocale } from "@/lib/locale";
 import { ValidationError } from "@/server/errors";
 import { logger } from "@/server/logger";
 import { DEVICE_COOKIE, recognizeDevice } from "@/server/services/devices";
@@ -56,10 +57,17 @@ export async function activateAction(_prev: ActivateState, formData: FormData): 
   if (parsed.data.newPassword !== parsed.data.confirmPassword) return { issues: ["mismatch"] };
   // Kayıtlı ortak cihazda oturum her zaman ortak modda (FG-4.1)
   const device = await recognizeDevice((await cookies()).get(DEVICE_COOKIE)?.value);
+  // Etkinleştirmenin yapıldığı dil hesabın dil tercihi olur (karar #207)
+  const pageLocale = toAppLocale(await getLocale());
   let result;
   try {
     result = await activateWithToken(
-      { token: parsed.data.token, newPassword: parsed.data.newPassword, sharedDevice: parsed.data.sharedDevice || !!device },
+      {
+        token: parsed.data.token,
+        newPassword: parsed.data.newPassword,
+        sharedDevice: parsed.data.sharedDevice || !!device,
+        locale: pageLocale,
+      },
       await getRequestMeta(),
     );
   } catch (err) {
@@ -69,8 +77,8 @@ export async function activateAction(_prev: ActivateState, formData: FormData): 
     logger.error({ err }, "Hesap etkinleştirme hatası");
     return { unexpected: true };
   }
-  const locale = await getLocale();
-  if (!result.ok) return redirect({ href: "/login", locale });
+  if (!result.ok) return redirect({ href: "/login", locale: pageLocale });
   await applySetCookies(result.setCookieHeaders);
-  return redirect({ href: "/", locale });
+  await setLocaleCookie(result.locale);
+  return redirect({ href: "/", locale: result.locale });
 }

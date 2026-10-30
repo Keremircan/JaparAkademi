@@ -58,6 +58,8 @@ const draftSchema = z.object({
   // Gövde tipine göre serviste doğrulanır
   body: z.record(z.string(), z.unknown()),
   tagIds: z.array(z.uuid()).max(30),
+  // İsteğe bağlı İngilizce (karar #207): null = kaldır
+  en: z.object({ title: z.string().max(200), body: z.record(z.string(), z.unknown()) }).nullable().optional(),
 });
 
 export async function saveDraftAction(contentId: string, input: unknown): Promise<ActionResult> {

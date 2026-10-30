@@ -26,16 +26,18 @@ export default async function ConsentPage() {
 
 async function ConsentSection() {
   const user = await requireUser({ allowPendingConsent: true });
-  const text = await pendingConsent(user.userId);
+  const text = await pendingConsent(user.userId, user.locale);
   if (!text) return redirect({ href: "/", locale: await getLocale() });
   const t = await getTranslations("consent");
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h2 className="text-lg font-semibold">{text.title}</h2>
+        <h2 lang={text.locale} className="text-lg font-semibold">
+          {text.title}
+        </h2>
         <p className="text-sm text-muted-foreground">{t("version", { version: text.version })}</p>
       </div>
-      <div className="max-h-[50dvh] overflow-y-auto rounded-xl border p-4" tabIndex={0}>
+      <div lang={text.locale} className="max-h-[50dvh] overflow-y-auto rounded-xl border p-4" tabIndex={0}>
         <LegalTextBody body={text.body} />
       </div>
       <ConsentButton legalTextId={text.id} />

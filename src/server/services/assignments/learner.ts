@@ -9,6 +9,7 @@ import {
   contents,
   contentVersionLocales,
   mediaAssets,
+  personnel,
   positionCardVersions,
   quizQuestions,
   quizResponses,
@@ -32,6 +33,17 @@ import { quizComplete, tryCompleteTheory } from "./engine";
  */
 
 const WORKING: ModuleStatus[] = ["available", "in_progress", "review_required", "completed"];
+
+/** Kursiyerin içerik dili: hesabın dil tercihi (karar #207). */
+async function learnerLocale(conn: DbOrTx, userId: string): Promise<string> {
+  const [p] = await conn.select({ locale: personnel.locale }).from(personnel).where(eq(personnel.userId, userId)).limit(1);
+  return p?.locale ?? CONTENT_LOCALE;
+}
+
+/** Kişinin dilindeki satır; o dilde yoksa Türkçe (karar #207). */
+function pickLocale<T extends { locale: string }>(rows: T[], locale: string): T | undefined {
+  return rows.find((r) => r.locale === locale) ?? rows.find((r) => r.locale === CONTENT_LOCALE);
+}
 
 async function ownModule(conn: DbOrTx, actor: Actor & { kind: "user" }, assignmentModuleId: string) {
   const [row] = await conn
@@ -60,6 +72,8 @@ export type LearnItem = {
   id: string;
   kind: "content" | "card_section";
   title: string;
+  /** İçeriğin gösterilen dili (sesli okuma ve `lang` için) */
+  locale?: string;
   /** İçerik adımı */
   contentType?: ContentType;
   body?: ContentBody;
@@ -110,15 +124,28 @@ export async function learnModule(actor: Actor, assignmentModuleId: string): Pro
     .where(and(eq(assignmentItems.assignmentModuleId, am.id), eq(assignmentItems.round, am.round)))
     .orderBy(asc(assignmentItems.sortOrder));
   const versionIds = items.map((i) => i.contentVersionId).filter((x): x is string => !!x);
-  const locales = versionIds.length
+  const allLocales = versionIds.length
     ? await db()
-        .select({ versionId: contentVersionLocales.contentVersionId, title: contentVersionLocales.title, body: contentVersionLocales.body, type: contents.type })
+        .selectDistinct({
+          versionId: contentVersionLocales.contentVersionId,
+          locale: contentVersionLocales.locale,
+          title: contentVersionLocales.title,
+          body: contentVersionLocales.body,
+          type: contents.type,
+        })
         .from(contentVersionLocales)
         .innerJoin(assignmentItems, eq(assignmentItems.contentVersionId, contentVersionLocales.contentVersionId))
         .innerJoin(contents, eq(contents.id, assignmentItems.contentId))
-        .where(and(inArray(contentVersionLocales.contentVersionId, versionIds), eq(contentVersionLocales.locale, CONTENT_LOCALE)))
+        .where(inArray(contentVersionLocales.contentVersionId, versionIds))
     : [];
-  const byVersion = new Map(locales.map((l) => [l.versionId, l]));
+  const locale = await learnerLocale(db(), a.userId);
+  const byVersion = new Map(
+    versionIds.flatMap((id) => {
+      const row = pickLocale(allLocales.filter((l) => l.versionId === id), locale);
+      return row ? [[id, row] as const] : [];
+    }),
+  );
+  const locales = [...byVersion.values()];
   const allAssetIds = locales.flatMap((l) => bodyAssetIds(l.type, l.body as ContentBody));
   const durations = allAssetIds.length
     ? new Map((await db().select({ id: mediaAssets.id, d: mediaAssets.durationSec }).from(mediaAssets).where(inArray(mediaAssets.id, allAssetIds))).map((r) => [r.id, r.d]))
@@ -153,6 +180,7 @@ export async function learnModule(actor: Actor, assignmentModuleId: string): Pro
       id: i.id,
       kind: "content",
       title: loc?.title ?? "—",
+      locale: loc?.locale,
       contentType: loc?.type,
       body,
       assetIds,
@@ -226,11 +254,13 @@ export async function reportVideoProgress(actor: Actor, itemId: string, ranges: 
   return withActor(actor, async (tx) => {
     const { item, am, a } = await ownItem(tx, actor, itemId);
     if (item.kind !== "content" || item.acknowledgedAt) return { ratio: item.progressRatio, reachedEnd: !!item.reachedEndAt };
-    const [loc] = await tx
-      .select({ body: contentVersionLocales.body, type: contents.type })
+    // İzlenen video kişinin dilindeki sürümdür (karar #207)
+    const rows = await tx
+      .select({ locale: contentVersionLocales.locale, body: contentVersionLocales.body, type: contents.type })
       .from(contentVersionLocales)
       .innerJoin(contents, eq(contents.id, item.contentId!))
-      .where(and(eq(contentVersionLocales.contentVersionId, item.contentVersionId!), eq(contentVersionLocales.locale, CONTENT_LOCALE)));
+      .where(eq(contentVersionLocales.contentVersionId, item.contentVersionId!));
+    const loc = pickLocale(rows, await learnerLocale(tx, a.userId));
     if (loc?.type !== "video") throw new ValidationError("invalid_input");
     const [assetId] = bodyAssetIds("video", loc.body as ContentBody);
     const [asset] = assetId ? await tx.select({ d: mediaAssets.durationSec }).from(mediaAssets).where(eq(mediaAssets.id, assetId)) : [];
@@ -320,15 +350,23 @@ export async function answerQuiz(
 
 export async function getRereadTask(actor: Actor, taskId: string) {
   assertUser(actor);
-  const [t] = await db()
-    .select({ task: rereadTasks, title: contentVersionLocales.title, body: contentVersionLocales.body, type: contents.type })
+  const rows = await db()
+    .select({ task: rereadTasks, locale: contentVersionLocales.locale, title: contentVersionLocales.title, body: contentVersionLocales.body, type: contents.type })
     .from(rereadTasks)
     .innerJoin(contents, eq(contents.id, rereadTasks.contentId))
-    .innerJoin(contentVersionLocales, and(eq(contentVersionLocales.contentVersionId, rereadTasks.contentVersionId), eq(contentVersionLocales.locale, CONTENT_LOCALE)))
-    .where(eq(rereadTasks.id, taskId))
-    .limit(1);
-  if (!t || t.task.userId !== actor.userId) throw new NotFoundError("reread_task");
-  return { id: t.task.id, title: t.title, type: t.type, body: t.body as ContentBody, dueDate: t.task.dueDate, acknowledgedAt: t.task.acknowledgedAt };
+    .innerJoin(contentVersionLocales, eq(contentVersionLocales.contentVersionId, rereadTasks.contentVersionId))
+    .where(eq(rereadTasks.id, taskId));
+  const t = rows[0] && rows[0].task.userId === actor.userId ? pickLocale(rows, await learnerLocale(db(), actor.userId)) : undefined;
+  if (!t) throw new NotFoundError("reread_task");
+  return {
+    id: t.task.id,
+    title: t.title,
+    locale: t.locale,
+    type: t.type,
+    body: t.body as ContentBody,
+    dueDate: t.task.dueDate,
+    acknowledgedAt: t.task.acknowledgedAt,
+  };
 }
 
 export async function acknowledgeReread(actor: Actor, taskId: string): Promise<void> {
@@ -350,7 +388,7 @@ export async function learnerCanViewAsset(userId: string, assetId: string): Prom
     .innerJoin(assignments, eq(assignments.id, assignmentModules.assignmentId))
     .innerJoin(contentVersionLocales, eq(contentVersionLocales.contentVersionId, assignmentItems.contentVersionId))
     .innerJoin(contents, eq(contents.id, assignmentItems.contentId))
-    .where(and(eq(assignments.userId, userId), eq(contentVersionLocales.locale, CONTENT_LOCALE)));
+    .where(eq(assignments.userId, userId));
   const tasks = await db()
     .select({ body: contentVersionLocales.body, type: contents.type })
     .from(rereadTasks)

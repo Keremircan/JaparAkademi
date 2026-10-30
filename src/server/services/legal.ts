@@ -16,7 +16,8 @@ import type { RequestMeta } from "@/server/services/auth";
 const PERSONNEL_KIND = "kvkk_personnel" as const;
 
 export const LEGAL_KINDS = {
-  kvkk_personnel: { permission: "legal.manage", locales: ["tr"] },
+  // Personel metni de TR + EN birlikte yayınlanır (karar #207); bağlayıcı metin Türkçedir
+  kvkk_personnel: { permission: "legal.manage", locales: ["tr", "en"] },
   kvkk_visitor: { permission: "legal.manage", locales: ["tr", "en"] },
   visitor_rules: { permission: "legal.visitor_rules", locales: ["tr", "en"] },
 } as const satisfies Record<string, { permission: Permission; locales: readonly string[] }>;
@@ -59,22 +60,46 @@ export async function currentPersonnelText(locale = "tr"): Promise<LegalText | n
   return row ?? null;
 }
 
-/** Kullanıcının onaylaması gereken metin (zaten onayladıysa null). */
-export async function pendingConsent(userId: string): Promise<LegalText | null> {
-  const text = await currentPersonnelText();
-  if (!text) return null;
+/** Güncel sürümün kişinin dilindeki metni; o dilde yoksa Türkçesi (karar #207). */
+async function personnelTextIn(current: LegalText, locale: string): Promise<LegalText> {
+  if (locale === current.locale) return current;
+  const [row] = await db()
+    .select()
+    .from(legalTexts)
+    .where(
+      and(eq(legalTexts.kind, PERSONNEL_KIND), eq(legalTexts.version, current.version), eq(legalTexts.locale, locale), isNotNull(legalTexts.publishedAt)),
+    )
+    .limit(1);
+  return row ?? current;
+}
+
+/**
+ * Kullanıcının onaylaması gereken metin (zaten onayladıysa null). Güncel sürüm Türkçe metnin sürümüdür;
+ * aynı sürümün herhangi bir dildeki metnine verilmiş onay geçerlidir. Metin kişinin dilinde döner.
+ */
+export async function pendingConsent(userId: string, locale = "tr"): Promise<LegalText | null> {
+  const current = await currentPersonnelText();
+  if (!current) return null;
   const [done] = await db()
     .select({ id: consents.id })
     .from(consents)
-    .where(and(eq(consents.userId, userId), eq(consents.legalTextId, text.id)))
+    .innerJoin(legalTexts, eq(legalTexts.id, consents.legalTextId))
+    .where(and(eq(consents.userId, userId), eq(legalTexts.kind, PERSONNEL_KIND), eq(legalTexts.version, current.version)))
     .limit(1);
-  return done ? null : text;
+  return done ? null : personnelTextIn(current, locale);
 }
 
-/** Onayı kaydeder. Yalnızca güncel metin onaylanabilir; tekrar onay sessizce yok sayılır. */
+/**
+ * Onayı kaydeder. Yalnızca güncel sürümün (herhangi bir dildeki) metni onaylanabilir; onay okunan dildeki metne
+ * bağlanır, böylece hangi dilde onaylandığı kayıtlıdır. Tekrar onay sessizce yok sayılır.
+ */
 export async function acceptConsent(actor: UserActor, legalTextId: string, meta: Pick<RequestMeta, "ip" | "userAgent">) {
   const current = await currentPersonnelText();
-  if (!current || current.id !== legalTextId) throw new ValidationError("legal_text_outdated");
+  const [text] = await db().select().from(legalTexts).where(eq(legalTexts.id, legalTextId)).limit(1);
+  if (!current || !text || text.kind !== PERSONNEL_KIND || text.version !== current.version || !text.publishedAt) {
+    throw new ValidationError("legal_text_outdated");
+  }
+  if (!(await pendingConsent(actor.userId))) return;
   await withActor(actor, (tx) =>
     tx
       .insert(consents)

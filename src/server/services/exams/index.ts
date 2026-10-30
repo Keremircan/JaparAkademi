@@ -10,6 +10,7 @@ import {
   examAttemptEvents,
   examAttemptItems,
   examAttempts,
+  personnel,
   questionVersions,
   users,
 } from "@/server/db/schema";
@@ -20,7 +21,7 @@ import { QUEUES } from "@/server/jobs/queues";
 import { isDone } from "@/server/state/assignment";
 import { attemptsLeft, cooldownUntil, drawQuestions, isAnswerCorrect, scoreAttempt, shuffle, topicSummary } from "@/server/state/exam";
 import type { ExamAnswer } from "@/server/db/schema";
-import type { HotspotPoint } from "@/lib/questions";
+import { questionTexts, type HotspotPoint } from "@/lib/questions";
 import { canViewPerson } from "../assignments";
 import { completeModule, refreshAssignment, reopenModule } from "../assignments/engine";
 import { notify, notifyAllAttemptsFailed } from "../notifications";
@@ -202,23 +203,27 @@ export async function startExam(
  *  - matching: sol öğeler soru sırasında, sağ öğeler karışık; cevap her sol için gösterilen sağ indeksi
  *  - hotspot: görsel; cevap dokunulan nokta (oranlı)
  */
-export type AttemptQuestion =
+/** `locale`: sorunun gösterildiği dil (kursiyerin dili, İngilizcesi yoksa Türkçe; karar #207). */
+export type AttemptQuestion = { locale: "tr" | "en" } & (
   | { type: "choice"; itemId: string; stem: string; options: string[]; mediaAssetId: string | null; answer: number | null }
   | { type: "matching"; itemId: string; stem: string; left: string[]; right: string[]; mediaAssetId: string | null; answer: (number | null)[] }
-  | { type: "hotspot"; itemId: string; stem: string; mediaAssetId: string; answer: HotspotPoint | null };
+  | { type: "hotspot"; itemId: string; stem: string; mediaAssetId: string; answer: HotspotPoint | null }
+);
 
 type ItemRow = typeof examAttemptItems.$inferSelect;
 type VersionRow = typeof questionVersions.$inferSelect;
 
-function toAttemptQuestion(item: ItemRow, v: VersionRow): AttemptQuestion {
+function toAttemptQuestion(item: ItemRow, v: VersionRow, locale: string): AttemptQuestion {
+  const text = questionTexts(v, locale);
   if (v.type === "matching") {
-    const pairs = v.pairs ?? [];
+    const pairs = text.pairs ?? [];
     // optionOrder: sağ sütunun gösterim sırası (özgün indeksler)
     const saved = item.answer && "pairs" in item.answer ? item.answer.pairs : [];
     return {
       type: "matching",
+      locale: text.locale,
       itemId: item.id,
-      stem: v.stem,
+      stem: text.stem,
       left: pairs.map((p) => p.left),
       right: item.optionOrder.map((k) => pairs[k]!.right),
       mediaAssetId: v.mediaAssetId,
@@ -231,17 +236,19 @@ function toAttemptQuestion(item: ItemRow, v: VersionRow): AttemptQuestion {
   if (v.type === "hotspot") {
     return {
       type: "hotspot",
+      locale: text.locale,
       itemId: item.id,
-      stem: v.stem,
+      stem: text.stem,
       mediaAssetId: v.mediaAssetId!,
       answer: item.answer && "point" in item.answer ? item.answer.point : null,
     };
   }
   return {
     type: "choice",
+    locale: text.locale,
     itemId: item.id,
-    stem: v.stem,
-    options: item.optionOrder.map((k) => v.options[k]!),
+    stem: text.stem,
+    options: item.optionOrder.map((k) => text.options[k]!),
     mediaAssetId: v.mediaAssetId,
     // Kursiyere gösterilen sıradaki indeks
     answer: item.answerIndex === null ? null : item.optionOrder.indexOf(item.answerIndex),
@@ -300,13 +307,15 @@ export async function getAttempt(actor: Actor, attemptId: string): Promise<Attem
     .orderBy(asc(examAttemptItems.sortOrder));
 
   if (!at.submittedAt) {
+    const [person] = await db().select({ locale: personnel.locale }).from(personnel).where(eq(personnel.userId, a.userId)).limit(1);
+    const locale = person?.locale ?? "tr";
     return {
       state: "open",
       attemptId: at.id,
       title: am.title,
       deadlineAt: at.deadlineAt,
       serverNow: new Date(),
-      questions: items.map(({ item, v }) => toAttemptQuestion(item, v)),
+      questions: items.map(({ item, v }) => toAttemptQuestion(item, v, locale)),
     };
   }
   const rules = await rulesFor(am);

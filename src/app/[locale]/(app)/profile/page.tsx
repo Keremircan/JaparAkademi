@@ -10,6 +10,7 @@ import { toActor } from "@/server/services/auth";
 import { getOwnPlacement } from "@/server/services/people";
 import { pushPublicKey } from "@/server/services/push";
 import { PushToggle } from "@/features/push/components/push-toggle";
+import { LanguageSelect } from "@/features/profile/components/language-select";
 import { Suspense } from "react";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 
@@ -57,6 +58,8 @@ async function Content() {
           </dd>
         </div>
       </dl>
+
+      <LanguageSelect current={user.locale} />
 
       {user.sharedDevice && <p className="mt-4 text-sm text-muted-foreground">{t("profile.sharedDevice")}</p>}
 

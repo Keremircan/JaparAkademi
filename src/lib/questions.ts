@@ -17,3 +17,29 @@ export type HotspotRegion =
   | { shape: "rect"; x: number; y: number; w: number; h: number }
   | { shape: "ellipse"; cx: number; cy: number; rx: number; ry: number };
 export type HotspotPoint = { x: number; y: number };
+
+/** Doğru/yanlış şıklarının İngilizcesi (çeviri girilmese de İngilizce soruda kullanılır). */
+export const TRUE_FALSE_OPTIONS_EN = ["True", "False"];
+
+/**
+ * Sorunun isteğe bağlı İngilizce metni (karar #207). Şık ve çift sayısı Türkçeyle aynıdır, sıralar eşleşir;
+ * doğru cevap ve bölgeler Türkçe sürümdeki gibidir.
+ */
+export type QuestionTranslation = { stem: string; options?: string[]; pairs?: MatchingPair[]; explanation?: string | null };
+export type QuestionTranslations = { en?: QuestionTranslation };
+
+/**
+ * Kursiyerin dilinde soru metinleri (karar #207): İngilizcesi varsa o, yoksa Türkçe. Yalnızca metinler değişir;
+ * şık ve çift sıraları aynı olduğundan doğru cevap ve kayıtlı sıra (optionOrder) etkilenmez.
+ */
+export function questionTexts(
+  v: { type: QuestionType; stem: string; options: string[]; pairs: MatchingPair[] | null; translations: QuestionTranslations | null },
+  locale: string,
+): { locale: "tr" | "en"; stem: string; options: string[]; pairs: MatchingPair[] | null } {
+  const en = locale === "en" ? v.translations?.en : undefined;
+  if (!en?.stem) return { locale: "tr", stem: v.stem, options: v.options, pairs: v.pairs };
+  const options =
+    v.type === "true_false" ? TRUE_FALSE_OPTIONS_EN : en.options && en.options.length === v.options.length ? en.options : v.options;
+  const pairs = v.pairs && en.pairs && en.pairs.length === v.pairs.length ? en.pairs : v.pairs;
+  return { locale: "en", stem: en.stem, options, pairs };
+}

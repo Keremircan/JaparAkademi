@@ -10,7 +10,8 @@ import { withActor } from "@/server/db/with-actor";
 import { ValidationError } from "@/server/errors";
 import { env } from "@/server/env";
 import { emailHtml } from "@/server/state/notifications";
-import messages from "../../../messages/tr.json";
+import { localizedPath, messagesFor } from "@/server/i18n/messages";
+import { toAppLocale } from "@/lib/locale";
 import { getSetting, getSettings } from "./settings";
 
 /**
@@ -37,7 +38,7 @@ export async function requestPasswordReset(input: { sicilNo: string; ip: string 
     if ((byIp?.n ?? 0) >= s["auth.reset_max_per_hour"] * 5) return;
   }
   const [person] = await db()
-    .select({ userId: personnel.userId, email: personnel.email, status: personnel.status })
+    .select({ userId: personnel.userId, email: personnel.email, status: personnel.status, locale: personnel.locale })
     .from(personnel)
     .where(eq(personnel.sicilNo, sicilNo))
     .limit(1);
@@ -50,8 +51,9 @@ export async function requestPasswordReset(input: { sicilNo: string; ip: string 
 
   const token = randomBytes(32).toString("base64url");
   const minutes = s["auth.reset_link_minutes"];
-  const url = new URL(`/reset-password/${token}`, env().APP_URL).toString();
-  const t = createTranslator({ locale: "tr", messages, namespace: "auth.reset.email" });
+  // Kişinin dilinde (karar #207)
+  const url = new URL(localizedPath(`/reset-password/${token}`, person.locale), env().APP_URL).toString();
+  const t = createTranslator({ locale: toAppLocale(person.locale), messages: messagesFor(person.locale), namespace: "auth.reset.email" });
   const subject = t("subject");
   await withActor(actor, async (tx) => {
     await tx.insert(passwordResetTokens).values({ userId: person.userId, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + minutes * 60_000), ip: input.ip });

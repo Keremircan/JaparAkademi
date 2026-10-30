@@ -3,7 +3,7 @@
 import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
 import { getCurrentUser } from "@/server/auth/current-user";
-import { applySetCookies, getRequestMeta } from "@/server/auth/request";
+import { applySetCookies, getRequestMeta, setLocaleCookie } from "@/server/auth/request";
 import { ValidationError } from "@/server/errors";
 import { logger } from "@/server/logger";
 import { changePassword, signIn, signOut } from "@/server/services/auth";
@@ -34,7 +34,9 @@ export async function signInAction(_prev: SignInState, formData: FormData): Prom
   }
 
   await applySetCookies(result.setCookieHeaders);
-  return redirect({ href: result.mustChangePassword ? "/change-password" : "/", locale: await getLocale() });
+  // Hesap dil tercihiyle açılır (karar #207)
+  await setLocaleCookie(result.locale);
+  return redirect({ href: result.mustChangePassword ? "/change-password" : "/", locale: result.locale });
 }
 
 export async function changePasswordAction(

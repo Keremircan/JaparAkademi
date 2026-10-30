@@ -15,7 +15,7 @@ Her satırda sorumlu ve durum doldurulur.
 | 1.2d | İlk üst yönetici sunucuda tanımlandı (`grant-owner.ts`); kurum yöneticisine uygulamadan üst yönetici rolü verildi | BT | ☐ |
 | 1.3 | Alan adları: `APP_DOMAIN`, `FILES_DOMAIN` | BT | ☐ |
 | 1.4 | M365 uygulama kaydı (Graph `Mail.Send`, uygulama izni) ve gönderen posta kutusu | BT | ☐ |
-| 1.5 | KVKK aydınlatma metni (personel) — hukuk onayı | Hukuk / KVKK sorumlusu | ☐ |
+| 1.5 | KVKK aydınlatma metni (personel, TR + EN; bağlayıcı metin Türkçe — karar #212) — hukuk onayı | Hukuk / KVKK sorumlusu | ☐ |
 | 1.6 | Saklama sürelerinin hukuk teyidi (SPEC 12.3, iş ilişkisi bitişi + 15 yıl varsayımı); onaylanan süreler Sistem → Parametreler'e gerekçesiyle girilir | Hukuk | ☐ |
 | 1.7 | Anonimleştirilen personelin sertifikalarındaki ad bilgisinin saklanması (karar #124) — hukuk teyidi | Hukuk / KVKK sorumlusu | ☐ |
 | 1.8 | Ziyaretçi KVKK metni ve ziyaretçi kuralları (TR + EN) — hukuk onayı, Faz 2 öncesi | Hukuk / İSG | ☐ |
@@ -39,6 +39,7 @@ Her satırda sorumlu ve durum doldurulur.
 | 2.13 | Tahliye tatbikatında yoklama listesi telefondan alındı (Faz 2 kabul kriteri); bağlantısız okuma ve PDF yedeği denendi | İSG + güvenlik | ☐ |
 | 2.14 | Süreli modüllerin geçerlilik süreleri (ör. İSG 12 ay) ve `recert.lead_days` İSG ile teyit edildi; ilk gece çalışmasında açılan tekrar eğitimleri "Süresi dolacak" raporuyla kontrol edildi. `notify.email_events` yeni Faz 2 bildirimleriyle güncellendi | İSG + İK + sysadmin | ☐ |
 | 2.15 | Web push: Android Chrome'da ve iPhone'da (ana ekrana eklenmiş uygulama) profilden bildirim açıldı; bir bildirim telefona "Yeni bildiriminiz var" olarak geldi, dokununca ilgili ekran açıldı; çıkış yapınca push durdu | BT + bir kursiyer | ☐ |
+| 2.16 | İngilizce kullanacak personel varsa eğitim odası bilgisayarlarına İngilizce ses paketi kuruldu (sesli okuma, karar #214) | BT | ☐ |
 
 ## 3. Veri ve içerik (SPEC Bölüm 18)
 
@@ -56,6 +57,7 @@ Her satırda sorumlu ve durum doldurulur.
 | 3.10 | Logonun vektörel (SVG) ve şeffaf PNG hâli (şu an JPG'den türetilmiş PNG kullanılıyor) | Kurumsal iletişim | ☐ |
 | 3.11 | Pilot personelin Excel ile aktarımı; Davetler ekranından toplu davet (WhatsApp / basılı) gönderildi ve hesaplar etkinleştirildi (kararlar #185, #198–201) | İK | ☐ |
 | 3.12 | Pratik eğitmen ve hedef tarihler atandı | İK | ☐ |
+| 3.13 | Türkçe bilmeyen personel varsa: dil tercihleri (Profil → Dil) ayarlandı; pozisyonlarının içeriklerine ve sınav sorularına İngilizce metin eklendi (kararlar #207–211) | Bölüm sorumluları + İSG | ☐ |
 
 ## 4. Kabul (SPEC 16.3)
 
@@ -66,6 +68,9 @@ Her satırda sorumlu ve durum doldurulur.
 | 4.3 | Kullanıcı ve yönetici kılavuzu dağıtıldı (`docs/guides/`), ekran görüntüleri gerçek veriyle eklendi | Proje ekibi | ☐ |
 | 4.4 | Denetim kaydı ekranı ve rapor dışa aktarmaları kontrol edildi | İK + sistem yöneticisi | ☐ |
 | 4.5 | Geri dönüş testi (2.7) başarılı | BT | ☐ |
+| 4.6 | **Faz 2 kabulü:** bir hafta boyunca bütün ziyaretçiler sistem üzerinden girdi (ön kayıt / QR → bilgilendirme → kapı) | Güvenlik + İSG | ☐ |
+| 4.7 | **Faz 2 kabulü:** tahliye tatbikatında yoklama listesi telefondan alındı (2.13) | İSG + güvenlik | ☐ |
+| 4.8 | İngilizce kullanan bir personelin uçtan uca akışı: İngilizce etkinleştirme → KVKK (EN) → eğitim → sınav (EN sorular) → bildirim e-postası İngilizce | Proje ekibi | ☐ |
 
 ## 5. Pilot süresince (haftalık)
 
@@ -78,4 +83,4 @@ Her satırda sorumlu ve durum doldurulur.
 
 - Hata takibi (GlitchTip) kurulmadı; pilotta JSON loglar ve e-posta hatası alarmı kullanılıyor (karar #104).
 - Kılavuzlarda ekran görüntüsü yok; uygulama içi "Yardım" bağlantısı Faz 2.
-- Faz 2 kapsamı: web push, zamanlanmış hatırlatmalar, ziyaretçi modülü, süresi dolan eğitimler için otomatik tekrar ataması.
+- Faz 2 kod kapsamı tamamlandı (2.1–2.7b; `docs/surum-notlari.md`). İngilizce yalnızca personel ekranlarında; yönetim ekranları, pozisyon kartı içeriği, ara değerlendirme soruları ve sertifikalar Türkçe (karar #209).

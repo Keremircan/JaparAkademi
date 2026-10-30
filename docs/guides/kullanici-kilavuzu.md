@@ -19,6 +19,8 @@ Uygulama telefonda, tablette ve bilgisayarda çalışır. Telefonunuzun ana ekra
 
 Açılan ekranda adınızı görürsünüz. Kendinize bir şifre belirleyip iki kez yazın (en az 8 karakter, sicil numaranızı içermemeli) ve **Hesabımı etkinleştir**'e dokunun. Davet 72 saat geçerlidir ve bir kez kullanılır; süresi dolduysa ya da kağıdı kaybettiyseniz İK'dan yeni davet isteyin.
 
+**Dil / Language:** giriş ve etkinleştirme ekranının altında **Türkçe / English** seçebilirsiniz. Giriş yaptıktan sonra dili **Profil → Dil / Language**'dan değiştirin; uygulama her girişte seçtiğiniz dille açılır. İngilizce seçtiğinizde eğitim içerikleri ve sınav soruları İngilizcesi varsa İngilizce, yoksa Türkçe gösterilir. Bildirim e-postaları da seçtiğiniz dilde gelir. Sertifikalar Türkçe düzenlenir.
+
 **Şifrenizi unuttuysanız:** girişte **Şifremi unuttum** → sicil numaranızı yazın. E-posta adresiniz kayıtlıysa şifre yenileme bağlantısı gelir (60 dakika geçerlidir, bir kez kullanılır). E-postanız kayıtlı değilse İK size yeni bir davet verir.
 
 ---

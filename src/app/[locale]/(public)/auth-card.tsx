@@ -1,8 +1,22 @@
 import type { ReactNode } from "react";
 import { Logo } from "@/components/brand/logo";
+import { LocaleLinks } from "@/components/brand/locale-links";
 
-/** Giriş ve şifre sayfalarının ortak çerçevesi (telefon öncelikli, ortalanmış kart). */
-export function AuthCard({ title, intro, children }: { title: string; intro?: string; children: ReactNode }) {
+/**
+ * Giriş ve şifre sayfalarının ortak çerçevesi (telefon öncelikli, ortalanmış kart).
+ * `languages`: hesapsız ekranlarda dil seçimi (oturum açık ekranlarda dil profilden değişir).
+ */
+export function AuthCard({
+  title,
+  intro,
+  children,
+  languages = false,
+}: {
+  title: string;
+  intro?: string;
+  children: ReactNode;
+  languages?: boolean;
+}) {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-4 py-10 pt-[max(2.5rem,env(safe-area-inset-top))]">
       <div className="w-full max-w-md">
@@ -14,6 +28,11 @@ export function AuthCard({ title, intro, children }: { title: string; intro?: st
           {intro && <p className="mt-2 text-muted-foreground">{intro}</p>}
           <div className="mt-6">{children}</div>
         </div>
+        {languages && (
+          <div className="mt-4">
+            <LocaleLinks />
+          </div>
+        )}
       </div>
     </main>
   );

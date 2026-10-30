@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Save, Trash2 } from "lucide-react";
+import { Languages, Plus, Save, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useId, useState, useTransition } from "react";
 import { Field } from "@/components/forms/field";
@@ -11,7 +11,15 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { MediaField } from "@/features/content/components/media-upload";
 import type { AssetInfo } from "@/server/services/media";
-import { MATCHING_MAX_PAIRS, MATCHING_MIN_PAIRS, TRUE_FALSE_OPTIONS, type HotspotRegion, type MatchingPair, type QuestionType } from "@/lib/questions";
+import {
+  MATCHING_MAX_PAIRS,
+  MATCHING_MIN_PAIRS,
+  TRUE_FALSE_OPTIONS,
+  TRUE_FALSE_OPTIONS_EN,
+  type HotspotRegion,
+  type MatchingPair,
+  type QuestionType,
+} from "@/lib/questions";
 import { HotspotEditor } from "./hotspot-image";
 import { createQuestionAction, updateQuestionAction } from "../actions";
 
@@ -27,7 +35,11 @@ type Values = {
   difficulty: number;
   isOhsCritical: boolean;
   moduleIds: string[];
+  /** İsteğe bağlı İngilizce metin (karar #207); şık/çift sırası Türkçeyle aynı */
+  en: { stem: string; options: string[]; pairs: MatchingPair[]; explanation: string };
 };
+
+const emptyEn = (): Values["en"] => ({ stem: "", options: [], pairs: [], explanation: "" });
 
 const emptyPairs = (): MatchingPair[] => Array.from({ length: MATCHING_MIN_PAIRS }, () => ({ left: "", right: "" }));
 
@@ -62,6 +74,7 @@ export function QuestionForm(
       difficulty: 1,
       isOhsCritical: false,
       moduleIds: [],
+      en: emptyEn(),
     },
   );
   const [owner, setOwner] = useState(props.mode === "create" && props.owners.units.length === 0 && props.owners.common ? "common" : "");
@@ -80,6 +93,9 @@ export function QuestionForm(
   const pairs = v.pairs ?? emptyPairs();
   const regions = v.regions ?? [];
   const imageReady = image?.status === "ready";
+  const enOptions = options.map((_, i) => v.en.options[i] ?? "");
+  const enPairs = pairs.map((_, i) => v.en.pairs[i] ?? { left: "", right: "" });
+  const setEn = (patch: Partial<Values["en"]>) => set({ en: { ...v.en, ...patch } });
   const needsApproval = isOhs || owner === "common" || v.isOhsCritical;
 
   function save() {
@@ -97,6 +113,12 @@ export function QuestionForm(
       isOhsCritical: v.isOhsCritical,
       mediaAssetId: image?.id ?? null,
       moduleIds: v.moduleIds,
+      en: {
+        stem: v.en.stem,
+        options: v.type === "single_choice" ? enOptions : undefined,
+        pairs: v.type === "matching" ? enPairs : undefined,
+        explanation: v.en.explanation.trim() || null,
+      },
     };
     startTransition(async () => {
       if (props.mode === "create") {
@@ -180,7 +202,7 @@ export function QuestionForm(
                 size="icon"
                 disabled={pairs.length <= MATCHING_MIN_PAIRS}
                 aria-label={t("removePair", { n: i + 1 })}
-                onClick={() => set({ pairs: pairs.filter((_, k) => k !== i) })}
+                onClick={() => set({ pairs: pairs.filter((_, k) => k !== i), en: { ...v.en, pairs: enPairs.filter((_, k) => k !== i) } })}
               >
                 <Trash2 aria-hidden="true" />
               </Button>
@@ -238,7 +260,11 @@ export function QuestionForm(
                     aria-label={t("removeOption", { letter: String.fromCharCode(65 + i) })}
                     onClick={() => {
                       const c = v.correctIndex ?? 0;
-                      set({ options: v.options.filter((_, k) => k !== i), correctIndex: c >= i && c > 0 ? c - 1 : c });
+                      set({
+                        options: v.options.filter((_, k) => k !== i),
+                        correctIndex: c >= i && c > 0 ? c - 1 : c,
+                        en: { ...v.en, options: enOptions.filter((_, k) => k !== i) },
+                      });
                     }}
                   >
                     <Trash2 aria-hidden="true" />
@@ -286,6 +312,75 @@ export function QuestionForm(
       <Field id="explanation" label={t("explanation")} optional={tc("optional")} hint={t("explanationHint")}>
         <Textarea id="explanation" rows={2} maxLength={2000} value={v.explanation} onChange={(e) => set({ explanation: e.target.value })} aria-describedby="explanation-hint" />
       </Field>
+
+      {/* İngilizce metin (karar #207): aynı soru, aynı doğru cevap; boş bırakılırsa soru Türkçe gösterilir */}
+      <details open={!!v.en.stem} className="rounded-xl border p-4">
+        <summary className="flex min-h-12 cursor-pointer items-center gap-2 font-medium">
+          <Languages aria-hidden="true" className="size-5" />
+          {t("en.heading")}
+        </summary>
+        <div lang="en" className="mt-3 flex flex-col gap-4">
+          <p lang="tr" className="text-sm text-muted-foreground">
+            {t("en.hint")}
+          </p>
+          <Field id="en-stem" label={t("en.stem")}>
+            <Textarea id="en-stem" rows={3} maxLength={2000} value={v.en.stem} onChange={(e) => setEn({ stem: e.target.value })} />
+          </Field>
+          {v.type === "single_choice" && (
+            <fieldset className="flex flex-col gap-2">
+              <legend lang="tr" className="mb-1 font-medium">
+                {t("en.options")}
+              </legend>
+              {enOptions.map((o, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="w-6 font-mono text-sm">{String.fromCharCode(65 + i)}</span>
+                  <Input
+                    aria-label={t("en.optionN", { letter: String.fromCharCode(65 + i) })}
+                    placeholder={options[i]}
+                    maxLength={500}
+                    value={o}
+                    onChange={(e) => setEn({ options: enOptions.map((x, k) => (k === i ? e.target.value : x)) })}
+                  />
+                </div>
+              ))}
+            </fieldset>
+          )}
+          {v.type === "true_false" && (
+            <p lang="tr" className="text-sm text-muted-foreground">
+              {t("en.trueFalse", { options: TRUE_FALSE_OPTIONS_EN.join(" / ") })}
+            </p>
+          )}
+          {v.type === "matching" && (
+            <fieldset className="flex flex-col gap-2">
+              <legend lang="tr" className="mb-1 font-medium">
+                {t("en.pairs")}
+              </legend>
+              {enPairs.map((p, i) => (
+                <div key={i} className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+                  <Input
+                    aria-label={t("en.pairLeft", { n: i + 1 })}
+                    placeholder={pairs[i]?.left}
+                    maxLength={200}
+                    value={p.left}
+                    onChange={(e) => setEn({ pairs: enPairs.map((x, k) => (k === i ? { ...x, left: e.target.value } : x)) })}
+                  />
+                  <span aria-hidden="true">↔</span>
+                  <Input
+                    aria-label={t("en.pairRight", { n: i + 1 })}
+                    placeholder={pairs[i]?.right}
+                    maxLength={200}
+                    value={p.right}
+                    onChange={(e) => setEn({ pairs: enPairs.map((x, k) => (k === i ? { ...x, right: e.target.value } : x)) })}
+                  />
+                </div>
+              ))}
+            </fieldset>
+          )}
+          <Field id="en-explanation" label={t("en.explanation")} optional={tc("optional")}>
+            <Textarea id="en-explanation" rows={2} maxLength={2000} value={v.en.explanation} onChange={(e) => setEn({ explanation: e.target.value })} />
+          </Field>
+        </div>
+      </details>
 
       <fieldset className="flex flex-col gap-2 rounded-xl border p-4">
         <legend className="font-medium">{t("modules")}</legend>

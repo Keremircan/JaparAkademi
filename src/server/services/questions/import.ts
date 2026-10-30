@@ -94,6 +94,8 @@ export async function commitQuestionImport(actor: Actor, buffer: Buffer, target:
           stem: v.stem,
           options: v.options,
           correctIndex: v.correctIndex,
+          pairs: v.pairs ?? null,
+          translations: v.en ? { en: v.en } : null,
           explanation: v.explanation,
           topic: v.topic,
           difficulty: v.difficulty,

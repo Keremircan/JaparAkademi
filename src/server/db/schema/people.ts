@@ -44,6 +44,8 @@ export const personnel = pgTable(
     passwordChangedAt: tstz("password_changed_at"),
     /** Davet etkinleştirildi ya da ilk şifre değiştirildi (karar #187). Boşsa hesap davet bekliyor. */
     activatedAt: tstz("activated_at"),
+    /** Arayüz dili tercihi (karar #207): girişte bu dille açılır. */
+    locale: text().notNull().default("tr"),
     /** Saklama süresi dolunca anonimleştirildi (SPEC 12.3, iş paketi 2.1). */
     anonymizedAt: tstz("anonymized_at"),
     createdAt: createdAt(),
@@ -52,6 +54,7 @@ export const personnel = pgTable(
   (t) => [
     index("personnel_position_idx").on(t.positionId),
     index("personnel_status_idx").on(t.status),
+    check("personnel_locale_check", sql`${t.locale} in ('tr','en')`),
     check("personnel_terminated_end_date_check", sql`${t.status} <> 'terminated' or ${t.endDate} is not null`),
   ],
 );

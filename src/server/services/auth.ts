@@ -10,6 +10,7 @@ import { withActor } from "@/server/db/with-actor";
 import { ValidationError } from "@/server/errors";
 import { logger } from "@/server/logger";
 import { getSetting, getSettings } from "@/server/services/settings";
+import { toAppLocale, type AppLocale } from "@/lib/locale";
 
 const authActor = systemActor("auth");
 /** last_seen_at en fazla bu sıklıkta güncellenir (gereksiz yazmayı önler). */
@@ -18,7 +19,7 @@ const LAST_SEEN_THROTTLE_MS = 60_000;
 export type RequestMeta = { headers: Headers; ip: string | null; userAgent: string | null };
 
 export type SignInResult =
-  | { ok: true; setCookieHeaders: Headers; mustChangePassword: boolean }
+  | { ok: true; setCookieHeaders: Headers; mustChangePassword: boolean; locale: AppLocale }
   | { ok: false; reason: "invalid_credentials" | "locked" | "inactive" | "rate_limited"; lockedUntil?: Date };
 
 type AttemptResult = (typeof loginAttempts.$inferInsert)["result"];
@@ -103,6 +104,7 @@ export async function signIn(
       lockedUntil: personnel.lockedUntil,
       failedLoginCount: personnel.failedLoginCount,
       mustChangePassword: personnel.mustChangePassword,
+      locale: personnel.locale,
     })
     .from(personnel)
     .innerJoin(users, eq(users.id, personnel.userId))
@@ -160,7 +162,12 @@ export async function signIn(
   });
   await recordAttempt(loginInput, "success", meta, person.userId);
 
-  return { ok: true, setCookieHeaders: signInResult.headers, mustChangePassword: person.mustChangePassword };
+  return {
+    ok: true,
+    setCookieHeaders: signInResult.headers,
+    mustChangePassword: person.mustChangePassword,
+    locale: toAppLocale(person.locale),
+  };
 }
 
 function callSignIn(username: string, password: string, rememberMe: boolean, headers: Headers) {
@@ -182,6 +189,8 @@ export type SessionUser = {
   baseRoles: Role[];
   mustChangePassword: boolean;
   sharedDevice: boolean;
+  /** Arayüz dili tercihi (karar #207). */
+  locale: AppLocale;
 };
 
 /**
@@ -199,6 +208,7 @@ export async function loadSessionUser(sessionId: string): Promise<SessionUser | 
       fullName: personnel.fullName,
       status: personnel.status,
       mustChangePassword: personnel.mustChangePassword,
+      locale: personnel.locale,
     })
     .from(sessions)
     .innerJoin(personnel, eq(personnel.userId, sessions.userId))
@@ -237,6 +247,7 @@ export async function loadSessionUser(sessionId: string): Promise<SessionUser | 
     baseRoles,
     mustChangePassword: row.mustChangePassword,
     sharedDevice: row.sharedDevice,
+    locale: toAppLocale(row.locale),
   };
 }
 
@@ -294,6 +305,11 @@ export async function changePassword(
 export async function signOut(meta: RequestMeta): Promise<{ setCookieHeaders: Headers }> {
   const result = await getAuth().api.signOut({ headers: meta.headers, returnHeaders: true });
   return { setCookieHeaders: result.headers };
+}
+
+/** Kişinin arayüz dili tercihini kaydeder (karar #207). Yalnızca kendi tercihi. */
+export async function setPreferredLocale(user: SessionUser, locale: AppLocale): Promise<void> {
+  await withActor(toActor(user), (tx) => tx.update(personnel).set({ locale }).where(eq(personnel.userId, user.userId)));
 }
 
 export function toActor(user: SessionUser): UserActor {

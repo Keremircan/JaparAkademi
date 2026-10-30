@@ -56,7 +56,7 @@ async function Content({
     getTranslations("content"),
     getTranslations("content.library"),
     getFormatter(),
-    assetsInfo(bodyAssetIds(version.type, version.body)),
+    assetsInfo([...bodyAssetIds(version.type, version.body), ...(version.en ? bodyAssetIds(version.type, version.en.body) : [])]),
   ]);
   const step = pendingStep(latest.status);
   const dt = (d: Date) => format.dateTime(d, { dateStyle: "medium", timeStyle: "short" });
@@ -146,6 +146,21 @@ async function Content({
         </div>
         <ContentRenderer type={version.type} title={version.title} body={version.body} assets={assets} />
       </article>
+
+      {/* İngilizce sürüm (karar #207): aynı sürümle birlikte onaylanır */}
+      {version.en && (
+        <article aria-labelledby="preview-en-heading" lang="en" className="mb-8 flex flex-col gap-4 rounded-2xl border p-5">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 id="preview-en-heading" className="flex-1 text-xl font-semibold">
+              {version.en.title}
+            </h2>
+            <span lang="tr" className="rounded-full bg-muted px-3 py-1 text-xs font-medium">
+              {t("englishVersion")}
+            </span>
+          </div>
+          <ContentRenderer type={version.type} title={version.en.title} body={version.en.body} assets={assets} />
+        </article>
+      )}
 
       {content.can.approve && step && (
         <div className="mb-8">

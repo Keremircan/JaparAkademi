@@ -37,10 +37,13 @@ import { notifyApprovalPending, resolveNotifications } from "../notifications";
 
 /**
  * İçerik kütüphanesi (SPEC 4.2, FG-2.1–2.5).
- * Faz 1'de içerik yalnızca Türkçe düzenlenir ("tr" dil satırı); İngilizce Faz 2'dedir.
+ * Türkçe ("tr" dil satırı) zorunludur; İngilizce ("en") isteğe bağlıdır ve aynı sürümle onaylanır (karar #207).
+ * Kursiyer kendi dilini görür; İngilizcesi olmayan sürüm Türkçe gösterilir.
  */
 
 export const CONTENT_LOCALE = "tr";
+/** İsteğe bağlı ikinci dil. */
+export const CONTENT_EXTRA_LOCALE = "en";
 const PAGE_SIZE = 30;
 
 function assertLibrary(actor: Actor) {
@@ -410,6 +413,8 @@ export type VersionView = {
   type: ContentType;
   title: string;
   body: ContentBody;
+  /** İngilizce başlık ve gövde (yoksa null). */
+  en: { title: string; body: ContentBody } | null;
 };
 
 /** Bir sürümün başlık ve gövdesi (görüntüleyici ve düzenleyici için). */
@@ -421,12 +426,19 @@ export async function getVersion(actor: Actor, versionId: string): Promise<Versi
     .limit(1);
   if (!v) throw new NotFoundError("content_version");
   const { content } = await loadContent(actor, v.contentId);
-  const [loc] = await db()
-    .select({ title: contentVersionLocales.title, body: contentVersionLocales.body })
+  const rows = await db()
+    .select({ locale: contentVersionLocales.locale, title: contentVersionLocales.title, body: contentVersionLocales.body })
     .from(contentVersionLocales)
-    .where(and(eq(contentVersionLocales.contentVersionId, v.id), eq(contentVersionLocales.locale, CONTENT_LOCALE)))
-    .limit(1);
-  return { ...v, type: content.type, title: loc?.title ?? content.title, body: (loc?.body ?? {}) as ContentBody };
+    .where(eq(contentVersionLocales.contentVersionId, v.id));
+  const loc = rows.find((r) => r.locale === CONTENT_LOCALE);
+  const en = rows.find((r) => r.locale === CONTENT_EXTRA_LOCALE);
+  return {
+    ...v,
+    type: content.type,
+    title: loc?.title ?? content.title,
+    body: (loc?.body ?? {}) as ContentBody,
+    en: en ? { title: en.title, body: en.body as ContentBody } : null,
+  };
 }
 
 /** Düzenlenebilir (son, taslak/reddedilmiş) sürüm; yoksa hata. */
@@ -496,13 +508,25 @@ export async function createContent(actor: Actor, input: CreateContentInput): Pr
   });
 }
 
-export type SaveDraftInput = { title: string; body: unknown; tagIds: string[] };
+export type SaveDraftInput = {
+  title: string;
+  body: unknown;
+  tagIds: string[];
+  /** İngilizce: nesne = kaydet, null = kaldır, verilmezse dokunulmaz (karar #207). */
+  en?: { title: string; body: unknown } | null;
+};
+
+function cleanTitle(raw: string): string {
+  const title = raw.trim().replace(/\s+/g, " ");
+  if (title.length < 3 || title.length > 200) throw new ValidationError("invalid_title");
+  return title;
+}
 
 /** Taslağı kaydeder (eksik gövdeye izin verilir). Reddedilmiş sürüm kaydedilince yeniden taslak olur. */
 export async function saveDraft(actor: Actor, contentId: string, input: SaveDraftInput): Promise<void> {
   assertUser(actor);
-  const title = input.title.trim().replace(/\s+/g, " ");
-  if (title.length < 3 || title.length > 200) throw new ValidationError("invalid_title");
+  const title = cleanTitle(input.title);
+  const enTitle = input.en ? cleanTitle(input.en.title) : null;
 
   await withActor(actor, async (tx) => {
     const { content, access } = await loadContent(actor, contentId, tx);
@@ -519,7 +543,25 @@ export async function saveDraft(actor: Actor, contentId: string, input: SaveDraf
     const parsed = parseBody(content.type, input.body, "draft");
     if (!parsed.success) throw new ValidationError("body_invalid", parsed.error.issues.slice(0, 5));
     const body = parsed.data as ContentBody;
-    const assetIds = bodyAssetIds(content.type, body);
+    let enBody: ContentBody | null = null;
+    if (input.en) {
+      const parsedEn = parseBody(content.type, input.en.body, "draft");
+      if (!parsedEn.success) throw new ValidationError("body_invalid", parsedEn.error.issues.slice(0, 5));
+      enBody = parsedEn.data as ContentBody;
+    }
+    // Sürümün medyası iki dilin birleşimidir; İngilizce satır değişmiyorsa mevcut gövdesi sayılır
+    let keptEn: ContentBody | null = null;
+    if (input.en === undefined) {
+      const [row] = await tx
+        .select({ body: contentVersionLocales.body })
+        .from(contentVersionLocales)
+        .where(and(eq(contentVersionLocales.contentVersionId, latest.id), eq(contentVersionLocales.locale, CONTENT_EXTRA_LOCALE)))
+        .limit(1);
+      keptEn = (row?.body as ContentBody | undefined) ?? null;
+    }
+    const assetIds = [
+      ...new Set([...bodyAssetIds(content.type, body), ...bodyAssetIds(content.type, enBody ?? keptEn ?? {})]),
+    ];
     await assertAssetsUsable(tx, actor.userId, contentId, content.type, assetIds);
 
     const tagIds = [...new Set(input.tagIds)].slice(0, 30);
@@ -532,6 +574,19 @@ export async function saveDraft(actor: Actor, contentId: string, input: SaveDraf
       .update(contentVersionLocales)
       .set({ title, body })
       .where(and(eq(contentVersionLocales.contentVersionId, latest.id), eq(contentVersionLocales.locale, CONTENT_LOCALE)));
+    if (input.en === null) {
+      await tx
+        .delete(contentVersionLocales)
+        .where(and(eq(contentVersionLocales.contentVersionId, latest.id), eq(contentVersionLocales.locale, CONTENT_EXTRA_LOCALE)));
+    } else if (input.en && enTitle && enBody) {
+      await tx
+        .insert(contentVersionLocales)
+        .values({ contentVersionId: latest.id, locale: CONTENT_EXTRA_LOCALE, title: enTitle, body: enBody })
+        .onConflictDoUpdate({
+          target: [contentVersionLocales.contentVersionId, contentVersionLocales.locale],
+          set: { title: enTitle, body: enBody },
+        });
+    }
     await tx.delete(contentVersionAssets).where(eq(contentVersionAssets.contentVersionId, latest.id));
     if (assetIds.length) await tx.insert(contentVersionAssets).values(assetIds.map((assetId) => ({ contentVersionId: latest.id, assetId })));
     if (latest.status === "rejected") await tx.update(contentVersions).set({ status: "draft" }).where(eq(contentVersions.id, latest.id));
@@ -598,13 +653,15 @@ export async function submitForApproval(actor: Actor, contentId: string, input: 
     if (latest.version > 1 && (!changeNote || changeNote.length < 3)) throw new ValidationError("change_note_required");
     if (changeNote && changeNote.length > 2000) throw new ValidationError("change_note_too_long");
 
-    const [loc] = await tx
-      .select({ body: contentVersionLocales.body })
+    const locs = await tx
+      .select({ locale: contentVersionLocales.locale, body: contentVersionLocales.body })
       .from(contentVersionLocales)
-      .where(and(eq(contentVersionLocales.contentVersionId, latest.id), eq(contentVersionLocales.locale, CONTENT_LOCALE)))
-      .limit(1);
-    const parsed = parseBody(content.type, loc?.body, "strict");
+      .where(eq(contentVersionLocales.contentVersionId, latest.id));
+    const parsed = parseBody(content.type, locs.find((l) => l.locale === CONTENT_LOCALE)?.body, "strict");
     if (!parsed.success) throw new ValidationError("body_incomplete", parsed.error.issues.slice(0, 5));
+    // İngilizce varsa o da eksiksiz olmalı; iki dil aynı sürümle onaylanır (karar #207)
+    const enLoc = locs.find((l) => l.locale === CONTENT_EXTRA_LOCALE);
+    if (enLoc && !parseBody(content.type, enLoc.body, "strict").success) throw new ValidationError("body_incomplete_en");
 
     const assetRows = await tx
       .select({ status: mediaAssets.status })
