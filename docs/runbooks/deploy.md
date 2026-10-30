@@ -82,7 +82,21 @@ Worker loglarında `PUSH_TRANSPORT=log` uyarısı görünüyorsa push kapalıdı
 
 ## 4. Güncelleme (yeni sürüm)
 
-`main`'e birleştirilen her değişiklik CI'da test edilir; geçerse imajlar `ghcr.io/<sahip>/japar-akademi-{app,worker}:latest` ve `:<commit>` etiketleriyle gönderilir.
+Her değişiklik PR'da test edilir (lint, tip, birim, entegrasyon, build, e2e; imaj derlemesi aynı anda). `main`'e birleştirince testler tekrar çalışmaz; yalnızca imajlar derlenip `ghcr.io/<sahip>/japar-akademi-{app,worker}:latest` ve `:<commit>` etiketleriyle gönderilir (~5 dk). Her gece 04:00'te (İstanbul) `main`'de bütün testler çalışır; elle başlatmak için GitHub → Actions → CI → **Run workflow**.
+
+### GitHub ayarları (bir kez)
+
+Testlerin main'de tekrarlanmaması, PR'ın güncel main üzerinde test edilmesine dayanır. Bunu GitHub zorunlu kılar:
+
+1. **Settings → General → Pull Requests:** "Allow auto-merge" işaretli.
+2. **Settings → Branches → Add branch ruleset** (ya da *branch protection rule*), hedef `main`:
+   - "Require a pull request before merging" (onay sayısı 0 olabilir)
+   - "Require status checks to pass" → **Lint, tip, test, build, e2e** ve **Docker imajları** seçili
+   - "Require branches to be up to date before merging" işaretli
+
+Bundan sonra PR'ı açınca **Enable auto-merge** → **Confirm** demeniz yeterli; testler geçince GitHub kendisi birleştirir, sonra imajlar gönderilir. PR'ın dalı main'in gerisindeyse GitHub "Update branch" ister; düğmeye basınca testler güncel hâliyle yeniden çalışır.
+
+Küçük işler aynı dalda ayrı commit'ler olarak biriktirilip tek PR ile gönderilebilir; büyük iş paketleri ayrı PR olur.
 
 ```bash
 cd /opt/japar-akademi && git pull     # compose/Caddy/yedek dosyaları için
