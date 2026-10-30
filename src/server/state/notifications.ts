@@ -24,6 +24,7 @@ export const NOTIFICATION_KINDS = [
   "weekly_summary",
   "recert_deferred",
   "recert_trainer_needed",
+  "competency_expiring",
   // İSG uzmanı (Faz 2)
   "blacklist_added",
   "blacklist_denied",

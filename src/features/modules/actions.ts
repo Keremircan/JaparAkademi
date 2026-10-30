@@ -76,7 +76,13 @@ export async function setModuleContentsAction(moduleId: string, contentIds: unkn
 }
 
 const taskSchema = z.array(
-  z.object({ id: uuid.optional(), title: z.string().max(200), description: z.string().max(2000).nullable(), isCritical: z.boolean() }),
+  z.object({
+    id: uuid.optional(),
+    title: z.string().max(200),
+    description: z.string().max(2000).nullable(),
+    isCritical: z.boolean(),
+    competencyId: uuid.nullable().optional(),
+  }),
 ).max(100);
 
 export async function saveTasksAction(moduleId: string, tasks: unknown): Promise<ActionResult> {

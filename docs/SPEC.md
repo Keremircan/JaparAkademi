@@ -533,7 +533,7 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `modules`: id, kind (`theory`|`practice`|`theory_exam`|`practice_exam`), title, description, duration_min, is_ohs, remote_allowed, validity_months, owner_org_unit_id (null = ortak), common_target, common_sort_order, card_position_id (doluysa pozisyonun "Pozisyon kartı" modülü), archived_at — sürümsüz (karar #45)
 - `module_contents`: module_id, content_id, sort_order (yayındaki sürüm atama anında sabitlenir)
 - `quiz_questions`: id, module_id, sort_order, type (`single_choice`|`true_false`), stem, options, correct_index, explanation, archived_at — ara değerlendirme soruları modüle bağlıdır (karar #53); listeden çıkan soru arşivlenir
-- `practice_tasks`: id, module_id, title, description, is_critical, sort_order, competency_id
+- `practice_tasks`: id, module_id, title, description, is_critical, sort_order, competency_id (isteğe bağlı; karar #219)
 - `training_plans`: id, card_version_id (1:1, kart sürümüyle birlikte sürümlenir), overrides (jsonb; plan bazında parametreler, ör. `videoWatchRatio`)
 - `plan_modules`: plan_id, module_id, sort_order, is_required, prerequisite_module_ids (yalnızca plandaki önceki modüller), settings (jsonb; sınav modülünde soru sayısı, süre, geçme notu, hak, bekleme, gözetmen — boş alan = genel parametre). Ayrı `exam_configs` tablosu yerine sınav ayarları plan modülünde tutulur; böylece ayar değişikliği de kart onayından geçer. Konu/pozisyon filtresi 1.5'te eklenir.
 - Yayınlanmış kartın planı ve plan modülleri trigger ile değiştirilemez. Ortak modüller plana yazılmaz; atama anında yaka tipine göre eklenir (karar #46).
@@ -568,8 +568,8 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `readiness_decisions`: assignment_id, decision (`approved`|`rejected`), comment, reopen_module_ids (atama modülleri), decided_by, decided_at — **değiştirilemez**
 - `decision_records` (tüm haklar bitince): assignment_id, decision (`extra_attempt`|`extra_training`|`end_process`), reason, exam_module_id, extra_attempts, reopen_module_ids, decided_by, decided_at — **değiştirilemez**; ek haklar ayrıca `attempt_grants`'a yazılır
 - `certificates`: id, serial_no (belge no `JA-YYYY-000123`), user_id, kind (`position_competency`|`attendance`), assignment_id, assignment_module_id (katılım belgesi), position_id, title, snapshot (jsonb: ad, sicil, pozisyon, birim, kapsam, modüller, puanlar, onaylayan, imza yetkilileri — düzenlendiği anda dondurulur), issued_at, expires_at (boşsa süresiz), verify_token (128 bit), pdf_asset_id, approved_by, issued_by (boşsa sistem), status (`valid`|`revoked`; "süresi dolmuş" tarihten hesaplanır), revoked_reason, revoked_by, revoked_at (kilit) — yalnızca PDF bağlantısı (bir kez) ve iptal alanları yazılabilir; silinemez
-- `competencies`: id, name, kind (`machine`|`task`), org_unit_id, archived_at (Faz 1'de yalnızca tablo; ekran Faz 3)
-- `competency_grants`: user_id, competency_id, certificate_id, valid_until — **değiştirilemez**
+- `competencies`: id, name, kind (`machine`|`task`), description, org_unit_id (boşsa ortak), validity_months (boşsa süresiz), created_by, archived_at (karar #218)
+- `competency_grants`: id, user_id, competency_id, certificate_id (eğitimle verildiyse), valid_until, source (`training`|`manual`), reason (elle verilişte zorunlu), granted_by, revoked_at (kilit), revoked_by, revoke_reason — **değiştirilemez**; yalnızca bir kez geri alınabilir (karar #219)
 
 **Ziyaretçi (Faz 2)**
 - Ziyaretçi tipleri tablo değil, `visitor.types` parametresidir (karar #126): tip başına açık mı, soru sayısı, geçme notu, kart başına en az süre, geçerlilik (0 = ziyaret günü)
@@ -774,6 +774,11 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | **2.6c Toplu davet** | Hesap açma ile davetin ayrılması, Davetler ekranı (seçim, süzgeç), akıllı/tek kanal, WhatsApp gönderim listesi (geri açılabilir), toplu basılı PDF, `invitation_batches` (kararlar #198–201) |
 | **2.7a Yeni soru tipleri** | Eşleştirme ve görselde işaretleme soruları: soru bankası editörü (bölge çizimi), Excel aktarımı (eşleştirme), sınav ekranı, puanlama, raporlar (kararlar #202–206) |
 | **2.7b İngilizce ve Faz 2 kapanışı** | Dil tercihi, personel ekranlarının İngilizce metinleri, içerik sürümünde TR/EN, sınav sorusunda isteğe bağlı EN (Excel dahil), personel KVKK metni TR + EN, bildirimlerin alıcının dilinde gitmesi (kararlar #207–214); Faz 2 sürüm notları ve kılavuzlar |
+
+### 16.5 Faz 3 İş Paketleri (sırayla, bir seferde bir paket)
+| Paket | Kapsam |
+|---|---|
+| **3.1 Yetkinlik matrisi** | Yetkinlik tanımları (`/manage/competencies`), pratik görev ↔ yetkinlik bağı, işe başlama onayında otomatik verme, bölüm sorumlusunun gerekçeyle elle verme/geri alma, matris (`/reports/competency`, Excel), süre uyarısı, profilde "Yetkinliklerim" (kararlar #218–221) |
 
 "Tüm bölümlerin pozisyon kartları" içerik girişidir; kod paketi değildir (pilot kontrol listesinde izlenir).
 
@@ -1006,6 +1011,10 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 215 | Giriş kayıtları ekranı | `/admin/logins` (yetki `logins.view`: sistem yöneticisi; üst yönetici her yetkiyle). Salt okunur; `login_attempts` değiştirilemez. Süzgeç: sicil no / ad soyad / IP, sonuç (ya da "başarısız olanların hepsi"), tarih aralığı; sonuçlara göre sayılar. Bilinmeyen kullanıcı denemesinde yazılan metnin yalnızca ilk 3 karakteri gösterilir (kişi şifresini yazmış olabilir); bu metinde arama yapılmaz. Excel indirme (en fazla 10.000 satır) `report_exports`'a yazılır. İK bu ekranı görmez |
 | 216 | Giriş kayıtlarının saklanması | `retention.login_attempt_days` (varsayılan 365 gün, en az 30). Gece `retention.run` süresi geçenleri `app_purge_login_attempts` ile siler; veritabanı son 30 günün kaydını hiçbir koşulda silmez |
 | 217 | Bütün arayüz İngilizce | Karar #207/#209'un yerine: İngilizce seçen kişi bütün ekranları (yönetim, İK, güvenlik, eğitmen, raporlar, parametreler, QR doğrulama) İngilizce görür; her yeni arayüz metninin İngilizcesi zorunludur (birim testi denetler). Rapor, giriş kaydı, KVKK kişi verisi ve tahliye Excel/PDF çıktıları indiren kişinin dilindedir. Türkçe kalanlar: sertifika ve katılım belgesi PDF'i (resmî belge) ile davet edilen kişiye giden metinler (davet e-postası/WhatsApp mesajı, etkinleştirme kağıdı). Kullanıcıların girdiği veriler (birim, pozisyon, modül adları, pozisyon kartı, ara değerlendirme soruları, İngilizcesi eklenmemiş içerik) girildiği gibi gösterilir; Excel şablonlarının sütun adları ve değerleri Türkçedir |
+| 218 | Yetkinlik tanımı | Ayrı liste: ad, tür (makine/iş), açıklama, birim, geçerlilik (ay; boşsa süresiz). Bölüm sorumlusu kapsamındaki birimler için, İSG uzmanı her birim ve ortak (birimsiz, bütün birimlerde) için tanımlar. Birim sonradan değişmez; geçerlilik değişikliği yalnızca sonraki verilişlere yansır. Silinmez, arşivlenir (arşivde yeni verme ve görev bağı yok; eski kayıtlar matriste kalır) |
+| 219 | Yetkinliğin verilmesi | **Eğitimle:** pratik görev bir yetkinliğe bağlanabilir (modülün birimi, üst departmanı, alt bölümleri ya da ortak). İşe başlama onayında (pozisyon sertifikasıyla aynı transaction'da) son seviyesi "tek başına" olan görevlerin arşivlenmemiş yetkinlikleri verilir; bitiş = onay + geçerlilik. **Elle:** bölüm sorumlusu kapsamındaki aktif personele en az 10 karakter gerekçeyle verir (mevcut personel için); kimse kendine veremez, `owner` dahil (owner işlemi `owner_actions`'a yazılır). Kayıt değiştirilemez; gerekçeyle bir kez geri alınır. Kişinin durumu geri alınmamış en son kaydıdır (yeniden verme süreyi yeniler). Anonimleştirmede gerekçe metinleri silinir |
+| 220 | Yetkinlik süresi | Matriste yeşil geçerli, sarı `competency.alert_days` (varsayılan 30) içinde dolacak, kırmızı dolmuş. Bitişe o kadar gün kala kişinin bölüm sorumlularına bir kez `competency_expiring` bildirimi (günlük `training.daily`). Sistem yetkinliği kendiliğinden kaldırmaz; karar insana bırakılır |
+| 221 | Matris ve görünürlük | `/reports/competency`: birim seçilir (alt bölümleri dahil aktif personel × birimin, üst departmanının, alt bölümlerinin ve ortak yetkinlikler); hücre ayrıntısında geçmiş ve elle verme/geri alma; Excel (indirenin dilinde, `report_exports`). Görür: bölüm sorumlusu (kapsam), İSG uzmanı, İK, sistem yöneticisi, owner. Personel profilinde kendi yetkinliklerini ve bitiş tarihini görür |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

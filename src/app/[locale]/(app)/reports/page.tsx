@@ -1,4 +1,4 @@
-import { BarChart3, Building2, CalendarClock, ClipboardList, FileClock, HardHat, History, Timer, UsersRound } from "lucide-react";
+import { BarChart3, Building2, CalendarClock, ClipboardList, FileClock, Grid3x3, HardHat, History, Timer, UsersRound } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -31,13 +31,19 @@ async function Content() {
   const user = await getSectionUser("reports");
   if (!user) return <NotFoundView />;
   const actor = toActor(user);
-  const [t, ts, ta] = await Promise.all([getTranslations("reports"), getTranslations("sections.reports"), getTranslations("admin.cards.audit")]);
+  const [t, ts, ta, tm] = await Promise.all([
+    getTranslations("reports"),
+    getTranslations("sections.reports"),
+    getTranslations("admin.cards.audit"),
+    getTranslations("competencies.matrix"),
+  ]);
   const kinds = REPORT_KINDS.filter((k) => canViewReport(actor, k));
   const audit = can(actor, "audit.view");
+  const matrix = can(actor, "competencies.view");
   return (
     <section className="max-w-4xl">
       <PageHeader title={ts("title")} description={t("intro")} />
-      {kinds.length === 0 && !audit ? (
+      {kinds.length === 0 && !audit && !matrix ? (
         <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("none")}</p>
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2">
@@ -55,6 +61,17 @@ async function Content() {
               </li>
             );
           })}
+          {matrix && (
+            <li>
+              <Link href="/reports/competency" className="flex min-h-24 items-start gap-4 rounded-2xl border bg-card p-5 hover:bg-muted">
+                <Grid3x3 aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-muted-foreground" />
+                <span>
+                  <span className="block text-lg font-medium">{tm("title")}</span>
+                  <span className="mt-1 block text-sm text-muted-foreground">{tm("cardDescription")}</span>
+                </span>
+              </Link>
+            </li>
+          )}
           {audit && (
             <li>
               <Link href="/admin/audit" className="flex min-h-24 items-start gap-4 rounded-2xl border bg-card p-5 hover:bg-muted">

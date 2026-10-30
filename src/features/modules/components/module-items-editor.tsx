@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import { FormError } from "@/components/forms/form-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { saveTasksAction, setModuleContentsAction } from "../actions";
 import { ContentPicker, type PickedContent } from "./content-picker";
@@ -97,14 +98,23 @@ export function ModuleContentsEditor({ moduleId, initial }: { moduleId: string; 
   );
 }
 
-type Task = { key: string; id?: string; title: string; description: string; isCritical: boolean };
+type Task = { key: string; id?: string; title: string; description: string; isCritical: boolean; competencyId: string };
 let seq = 0;
 
 /** Pratik modülün görev listesi (FG-5.1). */
-export function ModuleTasksEditor({ moduleId, initial }: { moduleId: string; initial: { id: string; title: string; description: string | null; isCritical: boolean }[] }) {
+export function ModuleTasksEditor({
+  moduleId,
+  initial,
+  competencies,
+}: {
+  moduleId: string;
+  initial: { id: string; title: string; description: string | null; isCritical: boolean; competencyId: string | null }[];
+  /** Görevin bağlanabileceği yetkinlikler (karar #219) */
+  competencies: { id: string; name: string }[];
+}) {
   const t = useTranslations("modules.items");
   const tc = useTranslations("common");
-  const [tasks, setTasks] = useState<Task[]>(() => initial.map((x) => ({ ...x, key: x.id, description: x.description ?? "" })));
+  const [tasks, setTasks] = useState<Task[]>(() => initial.map((x) => ({ ...x, key: x.id, description: x.description ?? "", competencyId: x.competencyId ?? "" })));
   const s = useSave();
   const update = (next: Task[]) => {
     setTasks(next);
@@ -139,10 +149,24 @@ export function ModuleTasksEditor({ moduleId, initial }: { moduleId: string; ini
               <input type="checkbox" checked={task.isCritical} onChange={(e) => change(i, { isCritical: e.target.checked })} className="size-5 accent-primary" />
               <span>{t("taskCritical")}</span>
             </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-sm font-medium">
+                {t("taskCompetency")} <span className="font-normal text-muted-foreground">({tc("optional")})</span>
+              </span>
+              <NativeSelect value={task.competencyId} onChange={(e) => change(i, { competencyId: e.target.value })}>
+                <option value="">{t("noCompetency")}</option>
+                {competencies.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </NativeSelect>
+              <span className="text-sm text-muted-foreground">{t("taskCompetencyHint")}</span>
+            </label>
           </li>
         ))}
       </ol>
-      <Button type="button" variant="outline" className="self-start" onClick={() => update([...tasks, { key: `n${++seq}`, title: "", description: "", isCritical: false }])}>
+      <Button type="button" variant="outline" className="self-start" onClick={() => update([...tasks, { key: `n${++seq}`, title: "", description: "", isCritical: false, competencyId: "" }])}>
         <Plus aria-hidden="true" />
         {t("addTask")}
       </Button>
@@ -152,7 +176,13 @@ export function ModuleTasksEditor({ moduleId, initial }: { moduleId: string; ini
           type="button"
           disabled={s.pending}
           onClick={() =>
-            s.run(() => saveTasksAction(moduleId, tasks.map((x) => ({ id: x.id, title: x.title, description: x.description.trim() || null, isCritical: x.isCritical }))))
+            s.run(() => saveTasksAction(moduleId, tasks.map((x) => ({
+                  id: x.id,
+                  title: x.title,
+                  description: x.description.trim() || null,
+                  isCritical: x.isCritical,
+                  competencyId: x.competencyId || null,
+                })),))
           }
         >
           <Save aria-hidden="true" />

@@ -70,6 +70,12 @@ Yalnızca kapsamınızdaki birimlerin personelini ve içeriklerini görürsünü
 - **İşe başlama onayı**: teorik ve pratik sonuçlar tek ekranda. **İşe başlayabilir** → atama tamamlanır, sertifika düzenlenir. **Reddet** → gerekçe + tekrar açılacak modüller.
 - **Pratik değerlendirme** kartından eğitmen paneline geçip kapsamınızdaki kursiyerlerin görevlerini siz de işaretleyebilirsiniz.
 
+### Yetkinlikler
+- **Yönetim → Yetkinlikler**: makine ya da iş yetkinliği tanımlayın (ad, tür, birim, geçerlilik ayı). İSG uzmanı bütün birimler ve ortak yetkinlikler için tanımlar.
+- **Modül kütüphanesi → pratik modül → görevler**: bir görevi yetkinliğe bağlayın. Kişi o görevi "tek başına" tamamlayıp işe başlama onayı alınca yetkinlik kendiliğinden verilir.
+- **Raporlar → Yetkinlik matrisi**: birim seçin; yeşil geçerli, sarı süresi yaklaşıyor, kırmızı dolmuş. Hücreye dokunup geçmişi görün. Mevcut personele gerekçeyle **Yetkinlik ver**, gerekirse gerekçeyle **Geri al** (kendinize veremezsiniz). Excel indirilebilir.
+- Süresi yaklaşan yetkinlik için size bildirim gelir (varsayılan 30 gün kala); yenilemek için yeniden verin.
+
 ### Ekip ve raporlar
 - **Ekip ilerlemesi**: kapsamınızdaki eğitimler, hedef tarihi geçenler, sınav denemeleri.
 - **Raporlar**: eğitim ilerleme ve sınav sonuçları (kapsamınızla sınırlı).

@@ -63,6 +63,9 @@ Açılan ekranda adınızı görürsünüz. Kendinize bir şifre belirleyip iki 
 ### Sertifikalarım
 Bölüm sorumlunuz "İşe başlayabilir" onayını verince **pozisyon yetkinlik sertifikanız** hazırlanır. İSG eğitimlerinizin **katılım belgeleri** de buradadır. **PDF indir** ile indirebilirsiniz; belgedeki QR kod belgenin geçerliliğini gösterir.
 
+### Yetkinliklerim
+Profil sayfanızda hangi makine ya da işte yetkin olduğunuz ve yetkinliğin bitiş tarihi görünür. Süresi yaklaşan yetkinlik sarı, dolan kırmızıdır; yenilemek için bölüm sorumlunuza başvurun.
+
 ### Bildirimler
 Üst çubuktaki **zil** okunmamış bildirim sayısını gösterir. Bildirime dokununca ilgili ekran açılır. E-posta adresiniz kayıtlıysa bazı bildirimler e-postayla da gelir (e-postada ayrıntı yer almaz).
 

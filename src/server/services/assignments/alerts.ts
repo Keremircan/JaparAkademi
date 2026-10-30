@@ -8,6 +8,7 @@ import { logger } from "@/server/logger";
 import { notify, sectionManagersForPerson, usersWithRole } from "../notifications";
 import { getSettings } from "../settings";
 import { runRecert } from "./recert";
+import { notifyCompetencyExpiring } from "../competencies";
 
 /**
  * Faz 2 zamanlanmış eğitim bildirimleri (SPEC 10.2, iş paketi 2.5, kararlar #172–173).
@@ -120,6 +121,8 @@ export async function runTrainingDaily(actor: Actor, now: Date = new Date()) {
     overdue: await step("overdue", 0, () => notifyOverdue(actor, today)),
     unmarked: await step("unmarked", 0, () => notifyUnmarked(actor, now)),
     ohsExpired: await step("ohsExpired", 0, () => notifyOhsExpired(actor, now, today)),
+    // Süresi yaklaşan yetkinlikler (karar #220)
+    competencies: await step("competencies", 0, () => notifyCompetencyExpiring(actor, now)),
   };
 }
 

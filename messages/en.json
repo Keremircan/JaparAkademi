@@ -402,7 +402,10 @@
     "question_regions_invalid": "Draw at least one correct region on the image (at most 5).",
     "question_image_required": "Upload an image for an image marking question.",
     "body_incomplete_en": "The English version is incomplete. Fill in the required fields on the English tab before submitting, or remove the English version.",
-    "question_translation_invalid": "The English text is missing or invalid: the question text must be at least 5 characters; all options and pairs must be filled, match the Turkish count and be distinct. Leave the English fields empty if you do not want a translation."
+    "question_translation_invalid": "The English text is missing or invalid: the question text must be at least 5 characters; all options and pairs must be filled, match the Turkish count and be distinct. Leave the English fields empty if you do not want a translation.",
+    "competency_name_invalid": "Competency name must be 2–200 characters.",
+    "competency_archived": "This competency is archived.",
+    "competency_invalid": "The selected competency does not belong to this module's unit or is archived."
   },
   "notFound": {
     "title": "Page not found",
@@ -723,6 +726,10 @@
       "practice": {
         "title": "Practical evaluation",
         "description": "Practical tasks and practical exams of the trainees in your scope."
+      },
+      "competencies": {
+        "title": "Competencies",
+        "description": "Machine and task competencies, validity periods; linking to practical tasks."
       }
     },
     "pendingCount": "{count} records awaiting approval"
@@ -1099,7 +1106,10 @@
       "taskDescription": "Description",
       "taskCritical": "Critical task",
       "addTask": "Add task",
-      "critical": "Critical"
+      "critical": "Critical",
+      "taskCompetency": "Linked competency",
+      "noCompetency": "None",
+      "taskCompetencyHint": "When the person completes this task \"independently\" and receives start-of-work approval, this competency is granted automatically."
     },
     "quiz": {
       "heading": "Review quiz questions",
@@ -2217,7 +2227,8 @@
       "weekly_summary": "Weekly summary: {active} trainings in progress, {overdue} past target, {readiness} awaiting approval, {expiring} expiring, {rereads} readings pending.",
       "recert_deferred": "Refresher training is due for {name}; it will start when their open training ends.",
       "recert_trainer_needed": "{name} has started refresher training. Choose a trainer for the practical module.",
-      "ohs_expired": "The OHS training of {count} people has expired."
+      "ohs_expired": "The OHS training of {count} people has expired.",
+      "competency_expiring": "The \"{competency}\" competency of {name} is about to expire."
     },
     "email": {
       "app": "JAPAR Academy",
@@ -2249,7 +2260,8 @@
         "weekly_summary": "Your team's weekly training summary",
         "recert_deferred": "A refresher training has been deferred",
         "recert_trainer_needed": "A trainer must be chosen for refresher training",
-        "ohs_expired": "There are expired OHS trainings"
+        "ohs_expired": "There are expired OHS trainings",
+        "competency_expiring": "A competency is about to expire"
       }
     },
     "pagination": "Notification pages",
@@ -2916,6 +2928,11 @@
         "label": "Sign-in log",
         "hint": "Sign-in records older than this are deleted. At least 30 days.",
         "unit": "{n} days"
+      },
+      "competency_alert_days": {
+        "label": "Competency expiry warning",
+        "hint": "This many days before a competency ends, the section manager is notified and it shows yellow in the matrix.",
+        "unit": "{n} days"
       }
     },
     "visitorTypes": {
@@ -3431,5 +3448,82 @@
     "previous": "Previous",
     "next": "Next",
     "pages": "Sign-in log pages"
+  },
+  "competencies": {
+    "title": "Competencies",
+    "description": "Definitions of machine and task competencies. A competency linked to practical tasks is granted automatically at start-of-work approval.",
+    "new": "New competency",
+    "listHeading": "Defined competencies",
+    "archivedHeading": "Archived competencies",
+    "showActive": "Show non-archived",
+    "showArchived": "Show archived",
+    "toMatrix": "Go to competency matrix",
+    "empty": "No competencies defined yet.",
+    "validityMonths": "Valid for {n} months",
+    "noExpiry": "No expiry",
+    "holders": "{count, plural, =0 {No one competent} one {# person competent} other {# people competent}}",
+    "archivedNote": "This competency is archived; it cannot be granted or linked to tasks.",
+    "readOnly": "You are not allowed to edit this definition.",
+    "form": {
+      "name": "Name",
+      "nameHint": "E.g. \"250-ton press operation\", \"Forklift\".",
+      "kind": "Type",
+      "kinds": {
+        "machine": "Machine",
+        "task": "Task"
+      },
+      "unit": "Unit",
+      "unitHint": "The unit where the competency applies. A common competency is used in all units (only the OHS specialist defines it).",
+      "choose": "Choose",
+      "common": "Common (all units)",
+      "validity": "Validity (months)",
+      "validityHint": "Leave empty for no expiry. Changes apply only to grants from now on.",
+      "description": "Description",
+      "create": "Add competency",
+      "archive": "Archive",
+      "archiveConfirm": "Archive this competency? It cannot be granted or linked to tasks; existing records stay in the matrix."
+    },
+    "matrix": {
+      "title": "Competency matrix",
+      "description": "Employees × competencies. Green is valid, yellow expires within {days} days, red has expired. Tap a cell for details; a section manager can grant or revoke a competency with a reason.",
+      "cardDescription": "Employees × machine/task competencies and end dates; expired ones are coloured.",
+      "unit": "Unit",
+      "show": "Show",
+      "export": "Download Excel",
+      "legend": "Colours",
+      "states": {
+        "valid": "Valid",
+        "expiring": "Expiring soon",
+        "expired": "Expired",
+        "none": "None"
+      },
+      "chooseUnit": "Choose a unit to see the matrix.",
+      "noCompetencies": "No competencies are defined for this unit.",
+      "noPeople": "There are no active employees in this unit.",
+      "person": "Employee",
+      "sicil": "Employee no",
+      "position": "Position",
+      "unlimited": "No expiry",
+      "cellLabel": "{person}, {competency}: {state}",
+      "noHistory": "This competency has not been granted to this person yet.",
+      "sources": {
+        "training": "Granted through training",
+        "manual": "Granted manually"
+      },
+      "validUntil": "Valid until {date}",
+      "revokedOn": "Revoked on {date}",
+      "grantReason": "Reason for granting",
+      "revokeReason": "Reason",
+      "reasonHint": "At least 10 characters (e.g. \"Has worked on this machine since 2019; master's assessment 12.03.2026\"). The record cannot be changed.",
+      "grant": "Grant competency",
+      "renew": "Grant again (renew)",
+      "revoke": "Revoke",
+      "file": "competency-matrix"
+    },
+    "mine": {
+      "title": "My competencies",
+      "until": "Until {date}",
+      "expired": "Expired ({date})"
+    }
   }
 }
