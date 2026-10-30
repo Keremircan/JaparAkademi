@@ -18,7 +18,9 @@ import { NotFoundError, ValidationError } from "@/server/errors";
 import { enqueue } from "@/server/jobs/send";
 import { QUEUES } from "@/server/jobs/queues";
 import { isDone } from "@/server/state/assignment";
-import { attemptsLeft, cooldownUntil, drawQuestions, scoreAttempt, shuffle, topicSummary } from "@/server/state/exam";
+import { attemptsLeft, cooldownUntil, drawQuestions, isAnswerCorrect, scoreAttempt, shuffle, topicSummary } from "@/server/state/exam";
+import type { ExamAnswer } from "@/server/db/schema";
+import type { HotspotPoint } from "@/lib/questions";
 import { canViewPerson } from "../assignments";
 import { completeModule, refreshAssignment, reopenModule } from "../assignments/engine";
 import { notify, notifyAllAttemptsFailed } from "../notifications";
@@ -194,7 +196,57 @@ export async function startExam(
 // Deneme ekranı
 // ---------------------------------------------------------------------------
 
-export type AttemptQuestion = { itemId: string; stem: string; options: string[]; mediaAssetId: string | null; answer: number | null };
+/**
+ * Kursiyere gösterilen soru. Doğru cevap bilgisi (doğru şık, eşleştirme sırası, bölgeler) hiçbir tipte gönderilmez.
+ *  - choice: şıklar gösterim sırasında, cevap gösterilen indeks
+ *  - matching: sol öğeler soru sırasında, sağ öğeler karışık; cevap her sol için gösterilen sağ indeksi
+ *  - hotspot: görsel; cevap dokunulan nokta (oranlı)
+ */
+export type AttemptQuestion =
+  | { type: "choice"; itemId: string; stem: string; options: string[]; mediaAssetId: string | null; answer: number | null }
+  | { type: "matching"; itemId: string; stem: string; left: string[]; right: string[]; mediaAssetId: string | null; answer: (number | null)[] }
+  | { type: "hotspot"; itemId: string; stem: string; mediaAssetId: string; answer: HotspotPoint | null };
+
+type ItemRow = typeof examAttemptItems.$inferSelect;
+type VersionRow = typeof questionVersions.$inferSelect;
+
+function toAttemptQuestion(item: ItemRow, v: VersionRow): AttemptQuestion {
+  if (v.type === "matching") {
+    const pairs = v.pairs ?? [];
+    // optionOrder: sağ sütunun gösterim sırası (özgün indeksler)
+    const saved = item.answer && "pairs" in item.answer ? item.answer.pairs : [];
+    return {
+      type: "matching",
+      itemId: item.id,
+      stem: v.stem,
+      left: pairs.map((p) => p.left),
+      right: item.optionOrder.map((k) => pairs[k]!.right),
+      mediaAssetId: v.mediaAssetId,
+      answer: pairs.map((_, i) => {
+        const original = saved[i];
+        return original === null || original === undefined ? null : item.optionOrder.indexOf(original);
+      }),
+    };
+  }
+  if (v.type === "hotspot") {
+    return {
+      type: "hotspot",
+      itemId: item.id,
+      stem: v.stem,
+      mediaAssetId: v.mediaAssetId!,
+      answer: item.answer && "point" in item.answer ? item.answer.point : null,
+    };
+  }
+  return {
+    type: "choice",
+    itemId: item.id,
+    stem: v.stem,
+    options: item.optionOrder.map((k) => v.options[k]!),
+    mediaAssetId: v.mediaAssetId,
+    // Kursiyere gösterilen sıradaki indeks
+    answer: item.answerIndex === null ? null : item.optionOrder.indexOf(item.answerIndex),
+  };
+}
 
 export type AttemptView =
   | {
@@ -254,14 +306,7 @@ export async function getAttempt(actor: Actor, attemptId: string): Promise<Attem
       title: am.title,
       deadlineAt: at.deadlineAt,
       serverNow: new Date(),
-      questions: items.map(({ item, v }) => ({
-        itemId: item.id,
-        stem: v.stem,
-        options: item.optionOrder.map((k) => v.options[k]!),
-        mediaAssetId: v.mediaAssetId,
-        // Kursiyere gösterilen sıradaki indeks
-        answer: item.answerIndex === null ? null : item.optionOrder.indexOf(item.answerIndex),
-      })),
+      questions: items.map(({ item, v }) => toAttemptQuestion(item, v)),
     };
   }
   const rules = await rulesFor(am);
@@ -293,17 +338,47 @@ async function openAttemptForWrite(tx: Tx, actor: Actor & { kind: "user" }, atte
   return row;
 }
 
-/** Cevap (gösterilen şık sırasına göre). Her seçimde kaydedilir. */
-export async function answerExam(actor: Actor, attemptId: string, itemId: string, shownIndex: number | null): Promise<void> {
+/** Kursiyerin gönderdiği cevap (gösterilen sıraya göre). */
+export type ExamAnswerInput =
+  | { kind: "choice"; shownIndex: number | null }
+  | { kind: "matching"; pairs: (number | null)[] }
+  | { kind: "hotspot"; point: HotspotPoint | null };
+
+const isUnit = (n: number) => Number.isFinite(n) && n >= 0 && n <= 1;
+const round4 = (n: number) => Math.round(n * 10_000) / 10_000;
+
+/** Cevap. Her seçimde kaydedilir; gösterilen sıra özgün indekslere çevrilir. Soru tipiyle uyuşmayan cevap reddedilir. */
+export async function answerExam(actor: Actor, attemptId: string, itemId: string, input: ExamAnswerInput): Promise<void> {
   assertUser(actor);
   await withActor(actor, async (tx) => {
     await openAttemptForWrite(tx, actor, attemptId);
-    const [item] = await tx.select().from(examAttemptItems).where(and(eq(examAttemptItems.id, itemId), eq(examAttemptItems.attemptId, attemptId))).limit(1);
-    if (!item) throw new NotFoundError("exam_item");
-    if (shownIndex !== null && (!Number.isInteger(shownIndex) || shownIndex < 0 || shownIndex >= item.optionOrder.length)) throw new ValidationError("invalid_input");
+    const [row] = await tx
+      .select({ item: examAttemptItems, type: questionVersions.type })
+      .from(examAttemptItems)
+      .innerJoin(questionVersions, eq(questionVersions.id, examAttemptItems.questionVersionId))
+      .where(and(eq(examAttemptItems.id, itemId), eq(examAttemptItems.attemptId, attemptId)))
+      .limit(1);
+    if (!row) throw new NotFoundError("exam_item");
+    const { item, type } = row;
+    const n = item.optionOrder.length;
+    const inRange = (i: number) => Number.isInteger(i) && i >= 0 && i < n;
+    let set: { answerIndex: number | null; answer: ExamAnswer | null };
+    if (type === "matching") {
+      if (input.kind !== "matching" || input.pairs.length !== n || input.pairs.some((x) => x !== null && !inRange(x))) throw new ValidationError("invalid_input");
+      const chosen = input.pairs.filter((x): x is number => x !== null);
+      // Bir sağ öğe en fazla bir sol öğeye verilebilir
+      if (new Set(chosen).size !== chosen.length) throw new ValidationError("invalid_input");
+      set = { answerIndex: null, answer: { pairs: input.pairs.map((x) => (x === null ? null : item.optionOrder[x]!)) } };
+    } else if (type === "hotspot") {
+      if (input.kind !== "hotspot" || (input.point && !(isUnit(input.point.x) && isUnit(input.point.y)))) throw new ValidationError("invalid_input");
+      set = { answerIndex: null, answer: input.point ? { point: { x: round4(input.point.x), y: round4(input.point.y) } } : null };
+    } else {
+      if (input.kind !== "choice" || (input.shownIndex !== null && !inRange(input.shownIndex))) throw new ValidationError("invalid_input");
+      set = { answerIndex: input.shownIndex === null ? null : item.optionOrder[input.shownIndex]!, answer: null };
+    }
     await tx
       .update(examAttemptItems)
-      .set({ answerIndex: shownIndex === null ? null : item.optionOrder[shownIndex]!, answeredAt: new Date() })
+      .set({ ...set, answeredAt: new Date() })
       .where(eq(examAttemptItems.id, item.id));
   });
 }
@@ -350,11 +425,20 @@ export async function finalizeExpiredAttempt(attemptId: string): Promise<void> {
  */
 async function finalize(tx: Tx, at: AttemptRow, reason: "user" | "timeout"): Promise<void> {
   const items = await tx
-    .select({ id: examAttemptItems.id, answerIndex: examAttemptItems.answerIndex, correctIndex: questionVersions.correctIndex, isOhsCritical: questionVersions.isOhsCritical })
+    .select({
+      id: examAttemptItems.id,
+      answerIndex: examAttemptItems.answerIndex,
+      answer: examAttemptItems.answer,
+      type: questionVersions.type,
+      correctIndex: questionVersions.correctIndex,
+      pairs: questionVersions.pairs,
+      regions: questionVersions.regions,
+      isOhsCritical: questionVersions.isOhsCritical,
+    })
     .from(examAttemptItems)
     .innerJoin(questionVersions, eq(questionVersions.id, examAttemptItems.questionVersionId))
     .where(eq(examAttemptItems.attemptId, at.id));
-  const scored = items.map((i) => ({ ...i, isCorrect: i.answerIndex !== null && i.answerIndex === i.correctIndex }));
+  const scored = items.map((i) => ({ id: i.id, isOhsCritical: i.isOhsCritical, isCorrect: isAnswerCorrect(i, i) }));
   for (const i of scored) await tx.update(examAttemptItems).set({ isCorrect: i.isCorrect }).where(eq(examAttemptItems.id, i.id));
   const result = scoreAttempt(scored, at.passScore);
   await tx

@@ -14,14 +14,23 @@ import {
 } from "@/server/services/questions";
 import { commitQuestionImport, previewQuestionImport } from "@/server/services/questions/import";
 import type { ParsedQuestionRow } from "@/server/services/questions/parse";
+import { HOTSPOT_MAX_REGIONS, MATCHING_MAX_PAIRS, QUESTION_TYPES } from "@/lib/questions";
 
 const uuid = z.uuid();
 
+const unit = z.number().min(0).max(1);
+const regionSchema = z.discriminatedUnion("shape", [
+  z.object({ shape: z.literal("rect"), x: unit, y: unit, w: unit, h: unit }),
+  z.object({ shape: z.literal("ellipse"), cx: unit, cy: unit, rx: unit, ry: unit }),
+]);
+
 const questionSchema = z.object({
-  type: z.enum(["single_choice", "true_false"]),
+  type: z.enum(QUESTION_TYPES),
   stem: z.string().max(2000),
-  options: z.array(z.string().max(500)).min(2).max(5),
-  correctIndex: z.number().int().min(0).max(4),
+  options: z.array(z.string().max(500)).max(5),
+  correctIndex: z.number().int().min(0).max(4).nullable(),
+  pairs: z.array(z.object({ left: z.string().max(200), right: z.string().max(200) })).max(MATCHING_MAX_PAIRS).nullable(),
+  regions: z.array(regionSchema).max(HOTSPOT_MAX_REGIONS).nullable(),
   explanation: z.string().max(2000).nullable(),
   topic: z.string().max(100),
   difficulty: z.number().int().min(1).max(3),

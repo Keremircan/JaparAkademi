@@ -24,6 +24,12 @@ import { buildPeopleXlsx } from "../support/xlsx";
  * Yayınlanmış KVKK metni yoksa bir tane yayınlar (onay adımı her ortamda aynı olsun).
  */
 export const E2E_PASSWORD = "E2e.Test-Sifre9";
+/** Sınav e2e'sindeki eşleştirme sorusunun çiftleri. */
+export const E2E_MATCHING_PAIRS = [
+  { left: "Kask", right: "Baş" },
+  { left: "Eldiven", right: "El" },
+  { left: "Gözlük", right: "Göz" },
+];
 export const E2E_NEW_PASSWORD = "Yeni.E2e-Sifre7";
 export const E2E_IMPORT_FILE = path.join(process.cwd(), "test-results", "e2e-import.xlsx");
 
@@ -160,13 +166,19 @@ export default async function globalSetup() {
       kind: "theory_exam", title: `E2E Teorik sınav ${p}`, description: null, durationMin: 10, isOhs: false, remoteAllowed: true,
       validityMonths: null, ownerOrgUnitId: section.id, commonTarget: null, commonSortOrder: null,
     });
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 3; i++) {
       await createQuestion(smActor, {
         type: "single_choice", stem: `E2E sınav sorusu ${i}`, options: ["Doğru cevap", `Yanlış cevap ${i}a`, `Yanlış cevap ${i}b`], correctIndex: 0,
         explanation: null, topic: i % 2 ? "Hat güvenliği" : "Kalite", difficulty: 1, isOhsCritical: false, mediaAssetId: null,
         moduleIds: [examTheory.id], ownerOrgUnitId: section.id, isOhs: false,
       });
     }
+    // Eşleştirme sorusu (karar #203): sağ sütun karışık gelir, test sol öğeye göre doğru karşılığı seçer
+    await createQuestion(smActor, {
+      type: "matching", stem: "E2E sınav sorusu 4: donanımı koruduğu yerle eşleştirin", options: [], correctIndex: null,
+      pairs: E2E_MATCHING_PAIRS, explanation: null, topic: "Kalite", difficulty: 1, isOhsCritical: false, mediaAssetId: null,
+      moduleIds: [examTheory.id], ownerOrgUnitId: section.id, isOhs: false,
+    });
     await createCard(smActor, examPos.id);
     await saveCardSections(smActor, examPos.id, fullCardSections());
     const examCard = await getEditableCard(smActor, examPos.id);

@@ -12,7 +12,8 @@ async function xlsx(rows: (string | number)[][], headers: readonly string[] = QU
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet("Sorular");
   ws.addRow([...headers]);
-  for (const r of rows) ws.addRow(r);
+  // Satırlar eski 13 sütunlu düzende yazılır; F sütunu (yalnızca eşleştirme) boş eklenir
+  for (const r of rows) ws.addRow(headers === QUESTION_HEADERS && r.length === 13 ? [...r.slice(0, 7), "", ...r.slice(7)] : r);
   return Buffer.from(await wb.xlsx.writeBuffer());
 }
 
@@ -45,7 +46,7 @@ describe("Excel'den soru aktarma (karar #64)", () => {
   });
 
   it("hatalı satırlar satır numarası ve nedenleriyle döner", async () => {
-    const bad = ["Kısa", "Eşleştirme", "A1", "", "", "", "", "Z", "", 7, "Belki", "Bilinmeyen modül", ""];
+    const bad = ["Kısa", "Sürükle bırak", "A1", "", "", "", "", "Z", "", 7, "Belki", "Bilinmeyen modül", ""];
     const dup = [...ok];
     dup[3] = "iki el kumandasında";
     const noOptions = [...ok];
@@ -74,7 +75,8 @@ describe("Excel'den soru aktarma (karar #64)", () => {
   it("şablon kendi örnek satırlarıyla geçerli okunur", async () => {
     const template = await buildQuestionTemplate(["Pres hattı temel eğitimi"]);
     const { rows } = await parseQuestionWorkbook(template, modules);
-    expect(rows).toHaveLength(2);
+    // Çoktan seçmeli, Doğru/Yanlış ve Eşleştirme örnekleri
+    expect(rows).toHaveLength(3);
     expect(rows.every((r) => r.errors.length === 0)).toBe(true);
   });
 });

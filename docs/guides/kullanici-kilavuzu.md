@@ -39,7 +39,10 @@ Açılan ekranda adınızı görürsünüz. Kendinize bir şifre belirleyip iki 
 ### Teorik sınav
 1. Sınav modülünde kurallar (soru sayısı, süre, geçme notu, kalan hak) yazar.
 2. Gözetmeninizden **6 haneli gözetmen kodunu** alın, yazın ve **Sınavı başlat**'a dokunun.
-3. Sorular tek tek gelir; numaralardan istediğiniz soruya dönebilirsiniz. Her cevap anında kaydedilir.
+3. Sorular tek tek gelir; numaralardan istediğiniz soruya dönebilirsiniz. Her cevap anında kaydedilir. Soru tipleri:
+   - **Çoktan seçmeli / Doğru-Yanlış:** doğru şıkka dokunun.
+   - **Eşleştirme:** her öğenin yanındaki listeden doğru karşılığını seçin. Bir karşılık yalnızca bir öğeye verilebilir; bütün öğeleri eşleyince soru cevaplanmış sayılır. Hepsi doğru eşlenirse soru doğru sayılır.
+   - **Görselde işaretleme:** görselde doğru yere dokunun; bir işaret çıkar. Fikrinizi değiştirirseniz başka bir yere dokunun.
 4. Bağlantınız koparsa tekrar girip **Sınava devam et**'e dokunun; süre işlemeye devam eder.
 5. Başka uygulamaya ya da sekmeye geçmek kayda geçer.
 6. Bitirince **Sınavı bitir**. Süre dolarsa sınav verdiğiniz cevaplarla teslim edilir.

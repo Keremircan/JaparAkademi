@@ -25,6 +25,7 @@ import { owner } from "../support/db";
 import { seedContentPeople } from "../support/content";
 import { createTestUser } from "../support/factories";
 import { moduleInput, publishCard, publishedText } from "../support/training";
+import { choice, opts } from "../support/exam";
 
 type People = Awaited<ReturnType<typeof seedContentPeople>>;
 type Trainee = Awaited<ReturnType<typeof createTestUser>>;
@@ -83,8 +84,8 @@ async function answerAll(u: Trainee, attemptId: string, correct: boolean | ((i: 
   if (view.state !== "open") throw new Error("açık değil");
   for (const [i, item] of view.questions.entries()) {
     const want = typeof correct === "function" ? correct(i) : correct;
-    const shownCorrect = item.options.indexOf("Doğru şık");
-    await answerExam(u.actor, attemptId, item.itemId, want ? shownCorrect : (shownCorrect + 1) % item.options.length);
+    const shownCorrect = opts(item).indexOf("Doğru şık");
+    await answerExam(u.actor, attemptId, item.itemId, choice(want ? shownCorrect : (shownCorrect + 1) % opts(item).length));
   }
 }
 
@@ -192,7 +193,7 @@ describe("FG-6.1 teorik sınav", () => {
     // Teslim edilen deneme değiştirilemez
     const err = await db().update(examAttempts).set({ score: 0 }).where(eq(examAttempts.id, attemptId)).then(() => null, (e: unknown) => e);
     expect(isImmutableViolation(err)).toBe(true);
-    await expect(answerExam(u.actor, attemptId, (view.questions[0]!).itemId, 0)).rejects.toMatchObject({ code: "exam_submitted" });
+    await expect(answerExam(u.actor, attemptId, (view.questions[0]!).itemId, choice(0))).rejects.toMatchObject({ code: "exam_submitted" });
   });
 
   it("kalınca ilgili teorik modül tekrar açılır, sınav kilitlenir; tüm haklar bitince atama karar bekler", async () => {
@@ -245,8 +246,8 @@ describe("FG-6.1 teorik sınav", () => {
     if (view.state !== "open") throw new Error();
     for (const item of view.questions) {
       const critical = item.stem === "Kritik 0";
-      const right = item.options.indexOf("Doğru şık");
-      await answerExam(u.actor, attemptId, item.itemId, critical ? (right + 1) % 3 : right);
+      const right = opts(item).indexOf("Doğru şık");
+      await answerExam(u.actor, attemptId, item.itemId, choice(critical ? (right + 1) % 3 : right));
     }
     await submitExam(u.actor, attemptId);
     expect(await getAttempt(u.actor, attemptId)).toMatchObject({ score: 75, passed: false, failReason: "ohs_critical" });

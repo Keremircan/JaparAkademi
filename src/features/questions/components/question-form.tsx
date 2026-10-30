@@ -11,14 +11,17 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { MediaField } from "@/features/content/components/media-upload";
 import type { AssetInfo } from "@/server/services/media";
-import { TRUE_FALSE_OPTIONS } from "@/lib/questions";
+import { MATCHING_MAX_PAIRS, MATCHING_MIN_PAIRS, TRUE_FALSE_OPTIONS, type HotspotRegion, type MatchingPair, type QuestionType } from "@/lib/questions";
+import { HotspotEditor } from "./hotspot-image";
 import { createQuestionAction, updateQuestionAction } from "../actions";
 
 type Values = {
-  type: "single_choice" | "true_false";
+  type: QuestionType;
   stem: string;
   options: string[];
-  correctIndex: number;
+  correctIndex: number | null;
+  pairs: MatchingPair[] | null;
+  regions: HotspotRegion[] | null;
   explanation: string;
   topic: string;
   difficulty: number;
@@ -26,7 +29,12 @@ type Values = {
   moduleIds: string[];
 };
 
-/** Soru formu (oluşturma ve düzenleme). Doğru/yanlış sorusunda şıklar sabittir. */
+const emptyPairs = (): MatchingPair[] => Array.from({ length: MATCHING_MIN_PAIRS }, () => ({ left: "", right: "" }));
+
+/**
+ * Soru formu (oluşturma ve düzenleme). Doğru/yanlış sorusunda şıklar sabittir. Eşleştirmede 3–6 çift (karar #203);
+ * görselde işaretlemede görsel zorunlu, doğru bölgeler görsel üzerinde çizilir (karar #204).
+ */
 export function QuestionForm(
   props: {
     topics: string[];
@@ -42,7 +50,19 @@ export function QuestionForm(
   const tc = useTranslations("common");
   const listId = useId();
   const [v, setV] = useState<Values>(
-    props.initial ?? { type: "single_choice", stem: "", options: ["", "", ""], correctIndex: 0, explanation: "", topic: "", difficulty: 1, isOhsCritical: false, moduleIds: [] },
+    props.initial ?? {
+      type: "single_choice",
+      stem: "",
+      options: ["", "", ""],
+      correctIndex: 0,
+      pairs: null,
+      regions: null,
+      explanation: "",
+      topic: "",
+      difficulty: 1,
+      isOhsCritical: false,
+      moduleIds: [],
+    },
   );
   const [owner, setOwner] = useState(props.mode === "create" && props.owners.units.length === 0 && props.owners.common ? "common" : "");
   const [isOhs, setIsOhs] = useState(props.mode === "create" ? props.owners.ohsOnly : props.isOhs);
@@ -55,7 +75,11 @@ export function QuestionForm(
     setV((x) => ({ ...x, ...patch }));
     setNotice(null);
   };
+  const isChoice = v.type === "single_choice" || v.type === "true_false";
   const options = v.type === "true_false" ? TRUE_FALSE_OPTIONS : v.options;
+  const pairs = v.pairs ?? emptyPairs();
+  const regions = v.regions ?? [];
+  const imageReady = image?.status === "ready";
   const needsApproval = isOhs || owner === "common" || v.isOhsCritical;
 
   function save() {
@@ -63,8 +87,10 @@ export function QuestionForm(
     const payload = {
       type: v.type,
       stem: v.stem,
-      options,
-      correctIndex: v.correctIndex,
+      options: isChoice ? options : [],
+      correctIndex: isChoice ? v.correctIndex : null,
+      pairs: v.type === "matching" ? pairs : null,
+      regions: v.type === "hotspot" ? regions : null,
       explanation: v.explanation.trim() || null,
       topic: v.topic,
       difficulty: v.difficulty,
@@ -120,13 +146,67 @@ export function QuestionForm(
         <NativeSelect id="type" value={v.type} onChange={(e) => set({ type: e.target.value as Values["type"], correctIndex: 0 })}>
           <option value="single_choice">{t("singleChoice")}</option>
           <option value="true_false">{t("trueFalse")}</option>
+          <option value="matching">{t("matching")}</option>
+          <option value="hotspot">{t("hotspotType")}</option>
         </NativeSelect>
       </Field>
       <Field id="stem" label={t("stem")}>
         <Textarea id="stem" rows={3} maxLength={2000} value={v.stem} onChange={(e) => set({ stem: e.target.value })} />
       </Field>
-      <MediaField label={t("image")} optional kinds={["image"]} asset={image} onChange={setImage} />
+      <MediaField label={v.type === "hotspot" ? t("imageRequired") : t("image")} optional={v.type !== "hotspot"} kinds={["image"]} asset={image} onChange={setImage} />
 
+      {v.type === "matching" && (
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1 font-medium">{t("pairs")}</legend>
+          <p className="text-sm text-muted-foreground">{t("pairsHint", { min: MATCHING_MIN_PAIRS, max: MATCHING_MAX_PAIRS })}</p>
+          {pairs.map((p, i) => (
+            <div key={i} className="grid grid-cols-[1fr_auto_1fr_auto] items-center gap-2">
+              <Input
+                aria-label={t("pairLeft", { n: i + 1 })}
+                maxLength={200}
+                value={p.left}
+                onChange={(e) => set({ pairs: pairs.map((x, k) => (k === i ? { ...x, left: e.target.value } : x)) })}
+              />
+              <span aria-hidden="true">↔</span>
+              <Input
+                aria-label={t("pairRight", { n: i + 1 })}
+                maxLength={200}
+                value={p.right}
+                onChange={(e) => set({ pairs: pairs.map((x, k) => (k === i ? { ...x, right: e.target.value } : x)) })}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                disabled={pairs.length <= MATCHING_MIN_PAIRS}
+                aria-label={t("removePair", { n: i + 1 })}
+                onClick={() => set({ pairs: pairs.filter((_, k) => k !== i) })}
+              >
+                <Trash2 aria-hidden="true" />
+              </Button>
+            </div>
+          ))}
+          {pairs.length < MATCHING_MAX_PAIRS && (
+            <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => set({ pairs: [...pairs, { left: "", right: "" }] })}>
+              <Plus aria-hidden="true" />
+              {t("addPair")}
+            </Button>
+          )}
+        </fieldset>
+      )}
+
+      {v.type === "hotspot" && (
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1 font-medium">{t("regions")}</legend>
+          {image && imageReady ? (
+            <HotspotEditor key={image.id} src={`/api/media/${image.id}/image`} regions={regions} onChange={(r) => set({ regions: r })} />
+          ) : (
+            <p className="text-sm text-muted-foreground">{image ? t("imageProcessing") : t("regionsNeedImage")}</p>
+          )}
+        </fieldset>
+      )}
+
+      {isChoice && (
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1 font-medium">{t("options")}</legend>
         {options.map((o, i) => (
@@ -156,7 +236,10 @@ export function QuestionForm(
                     variant="ghost"
                     size="icon"
                     aria-label={t("removeOption", { letter: String.fromCharCode(65 + i) })}
-                    onClick={() => set({ options: v.options.filter((_, k) => k !== i), correctIndex: v.correctIndex >= i && v.correctIndex > 0 ? v.correctIndex - 1 : v.correctIndex })}
+                    onClick={() => {
+                      const c = v.correctIndex ?? 0;
+                      set({ options: v.options.filter((_, k) => k !== i), correctIndex: c >= i && c > 0 ? c - 1 : c });
+                    }}
                   >
                     <Trash2 aria-hidden="true" />
                   </Button>
@@ -172,6 +255,7 @@ export function QuestionForm(
           </Button>
         )}
       </fieldset>
+      )}
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field id="topic" label={t("topic")} hint={t("topicHint")}>

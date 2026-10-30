@@ -20,12 +20,20 @@ export async function startExamAction(assignmentModuleId: string, code: string |
   return redirect({ href: `/exam/${result.data.attemptId}`, locale: await getLocale() });
 }
 
-export async function answerExamAction(attemptId: string, itemId: string, shownIndex: number | null): Promise<ActionResult> {
-  if (!uuid.safeParse(attemptId).success || !uuid.safeParse(itemId).success || !z.number().int().min(0).max(10).nullable().safeParse(shownIndex).success) {
+const index = z.number().int().min(0).max(10);
+const answerSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("choice"), shownIndex: index.nullable() }),
+  z.object({ kind: z.literal("matching"), pairs: z.array(index.nullable()).min(1).max(10) }),
+  z.object({ kind: z.literal("hotspot"), point: z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1) }).nullable() }),
+]);
+
+export async function answerExamAction(attemptId: string, itemId: string, answer: unknown): Promise<ActionResult> {
+  const parsed = answerSchema.safeParse(answer);
+  if (!uuid.safeParse(attemptId).success || !uuid.safeParse(itemId).success || !parsed.success) {
     return { ok: false, error: "invalid_input" };
   }
   const { actor } = await actionUser();
-  return runAction(() => answerExam(actor, attemptId, itemId, shownIndex));
+  return runAction(() => answerExam(actor, attemptId, itemId, parsed.data));
 }
 
 const eventKind = z.enum(["tab_hidden", "tab_visible", "blur", "reconnect", "tts"]);

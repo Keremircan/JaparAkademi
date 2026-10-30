@@ -19,6 +19,7 @@ import { assignmentModules } from "./learning";
 import { orgUnits } from "./org";
 import { modules } from "./training";
 import { createdAt, id, tstz, updatedAt } from "./_shared";
+import type { HotspotPoint, HotspotRegion, MatchingPair } from "@/lib/questions";
 
 /**
  * Soru bankası ve teorik sınav (SPEC Bölüm 6, FG-6.1, iş paketi 1.5).
@@ -50,7 +51,10 @@ export const questions = pgTable(
   ],
 );
 
-export const questionType = pgEnum("question_type", ["single_choice", "true_false"]);
+export const questionType = pgEnum("question_type", ["single_choice", "true_false", "matching", "hotspot"]);
+
+/** Deneme cevabı (yeni tipler; karar #205): eşleştirmede sol → sağ özgün indeks, işaretlemede dokunulan nokta. */
+export type ExamAnswer = { pairs: (number | null)[] } | { point: HotspotPoint };
 export const questionVersionStatus = pgEnum("question_version_status", ["ohs_review", "active", "rejected", "retired"]);
 
 export const questionVersions = pgTable(
@@ -64,8 +68,12 @@ export const questionVersions = pgTable(
     type: questionType().notNull(),
     stem: text().notNull(),
     mediaAssetId: uuid().references(() => mediaAssets.id, { onDelete: "restrict" }),
+    /** Çoktan seçmeli ve doğru/yanlış şıkları; yeni tiplerde boş dizi. */
     options: jsonb().$type<string[]>().notNull(),
-    correctIndex: integer().notNull(),
+    /** Yalnızca çoktan seçmeli ve doğru/yanlışta (tipe göre kontrol). */
+    correctIndex: integer(),
+    pairs: jsonb().$type<MatchingPair[]>(),
+    regions: jsonb().$type<HotspotRegion[]>(),
     explanation: text(),
     topic: text().notNull(),
     difficulty: integer().notNull(),
@@ -81,6 +89,13 @@ export const questionVersions = pgTable(
     unique("question_versions_question_version_unique").on(t.questionId, t.version),
     index("question_versions_status_idx").on(t.status),
     check("question_versions_difficulty_check", sql`${t.difficulty} between 1 and 3`),
+    check(
+      "question_versions_type_fields_check",
+      // ::text: yeni enum değerleri aynı migration'da kullanılabilsin
+      sql`(${t.type}::text in ('single_choice','true_false') and ${t.correctIndex} is not null)
+        or (${t.type}::text = 'matching' and ${t.pairs} is not null)
+        or (${t.type}::text = 'hotspot' and ${t.regions} is not null and ${t.mediaAssetId} is not null)`,
+    ),
   ],
 );
 
@@ -181,8 +196,10 @@ export const examAttemptItems = pgTable(
       .references(() => questionVersions.id, { onDelete: "restrict" }),
     /** Şıkların gösterim sırası (özgün sıradaki indeksler) */
     optionOrder: integer().array().notNull(),
-    /** Seçilen şıkkın özgün indeksi */
+    /** Seçilen şıkkın özgün indeksi (çoktan seçmeli, doğru/yanlış) */
     answerIndex: integer(),
+    /** Eşleştirme / işaretleme cevabı (karar #205) */
+    answer: jsonb().$type<ExamAnswer>(),
     isCorrect: boolean(),
     answeredAt: tstz("answered_at"),
   },
