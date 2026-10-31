@@ -5,6 +5,7 @@ import { db, type DbOrTx } from "@/server/db/client";
 import { competencies, contents, moduleContents, modules, orgUnits, planModules, practiceTasks } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/server/errors";
+import type { OhsTopic } from "@/lib/ohs";
 import { canDraftContent, canUseLibrary, canViewContent, contentAccessFor, type ContentAccess } from "./content/access";
 import { assertCompetenciesLinkable, competencyOptionsForUnit } from "./competencies";
 
@@ -123,6 +124,7 @@ export async function commonModulesFor(collarType: "blue" | "white", conn: DbOrT
 
 export type ModuleDetail = ModuleListItem & {
   description: string | null;
+  ohsTopic: OhsTopic | null;
   contents: { id: string; title: string; type: string; published: boolean; archived: boolean }[];
   tasks: { id: string; title: string; description: string | null; isCritical: boolean; competencyId: string | null; competencyName: string | null }[];
   /** Görevlere bağlanabilecek yetkinlikler (pratik modülde; karar #219). */
@@ -164,6 +166,7 @@ export async function getModule(actor: Actor, moduleId: string): Promise<ModuleD
     description: m.description,
     durationMin: m.durationMin,
     isOhs: m.isOhs,
+    ohsTopic: m.ohsTopic,
     remoteAllowed: m.remoteAllowed,
     validityMonths: m.validityMonths,
     ownerOrgUnitId: m.ownerOrgUnitId,
@@ -200,6 +203,8 @@ export type ModuleInput = {
   ownerOrgUnitId: string | null;
   commonTarget: "all" | "blue" | "white" | null;
   commonSortOrder: number | null;
+  /** İSG konu grubu; yalnızca İSG uzmanı belirler (karar #228). Verilmezse mevcut değer kalır. */
+  ohsTopic?: OhsTopic | null;
 };
 
 function normalize(input: Omit<ModuleInput, "kind" | "ownerOrgUnitId">) {
@@ -234,6 +239,7 @@ export async function createModule(actor: Actor, input: ModuleInput): Promise<{ 
         description: v.description,
         durationMin: v.durationMin,
         isOhs: v.isOhs,
+        ohsTopic: v.isOhs && hasRole(actor, "ohs_specialist") ? (v.ohsTopic ?? null) : null,
         remoteAllowed,
         validityMonths: v.validityMonths,
         ownerOrgUnitId: input.ownerOrgUnitId,
@@ -265,6 +271,8 @@ export async function updateModule(actor: Actor, moduleId: string, input: Omit<M
         description: v.description,
         durationMin: v.durationMin,
         isOhs,
+        // Konu grubu İSG uzmanınındır; İSG işareti kalkınca boşalır
+        ohsTopic: !isOhs ? null : ohs && v.ohsTopic !== undefined ? v.ohsTopic : m.ohsTopic,
         remoteAllowed,
         validityMonths: v.validityMonths,
         commonTarget: common ? (v.commonTarget ?? "all") : null,

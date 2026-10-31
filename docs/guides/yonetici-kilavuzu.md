@@ -40,7 +40,7 @@ Sistem kimseyi otomatik reddetmez; karar sizindir ve değiştirilemez.
 - Periyodik eğitimde pratik ve işe başlama onayı yoktur; modüller bitince tamamlanır.
 
 ### Raporlar ve KVKK
-- **Raporlar**: eğitim ilerleme, sınav sonuçları, İSG eğitim kayıt defteri, işe başlama süresi, süresi dolacak eğitim ve sertifikalar (İSG + İK; 30/60/90 gün ya da süresi dolmuş), içerik güncellik (bölüm sorumlusu + İK). Filtreleyin, önizleyin, Excel/PDF indirin; her indirme kayda geçer.
+- **Raporlar**: eğitim ilerleme, sınav sonuçları, İSG eğitim kayıt defteri, işe başlama süresi, süresi dolacak eğitim ve sertifikalar (İSG + İK; 30/60/90 gün ya da süresi dolmuş), içerik güncellik (bölüm sorumlusu + İK). Filtreleyin, önizleyin, Excel/PDF indirin; her indirme kayda geçer. İK, İSG eğitim kayıt defterindeki **OSGB dosyası**nı tam TC kimlik numarasıyla indirir; her indirmede dosyadaki kişiler için kişisel veri erişim kaydı tutulur.
 - **Tekrar eğitimi** otomatik açılır: süreli modülün bitişine `recert.lead_days` (varsayılan 30) gün kala kişiye yalnızca o modüller ve bağlı sınavlar atanır. Kişinin açık eğitimi varsa o bitince açılır (size bildirim gelir). Pratik modül varsa kişinin eğitimine eğitmen seçin. İptal ettiğiniz tekrar eğitimi yeniden açılmaz. Bitince bölüm sorumlusu onaylar ve yeni sertifika düzenlenir.
 - **Bildirimler (Faz 2):** hedef tarihi geçen eğitim (bölüm sorumlusuna bir kez), işaretlenmeyen pratik görev (eğitmene), süresi dolan İSG eğitimleri (İSG'ye günlük özet), Pazartesi 08:00 haftalık ekip özeti (bölüm sorumlusuna; e-postada yalnızca sayılar).
 - **Kişi verisini dışa aktar** (kişi sayfası): KVKK kapsamındaki talepler için kişinin verilerini Excel olarak verir (TC maskeli). Kendi verinizi bu yolla indiremezsiniz.
@@ -93,9 +93,11 @@ Yalnızca kapsamınızdaki birimlerin personelini ve içeriklerini görürsünü
 
 - İSG içeriklerini, kartların İSG bölümünü ve **İSG/İSG kritik soruları** onaylarsınız (Onay bekleyenler).
 - Modüllerde **"Uzaktan verilebilir mi"** ayarını belirlersiniz; uzaktan verilemeyen modüller yalnızca sınıf eğitimi kaydıyla tamamlanır.
+- İSG modüllerinde **İSG konu grubunu** (genel, sağlık, teknik, diğer) seçersiniz; OSGB dosyasında ayrı sütun olarak çıkar.
 - **Tehlike sınıfı**, yıllık İSG eğitim saatleri ve yenileme süreleri **Sistem → Parametreler**'dedir; tehlike sınıfı ayarlanana kadar "tehlikeli" kabul edilir ve raporda uyarı görünür.
 - **Raporlar → Ziyaretçi kayıt defteri** (güvenlik + İSG) ve **Taşeron uygunluk** (İSG + İK): Excel/PDF; satın alma ile taşeron raporunu siz paylaşırsınız.
 - **Raporlar → İSG eğitim kayıt defteri**: bütün personelin İSG eğitimleri, yöntem (uzaktan/yüz yüze), geçerlilik ve kişi başı yıllık saat — denetimde sunulabilir biçimde Excel/PDF.
+- Aynı sayfadaki **OSGB dosyası** bölümünden dönemin İSG eğitim kayıtlarını OSGB'ye gönderilecek biçimde Excel ya da CSV olarak indirin. Eski personel için girilen son eğitim tarihleri de "Girilen tarih" kaynağıyla dosyadadır. TC kimlik no sütunu sizin dosyanızda boştur; tam TC'li dosyayı İK indirir.
 - İSG modülünü tamamlayan herkes için **katılım belgesi** kendiliğinden düzenlenir.
 - **Güvenlik → Bilgilendirme paketleri**: her ziyaretçi tipi için kartlar ve kontrol soruları (Türkçe + İngilizce). Taslağı kaydedin, eksiksizse **Yayınla**. Yayınlanan sürüm değişmez; değişiklik için yeni sürüm hazırlayın.
 - **Ziyaretçi tipleri** (soru sayısı, geçme notu, geçerlilik) Sistem → Parametreler'dedir. **Ziyaretçi kuralları** metni Sistem → Aydınlatma metinleri'ndedir.

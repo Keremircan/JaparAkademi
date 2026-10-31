@@ -12,6 +12,7 @@ import {
   unique,
   uuid,
 } from "drizzle-orm/pg-core";
+import { OHS_TOPICS } from "../../../lib/ohs";
 import { users } from "./auth";
 import { commonTarget, contents, contentVersionStatus } from "./content";
 import { orgUnits, positions } from "./org";
@@ -76,6 +77,8 @@ export const positionCardReviews = pgTable(
 // ---- Modül kütüphanesi ----
 
 export const moduleKind = pgEnum("module_kind", ["theory", "practice", "theory_exam", "practice_exam"]);
+/** İSG konu grubu (karar #228); yalnızca İSG modülünde. */
+export const ohsTopic = pgEnum("ohs_topic", OHS_TOPICS);
 
 export const modules = pgTable(
   "modules",
@@ -86,6 +89,8 @@ export const modules = pgTable(
     description: text(),
     durationMin: integer().notNull(),
     isOhs: boolean().notNull().default(false),
+    /** İSG konu grubu (OSGB dosyası, karar #228); İSG modülü değilse boş. */
+    ohsTopic: ohsTopic(),
     /** Uzaktan (çevrim içi) verilebilir mi; İSG modüllerinde yalnızca İSG uzmanı değiştirir. */
     remoteAllowed: boolean().notNull().default(true),
     /** Geçerlilik (ay); boşsa süresiz. */
@@ -109,6 +114,7 @@ export const modules = pgTable(
   (t) => [
     index("modules_owner_idx").on(t.ownerOrgUnitId),
     check("modules_duration_check", sql`${t.durationMin} > 0 and ${t.durationMin} <= 100000`),
+    check("modules_ohs_topic_check", sql`${t.ohsTopic} is null or ${t.isOhs}`),
     check("modules_validity_check", sql`${t.validityMonths} is null or ${t.validityMonths} between 1 and 240`),
     check(
       "modules_common_check",

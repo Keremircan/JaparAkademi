@@ -32,7 +32,7 @@ async function Content() {
   return (
     <section>
       <PageHeader title={t("new")} description={t("newIntro")} back={{ href: "/manage/modules", label: t("title") }} />
-      <ModuleForm mode="create" owners={owners} ohsOnly={ohsOnly} />
+      <ModuleForm mode="create" owners={owners} ohsOnly={ohsOnly} ohsSpecialist={hasRole(access.actor, "ohs_specialist")} />
     </section>
   );
 }

@@ -530,7 +530,7 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 **Pozisyon kartı ve plan**
 - `position_card_versions`: id, position_id, version, status (içerikle aynı), sections (jsonb, 2–12; Zod şemalı; yayında 1. bölüm künye kopyası eklenir), ohs_section_changed, change_note, created_by, submitted_by/at, published_at (kilit)
 - `position_card_reviews`: card_version_id, note, reviewed_by, reviewed_at — **değiştirilemez** ("gözden geçirdim" kayıtları; son gözden geçirme = max(yayın, son kayıt))
-- `modules`: id, kind (`theory`|`practice`|`theory_exam`|`practice_exam`), title, description, duration_min, is_ohs, remote_allowed, validity_months, owner_org_unit_id (null = ortak), common_target, common_sort_order, card_position_id (doluysa pozisyonun "Pozisyon kartı" modülü), archived_at — sürümsüz (karar #45)
+- `modules`: id, kind (`theory`|`practice`|`theory_exam`|`practice_exam`), title, description, duration_min, is_ohs, ohs_topic (`general`|`health`|`technical`|`other`, yalnızca İSG modülünde; karar #228), remote_allowed, validity_months, owner_org_unit_id (null = ortak), common_target, common_sort_order, card_position_id (doluysa pozisyonun "Pozisyon kartı" modülü), archived_at — sürümsüz (karar #45)
 - `module_contents`: module_id, content_id, sort_order (yayındaki sürüm atama anında sabitlenir)
 - `quiz_questions`: id, module_id, sort_order, type (`single_choice`|`true_false`), stem, options, correct_index, explanation, archived_at — ara değerlendirme soruları modüle bağlıdır (karar #53); listeden çıkan soru arşivlenir
 - `practice_tasks`: id, module_id, title, description, is_critical, sort_order, competency_id (isteğe bağlı; karar #219)
@@ -604,7 +604,7 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `push_outbox`: notification_id, user_id, status, attempts, last_error, next_attempt_at, sent_at (karar #179)
 - `import_batches` (dosya, mod: `existing_staff`|`new_hires`, durum, sayılar), `import_rows` (normalleştirilmiş satır; TC yalnızca korumalı hâliyle; onaylanınca değiştirilemez). Onaylanmamış aktarımların satırları 24 saat sonra silinir (worker işi `imports.cleanup`)
 - `corrections`: target_table, target_id, field, old_value, new_value, reason, created_by, created_at
-- `report_exports`: actor_id, report (`training`|`exams`|`ohs`|`onboarding`), format (`xlsx`|`pdf`), filters (jsonb), row_count, at — **değiştirilemez** (her rapor dışa aktarması)
+- `report_exports`: actor_id, report (rapor türü, `competency`, `logins`, `osgb` …), format (`xlsx`|`pdf`|`csv`), filters (jsonb), row_count, at — **değiştirilemez** (her rapor dışa aktarması)
 - `audit_log`: id, at, actor_id, request_id, table_name, record_id, action, old_data, new_data — **append-only**
 
 \* Faz 2
@@ -781,6 +781,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 |---|---|
 | **3.1 Yetkinlik matrisi** | Yetkinlik tanımları (`/manage/competencies`), pratik görev ↔ yetkinlik bağı, işe başlama onayında otomatik verme, bölüm sorumlusunun gerekçeyle elle verme/geri alma, matris (`/reports/competency`, Excel), süre uyarısı, profilde "Yetkinliklerim" (kararlar #218–221) |
 | **3.2 Eski personelin periyodik eğitimleri** | Süreli teorik modüllerde sistem dışı son eğitim tarihi (`prior_trainings`, ekrandan ve Excel'den), gece işiyle otomatik açılma, "Şimdi başlat", `periodic` atama türü (onaysız tamamlanma), `/manage/periodic` (kararlar #222–225) |
+| **3.3 OSGB dışa aktarım** | İSG modüllerine konu grubu, Raporlar → İSG eğitim kayıt defteri sayfasında "OSGB dosyası" (Excel + CSV): sistemde tamamlanan İSG modülleri + girilen son eğitim tarihleri, tam TC yalnızca İK'ya (kararlar #226–229) |
 
 "Tüm bölümlerin pozisyon kartları" içerik girişidir; kod paketi değildir (pilot kontrol listesinde izlenir).
 
@@ -1021,6 +1022,10 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 223 | Son eğitim tarihi | `prior_trainings`: kişi × süreli teorik modül için sistem dışında alınan son eğitimin tarihi (ileri tarih olamaz) ve isteğe bağlı not; ekrandan (seçili kişilere aynı tarih) ya da Excel'den (Sicil no, Modül, Son eğitim tarihi, Not; şablon tarihi olmayan satırları içerir). Değiştirilemez; düzeltme yeni kayıtla, kişi × modülde en son girilen geçerli. Bitiş = tarih + modülün geçerlilik ayı. Sistemde aynı modülün herhangi bir ataması varsa sistem kaydı geçerlidir. Anonimleştirmede not silinir |
 | 224 | Periyodik atama | `assignment_reason` `periodic`. Gece `runRecert`, son eğitim tarihinin bitişine `recert.lead_days` kala periyodik atama açar (`assignment_modules.renews_prior_id`; aynı kayıt bir kez). Periyodik atamadan doğan yenileme de periyodiktir. İşe başlama onayı ve pozisyon sertifikası yoktur: zorunlu modüller bitince atama kendiliğinden tamamlanır; İSG modüllerinde katılım belgesi her zamanki gibi. Sınav hakları ve karar akışı aynı |
 | 225 | Periyodik eğitimi kim yönetir | Ekran `/manage/periodic` (`periodic.view`): İK ve İSG uzmanı. Son eğitim tarihi (`periodic.record`): İK her modülde, İSG uzmanı yalnızca İSG modüllerinde. "Şimdi başlat": İK (`assignments.manage`) |
+| 226 | OSGB dosyasının içeriği | Seçilen dönemde kişi × İSG eğitimi bir satır: sistemde tamamlanan İSG modülleri (devreden kayıt hariç, kayıttaki pozisyon) ve `prior_trainings`'teki son eğitim tarihleri (kişi × modülde en son girilen; kişinin bugünkü pozisyonu). Sütunlar: TC kimlik no, sicil no, ad soyad, birim, pozisyon, eğitim konusu, konu grubu, tarih, süre (saat), yöntem (uzaktan/yüz yüze; girilen tarihte boş), eğitmen (sınıf eğitiminden), belge no (katılım belgesi), geçerlilik bitişi, kaynak (sistem/girilen tarih). Birim/pozisyon süzgeci İSG raporuyla aynı; satır sınırı `reports.max_rows`, aşılırsa süzgeç daraltılır |
+| 227 | OSGB dosyasında TC kimlik no | Tam TC yalnızca `people.view_national_id` (İK) indirirken yazılır; dosyadaki her kişi için `data_access_log` (`national_id_osgb`) kaydı. İSG uzmanının dosyasında sütun boştur. Yetki `reports.ohs` (İSG uzmanı + İK) |
+| 228 | İSG konu grubu | `modules.ohs_topic`: Çalışanların İSG Eğitimleri Yönetmeliği'ndeki genel, sağlık, teknik, diğer konular. Yalnızca İSG modülünde; İSG uzmanı seçer ("uzaktan verilebilir" ayarı gibi). Boşsa dosyada "Belirtilmemiş". Dosya modülün güncel değerini kullanır |
+| 229 | OSGB dosya biçimi | Excel (tarih hücreleri, TC/sicil metin) ve CSV (UTF-8 BOM, noktalı virgül, CRLF, Türkçede ondalık virgül; formül gibi başlayan hücreye `'`). Başlıklar indirenin dilinde. Her indirme `report_exports`'a (`osgb`, `xlsx`/`csv`) yazılır |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:
