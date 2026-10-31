@@ -11,6 +11,7 @@ import { deleteObjects } from "@/server/storage/client";
 import { notify, usersWithRole } from "./notifications";
 import { getSettings } from "./settings";
 import { purgeExpiredInviteLinks } from "@/server/services/invitation-batches";
+import { purgeAnonymizedProfilePhotos } from "./profile";
 
 /**
  * Saklama süresi işleri (SPEC 12.3, iş paketi 2.1, kararlar #120–125). Worker her gece çalıştırır.
@@ -56,6 +57,8 @@ export async function anonymizeDuePersonnel(actor: Actor, now: Date = new Date()
       // Yetkinlik kayıtlarındaki gerekçe metinleri (karar #219)
       await tx.execute(sql`select app_anonymize_competency_grants(array[${sql.join(rows.map((r) => sql`${r.id}`), sql`, `)}]::uuid[])`);
       await tx.execute(sql`select app_anonymize_prior_trainings(array[${sql.join(rows.map((r) => sql`${r.id}`), sql`, `)}]::uuid[])`);
+      // Açık rıza kayıtlarındaki IP / tarayıcı (iş paketi 3.4)
+      await tx.execute(sql`select app_anonymize_explicit_consents(array[${sql.join(rows.map((r) => sql`${r.id}`), sql`, `)}]::uuid[])`);
       await notify(tx, {
         kind: "retention_completed",
         userIds: await usersWithRole(tx, "sysadmin"),
@@ -172,6 +175,12 @@ export async function runRetention(actor: Actor, now: Date = new Date()): Promis
   } catch (err) {
     // Depo erişilemezse kayıtlar "purged" olmaz; ertesi gece yeniden denenir
     logger.error({ err }, "İmza görselleri silinemedi");
+  }
+  try {
+    // Profil fotoğrafları (iş paketi 3.4)
+    images += await purgeAnonymizedProfilePhotos(actor);
+  } catch (err) {
+    logger.error({ err }, "Profil fotoğrafları silinemedi");
   }
   const visitorCount = await anonymizeDueVisitors(actor, now);
   const blacklist = await anonymizeLiftedBlacklist(actor, now);

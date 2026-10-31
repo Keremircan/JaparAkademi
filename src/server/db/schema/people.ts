@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { boolean, check, date, index, integer, pgEnum, pgTable, primaryKey, text, uuid } from "drizzle-orm/pg-core";
 import { ROLES } from "@/server/authz/roles";
 import { users } from "./auth";
+import { mediaAssets } from "./content";
 import { orgUnits, positions } from "./org";
 import { createdAt, id, tstz, updatedAt } from "./_shared";
 
@@ -28,6 +29,8 @@ export const personnel = pgTable(
     nationalIdMasked: text(),
     phone: text(),
     email: text(),
+    /** Profil fotoğrafı (iş paketi 3.4); yalnızca açık rıza varken dolu olabilir, rıza geri alınınca silinir. */
+    photoAssetId: uuid().references(() => mediaAssets.id, { onDelete: "restrict" }),
     /** Boş olabilir (ör. BT personeli); pozisyonsuz personele eğitim atanamaz. */
     positionId: uuid().references(() => positions.id, { onDelete: "restrict" }),
     employmentType: employmentType().notNull().default("employee"),

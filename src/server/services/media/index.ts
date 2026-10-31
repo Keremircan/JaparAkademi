@@ -47,12 +47,18 @@ export type UploadPlan =
   | { assetId: string; mode: "single"; url: string }
   | { assetId: string; mode: "multipart"; partSize: number; partUrls: string[] };
 
+/** Yükleme amacı: içerik/değerlendirme medyası (kütüphane kullanıcıları) ya da profil fotoğrafı (herkes, yalnızca görsel). */
+export type UploadPurpose = "library" | "profile_photo";
+
 export async function startUpload(
   actor: Actor,
-  input: { kind: MediaKind; mime: string; size: number; fileName: string },
+  input: { kind: MediaKind; mime: string; size: number; fileName: string; purpose?: UploadPurpose },
 ): Promise<UploadPlan> {
   assertUser(actor);
-  if (!canUseLibrary(actor)) throw new ForbiddenError("content.draft");
+  if (input.purpose === "profile_photo") {
+    // Profil fotoğrafı (iş paketi 3.4): rıza ve kişi kontrolü fotoğraf bağlanırken yapılır (setProfilePhoto)
+    if (input.kind !== "image") throw new ValidationError("file_type_not_allowed");
+  } else if (!canUseLibrary(actor)) throw new ForbiddenError("content.draft");
   const ext = MIME_BY_KIND[input.kind]?.[input.mime];
   if (!ext) throw new ValidationError("file_type_not_allowed");
   if (!Number.isInteger(input.size) || input.size <= 0) throw new ValidationError("file_empty");
@@ -206,7 +212,10 @@ export async function getAssetForViewer(actor: Actor, assetId: string) {
     if (await canViewBriefingAsset(actor, assetId)) return asset;
     // Sertifika PDF'i: kişiyi görebilenler (FG-7.2)
     const { canViewCertificateAsset } = await import("../certificates");
-    return (await canViewCertificateAsset(actor, assetId)) ? asset : null;
+    if (await canViewCertificateAsset(actor, assetId)) return asset;
+    // Profil fotoğrafı (iş paketi 3.4): kişiyi görebilenler
+    const { canViewProfilePhoto } = await import("../profile");
+    return (await canViewProfilePhoto(actor, assetId)) ? asset : null;
   }
   const access = await contentAccessFor(actor);
   if ([...refs, ...cards.map((c) => ({ ...c, isOhs: false }))].some((r) => canViewContent(access, r))) return asset;

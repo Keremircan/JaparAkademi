@@ -170,6 +170,34 @@
     "language": {
       "title": "Dil / Language",
       "hint": "The app opens in the language you choose here. Content without an English version is shown in Turkish."
+    },
+    "contact": {
+      "email": "Email",
+      "emailHint": "HR changes your email address.",
+      "phone": "Phone",
+      "phoneHint": "Example: 0532 123 45 67. If you save it empty, the number is deleted.",
+      "save": "Save",
+      "saved": "Phone saved."
+    },
+    "photo": {
+      "alt": "Profile photo of {name}",
+      "processing": "Preparing the photo…",
+      "uploading": "Uploading… {percent}%",
+      "add": "Add photo",
+      "change": "Change photo",
+      "remove": "Remove photo",
+      "removeConfirm": "The photo will be deleted permanently. Continue?",
+      "noConsentSelf": "A profile photo can only be added with your explicit consent.",
+      "noConsentOther": "A photo cannot be added because this person has not given explicit consent."
+    },
+    "consent": {
+      "title": "Explicit consent",
+      "granted": "You gave explicit consent ({date}).",
+      "notGranted": "You have not given explicit consent; you cannot add a profile photo.",
+      "read": "Read the text: {title}",
+      "grant": "Give explicit consent",
+      "withdraw": "Withdraw explicit consent",
+      "withdrawConfirm": "If you withdraw your consent, your profile photo is deleted permanently. Continue?"
     }
   },
   "roles": {
@@ -406,7 +434,9 @@
     "competency_name_invalid": "Competency name must be 2–200 characters.",
     "competency_archived": "This competency is archived.",
     "competency_invalid": "The selected competency does not belong to this module's unit or is archived.",
-    "prior_date_invalid": "The last training date is invalid or after today."
+    "prior_date_invalid": "The last training date is invalid or after today.",
+    "photo_consent_required": "A profile photo requires the person's explicit consent.",
+    "photo_delete_failed": "The photo could not be deleted right now. Please try again shortly."
   },
   "notFound": {
     "title": "Page not found",
@@ -656,7 +686,8 @@
       "intro": {
         "kvkk_personnel": "A published text cannot be changed. When a new version is published, all employees accept it again at their next sign-in. Turkish and English are published together.",
         "kvkk_visitor": "The privacy notice the visitor accepts during the briefing. Turkish and English are published together; a published text cannot be changed.",
-        "visitor_rules": "The site rules the visitor accepts before entry. Turkish and English are published together; a published text cannot be changed."
+        "visitor_rules": "The site rules the visitor accepts before entry. Turkish and English are published together; a published text cannot be changed.",
+        "explicit_consent_personnel": "Optional explicit consent, asked from employees with a separate tick box apart from the privacy notice. Turkish and English are published together; a published text cannot be changed. When a new version is published, the decision is asked again at the next sign-in. Employees who do not consent can use the system; they only cannot add a profile photo."
       },
       "newDraft": "Prepare a new version",
       "version": "Version {version}",
@@ -673,7 +704,8 @@
       "kinds": {
         "kvkk_personnel": "Employee privacy notice",
         "kvkk_visitor": "Visitor privacy notice",
-        "visitor_rules": "Visitor rules"
+        "visitor_rules": "Visitor rules",
+        "explicit_consent_personnel": "Employee explicit consent text"
       },
       "locales": {
         "tr": "Turkish",
@@ -685,10 +717,18 @@
   },
   "consent": {
     "title": "Protection of personal data",
-    "intro": "Before you continue, please read and accept the information notice below.",
+    "intro": "Please read the texts below before you continue.",
     "accept": "I have read it and I accept",
     "accepting": "Saving…",
-    "version": "Version {version}"
+    "version": "Version {version}",
+    "kvkkHeading": "Privacy notice (approval required)",
+    "continue": "Save and continue",
+    "explicit": {
+      "heading": "Explicit consent (optional)",
+      "intro": "Giving explicit consent is optional. You can use the system without it; only features that depend on consent (such as a profile photo) stay off. You can change your decision at any time on the Profile page.",
+      "checkbox": "I have read the explicit consent text and I give my explicit consent.",
+      "checkboxHint": "If you leave this unticked, you have not given explicit consent."
+    }
   },
   "manage": {
     "cards": {
@@ -2605,7 +2645,8 @@
       "training": "Trainings",
       "exams": "Exams",
       "certificates": "Documents",
-      "consents": "KVKK acceptances"
+      "consents": "KVKK acceptances",
+      "explicitConsents": "Explicit consent decisions"
     },
     "columns": {
       "sicil": "Employee no",
@@ -2640,7 +2681,13 @@
       "certificateStatus": "Status",
       "legalText": "Text",
       "version": "Version",
-      "acceptedAt": "Accepted on"
+      "acceptedAt": "Accepted on",
+      "decision": "Decision",
+      "decidedAt": "Decision date"
+    },
+    "decisions": {
+      "granted": "Gave consent",
+      "refused": "Did not consent / withdrew"
     }
   },
   "settings": {

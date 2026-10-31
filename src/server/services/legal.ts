@@ -1,8 +1,8 @@
 import { and, desc, eq, isNotNull, isNull, max } from "drizzle-orm";
 import type { Actor, UserActor } from "@/server/authz/actor";
 import { assertCan, can, type Permission } from "@/server/authz/policy";
-import { db } from "@/server/db/client";
-import { consents, legalTexts } from "@/server/db/schema";
+import { db, type DbOrTx } from "@/server/db/client";
+import { consents, explicitConsents, legalTexts } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { NotFoundError, ValidationError } from "@/server/errors";
 import type { RequestMeta } from "@/server/services/auth";
@@ -14,12 +14,15 @@ import type { RequestMeta } from "@/server/services/auth";
  * ikisi de TR + EN birlikte yayınlanır (FG-8.2).
  */
 const PERSONNEL_KIND = "kvkk_personnel" as const;
+/** Personel açık rıza metni (iş paketi 3.4, karar #231): aydınlatmadan ayrı, isteğe bağlı. */
+export const EXPLICIT_KIND = "explicit_consent_personnel" as const;
 
 export const LEGAL_KINDS = {
   // Personel metni de TR + EN birlikte yayınlanır (karar #207); bağlayıcı metin Türkçedir
   kvkk_personnel: { permission: "legal.manage", locales: ["tr", "en"] },
   kvkk_visitor: { permission: "legal.manage", locales: ["tr", "en"] },
   visitor_rules: { permission: "legal.visitor_rules", locales: ["tr", "en"] },
+  explicit_consent_personnel: { permission: "legal.manage", locales: ["tr", "en"] },
 } as const satisfies Record<string, { permission: Permission; locales: readonly string[] }>;
 export type LegalKind = keyof typeof LEGAL_KINDS;
 
@@ -51,13 +54,7 @@ export type LegalText = typeof legalTexts.$inferSelect;
 
 /** En son yayınlanmış personel aydınlatma metni (yoksa null: onay istenmez). */
 export async function currentPersonnelText(locale = "tr"): Promise<LegalText | null> {
-  const [row] = await db()
-    .select()
-    .from(legalTexts)
-    .where(and(eq(legalTexts.kind, PERSONNEL_KIND), eq(legalTexts.locale, locale), isNotNull(legalTexts.publishedAt)))
-    .orderBy(desc(legalTexts.version))
-    .limit(1);
-  return row ?? null;
+  return currentText(PERSONNEL_KIND, locale);
 }
 
 /** Güncel sürümün kişinin dilindeki metni; o dilde yoksa Türkçesi (karar #207). */
@@ -67,7 +64,7 @@ async function personnelTextIn(current: LegalText, locale: string): Promise<Lega
     .select()
     .from(legalTexts)
     .where(
-      and(eq(legalTexts.kind, PERSONNEL_KIND), eq(legalTexts.version, current.version), eq(legalTexts.locale, locale), isNotNull(legalTexts.publishedAt)),
+      and(eq(legalTexts.kind, current.kind), eq(legalTexts.version, current.version), eq(legalTexts.locale, locale), isNotNull(legalTexts.publishedAt)),
     )
     .limit(1);
   return row ?? current;
@@ -106,6 +103,82 @@ export async function acceptConsent(actor: UserActor, legalTextId: string, meta:
       .values({ userId: actor.userId, legalTextId, ip: meta.ip, userAgent: meta.userAgent?.slice(0, 512) ?? null })
       .onConflictDoNothing(),
   );
+}
+
+// ---------------------------------------------------------------------------
+// Açık rıza (iş paketi 3.4, kararlar #231–233)
+// ---------------------------------------------------------------------------
+
+export type ExplicitConsentState = {
+  /** Güncel açık rıza metni kişinin dilinde (yayınlanmış metin yoksa null: rıza istenmez ve verilemez). */
+  text: LegalText | null;
+  /** Güncel sürüm için verilmiş ve geri alınmamış rıza var mı. */
+  granted: boolean;
+  /** Güncel sürüm için henüz karar verilmedi: onay ekranında sorulur. */
+  pending: boolean;
+  decidedAt: Date | null;
+};
+
+/** Kişinin en son açık rıza kararı (değiştirilemez kayıtlar; güncel durum en son karardır). */
+async function latestExplicitDecision(userId: string, conn: DbOrTx = db()) {
+  const [row] = await conn
+    .select({ granted: explicitConsents.granted, decidedAt: explicitConsents.decidedAt, version: legalTexts.version })
+    .from(explicitConsents)
+    .innerJoin(legalTexts, eq(legalTexts.id, explicitConsents.legalTextId))
+    .where(eq(explicitConsents.userId, userId))
+    .orderBy(desc(explicitConsents.decidedAt), desc(explicitConsents.id))
+    .limit(1);
+  return row ?? null;
+}
+
+export async function explicitConsentState(userId: string, locale = "tr", conn: DbOrTx = db()): Promise<ExplicitConsentState> {
+  const current = await currentText(EXPLICIT_KIND, "tr");
+  if (!current) return { text: null, granted: false, pending: false, decidedAt: null };
+  const latest = await latestExplicitDecision(userId, conn);
+  const onCurrent = latest?.version === current.version;
+  return {
+    text: await personnelTextIn(current, locale),
+    granted: onCurrent && !!latest?.granted,
+    pending: !onCurrent,
+    decidedAt: onCurrent ? latest!.decidedAt : null,
+  };
+}
+
+/** Güncel sürüm için verilmiş açık rıza var mı (profil fotoğrafı bunu ister). */
+export async function hasExplicitConsent(userId: string, conn: DbOrTx = db()): Promise<boolean> {
+  return (await explicitConsentState(userId, "tr", conn)).granted;
+}
+
+/** Açık rıza metni kimliği güncel sürümün (herhangi bir dildeki) yayınlanmış metni olmalı. */
+export async function assertCurrentExplicitText(legalTextId: string): Promise<void> {
+  const current = await currentText(EXPLICIT_KIND, "tr");
+  const [text] = await db().select().from(legalTexts).where(eq(legalTexts.id, legalTextId)).limit(1);
+  if (!current || !text || text.kind !== EXPLICIT_KIND || text.version !== current.version || !text.publishedAt) {
+    throw new ValidationError("legal_text_outdated");
+  }
+}
+
+/** Kararı yazar (transaction içinde; doğrulama ve fotoğraf silme çağıranın sorumluluğunda). */
+export async function insertExplicitDecision(
+  tx: DbOrTx,
+  actor: UserActor,
+  input: { legalTextId: string; granted: boolean; source: "consent_screen" | "profile" },
+  meta: Pick<RequestMeta, "ip" | "userAgent">,
+): Promise<void> {
+  await tx.insert(explicitConsents).values({
+    userId: actor.userId,
+    legalTextId: input.legalTextId,
+    granted: input.granted,
+    source: input.source,
+    ip: meta.ip,
+    userAgent: meta.userAgent?.slice(0, 512) ?? null,
+  });
+}
+
+/** Onay ekranı gösterilmeli mi: aydınlatma onayı ya da açık rıza kararı bekleniyor. */
+export async function consentScreenPending(userId: string): Promise<boolean> {
+  if (await pendingConsent(userId)) return true;
+  return (await explicitConsentState(userId)).pending;
 }
 
 export async function listTexts(actor: Actor, kind: LegalKind): Promise<LegalText[]> {

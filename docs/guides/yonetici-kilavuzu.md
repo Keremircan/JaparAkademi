@@ -14,6 +14,8 @@ Bir kişi birden çok role sahip olabilir; menü rollerinize göre oluşur. Kims
   - **Excel'den aktar**: şablonu indirin, doldurun, yükleyin. Önce önizleme gösterilir; onaylayınca hesaplar açılır ama davet gönderilmez. Sonuç ekranındaki **Bunlara davet gönder** sizi Davetler ekranına, yalnızca bu aktarımın kişileriyle götürür.
   - **Davetler** (Personel → Davetler): hesabını etkinleştirmemiş herkes burada. Süzün, kişileri seçin (**Tümünü seç**), kanalı seçin ve **Davet oluştur**'a basın. **Akıllı** kanal: e-postası olana e-posta (e-posta gönderimi açıkken), telefonu olana WhatsApp, ikisi de olmayana basılı kağıt. Basılı kağıtlar tek PDF olarak bir kez iner (sunucuda saklanmaz). WhatsApp davetleri için bir **gönderim listesi** açılır: sırayla **WhatsApp'ta gönder** → WhatsApp'ta Gönder → sayfaya dönün; satır "Gönderildi" olur. Liste yarıda kalırsa Davetler ekranındaki **Son davet grupları**'ndan tekrar açıp devam edersiniz. Bir seferde en fazla 200 kişi (parametre).
   - TC kimlik no maskeli görünür; tamamını yalnızca İK görür ve her görüntüleme kayda geçer.
+  - **Profil fotoğrafı** (kişi sayfası): kişi açık rıza verdiyse fotoğrafını siz de yükleyip kaldırabilirsiniz; rızası yoksa fotoğraf eklenemez. Kişi telefonunu kendi profilinden değiştirir; e-postayı yalnızca siz değiştirirsiniz (şifre sıfırlama bu adrese gider).
+  - Personel yalnızca sistem içinden (ekran ve Excel) yönetilir; İK uygulamasından otomatik aktarım yoktur.
   - **Hesap durumu ve yeniden davet**: kişi sayfasında hesabın durumu görünür (etkin / davet bekliyor / davet kullanılamıyor). Şifresini unutan, kağıdını kaybeden ya da daveti dolan kişi için **Yeniden davet** → kanal → **Davet oluştur**. Eski şifre ve eski davet hemen geçersiz olur.
 
 ### Eğitim ataması
@@ -44,7 +46,8 @@ Sistem kimseyi otomatik reddetmez; karar sizindir ve değiştirilemez.
 - **Tekrar eğitimi** otomatik açılır: süreli modülün bitişine `recert.lead_days` (varsayılan 30) gün kala kişiye yalnızca o modüller ve bağlı sınavlar atanır. Kişinin açık eğitimi varsa o bitince açılır (size bildirim gelir). Pratik modül varsa kişinin eğitimine eğitmen seçin. İptal ettiğiniz tekrar eğitimi yeniden açılmaz. Bitince bölüm sorumlusu onaylar ve yeni sertifika düzenlenir.
 - **Bildirimler (Faz 2):** hedef tarihi geçen eğitim (bölüm sorumlusuna bir kez), işaretlenmeyen pratik görev (eğitmene), süresi dolan İSG eğitimleri (İSG'ye günlük özet), Pazartesi 08:00 haftalık ekip özeti (bölüm sorumlusuna; e-postada yalnızca sayılar).
 - **Kişi verisini dışa aktar** (kişi sayfası): KVKK kapsamındaki talepler için kişinin verilerini Excel olarak verir (TC maskeli). Kendi verinizi bu yolla indiremezsiniz.
-- **Aydınlatma metinleri** (Sistem → Aydınlatma metinleri ve kurallar): personel KVKK metni ve ziyaretçi KVKK metni. İkisi de Türkçe + İngilizce birlikte yayınlanır (bağlayıcı metin Türkçedir); yeni sürümde bütün kullanıcılar yeniden onaylar. Personel kendi dilindeki metni onaylar.
+- **Aydınlatma metinleri** (Sistem → Aydınlatma metinleri ve kurallar): personel KVKK metni, personel açık rıza metni ve ziyaretçi KVKK metni. Hepsi Türkçe + İngilizce birlikte yayınlanır (bağlayıcı metin Türkçedir); yeni sürümde bütün kullanıcılar yeniden onaylar. Personel kendi dilindeki metni onaylar.
+- **Açık rıza**: aydınlatma metninden ayrı ve isteğe bağlıdır. Yayınlanınca personele bir sonraki girişte ayrı bir kutuyla sorulur; vermeyen kişi sistemi kullanır, yalnızca profil fotoğrafı eklenemez. Personel kararını profilinden değiştirebilir; geri alınca fotoğrafı silinir. Bütün kararlar tarih, IP ve tarayıcı bilgisiyle saklanır ve kişi verisi dışa aktarmasında ayrı sayfada yer alır. Metin yayınlanmadan profil fotoğrafı özelliği kapalı kalır.
 
 ---
 

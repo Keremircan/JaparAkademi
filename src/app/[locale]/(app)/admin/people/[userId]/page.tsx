@@ -20,6 +20,8 @@ import { AssignmentSummaryView } from "@/features/assignments/components/assignm
 import { CertificateList } from "@/features/certification/components/certificate-list";
 import { certificatesForUser } from "@/server/services/certificates";
 import { PersonalExportButton } from "@/features/reports/components/personal-export-button";
+import { ProfilePhoto } from "@/features/profile/components/profile-photo";
+import { personPhoto } from "@/server/services/profile";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.people");
@@ -64,7 +66,7 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
   const canSeeTc = can(access.actor, "people.view_national_id");
   const isSelf = access.actor.userId === person.userId;
   const canAssign = can(access.actor, "assignments.manage");
-  const [assignmentList, trainers, ta, tcert, certs, invite, tInvite] = await Promise.all([
+  const [assignmentList, trainers, ta, tcert, certs, invite, tInvite, photo] = await Promise.all([
     canAssign ? assignmentsForPerson(access.actor, person.userId) : Promise.resolve([]),
     canAssign ? trainerCandidates(access.actor) : Promise.resolve([]),
     getTranslations("assignments"),
@@ -72,6 +74,7 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
     canAssign ? certificatesForUser(access.actor, person.userId).catch(() => []) : Promise.resolve([]),
     inviteStatus(access.actor, person.userId),
     getTranslations("invite"),
+    personPhoto(access.actor, person.userId),
   ]);
   const open = assignmentList.find((a) => ["active", "awaiting_readiness", "awaiting_decision"].includes(a.status));
   const past = assignmentList.filter((a) => a !== open);
@@ -102,6 +105,10 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
       />
 
       <h2 className="mb-2 text-lg font-semibold">{t("detail.info")}</h2>
+      {/* Profil fotoğrafı (iş paketi 3.4): kişinin açık rızası varken İK yükleyebilir */}
+      <div className="mb-4 rounded-2xl border p-5">
+        <ProfilePhoto userId={person.userId} name={person.fullName} photo={photo.photo} consent={photo.consent} canEdit={photo.canEdit && canManage} />
+      </div>
       <dl className="mb-8 divide-y rounded-2xl border">
         <Row label={t("form.position")}>{position?.label ?? t("form.noPosition")}</Row>
         <Row label={t("form.hireDate")}>{fmtDate(person.hireDate)}</Row>

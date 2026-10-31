@@ -1,4 +1,4 @@
-import { KeyRound, LogOut, UserRoundPlus } from "lucide-react";
+import { KeyRound, LogOut, ShieldCheck, UserRoundPlus } from "lucide-react";
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,12 @@ import { Link } from "@/i18n/navigation";
 import { NotFoundView } from "@/components/app-shell/not-found-view";
 import { getSectionUser } from "@/server/auth/current-user";
 import { toActor } from "@/server/services/auth";
-import { getOwnPlacement } from "@/server/services/people";
+import { myProfile } from "@/server/services/profile";
+import { ActionButton } from "@/components/forms/action-button";
+import { decideConsentAction } from "@/features/profile/actions";
+import { PhoneForm } from "@/features/profile/components/phone-form";
+import { ProfilePhoto } from "@/features/profile/components/profile-photo";
+import { LegalTextBody } from "@/features/legal/components/legal-text-body";
 import { myCompetencies } from "@/server/services/competencies";
 import { pushPublicKey } from "@/server/services/push";
 import { PushToggle } from "@/features/push/components/push-toggle";
@@ -31,27 +36,50 @@ export default function ProfilePage() {
 async function Content() {
   const user = await getSectionUser("profile");
   if (!user) return <NotFoundView />;
-  const [t, placement, competencies, format] = await Promise.all([
+  const [t, profile, competencies, format] = await Promise.all([
     getTranslations(),
-    getOwnPlacement(toActor(user)),
+    myProfile(toActor(user), user.locale),
     myCompetencies(toActor(user)),
     getFormatter(),
   ]);
   const publicKey = pushPublicKey();
+  const consent = profile.consent;
 
   return (
     <section className="max-w-xl">
       <h1 className="text-2xl font-semibold lg:text-3xl">{t("profile.title")}</h1>
 
+      {/* Detaylı profil (iş paketi 3.4, kararlar #233–235) */}
+      <div className="mt-6 rounded-2xl border p-5">
+        <ProfilePhoto userId={null} name={profile.fullName} photo={profile.photo} consent={consent.granted} canEdit />
+        <p className="mt-4 text-xl font-semibold">{profile.fullName}</p>
+      </div>
+
       <dl className="mt-6 divide-y rounded-2xl border">
         <div className="px-5 py-4">
           <dt className="text-sm text-muted-foreground">{t("profile.sicil")}</dt>
-          <dd className="mt-1 text-lg font-medium">{user.sicilNo}</dd>
+          <dd className="mt-1 text-lg font-medium">{profile.sicilNo}</dd>
+        </div>
+        <div className="px-5 py-4">
+          <dt className="text-sm text-muted-foreground">{t("profile.department")}</dt>
+          <dd className="mt-1 text-lg font-medium">{profile.unitPath ?? t("common.none")}</dd>
         </div>
         <div className="px-5 py-4">
           <dt className="text-sm text-muted-foreground">{t("profile.position")}</dt>
-          <dd className="mt-1 text-lg font-medium">{placement?.positionName ?? t("profile.noPosition")}</dd>
-          {placement?.unitPath && <dd className="text-sm text-muted-foreground">{placement.unitPath}</dd>}
+          <dd className="mt-1 text-lg font-medium">{profile.positionName ?? t("profile.noPosition")}</dd>
+        </div>
+        <div className="px-5 py-4">
+          <dt className="text-sm text-muted-foreground">{t("profile.contact.email")}</dt>
+          <dd className="mt-1 text-lg font-medium break-all">{profile.email ?? t("common.none")}</dd>
+          <dd className="text-sm text-muted-foreground">{t("profile.contact.emailHint")}</dd>
+        </div>
+        <div className="px-5 py-4">
+          <dt className="text-sm text-muted-foreground">
+            <label htmlFor="phone">{t("profile.contact.phone")}</label>
+          </dt>
+          <dd>
+            <PhoneForm phone={profile.phone} />
+          </dd>
         </div>
         <div className="px-5 py-4">
           <dt className="text-sm text-muted-foreground">{t("profile.roles")}</dt>
@@ -66,6 +94,38 @@ async function Content() {
       </dl>
 
       <LanguageSelect current={user.locale} />
+
+      {/* Açık rıza: isteğe bağlı, profilden verilir ya da geri alınır (karar #232) */}
+      {consent.text && (
+        <section aria-labelledby="consent-title" className="mt-6 rounded-2xl border p-5">
+          <h2 id="consent-title" className="flex items-center gap-2 text-lg font-semibold">
+            <ShieldCheck aria-hidden="true" className="size-5" />
+            {t("profile.consent.title")}
+          </h2>
+          <p role="status" className="mt-1 text-sm">
+            {consent.granted
+              ? t("profile.consent.granted", { date: format.dateTime(consent.decidedAt!, { dateStyle: "medium", timeStyle: "short" }) })
+              : t("profile.consent.notGranted")}
+          </p>
+          <details className="mt-3 rounded-xl border p-3">
+            <summary className="flex min-h-12 cursor-pointer items-center font-medium">{t("profile.consent.read", { title: consent.text.title })}</summary>
+            <div lang={consent.text.locale} className="mt-3 max-h-[40dvh] overflow-y-auto" tabIndex={0}>
+              <LegalTextBody body={consent.text.body} />
+            </div>
+          </details>
+          <div className="mt-4">
+            {consent.granted ? (
+              <ActionButton action={decideConsentAction.bind(null, consent.text.id, false)} confirmText={t("profile.consent.withdrawConfirm")}>
+                {t("profile.consent.withdraw")}
+              </ActionButton>
+            ) : (
+              <ActionButton action={decideConsentAction.bind(null, consent.text.id, true)} variant="default">
+                {t("profile.consent.grant")}
+              </ActionButton>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Yetkinliklerim (karar #221) */}
       {competencies.length > 0 && (

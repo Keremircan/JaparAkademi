@@ -170,6 +170,34 @@
     "language": {
       "title": "Dil / Language",
       "hint": "Uygulama, girişte seçtiğiniz dilde açılır. İngilizcesi olmayan içerikler Türkçe gösterilir."
+    },
+    "contact": {
+      "email": "E-posta",
+      "emailHint": "E-posta adresinizi İK değiştirir.",
+      "phone": "Telefon",
+      "phoneHint": "Örnek: 0532 123 45 67. Boş bırakıp kaydederseniz numara silinir.",
+      "save": "Kaydet",
+      "saved": "Telefon kaydedildi."
+    },
+    "photo": {
+      "alt": "{name} profil fotoğrafı",
+      "processing": "Fotoğraf hazırlanıyor…",
+      "uploading": "Yükleniyor… %{percent}",
+      "add": "Fotoğraf ekle",
+      "change": "Fotoğrafı değiştir",
+      "remove": "Fotoğrafı kaldır",
+      "removeConfirm": "Fotoğraf kalıcı olarak silinecek. Devam edilsin mi?",
+      "noConsentSelf": "Profil fotoğrafı yalnızca açık rızanızla eklenebilir.",
+      "noConsentOther": "Kişi açık rıza vermediği için fotoğraf eklenemez."
+    },
+    "consent": {
+      "title": "Açık rıza",
+      "granted": "Açık rıza verdiniz ({date}).",
+      "notGranted": "Açık rıza vermediniz; profil fotoğrafı ekleyemezsiniz.",
+      "read": "Metni oku: {title}",
+      "grant": "Açık rıza ver",
+      "withdraw": "Açık rızayı geri al",
+      "withdrawConfirm": "Rızanızı geri alırsanız profil fotoğrafınız kalıcı olarak silinir. Devam edilsin mi?"
     }
   },
   "roles": {
@@ -406,7 +434,9 @@
     "competency_name_invalid": "Yetkinlik adı 2–200 karakter olmalı.",
     "competency_archived": "Bu yetkinlik arşivlenmiş.",
     "competency_invalid": "Seçilen yetkinlik bu modülün birimine ait değil ya da arşivlenmiş.",
-    "prior_date_invalid": "Son eğitim tarihi geçersiz ya da bugünden sonra."
+    "prior_date_invalid": "Son eğitim tarihi geçersiz ya da bugünden sonra.",
+    "photo_consent_required": "Profil fotoğrafı için kişinin açık rızası gerekir.",
+    "photo_delete_failed": "Fotoğraf şu anda silinemedi. Biraz sonra yeniden deneyin."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -656,7 +686,8 @@
       "intro": {
         "kvkk_personnel": "Yayınlanan metin değiştirilemez. Yeni sürüm yayınlanınca tüm personel bir sonraki girişte yeniden onaylar.",
         "kvkk_visitor": "Ziyaretçinin bilgilendirmede onayladığı KVKK metni. Türkçe ve İngilizce birlikte yayınlanır; yayınlanan metin değiştirilemez.",
-        "visitor_rules": "Ziyaretçinin girişten önce onayladığı tesis kuralları. Türkçe ve İngilizce birlikte yayınlanır; yayınlanan metin değiştirilemez."
+        "visitor_rules": "Ziyaretçinin girişten önce onayladığı tesis kuralları. Türkçe ve İngilizce birlikte yayınlanır; yayınlanan metin değiştirilemez.",
+        "explicit_consent_personnel": "Personelden aydınlatma metninden ayrı bir kutuyla, isteğe bağlı alınan açık rıza. Türkçe ve İngilizce birlikte yayınlanır; yayınlanan metin değiştirilemez. Yeni sürüm yayınlanınca karar bir sonraki girişte yeniden sorulur. Rıza vermeyen personel sistemi kullanır, yalnızca profil fotoğrafı ekleyemez."
       },
       "newDraft": "Yeni sürüm hazırla",
       "version": "Sürüm {version}",
@@ -673,7 +704,8 @@
       "kinds": {
         "kvkk_personnel": "Personel KVKK metni",
         "kvkk_visitor": "Ziyaretçi KVKK metni",
-        "visitor_rules": "Ziyaretçi kuralları"
+        "visitor_rules": "Ziyaretçi kuralları",
+        "explicit_consent_personnel": "Personel açık rıza metni"
       },
       "locales": {
         "tr": "Türkçe",
@@ -685,10 +717,18 @@
   },
   "consent": {
     "title": "Kişisel verilerin korunması",
-    "intro": "Devam etmeden önce aşağıdaki aydınlatma metnini okuyup onaylayın.",
+    "intro": "Devam etmeden önce aşağıdaki metinleri okuyun.",
     "accept": "Okudum, onaylıyorum",
     "accepting": "Kaydediliyor…",
-    "version": "Sürüm {version}"
+    "version": "Sürüm {version}",
+    "kvkkHeading": "Aydınlatma metni (onay zorunlu)",
+    "continue": "Kaydet ve devam et",
+    "explicit": {
+      "heading": "Açık rıza (isteğe bağlı)",
+      "intro": "Açık rıza vermek isteğe bağlıdır. Vermeseniz de sistemi kullanabilirsiniz; yalnızca rızaya bağlı işlemler (ör. profil fotoğrafı) kapalı kalır. Kararınızı Profil sayfasından istediğiniz zaman değiştirebilirsiniz.",
+      "checkbox": "Açık rıza metnini okudum, açık rıza veriyorum.",
+      "checkboxHint": "İşaretlemezseniz açık rıza vermemiş sayılırsınız."
+    }
   },
   "manage": {
     "cards": {
@@ -2640,7 +2680,8 @@
       "training": "Eğitimler",
       "exams": "Sınavlar",
       "certificates": "Belgeler",
-      "consents": "KVKK onayları"
+      "consents": "KVKK onayları",
+      "explicitConsents": "Açık rıza kararları"
     },
     "columns": {
       "sicil": "Sicil no",
@@ -2675,7 +2716,13 @@
       "certificateStatus": "Durum",
       "legalText": "Metin",
       "version": "Sürüm",
-      "acceptedAt": "Onay tarihi"
+      "acceptedAt": "Onay tarihi",
+      "decision": "Karar",
+      "decidedAt": "Karar tarihi"
+    },
+    "decisions": {
+      "granted": "Rıza verdi",
+      "refused": "Rıza vermedi / geri aldı"
     }
   },
   "settings": {

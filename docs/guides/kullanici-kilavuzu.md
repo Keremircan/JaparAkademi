@@ -11,7 +11,8 @@ Uygulama telefonda, tablette ve bilgisayarda çalışır. Telefonunuzun ana ekra
 2. **Sicil no** ve **şifrenizi** yazın, **Giriş yap**'a dokunun.
 3. Eğitim odasındaki ortak bilgisayarda **"Ortak cihaz"** kutusunu işaretleyin; işiniz bitince oturum kendiliğinden kapanır.
 4. Yöneticiler sicil no yerine kayıtlı e-posta adreslerini de yazabilir.
-5. Kişisel verilerin korunması (KVKK) metnini okuyup **Okudum, onaylıyorum**'a dokunun.
+5. Kişisel verilerin korunması (KVKK) aydınlatma metnini okuyup **Okudum, onaylıyorum**'a dokunun. Bu onay olmadan devam edilemez.
+6. Aynı ekranda bir **açık rıza** metni de varsa ayrı bir kutusu vardır. Kutuyu işaretlemek isteğe bağlıdır: işaretlemezseniz de sistemi kullanırsınız, yalnızca profil fotoğrafı ekleyemezsiniz. Kararınızı sonra **Profil → Açık rıza**'dan değiştirebilirsiniz.
 
 **İlk kez giriş (hesabı etkinleştirme):** İK hesabınızı açınca size bir davet verir: e-posta, WhatsApp mesajı ya da QR kodlu bir kağıt.
 - **E-posta veya WhatsApp:** mesajdaki bağlantıya dokunun.
@@ -62,6 +63,13 @@ Açılan ekranda adınızı görürsünüz. Kendinize bir şifre belirleyip iki 
 
 ### Sertifikalarım
 Bölüm sorumlunuz "İşe başlayabilir" onayını verince **pozisyon yetkinlik sertifikanız** hazırlanır. İSG eğitimlerinizin **katılım belgeleri** de buradadır. **PDF indir** ile indirebilirsiniz; belgedeki QR kod belgenin geçerliliğini gösterir.
+
+### Profilim
+**Profil** sayfasında adınız, sicil numaranız, departmanınız/biriminiz, pozisyonunuz, e-posta adresiniz ve telefonunuz görünür.
+- **Telefon:** numarayı yazıp **Kaydet**'e dokunun (ör. 0532 123 45 67). Boş bırakıp kaydederseniz numara silinir.
+- **E-posta** adresinizi İK değiştirir; yanlışsa İK'ya haber verin.
+- **Profil fotoğrafı:** açık rıza verdiyseniz **Fotoğraf ekle** ile telefonunuzdan ya da bilgisayarınızdan bir fotoğraf seçin. **Fotoğrafı değiştir** ve **Fotoğrafı kaldır** ile güncellersiniz. Fotoğrafınızı siz, İK, bölüm sorumlunuz ve eğitmeniniz görür. Fotoğraftaki konum bilgisi silinir.
+- **Açık rıza:** metni **Metni oku** ile açabilirsiniz. **Açık rıza ver** ya da **Açık rızayı geri al**'a dokunun. Rızanızı geri alırsanız profil fotoğrafınız kalıcı olarak silinir.
 
 ### Yetkinliklerim
 Profil sayfanızda hangi makine ya da işte yetkin olduğunuz ve yetkinliğin bitiş tarihi görünür. Süresi yaklaşan yetkinlik sarı, dolan kırmızıdır; yenilemek için bölüm sorumlunuza başvurun.

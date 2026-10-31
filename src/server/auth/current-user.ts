@@ -5,7 +5,7 @@ import { cache } from "react";
 import { canSeeNav, type NavKey } from "@/features/app-shell/navigation";
 import { redirect } from "@/i18n/navigation";
 import { loadSessionUser, type SessionUser } from "@/server/services/auth";
-import { pendingConsent } from "@/server/services/legal";
+import { consentScreenPending } from "@/server/services/legal";
 import { getAuth } from "./auth";
 
 /**
@@ -23,8 +23,8 @@ export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
   return loadSessionUser(result.session.id);
 });
 
-/** İstek başına bir kez: kullanıcının onaylaması gereken KVKK metni var mı. */
-const getPendingConsent = cache((userId: string) => pendingConsent(userId));
+/** İstek başına bir kez: onaylanması gereken KVKK metni ya da verilmesi gereken açık rıza kararı var mı. */
+const getPendingConsent = cache((userId: string) => consentScreenPending(userId));
 
 /**
  * Oturum zorunlu sayfalar için. Sıra: giriş → şifre değiştirme (zorunluysa) → KVKK onayı (bekleyen varsa) → sayfa.

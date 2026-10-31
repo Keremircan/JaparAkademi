@@ -33,9 +33,10 @@ JAPAR Akademi, JAPAR'a yeni başlayan her personelin işe başlamadan önce pozi
 - Eğitim, sınav ve ziyaretçi kayıtlarının raporlanması ve denetime hazır arşivi
 
 **Kapsam dışı (ilk sürüm)**
-- Bordro, puantaj ve izin hesapları (JAPAR İK uygulamasında kalır; Akademi yalnızca personel listesini okur)
+- Bordro, puantaj ve izin hesapları (JAPAR İK uygulamasında kalır). Personel Akademi'de ekrandan ve Excel'le yönetilir; İK uygulamasıyla otomatik aktarım yoktur (karar #230)
 - İşe alım ve aday değerlendirme
-- Turnike/kartlı geçiş donanımı (yalnızca entegrasyon noktası tanımlanır, Faz 3)
+- Turnike/kartlı geçiş donanımı ve entegrasyonu (kapsam dışı, karar #230)
+- Microsoft 365 (Entra ID) ile tek oturum (kapsam dışı, karar #230); Microsoft 365 yalnızca e-posta gönderimi için kullanılır
 - **SMS.** Maliyet nedeniyle hiçbir fazda SMS kullanılmaz. Bildirim kanalları: uygulama içi, web push ve e-posta.
 - Ayrı native mobil uygulama (mobil uyumlu web + kurulabilir PWA yeterlidir)
 
@@ -136,10 +137,12 @@ Ziyaretçi bilgilendirmeyi tamamlayıp kuralları onaylamadan ziyaretçi kartı 
 - **FG-1.1** Departman → Bölüm → Pozisyon hiyerarşisi (ör. Üretim → Pres Hattı → Pres Operatörü). Ağaç `org_units` tablosunda tutulur (tür: `department` | `section`). Pozisyon bir bölüme ya da doğrudan bir departmana bağlanabilir.
 - **FG-1.2** Her pozisyona bir pozisyon kartı (Bölüm 5) ve bir eğitim planı bağlanır. Eğitim planı, kartın 13. bölümüdür.
 - **FG-1.3** **Ortak modüller** (genel İSG, şirket tanıtımı, KVKK, disiplin kuralları) tek yerden yönetilir ve her planın başına otomatik eklenir. Ortak modül hedefi: tüm personel, yalnızca mavi yaka veya yalnızca beyaz yaka. Pozisyona özel modüller bunlara ek olarak eklenir.
-- **FG-1.4** Personel listesi Excel'den içe aktarılır (Faz 1). JAPAR İK uygulamasından otomatik aktarım Faz 3'te gelir.
+- **FG-1.4** Personel listesi Excel'den içe aktarılır (Faz 1). JAPAR İK uygulamasından otomatik aktarım yapılmaz; personel sistem içinden (ekran + Excel) yönetilir (karar #230).
   - Zorunlu sütunlar: sicil no, ad soyad, departman, pozisyon, işe giriş tarihi, yaka tipi. Opsiyonel sütunlar: TC kimlik no, telefon, e-posta.
   - Akış: dosya yükle → önizleme ve satır bazında doğrulama → onayla. Kayıtlar sicil no'ya göre eklenir veya güncellenir. Bilinmeyen departman/pozisyon satırı hatalı sayılır; otomatik oluşturulmaz.
   - Yeni hesaplar şifresiz açılır ve basılı davet alır: İK etkinleştirme kağıtlarını (QR + 8 haneli kod) yazdırılabilir bir PDF olarak **yalnızca bir kez** görür. Personel kağıtla hesabını etkinleştirip şifresini kendisi belirler (karar #185; 2.6b'den önce geçici şifre).
+- **FG-1.5 Detaylı profil (iş paketi 3.4):** profil ekranında ad soyad (tek alan), sicil no, departman/birim (pozisyonun birimi, üst birimiyle), görev/pozisyon, e-posta, telefon ve profil fotoğrafı. Telefonu kişi değiştirir; e-postayı yalnızca İK değiştirir. Profil fotoğrafı Garage'da saklanır; yalnızca kişinin açık rızası varken eklenir (kararlar #233–236).
+- **FG-1.6 Aydınlatma ve açık rıza (iş paketi 3.4):** ilk girişte (ve etkinleştirmeden sonraki ilk açılışta) aydınlatma metni gösterilir; onaylanmadan devam edilemez. Açık rıza aynı ekranda ayrı bir metin ve ayrı, boş gelen bir onay kutusudur; isteğe bağlıdır, vermeyen kişi sistemi kullanır. Her onay ve karar zaman damgası, IP ve tarayıcı bilgisiyle değiştirilemez olarak kaydedilir. Açık rıza profilden verilir ya da geri alınır (kararlar #231–232).
 
 ### 4.2 İçerik Kütüphanesi
 - **FG-2.1** İçerik tipleri: `text` (zengin metin sayfası), `pdf`, `video`, `gallery` (görsel/fotoğraf galerisi), `instruction` (adım adım, fotoğraflı talimat), `checklist` (kontrol listesi), `form_template` (ör. vardiya raporu örneği).
@@ -302,7 +305,7 @@ Tesise giren her ziyaretçi, girişten önce kısa İSG bilgilendirmesini izleyi
 8. **Çıkış:** güvenlik çıkış saatini işaretler; kart iadesi işaretlenir.
 
 ### 8.3 Ek Gereksinimler
-- **FG-8.1 Tesis içindekiler / tahliye yoklaması:** anlık liste (ziyaretçi + taşeron). Telefondan açılır; "toplanma alanında" işaretlenir. Son liste cihazda önbellekte tutulur ve bağlantı yoksa okunabilir. İşaretleme bağlantı gerektirir; kâğıt yedeği için PDF çıktısı alınabilir. Personelin tesis içi bilgisi PDKS/İK entegrasyonuyla Faz 3'te eklenir.
+- **FG-8.1 Tesis içindekiler / tahliye yoklaması:** anlık liste (ziyaretçi + taşeron). Telefondan açılır; "toplanma alanında" işaretlenir. Son liste cihazda önbellekte tutulur ve bağlantı yoksa okunabilir. İşaretleme bağlantı gerektirir; kâğıt yedeği için PDF çıktısı alınabilir. Personel bu listede yer almaz: PDKS/İK entegrasyonu yapılmaz (karar #230).
 - **FG-8.2** İçerik en az TR + EN.
 - **FG-8.3 Taşeron firma kartı:** unvan, vergi no, sorumlu kişi, iletişim, sözleşme bitişi, çalışanların eğitim durumu ve geçerlilik tarihleri.
 - **FG-8.4 Kara liste / giriş yasağı:** kişi (kimlik no özeti ile eşleşir), gerekçe, koyan kişi, tarih, bitiş (opsiyonel). Kaldırma da gerekçeli kayıttır. Yalnızca ohs_specialist ve security koyabilir.
@@ -339,7 +342,7 @@ Kursiyer ve pratik eğitmen ekranları telefon ve tablette rahat kullanılmalıd
 | 19 | Tesis içindekiler / tahliye yoklaması | Güvenlik, İSG | Telefon | İçeridekiler, yoklama (tatbikat/gerçek), "toplanma alanında", bağlantısız son liste, PDF | `/security/evacuation` | 2 |
 | 20 | Raporlar ve ayarlar | İK, İSG, BT | PC | Bölüm 10 raporları, parametreler, roller, denetim kaydı | `/reports`, `/admin/settings` | 1 (temel) |
 
-Ek ekranlar: eğitimi bekleyenler (`/admin/people/waiting`), ekip ilerlemesi (`/manage/team`), sınıf eğitimi kayıtları (`/manage/classroom`), okuma görevi (`/learn/reread/[taskId]`), ortak cihazlar (`/admin/devices`), pozisyon listesi ve kart özeti (`/manage/positions`, `/manage/positions/[id]`, sürüm karşılaştırma `/manage/positions/[id]/compare`), modül kütüphanesi (`/manage/modules`), içerik sürüm karşılaştırma (`/manage/library/[id]/compare`), herkese açık sertifika doğrulama (`/verify/[token]`, Faz 1), sertifika şablonu / imza yetkilileri (`/admin/certificates`), şifremi unuttum ve yeni şifre (`/forgot-password`, `/reset-password/[token]`), rapor (`/reports/[kind]`), denetim kaydı (`/admin/audit`), profil ve şifre değiştirme, bildirim merkezi, KVKK aydınlatma onayı (ilk girişte).
+Ek ekranlar: eğitimi bekleyenler (`/admin/people/waiting`), ekip ilerlemesi (`/manage/team`), sınıf eğitimi kayıtları (`/manage/classroom`), okuma görevi (`/learn/reread/[taskId]`), ortak cihazlar (`/admin/devices`), pozisyon listesi ve kart özeti (`/manage/positions`, `/manage/positions/[id]`, sürüm karşılaştırma `/manage/positions/[id]/compare`), modül kütüphanesi (`/manage/modules`), içerik sürüm karşılaştırma (`/manage/library/[id]/compare`), herkese açık sertifika doğrulama (`/verify/[token]`, Faz 1), sertifika şablonu / imza yetkilileri (`/admin/certificates`), şifremi unuttum ve yeni şifre (`/forgot-password`, `/reset-password/[token]`), rapor (`/reports/[kind]`), denetim kaydı (`/admin/audit`), profil (fotoğraf, iletişim, açık rıza; FG-1.5) ve şifre değiştirme, bildirim merkezi, KVKK aydınlatma onayı ve açık rıza kararı (ilk girişte; FG-1.6).
 
 **Navigasyon:** tek uygulama kabuğu kullanılır; menü kullanıcının rollerine göre oluşur. Mobilde alt sekme bar'ı, masaüstünde yan menü olur. Birden fazla rolü olan kullanıcı tüm yetkili bölümleri görür.
 
@@ -454,7 +457,7 @@ Kanallar: **uygulama içi** (her zaman), **web push** (PWA, Faz 2) ve **e-posta*
   - Şifre değişince diğer tüm oturumlar kapanır; mevcut cihazın ortak cihaz bilgisi korunur.
 - **Better Auth'un HTTP rotası (`/api/auth`) açılmaz.** Giriş, çıkış ve şifre değiştirme Server Action → `src/server/services/auth.ts` üzerinden yapılır; kilit ve IP sınırı böylece atlatılamaz. Better Auth'un kendi hız sınırlayıcısı ve telemetrisi kapalıdır.
 - Better Auth her hesap için e-posta istediğinden hesap e-postası sicil no'dan üretilen geçersiz bir adrestir (`<sicil>@personel.invalid`); kişinin gerçek e-postası `personnel` tablosundadır.
-- Faz 3: Microsoft 365 (Entra ID) ile tek oturum; sicil no ↔ M365 hesabı eşleştirmesi.
+- Microsoft 365 (Entra ID) ile tek oturum yapılmaz (karar #230); giriş yalnızca sicil no (yöneticilerde e-posta) + şifredir.
 
 ### 11.5 Dosyalar ve Medya
 - Tüm dosyalar Garage'daki private bucket'ta (`akademi-private`, önekler: `media/`, `documents/`, `signatures/` …) tutulur, istemciye 5 dk geçerli imzalı URL verilir (`/api/media/<id>/<file|download|image|thumb|poster>` yetki kontrolünden sonra yönlendirir). HLS için `/api/media/<id>/hls/*.m3u8` her istekte yetki kontrolü yapıp oynatma listesini imzalı segment URL'leriyle yeniden yazar. **İstisna:** segment URL'leri max(1 saat, video süresi × 2) geçerlidir; aksi halde uzun videolarda oynatma ortasında süre dolar.
@@ -512,7 +515,7 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 - `org_units`: id, parent_id, kind (`department`|`section`), name, code (unique, büyük harf ASCII), responsible_user_id, is_active — iki seviye: departmanın üst düğümü yok, bölümün üst düğümü bir departman (veritabanı kısıtı); aynı üst düğümde ad benzersiz
 - `positions`: id, org_unit_id, name, code (unique), supervisor_position_id, deputy_position_id, collar_type (`blue`|`white`), shift_pattern, status (`active`|`passive`)
 - `users` (Better Auth: `user`, `session`, `account`, `verification`)
-- `personnel`: user_id (PK), sicil_no (unique, değiştirilemez), full_name, national_id_enc (AES-256-GCM, `v<anahtar sürümü>:<base64>`), national_id_hmac (unique), national_id_masked, phone (`+90…`), email, position_id (boş olabilir: pozisyonsuz personele eğitim atanamaz), employment_type (`employee`|`intern`), hire_date, end_date (ayrılanda zorunlu), status (`active`|`passive`|`terminated`), source (`excel`|`manual`|`hr_sync`), training_required (yeni işe giren → 1.4'te plan atanır), must_change_password, activated_at (davet etkinleştirilince; karar #187), locale (`tr`|`en`, arayüz dili; karar #208), anonymized_at (saklama süresi dolunca; karar #120)
+- `personnel`: user_id (PK), sicil_no (unique, değiştirilemez), full_name, national_id_enc (AES-256-GCM, `v<anahtar sürümü>:<base64>`), national_id_hmac (unique), national_id_masked, phone (`+90…`, kişi profilden değiştirir), email (yalnızca İK değiştirir), photo_asset_id (profil fotoğrafı, `media_assets`; yalnızca açık rıza varken; karar #235), position_id (boş olabilir: pozisyonsuz personele eğitim atanamaz), employment_type (`employee`|`intern`), hire_date, end_date (ayrılanda zorunlu), status (`active`|`passive`|`terminated`), source (`excel`|`manual`; `hr_sync` kullanılmaz, karar #230), training_required (yeni işe giren → 1.4'te plan atanır), must_change_password, activated_at (davet etkinleştirilince; karar #187), locale (`tr`|`en`, arayüz dili; karar #208), anonymized_at (saklama süresi dolunca; karar #120)
 - `user_roles`: user_id, role, granted_by, granted_at
 - `role_scopes`: user_id, role (yalnızca `section_manager`, veritabanı kısıtı), org_unit_id
 - `data_access_log`: id, at, actor_id, subject_user_id, field (ör. `national_id`), request_id — **değiştirilemez** (tam TC görüntüleme kaydı)
@@ -592,8 +595,9 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 
 **Ortak**
 - `settings`: key, value (jsonb), updated_by, change_note, updated_at. Tüm parametreler Bölüm 14'teki anahtarlarla tutulur ve Zod ile doğrulanır.
-- `legal_texts`: kind (`kvkk_personnel`|`kvkk_visitor`|`visitor_rules`), locale, version, title, body, published_at — yayınlanınca değiştirilemez; aynı anda tek taslak
+- `legal_texts`: kind (`kvkk_personnel`|`kvkk_visitor`|`visitor_rules`|`explicit_consent_personnel`), locale, version, title, body, published_at — yayınlanınca değiştirilemez; aynı anda tek taslak
 - `consents`: subject (user_id | visitor_id), legal_text_id, accepted_at, ip, user_agent
+- `explicit_consents`: user_id, legal_text_id (açık rıza metni), granted, source (`consent_screen`|`profile`), decided_at, ip, user_agent — **değiştirilemez**; kişinin durumu en son karardır (karar #232)
 - `notifications`: user_id, kind (olay türü), subject_key (konu; aynı konu için okunmamış tek bildirim), params (jsonb; metin gösterimde mesaj dosyasından üretilir), link (uygulama içi yol), read_at
 - `email_outbox`: notification_id, kind, to_address, subject, body_text, body_html, status (`pending`|`sent`|`failed`|`skipped`), attempts, last_error, next_attempt_at, sent_at — adres ve gövde denetim kaydına maskeli yazılır
 - `password_reset_tokens`: user_id, token_hash (SHA-256; token saklanmaz), expires_at, used_at, ip
@@ -663,7 +667,7 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
   - Varsayılan tablo: az tehlikeli 8 saat / 3 yıl, tehlikeli 12 saat / 2 yıl, çok tehlikeli 16 saat / 1 yıl.
 - Uzaktan verilebilecek ve yüz yüze verilmesi gereken konular: her modülde `remote_allowed` alanı tutulur ve İSG uzmanı belirler. Yüz yüze modüller yalnızca sınıf eğitimi kaydıyla tamamlanır.
 - Eğitim belgesinde zorunlu alanlar sertifika şablonundadır (FG-7.2).
-- **KVKK:** personel ve ziyaretçi aydınlatma metni (sürümlü, ilk girişte/bilgilendirmede onay), saklama ve imha süreleri (Bölüm 12.3), TC maskeleme ve şifreleme, yetkiye göre görünürlük, kişisel veri dışa aktarma talebi için İK ekranından "kişi verisi dışa aktar" işlemi.
+- **KVKK:** personel ve ziyaretçi aydınlatma metni (sürümlü, ilk girişte/bilgilendirmede onay), personelin ayrı ve isteğe bağlı açık rızası (FG-1.6), saklama ve imha süreleri (Bölüm 12.3), TC maskeleme ve şifreleme, yetkiye göre görünürlük, kişisel veri dışa aktarma talebi için İK ekranından "kişi verisi dışa aktar" işlemi.
 
 ---
 
@@ -728,9 +732,6 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 |---|---|---|---|
 | Excel | İK → Akademi | Personel, pozisyon, işe giriş tarihi | 1 |
 | Microsoft 365 (Graph) | Akademi → kullanıcı | E-posta bildirimleri (`Mail.Send`) | 1 |
-| Microsoft 365 (Entra ID) | Kullanıcı → Akademi | Kurumsal hesapla tek oturum (OIDC) | 3 |
-| JAPAR İK uygulaması | İK → Akademi | Personel, pozisyon, işe giriş/çıkış (otomatik). Teknoloji ve bağlantı yöntemi Faz 3'te belirlenecek. Aktarım sözleşmesi Excel sütunlarıyla aynı alanlar + çıkış tarihi; günlük senkron + değişiklikte tetikleme | 3 |
-| Kartlı geçiş / turnike | Akademi → geçiş sistemi | Eğitimi geçersiz personelin/taşeronun girişini engelleme (`GET /api/access/eligibility/{kartNo}` + değişiklik webhook'u) | 3 |
 | OSGB | Dışa aktarım | İSG eğitim kayıtları (xlsx/CSV) | 3 |
 | ~~SMS sağlayıcı~~ | — | **Kullanılmayacak** (maliyet). Ziyaretçi bağlantısı e-posta veya QR/kiosk ile; şifre sıfırlama İK'nın yeniden daveti veya e-posta ile | — |
 | ~~WhatsApp Business API~~ | — | **Kullanılmayacak** (ücret + kişisel veri Meta'ya gider). Davet için yalnızca İK'nın cihazında açılan `wa.me` paylaş bağlantısı (karar #188) | — |
@@ -744,7 +745,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 |---|---|---|---|
 | **Faz 1 — Yeni personel MVP** | Organizasyon/pozisyon, pozisyon kartı, içerik kütüphanesi (video HLS dahil), eğitim planı, teorik eğitim (sınıf eğitimi dahil), teorik sınav (ÇS + D/Y, gözetmen kodu, sesli okuma), pratik görev ve değerlendirme, işe başlama onayı, PDF sertifika + QR doğrulama, Excel'den personel aktarımı, temel raporlar (eğitim ilerleme, sınav sonuçları, İSG kayıt defteri, işe başlama süresi), uygulama içi + e-posta bildirimleri, kurulabilir PWA kabuğu | 1 bölüm, 2–3 pozisyon (**pilot bölüm henüz seçilmedi**) | Pilot bölüme giren 5 yeni personel kağıt kullanmadan teorik → pratik → sınav → onay akışını tamamlar; İSG uzmanı eğitim kayıt raporunu denetime yeterli bulur |
 | **Faz 2 — Ziyaretçi ve yaygınlaştırma** | Ziyaretçi İSG modülü (4 tip), kapı tableti/kiosk, tahliye yoklama listesi, taşeron firma kartı, kara liste, tüm bölümlerin pozisyon kartları, süresi dolan eğitim takibi ve otomatik tekrar eğitimi, tam bildirim seti + web push, haftalık özet, İngilizce içerik, eşleştirme ve görselde işaretleme soru tipleri, kalan raporlar | Tüm tesis | Bir hafta boyunca tüm ziyaretçiler sistem üzerinden girer; tahliye tatbikatında yoklama listesi telefondan alınır |
-| **Faz 3 — Entegrasyon ve olgunlaşma** | JAPAR İK otomatik aktarım, M365 ile tek oturum, turnike entegrasyonu, yetkinlik matrisi, gelişmiş raporlar, mevcut personelin periyodik eğitimleri, OSGB dışa aktarım | Tüm tesis | İK'da açılan personel aynı gün Akademi'de eğitim planıyla görünür; eğitimi geçersiz taşeron turnikeden geçemez |
+| **Faz 3 — Olgunlaşma** | Yetkinlik matrisi, gelişmiş raporlar, mevcut personelin periyodik eğitimleri, OSGB dışa aktarım, detaylı profil ve açık rıza. (JAPAR İK otomatik aktarım, M365 tek oturum ve turnike entegrasyonu kapsamdan çıkarıldı — karar #230) | Tüm tesis | Tesisin bütün personeli sistemde tanımlı ve periyodik eğitimleri sistemden izleniyor; İSG uzmanı OSGB dosyasını sistemden alıyor |
 
 ### 16.2 Faz 1 İş Paketleri (sırayla, bir seferde bir paket)
 | Paket | Kapsam |
@@ -782,6 +783,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | **3.1 Yetkinlik matrisi** | Yetkinlik tanımları (`/manage/competencies`), pratik görev ↔ yetkinlik bağı, işe başlama onayında otomatik verme, bölüm sorumlusunun gerekçeyle elle verme/geri alma, matris (`/reports/competency`, Excel), süre uyarısı, profilde "Yetkinliklerim" (kararlar #218–221) |
 | **3.2 Eski personelin periyodik eğitimleri** | Süreli teorik modüllerde sistem dışı son eğitim tarihi (`prior_trainings`, ekrandan ve Excel'den), gece işiyle otomatik açılma, "Şimdi başlat", `periodic` atama türü (onaysız tamamlanma), `/manage/periodic` (kararlar #222–225) |
 | **3.3 OSGB dışa aktarım** | İSG modüllerine konu grubu, Raporlar → İSG eğitim kayıt defteri sayfasında "OSGB dosyası" (Excel + CSV): sistemde tamamlanan İSG modülleri + girilen son eğitim tarihleri, tam TC yalnızca İK'ya (kararlar #226–229) |
+| **3.4 Profil ve açık rıza** | Kapsam değişikliği (turnike, İK otomatik aktarım, M365 tek oturum çıkarıldı); açık rıza metni (ayrı tür, TR + EN), onay ekranında ayrı ve isteğe bağlı kutu, profilden verme/geri alma, `explicit_consents`; detaylı profil (birim, pozisyon, e-posta, telefonu kişi değiştirir, profil fotoğrafı), İK kişi ekranında fotoğraf, KVKK dışa aktarma ve anonimleştirme (FG-1.5, FG-1.6, kararlar #230–236) |
 
 "Tüm bölümlerin pozisyon kartları" içerik girişidir; kod paketi değildir (pilot kontrol listesinde izlenir).
 
@@ -800,7 +802,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 1 | Barındırma | Linux VM + Docker Compose; mimari sağlayıcıdan bağımsız. Sağlayıcı ve konum karar #174'te belirlendi |
 | 2 | Backend | Next.js + PostgreSQL + Drizzle + Better Auth + Garage (S3) + pg-boss. Supabase ve Vercel kullanılmaz |
 | 3 | Cihaz | Kişisel telefon + şirket cihazları. Sınav için gözetmen kodu (plan bazında) |
-| 4 | Giriş | Sicil no + şifre. Şifre sıfırlama İK veya e-posta ile. M365 tek oturum Faz 3 |
+| 4 | Giriş | Sicil no + şifre. Şifre sıfırlama İK veya e-posta ile. M365 tek oturum yok (karar #230) |
 | 5 | Uygulama tipi | Mobil uyumlu web + kurulabilir PWA. Çevrimdışı yazma yok. Kiosk ekranı Faz 2 |
 | 6 | Mevcut personel | Hepsi içe aktarılır, eğitim atanmaz. Periyodik eğitimler Faz 3 (kararlar #222–225) |
 | 7 | Bölüm sorumlusu kapsamı | Org ağacında bir veya çok düğüm, alt düğümler dahil |
@@ -819,7 +821,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 20 | Ziyaretçi verisi saklama | 2 yıl sonra otomatik anonimleştirme (parametre) |
 | 21 | Ziyaretçi modülü | Faz 2 |
 | 22 | E-posta | Microsoft Graph API |
-| 23 | JAPAR İK | Kendi geliştirdiğimiz uygulama. Bağlantı teknolojisi Faz 3'te belirlenecek; Faz 1–2'de Excel |
+| 23 | JAPAR İK | Kendi geliştirdiğimiz uygulama. Otomatik bağlantı yapılmaz (karar #230); personel Excel ve ekrandan yönetilir |
 | 24 | Pilot | Bölüm henüz seçilmedi. Seed verisi "Üretim → Pres Hattı → Pres Operatörü" örneğiyle hazırlanır |
 | 25 | SMS | Hiçbir fazda kullanılmayacak (maliyet) |
 | 26 | QR doğrulama | Herkese açık sayfa: maskeli ad + kapsam + geçerlilik + durum |
@@ -952,7 +954,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 153 | Ziyaret kilidi | Girişten sonra yalnızca status/çıkış alanları değişir; çıkıştan sonra donar; girişi yapılmış ziyaret silinemez. Saklama işi istisnadır. Düzeltme `corrections` ile |
 | 154 | İçeride kalan | Otomatik çıkış yok; gün geçse de `checked_in` kalır ve kapı ekranında listelenir (2.4 tahliye listesinin temeli) |
 | 155 | Kapı yetkisi ve bildirim | Giriş/çıkışı yalnızca güvenlik yapar; ev sahibine girişte `visitor_arrived` (uygulama içi + e-posta) |
-| 156 | Tahliye listesinde kimler | Faz 2'de yalnızca içerideki ziyaretçi ve taşeronlar (`checked_in`, tarihten bağımsız); personel PDKS ile Faz 3 (varsayım 9) |
+| 156 | Tahliye listesinde kimler | Faz 2'de yalnızca içerideki ziyaretçi ve taşeronlar (`checked_in`, tarihten bağımsız); personel listede yer almaz (varsayım 9, karar #230) |
 | 157 | Yoklama | Güvenlik ya da İSG başlatır (tatbikat/gerçek); başlangıçtaki içeridekiler eklenir, sonradan girenler "Listeyi yenile" ile. Aynı anda tek açık yoklama (danışma kilidi) |
 | 158 | İşaretleme | "Toplanma alanında" yoklama açıkken geri alınabilir; her işlem denetim kaydında. Yoklama bitince işaretler ve yoklama **değiştirilemez** (trigger) |
 | 159 | Bitirme | Eksik varken de bitirilebilir (onay sorulur, karar insanda); eksikler kayıtta "toplanma alanında değil" kalır; kimse otomatik çıkmış sayılmaz |
@@ -986,14 +988,14 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 187 | Etkinleştirme ekranı | `/activate/<token>` (e-posta, WhatsApp, QR) ya da girişteki "Hesabımı etkinleştir" → `/activate` (sicil no + kod). Kişi adını görür, şifre politikasına uygun şifresini iki kez girer; `personnel.activated_at` yazılır, oturum açılır (ortak cihaz kuralları geçerli), ardından KVKK onayı gelir. Geçersiz/süresi dolmuş davet tek genel mesajla bildirilir ("İK'ya başvurun"). Etkinleştirme `login_attempts`'a ayrı sonuçla yazılır |
 | 188 | WhatsApp kanalı | Sunucu WhatsApp/Meta ile **bağlantı kurmaz** (Business API yok: ücret + kişisel veri üçüncü tarafa gider). Sistem `https://wa.me/<telefon>?text=<hazır mesaj>` bağlantısı üretir; İK düğmeye basınca kendi telefonundaki WhatsApp açılır, mesajı kendisi gönderir. Mesajda kişinin adı ve etkinleştirme bağlantısı bulunur. Telefon `+90…` biçiminde saklanır; telefonu olmayan kişide kanal seçilemez. Bağlantının İK'nın cihazı üzerinden WhatsApp'a gitmesi pilot listesinde KVKK açısından not edilir |
 | 189 | Yönetici e-postayla girişi | Giriş ekranı tek: girilen değerde `@` varsa ve kişi `sysadmin` ya da `hr` rolündeyse e-posta ile bulunur, sonra sicil no girişiyle aynı akış (kilit, IP sınırı, deneme kaydı) çalışır. Diğer roller yalnızca sicil no ile girer; onların e-postası girişte bilinmeyen sicil gibi davranır (genel hata mesajı). Bu rolleri almak için kişinin e-postası kayıtlı ve aktif personel arasında tekil (büyük/küçük harf duyarsız) olmalıdır; servis denetler |
-| 190 | Yönetici iki adımlı doğrulama | Şimdilik yok. Faz 3'te Microsoft 365 tek oturumla birlikte değerlendirilir |
+| 190 | Yönetici iki adımlı doğrulama | Şimdilik yok. (M365 tek oturum kapsamdan çıktı, karar #230; gerekirse ayrıca değerlendirilir) |
 | 191 | E-posta kanalı ve mevcut hesaplar | E-posta kanalı yalnızca `MAIL_TRANSPORT=graph` iken seçilebilir (aksi hâlde açıklamayla kapalı). İlk sistem yöneticisi seed ile açılır (değişmedi). Daha önce geçici şifreyle açılmış ve şifresini değiştirmemiş hesaplar çalışmaya devam eder; İK isterse yeniden davet eder |
 | 192 | Üst yönetici rolü (`owner`) | Geliştirici ve kurum yöneticisi (patron) için. `owner` bütün yetkilere sahiptir (`can()` her izin için doğru), kapsamı bütün org ağacıdır; İK, sysadmin ve diğer rollerin yapabildiği her şeyi yapar, tam TC görüntüleme dahil (her görüntüleme `data_access_log`'a yazılır). Onay/karar bildirimleri `owner`'a otomatik gitmez (bildirim yükü); kuyrukları ekranlardan görür |
 | 193 | `owner` rolünün verilmesi | Yalnızca bir `owner` başka bir kişiye `owner` rolü verebilir veya alabilir; sysadmin veremez. Son aktif `owner`'ın rolü alınamaz ve hesabı pasife alınamaz. İlk `owner` seed/sistem yöneticisi hesabına bir kez tanımlanır |
 | 194 | `owner` için de geçerli kurallar | Kimse kendi kaydını değerlendiremez/onaylayamaz; değiştirilemez kayıtlar `owner` için de değiştirilemez (yalnızca gerekçeli düzeltme kaydı); her işlem denetim kaydına yazılır, `audit_log`'u kimse silemez |
 | 195 | İki adımlı onayda dört göz | İki adımlı onaylarda (içerik/kart: bölüm onayı → İSG onayı; soru: sürüm → İSG onayı) ikinci adımı birinci adımı veren kişi veremez (`same_approver`). Pratik sınavda değerlendiren ile ikinci imza zaten farklı kişidir. Birden çok role sahip kişiler ve `owner` için gereklidir |
 | 196 | Mesleki imzalar ve `owner` | İSG içerik/soru onayı, pratik sınav imzaları ve işe başlama kararı normalde ilgili rolün (İSG uzmanı, değerlendiren, bölüm sorumlusu) yetkisindedir. Bu rol olmadan `owner` olarak yapılırken ekranda uyarı gösterilir ve işlem değiştirilemez `owner_actions` tablosuna yazılır (kişi, izin, kayıt). `owner` İSG kısayolundan yararlanmaz: hazırladığı İSG içeriği/sorusu kendiliğinden onaylı sayılmaz, İSG adımını başka biri verir |
-| 197 | Yönetici girişi ve iki adımlı doğrulama (güncelleme) | E-postayla giriş `owner`, `sysadmin` ve `hr` için (karar #189). `owner` dahil iki adımlı doğrulama şimdilik yok (karar #190); Faz 3'te M365 tek oturumla değerlendirilir |
+| 197 | Yönetici girişi ve iki adımlı doğrulama (güncelleme) | E-postayla giriş `owner`, `sysadmin` ve `hr` için (karar #189). `owner` dahil iki adımlı doğrulama şimdilik yok (karar #190) |
 | 198 | Hesap açma ile davet ayrı | Personel eklemek davet göndermeyi gerektirmez. Tek kişi eklemede kanal seçeneklerine "Şimdi davet etme" eklenir ve varsayılan odur; Excel aktarımı hesapları davetsiz açar ve sonunda "Bunlara davet gönder" bağlantısı verir (karar #185'in "Excel aktarımında kanal basılıdır" kısmının yerini alır). Davet edilmemiş hesap giriş yapamaz (şifresi kimsenin bilmediği rastgele değer); durumu "Davet edilmedi" (`not_invited`) |
 | 199 | Davetler ekranı | `/admin/people/invites` (yetki `people.manage`, kapsam İK/owner'da bütün ağaç): etkinleşmemiş aktif personel; süzgeç: durum (davet edilmedi / davet bekliyor / kullanılamıyor), birim, pozisyon, aktarım dosyası. Çoklu seçim + "Tümünü seç" → kanal → "Davet oluştur". Açık daveti olan kişi seçilirse eski daveti iptal edilir (ekranda uyarılır). Tek işlemde en fazla `auth.invite_batch_max` kişi |
 | 200 | Toplu davette kanal | "Akıllı": e-postası olana e-posta (yalnızca e-posta gönderimi açıkken), olmayıp geçerli telefonu olana WhatsApp, hiçbiri olmayana basılı. Ya da tek kanal; seçilen kanala uymayan kişiler basılıya düşer ve sonuçta ayrı gösterilir. Basılı olanların kağıtları tek PDF'te bir kez iner (saklanmaz; yeniden almak = yeniden davet) |
@@ -1026,6 +1028,13 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 227 | OSGB dosyasında TC kimlik no | Tam TC yalnızca `people.view_national_id` (İK) indirirken yazılır; dosyadaki her kişi için `data_access_log` (`national_id_osgb`) kaydı. İSG uzmanının dosyasında sütun boştur. Yetki `reports.ohs` (İSG uzmanı + İK) |
 | 228 | İSG konu grubu | `modules.ohs_topic`: Çalışanların İSG Eğitimleri Yönetmeliği'ndeki genel, sağlık, teknik, diğer konular. Yalnızca İSG modülünde; İSG uzmanı seçer ("uzaktan verilebilir" ayarı gibi). Boşsa dosyada "Belirtilmemiş". Dosya modülün güncel değerini kullanır |
 | 229 | OSGB dosya biçimi | Excel (tarih hücreleri, TC/sicil metin) ve CSV (UTF-8 BOM, noktalı virgül, CRLF, Türkçede ondalık virgül; formül gibi başlayan hücreye `'`). Başlıklar indirenin dilinde. Her indirme `report_exports`'a (`osgb`, `xlsx`/`csv`) yazılır |
+| 230 | Kapsamdan çıkarılanlar | Proje sahibi kararı (2026-10-31): turnike/kartlı geçiş entegrasyonu, JAPAR İK uygulamasından otomatik personel aktarımı ve Microsoft 365 (Entra ID) tek oturum yapılmaz. Personel sistem içinden (ekran + Excel) yönetilir; `personnel.source` `hr_sync` değeri kullanılmaz. Microsoft 365 yalnızca e-posta (Graph) için kalır. PDKS bağlantısı da olmadığından tahliye listesi personeli içermez |
+| 231 | Açık rıza metni | Aydınlatma metninden ayrı tür `explicit_consent_personnel`: sürümlü, TR + EN birlikte yayınlanır, yayınlanınca değiştirilemez; İK yönetir (`legal.manage`). KVKK'ya göre açık rıza belirli bir konuya ilişkin, özgür iradeyle verilir ve hizmetin şartı yapılamaz; bu yüzden isteğe bağlıdır. Yayınlanmış metin yoksa sorulmaz ve rızaya bağlı işlem (profil fotoğrafı) yapılamaz |
+| 232 | Açık rıza kararı | Onay ekranında aydınlatma onayı zorunlu; açık rıza ayrı metin ve boş gelen ayrı kutu. Karar (verdi/vermedi) güncel sürüm için bir kez sorulur, yeni sürüm yayınlanınca bir sonraki açılışta yeniden. Profilde durum, metin ve "ver / geri al". `explicit_consents` değiştirilemez (granted, source, decided_at, ip, user_agent; IP ve tarayıcı denetim kaydında maskeli); kişinin durumu en son karar ve güncel sürüme aitse geçerli. KVKK dışa aktarmada ayrı sayfa; anonimleştirmede IP/tarayıcı silinir (`app_anonymize_explicit_consents`) |
+| 233 | Profil alanları | Ad soyad tek alan kalır (`full_name`, ayrılmaz). Profilde sicil no, departman/birim (pozisyonun birimi + üst birim), pozisyon, e-posta, telefon, fotoğraf, roller |
+| 234 | İletişim bilgisi | Telefonu kişi profilden değiştirir (`+90…` biçimi, boş bırakılırsa silinir). E-postayı yalnızca İK değiştirir: şifre sıfırlama ve yönetici girişi bu adrese gider |
+| 235 | Profil fotoğrafı | Garage'da, mevcut imzalı yükleme hattıyla (`purpose: profile_photo`: her kullanıcı, yalnızca görsel, `upload.max_image_mb`); worker yeniden kodlar (EXIF/konum silinir). Yalnızca kişinin güncel açık rızası varken bağlanır. Kişi kendisi ya da `people.manage` (İK, sistem yöneticisi; kapsam) yükler/kaldırır. Görür: kişiyi görebilenler (kendisi, İK, kapsamdaki bölüm sorumlusu, eğitmeni) ve personel ekranındaki yöneticiler. Yenisi bağlanınca eskisi depodan silinir |
+| 236 | Fotoğrafın silinmesi | Rıza verilmeyince/geri alınınca ve kişi fotoğrafı kaldırınca hemen; anonimleştirmede gece saklama işinde (`media_assets.status = purged`). Dosya önce depodan silinir; silinemezse işlem yapılmaz ve hata gösterilir (rıza geri alma da yazılmaz, yeniden denenir) |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:
@@ -1037,7 +1046,7 @@ Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken 
 6. Ortak (İSG dışı) içeriklerin sahibi İK, İSG içeriklerinin sahibi İSG uzmanıdır.
 7. Pozisyon kartında 9. bölüm (İSG) değiştiyse kart İSG onayına gider.
 8. Stajyer, ziyaretçi değil `intern` istihdam tipli personeldir.
-9. Tahliye listesi Faz 2'de yalnızca ziyaretçi ve taşeronları içerir; personel PDKS entegrasyonuyla Faz 3'te eklenir.
+9. Tahliye listesi yalnızca ziyaretçi ve taşeronları içerir; PDKS/İK entegrasyonu yapılmadığından personel eklenmez (karar #230).
 10. Hata takibi self-hosted GlitchTip ile yapılır (veri kendi sunucumuzda kalır). Pilot sonrasına ertelendi (karar #104).
 11. Personel eğitim kayıtlarının saklama süresi iş ilişkisi bitişi + 15 yıl olarak varsayıldı (**hukuk teyidi gerekli**).
 12. Sertifika ve katılım belgesi PDF'leri resmî belge olduğundan yalnızca Türkçe düzenlenir; İngilizce kullanan personelin belgesi de Türkçedir (karar #217).
@@ -1055,7 +1064,7 @@ Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken 
 | Soru bankası | İSG + bölüm sorumluları | Pozisyon başına en az 40 soru (20'lik sınavın 2 katı) |
 | Ziyaretçi bilgilendirme videosu/kartları (TR + EN) | İSG + kurumsal iletişim | 4 ziyaretçi tipi için (Faz 2) |
 | Tesis haritası, toplanma alanları, yaya yolları | İSG | Ziyaretçi ve genel eğitimde kullanılır |
-| KVKK aydınlatma metinleri (personel, ziyaretçi) | Hukuk / KVKK sorumlusu | |
+| KVKK aydınlatma metinleri (personel, ziyaretçi) ve personel açık rıza metni | Hukuk / KVKK sorumlusu | Açık rıza metni yayınlanmadan profil fotoğrafı eklenemez |
 | Sertifika ve katılım belgesi şablonu | İK + İSG | Logo, imza yetkilileri, taranmış imzalar |
 | Logonun vektörel (SVG) ve şeffaf arka planlı (PNG) hâli | Kurumsal iletişim | PWA ikonları, karanlık mod ve PDF'ler için. Şu an yalnızca JPG var (`public/brand/japar-academy-logo.jpg`) |
 | Pilot bölüm ve pozisyonların seçimi | Yönetim | Faz 1 pilotundan önce |

@@ -138,6 +138,7 @@ const uploadSchema = z.object({
   mime: z.string().max(200),
   size: z.number().int().positive(),
   fileName: z.string().max(500),
+  purpose: z.enum(["library", "profile_photo"]).optional(),
 });
 
 export async function startUploadAction(input: unknown): Promise<ActionResult<UploadPlan>> {

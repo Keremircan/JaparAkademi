@@ -198,7 +198,7 @@ describe("karar #99 KVKK kişi verisi dışa aktarma", () => {
     expect(out.fileName).toBe(`kisi-verisi-${u.sicilNo}.xlsx`);
     const wb = new ExcelJS.Workbook();
     await wb.xlsx.load(Buffer.from(out.base64, "base64") as unknown as ExcelJS.Buffer);
-    expect(wb.worksheets.map((w) => w.name)).toEqual(["Kimlik ve iletişim", "Roller", "Eğitimler", "Sınavlar", "Belgeler", "KVKK onayları"]);
+    expect(wb.worksheets.map((w) => w.name)).toEqual(["Kimlik ve iletişim", "Roller", "Eğitimler", "Sınavlar", "Belgeler", "KVKK onayları", "Açık rıza kararları"]);
     expect(wb.worksheets[0]!.getRow(2).getCell(3).value).toBe("123******90");
     expect(wb.worksheets[3]!.rowCount).toBe(3);
     const log = await db().select().from(dataAccessLog).where(eq(dataAccessLog.subjectUserId, u.userId));

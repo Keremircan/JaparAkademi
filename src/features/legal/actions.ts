@@ -7,14 +7,29 @@ import { actionUser, formText, runAction, type ActionResult } from "@/features/s
 import { redirect } from "@/i18n/navigation";
 import { getRequestMeta } from "@/server/auth/request";
 import { acceptConsent, createDraft, isLegalKind, publishText, updateDraft } from "@/server/services/legal";
+import { decideExplicitConsent } from "@/server/services/profile";
 
 const uuid = z.uuid();
 
-export async function acceptConsentAction(legalTextId: string): Promise<ActionResult> {
-  if (!uuid.safeParse(legalTextId).success) return { ok: false, error: "invalid_input" };
+const consentSchema = z.object({
+  kvkkTextId: uuid.nullable(),
+  explicit: z.object({ legalTextId: uuid, granted: z.boolean() }).nullable(),
+});
+
+/**
+ * Onay ekranı: bekleyen aydınlatma onayı (zorunlu) ve açık rıza kararı (isteğe bağlı, iş paketi 3.4).
+ * Aydınlatma metni kabul edilmeden açık rıza kararı yazılmaz.
+ */
+export async function submitConsentAction(input: unknown): Promise<ActionResult> {
+  const parsed = consentSchema.safeParse(input);
+  if (!parsed.success || (!parsed.data.kvkkTextId && !parsed.data.explicit)) return { ok: false, error: "invalid_input" };
+  const { kvkkTextId, explicit } = parsed.data;
   const { actor } = await actionUser();
   const meta = await getRequestMeta();
-  const result = await runAction(() => acceptConsent(actor, legalTextId, meta));
+  const result = await runAction(async () => {
+    if (kvkkTextId) await acceptConsent(actor, kvkkTextId, meta);
+    if (explicit) await decideExplicitConsent(actor, { ...explicit, source: "consent_screen" }, meta);
+  });
   if (!result.ok) return result;
   return redirect({ href: "/", locale: await getLocale() });
 }

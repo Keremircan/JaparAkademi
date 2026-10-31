@@ -9,6 +9,7 @@ import {
   assignments,
   certificates,
   consents,
+  explicitConsents,
   dataAccessLog,
   examAttempts,
   legalTexts,
@@ -82,6 +83,12 @@ export async function exportPersonalData(actor: Actor, userId: string, locale: A
     .innerJoin(legalTexts, eq(legalTexts.id, consents.legalTextId))
     .where(eq(consents.userId, userId))
     .orderBy(asc(consents.acceptedAt));
+  const explicitRows = await db()
+    .select({ c: explicitConsents, title: legalTexts.title, version: legalTexts.version })
+    .from(explicitConsents)
+    .innerJoin(legalTexts, eq(legalTexts.id, explicitConsents.legalTextId))
+    .where(eq(explicitConsents.userId, userId))
+    .orderBy(asc(explicitConsents.decidedAt));
 
   const wb = new ExcelJS.Workbook();
   const sheet = (name: string, headers: string[], rows: (string | number)[][]) => {
@@ -124,6 +131,11 @@ export async function exportPersonalData(actor: Actor, userId: string, locale: A
     certs.map((c) => [documentNo(c.serialNo, c.issuedAt.getFullYear()), c.title, v(c.issuedAt), v(c.expiresAt), T(`certificates.list.state.${c.status}`)]),
   );
   sheet("consents", ["legalText", "version", "acceptedAt"], consentRows.map((r) => [r.title, r.version, v(r.c.acceptedAt)]));
+  sheet(
+    "explicitConsents",
+    ["legalText", "version", "decision", "decidedAt"],
+    explicitRows.map((r) => [r.title, r.version, t(`decisions.${r.c.granted ? "granted" : "refused"}`), v(r.c.decidedAt)]),
+  );
 
   const buffer = Buffer.from(await wb.xlsx.writeBuffer());
   await withActor(actor, (tx) => tx.insert(dataAccessLog).values({ actorId: actor.userId, subjectUserId: userId, field: "personal_export" }));

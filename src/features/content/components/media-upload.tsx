@@ -36,10 +36,11 @@ export async function uploadFile(
   file: File,
   kinds: readonly MediaKind[],
   onProgress: (ratio: number) => void,
+  purpose: "library" | "profile_photo" = "library",
 ): Promise<{ ok: true; assetId: string } | { ok: false; error: string }> {
   const kind = kinds.find((k) => ACCEPT[k].split(",").includes(file.type));
   if (!kind) return { ok: false, error: "file_type_not_allowed" };
-  const plan = await startUploadAction({ kind, mime: file.type, size: file.size, fileName: file.name });
+  const plan = await startUploadAction({ kind, mime: file.type, size: file.size, fileName: file.name, purpose });
   if (!plan.ok) return plan;
   try {
     if (plan.data.mode === "single") {
