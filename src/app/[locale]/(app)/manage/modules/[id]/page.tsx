@@ -78,6 +78,7 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
               description: m.description,
               durationMin: m.durationMin,
               isOhs: m.isOhs,
+              ohsTopic: m.ohsTopic,
               remoteAllowed: m.remoteAllowed,
               validityMonths: m.validityMonths,
               commonTarget: m.commonTarget,

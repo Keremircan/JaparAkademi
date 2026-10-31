@@ -1,4 +1,4 @@
-import { FileDown, Filter, TriangleAlert } from "lucide-react";
+import { FileDown, Filter, Send, TriangleAlert } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -8,6 +8,7 @@ import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
+import { can } from "@/server/authz/policy";
 import { getSectionUser } from "@/server/auth/current-user";
 import { AppError } from "@/server/errors";
 import { toActor } from "@/server/services/auth";
@@ -212,6 +213,29 @@ async function Content({
           </a>
         ))}
       </div>
+
+      {kind === "ohs" && (
+        <section aria-labelledby="osgb-heading" className="flex flex-col gap-3 rounded-2xl border p-5">
+          <h2 id="osgb-heading" className="flex items-center gap-2 text-lg font-semibold">
+            <Send aria-hidden="true" className="size-5" />
+            {t("osgb.heading")}
+          </h2>
+          <p className="text-sm text-muted-foreground">{t("osgb.intro")}</p>
+          <p className="text-sm text-muted-foreground">{can(actor, "people.view_national_id") ? t("osgb.nationalIdFull") : t("osgb.nationalIdNone")}</p>
+          <div className="flex flex-wrap gap-2">
+            {(["xlsx", "csv"] as const).map((format) => (
+              <a
+                key={format}
+                href={`/api/reports/osgb?format=${format}&${qs.toString()}`}
+                className="inline-flex min-h-12 items-center gap-2 rounded-lg border px-4 font-medium hover:bg-muted"
+              >
+                <FileDown aria-hidden="true" className="size-5" />
+                {t(`osgb.export.${format}`)}
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
 
       {[
         ...result.warnings.map((w) =>

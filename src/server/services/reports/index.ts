@@ -89,12 +89,12 @@ export async function parseFilters(kind: ReportKind, input: Partial<Record<keyof
 }
 
 /** Tarih sınırları Europe/Istanbul gününe göre (timestamptz). */
-function range(column: SQL | Parameters<typeof gte>[0], f: ReportFilters, tz: string): SQL {
+export function range(column: SQL | Parameters<typeof gte>[0], f: ReportFilters, tz: string): SQL {
   return sql`${column} >= (${f.from}::date)::timestamp at time zone ${tz} and ${column} < ((${f.to}::date + 1)::timestamp at time zone ${tz})`;
 }
 
 /** Kapsam + birim/pozisyon filtresi (pozisyonun birimine göre; ağaç iki seviyeli). */
-async function unitCondition(actor: Actor, f: ReportFilters, positionColumn: typeof positions.id, opts: { ohsAll?: boolean } = {}): Promise<SQL | undefined> {
+export async function unitCondition(actor: Actor, f: ReportFilters, positionColumn: typeof positions.id, opts: { ohsAll?: boolean } = {}): Promise<SQL | undefined> {
   const conds: SQL[] = [];
   // İSG uzmanı tüm personelin İSG kayıtlarını görür (SPEC 2.2, karar #91)
   const scope = opts.ohsAll && hasRole(actor, "ohs_specialist") ? ({ all: true } as const) : await orgScopeFor(actor);

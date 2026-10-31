@@ -1087,7 +1087,17 @@
       "remoteAllowed": "Can be given remotely (online)",
       "remoteHint": "If off, the module is completed only through a classroom training record.",
       "remoteLocked": "Only the OHS specialist can change this setting for this OHS module.",
-      "create": "Create"
+      "create": "Create",
+      "ohsTopic": "OHS topic group",
+      "ohsTopicHint": "The group in the regulation on employee OHS training. It appears as a separate column in the OSGB file.",
+      "ohsTopicLocked": "The OHS specialist sets the topic group.",
+      "ohsTopicNone": "Not specified",
+      "ohsTopics": {
+        "general": "General topics",
+        "health": "Health topics",
+        "technical": "Technical topics",
+        "other": "Other topics"
+      }
     },
     "picker": {
       "label": "Search content",
@@ -2513,7 +2523,50 @@
     "truncated": "The row limit was exceeded; narrow the filter to download.",
     "empty": "No records for this filter.",
     "back": "Reports",
-    "none": "There are no reports you can view."
+    "none": "There are no reports you can view.",
+    "osgb": {
+      "heading": "OSGB file",
+      "intro": "OHS training records for the selected period, in the format sent to the OSGB (occupational health and safety unit): OHS modules completed in the system and last training dates entered for existing employees (shown in the Source column). Each person × training is one row; unit and position filters apply.",
+      "nationalIdFull": "The file contains the full national ID number; every download is written to the personal data access log for each person in the file.",
+      "nationalIdNone": "The national ID column is empty; only HR can download the full national ID.",
+      "export": {
+        "xlsx": "OSGB Excel",
+        "csv": "OSGB CSV"
+      },
+      "file": "osgb-ohs-training",
+      "sheet": "OHS training",
+      "columns": {
+        "nationalId": "National ID no",
+        "sicil": "Employee no",
+        "name": "Full name",
+        "unit": "Unit",
+        "position": "Position",
+        "topic": "Training topic",
+        "topicGroup": "Topic group",
+        "date": "Training date",
+        "hours": "Duration (hours)",
+        "method": "Method",
+        "trainer": "Trainer",
+        "documentNo": "Document no",
+        "validUntil": "Valid until",
+        "source": "Source"
+      },
+      "topicGroups": {
+        "general": "General topics",
+        "health": "Health topics",
+        "technical": "Technical topics",
+        "other": "Other topics",
+        "none": "Not specified"
+      },
+      "methods": {
+        "remote": "Remote",
+        "classroom": "Face to face"
+      },
+      "sources": {
+        "system": "System",
+        "prior": "Entered date"
+      }
+    }
   },
   "audit": {
     "title": "Audit log",

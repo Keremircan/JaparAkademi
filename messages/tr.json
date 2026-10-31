@@ -1087,7 +1087,17 @@
       "remoteAllowed": "Uzaktan (çevrim içi) verilebilir",
       "remoteHint": "Kapalıysa modül yalnızca sınıf eğitimi kaydıyla tamamlanır.",
       "remoteLocked": "Bu İSG modülünde bu ayarı yalnızca İSG uzmanı değiştirebilir.",
-      "create": "Oluştur"
+      "create": "Oluştur",
+      "ohsTopic": "İSG konu grubu",
+      "ohsTopicHint": "Çalışanların İSG Eğitimleri Yönetmeliği'ndeki grup. OSGB dosyasında ayrı sütun olarak çıkar.",
+      "ohsTopicLocked": "Konu grubunu İSG uzmanı belirler.",
+      "ohsTopicNone": "Belirtilmemiş",
+      "ohsTopics": {
+        "general": "Genel konular",
+        "health": "Sağlık konuları",
+        "technical": "Teknik konular",
+        "other": "Diğer konular"
+      }
     },
     "picker": {
       "label": "İçerik ara",
@@ -2548,7 +2558,50 @@
     "truncated": "Satır sınırı aşıldı; indirmek için filtreyi daraltın.",
     "empty": "Bu filtreyle kayıt yok.",
     "back": "Raporlar",
-    "none": "Görebileceğiniz rapor yok."
+    "none": "Görebileceğiniz rapor yok.",
+    "osgb": {
+      "heading": "OSGB dosyası",
+      "intro": "Seçili dönemdeki İSG eğitim kayıtları, OSGB'ye gönderilecek biçimde: sistemde tamamlanan İSG modülleri ve eski personel için girilen son eğitim tarihleri (Kaynak sütununda ayrılır). Her kişi × eğitim bir satırdır; birim ve pozisyon süzgeçleri uygulanır.",
+      "nationalIdFull": "Dosyada tam TC kimlik numarası yer alır; her indirme, dosyadaki her kişi için kişisel veri erişim kaydına yazılır.",
+      "nationalIdNone": "TC kimlik no sütunu boş gelir; tam TC'yi yalnızca İK indirebilir.",
+      "export": {
+        "xlsx": "OSGB Excel",
+        "csv": "OSGB CSV"
+      },
+      "file": "osgb-isg-egitimleri",
+      "sheet": "İSG eğitimleri",
+      "columns": {
+        "nationalId": "TC kimlik no",
+        "sicil": "Sicil no",
+        "name": "Ad soyad",
+        "unit": "Birim",
+        "position": "Pozisyon",
+        "topic": "Eğitim konusu",
+        "topicGroup": "Konu grubu",
+        "date": "Eğitim tarihi",
+        "hours": "Süre (saat)",
+        "method": "Yöntem",
+        "trainer": "Eğitmen",
+        "documentNo": "Belge no",
+        "validUntil": "Geçerlilik bitişi",
+        "source": "Kaynak"
+      },
+      "topicGroups": {
+        "general": "Genel konular",
+        "health": "Sağlık konuları",
+        "technical": "Teknik konular",
+        "other": "Diğer konular",
+        "none": "Belirtilmemiş"
+      },
+      "methods": {
+        "remote": "Uzaktan",
+        "classroom": "Yüz yüze"
+      },
+      "sources": {
+        "system": "Sistem",
+        "prior": "Girilen tarih"
+      }
+    }
   },
   "audit": {
     "title": "Denetim kaydı",

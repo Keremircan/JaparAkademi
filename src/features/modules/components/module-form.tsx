@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import type { ActionResult } from "@/features/shared/action-result";
+import { OHS_TOPICS, type OhsTopic } from "@/lib/ohs";
 import type { ModuleKind } from "@/server/services/modules";
 import { createModuleAction, updateModuleAction } from "../actions";
 
@@ -19,6 +20,7 @@ type Values = {
   description: string | null;
   durationMin: number;
   isOhs: boolean;
+  ohsTopic: OhsTopic | null;
   remoteAllowed: boolean;
   validityMonths: number | null;
   commonTarget: "all" | "blue" | "white" | null;
@@ -28,7 +30,7 @@ type Values = {
 /** Modül oluşturma ve ayar düzenleme formu. */
 export function ModuleForm(
   props:
-    | { mode: "create"; owners: { common: boolean; units: { id: string; name: string; parentName: string | null }[] }; ohsOnly: boolean }
+    | { mode: "create"; owners: { common: boolean; units: { id: string; name: string; parentName: string | null }[] }; ohsOnly: boolean; ohsSpecialist: boolean }
     | { mode: "edit"; moduleId: string; values: Values; isCommon: boolean; canEditRemote: boolean; isCardModule: boolean },
 ) {
   const t = useTranslations("modules.form");
@@ -40,6 +42,10 @@ export function ModuleForm(
   const [owner, setOwner] = useState(props.mode === "create" && props.owners.common && props.owners.units.length === 0 ? "common" : "");
   const isCommon = props.mode === "edit" ? props.isCommon : owner === "common";
   const remoteLocked = props.mode === "edit" ? !props.canEditRemote : false;
+  const [isOhs, setIsOhs] = useState(!!v.isOhs);
+  // Konu grubunu İSG uzmanı seçer (karar #228); diğerleri düzenlemede yalnızca görür
+  const topicLocked = props.mode === "edit" ? !props.canEditRemote : !props.ohsSpecialist;
+  const showTopic = isOhs && (!topicLocked || props.mode === "edit");
 
   return (
     <form action={formAction} className="flex max-w-3xl flex-col gap-5">
@@ -112,12 +118,24 @@ export function ModuleForm(
       )}
 
       <label className="flex min-h-12 items-start gap-3">
-        <input type="checkbox" name="isOhs" defaultChecked={v.isOhs} className="mt-1 size-5 accent-primary" />
+        <input type="checkbox" name="isOhs" checked={isOhs} onChange={(e) => setIsOhs(e.target.checked)} className="mt-1 size-5 accent-primary" />
         <span>
           <span className="block font-medium">{t("isOhs")}</span>
           <span className="block text-sm text-muted-foreground">{t("isOhsHint")}</span>
         </span>
       </label>
+      {showTopic && (
+        <Field id="ohsTopic" label={t("ohsTopic")} hint={topicLocked ? t("ohsTopicLocked") : t("ohsTopicHint")}>
+          <NativeSelect key={v.ohsTopic ?? ""} id="ohsTopic" name="ohsTopic" defaultValue={v.ohsTopic ?? ""} disabled={topicLocked} aria-describedby="ohsTopic-hint">
+            <option value="">{t("ohsTopicNone")}</option>
+            {OHS_TOPICS.map((k) => (
+              <option key={k} value={k}>
+                {t(`ohsTopics.${k}`)}
+              </option>
+            ))}
+          </NativeSelect>
+        </Field>
+      )}
       <label className="flex min-h-12 items-start gap-3">
         <input type="checkbox" name="remoteAllowed" defaultChecked={v.remoteAllowed} disabled={remoteLocked} className="mt-1 size-5 accent-primary" />
         {remoteLocked && v.remoteAllowed && <input type="hidden" name="remoteAllowed" value="on" />}

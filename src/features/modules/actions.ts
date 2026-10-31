@@ -5,6 +5,7 @@ import { refresh } from "next/cache";
 import { z } from "zod";
 import { actionUser, formText, runAction, type ActionResult } from "@/features/shared/action-result";
 import { redirect } from "@/i18n/navigation";
+import { OHS_TOPICS } from "@/lib/ohs";
 import { saveQuizQuestions } from "@/server/services/quiz";
 import {
   archiveModule,
@@ -25,6 +26,7 @@ const baseSchema = z.object({
   description: z.string().max(2000).nullable(),
   durationMin: z.coerce.number().int().min(1).max(100000),
   isOhs: z.boolean(),
+  ohsTopic: z.enum(OHS_TOPICS).nullable(),
   remoteAllowed: z.boolean(),
   validityMonths: optInt(1, 240),
   commonTarget: z.enum(["all", "blue", "white"]).nullable(),
@@ -37,6 +39,7 @@ function readBase(formData: FormData) {
     description: formText(formData, "description"),
     durationMin: formText(formData, "durationMin"),
     isOhs: formData.get("isOhs") === "on",
+    ohsTopic: formText(formData, "ohsTopic"),
     remoteAllowed: formData.get("remoteAllowed") === "on",
     validityMonths: formText(formData, "validityMonths"),
     commonTarget: formText(formData, "commonTarget"),
