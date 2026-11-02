@@ -73,6 +73,8 @@ export const PERMISSIONS = {
   "reports.contractors": ["ohs_specialist", "hr"],
   "reports.expiring": ["ohs_specialist", "hr"],
   "reports.content": ["section_manager", "hr"],
+  // Yönetim özeti (iş paketi 3.5, karar #238): İK ve üst yönetici tesis, bölüm sorumlusu kapsam, İSG uzmanı yalnızca İSG göstergeleri
+  "reports.summary": ["section_manager", "ohs_specialist", "hr"],
 } as const satisfies Record<string, readonly Role[]>;
 
 export type Permission = keyof typeof PERMISSIONS;

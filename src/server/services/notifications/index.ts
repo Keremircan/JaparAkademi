@@ -40,8 +40,8 @@ function emailContent(kind: NotificationKind, link: string, params: Record<strin
   const t = createTranslator({ locale: toAppLocale(locale), messages: messagesFor(locale), namespace: "notifications.email" });
   const url = new URL(localizedPath(link, locale), env().APP_URL).toString();
   const subject = t(`kinds.${kind}`);
-  // Haftalık özette yalnızca sayılar (kişi adı yok; karar #172)
-  const body = kind === "weekly_summary" ? t("weeklyBody", params) : t("body");
+  // Haftalık ve aylık özette yalnızca sayılar (kişi adı yok; kararlar #172, #242)
+  const body = kind === "weekly_summary" ? t("weeklyBody", params) : kind === "monthly_summary" ? t("monthlyBody", params) : t("body");
   return {
     subject: `${subject} · ${t("app")}`,
     text: `${subject}\n\n${body}\n${url}\n\n${t("footer")}`,

@@ -87,6 +87,9 @@ export const SETTINGS_CATALOG: Partial<Record<SettingKey, Entry>> = {
   "verify.ip_window_min": { group: "certificate", input: int },
 
   "reports.max_rows": { group: "reports", input: int },
+  "reports.monthly_summary_enabled": { group: "reports", input: { kind: "boolean" } },
+  "reports.monthly_summary_day": { group: "reports", input: int },
+  "reports.monthly_summary_hour": { group: "reports", input: int },
 
   "upload.max_video_mb": { group: "upload", input: int },
   "upload.max_pdf_mb": { group: "upload", input: int },

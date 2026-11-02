@@ -364,6 +364,7 @@ Tüm raporlar ekranda filtrelenebilir ve **Excel (xlsx) / PDF** olarak dışa ak
 | Taşeron uygunluk | İSG, satın alma* | Firma bazında eğitimi geçerli/geçersiz çalışan sayısı | 2 |
 | İçerik güncellik | B. sorumluları | Son gözden geçirmesi 12 aydan eski pozisyon kartları | 2 |
 | Yetkinlik matrisi | Yöneticiler | Personel × makine/iş, yetki durumu | 3 |
+| Yönetim özeti | İK, üst yönetici, b. sorumlusu (kapsamı), İSG (yalnızca İSG göstergeleri) | Temel göstergeler: eğitimi süren, onay bekleyen, hedefi geçen; dönemde işe başlama onayı ve süresi, tamamlanan modül, teorik sınavda ilk denemede geçme; İSG eğitimi süresi dolmuş ve 30/60/90 gün içinde dolacak kişi. Son 12 ayın eğilimi (grafik + tablo), Excel. Yalnızca sayılar (kararlar #237–240) | 3 |
 
 \* "Satın alma" ayrı bir rol değildir. Bu rapor, İSG veya İK tarafından dışa aktarılarak paylaşılır.
 
@@ -383,6 +384,7 @@ Kanallar: **uygulama içi** (her zaman), **web push** (PWA, Faz 2) ve **e-posta*
 | İSG uzmanı | Süresi dolan İSG eğitimi, kara listeye alınan kişi | 2 |
 | Ev sahibi | Ziyaretçiniz geldi / bilgilendirmeyi tamamladı | 2 |
 | Yönetici (b. sorumlusu) | Haftalık özet e-postası: ekibinin durumu (Pazartesi 08:00) | 2 |
+| İK + üst yönetici | Aylık yönetim özeti e-postası: önceki ayın sayıları, bütün tesis (ayın 1'i 08:00, parametre; kararlar #241–242) | 3 |
 
 ---
 
@@ -705,6 +707,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | `auth.invite_valid_hours` / `auth.invite_code_attempts` | 72 / 5 | — | sysadmin |
 | `auth.invite_batch_max` | 200 | — | sysadmin |
 | `reports.max_rows` | 10000 | — | sysadmin |
+| `reports.monthly_summary_enabled` / `reports.monthly_summary_day` / `reports.monthly_summary_hour` | açık / 1 / 8 (gün 1–28; saat Europe/Istanbul) | — | sysadmin |
 | `session.shared_idle_min` | 10 | — | sysadmin |
 | `session.personal_days` | 30 | — | sysadmin |
 | `auth.password_min_length` | 8 | — | sysadmin |
@@ -784,6 +787,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | **3.2 Eski personelin periyodik eğitimleri** | Süreli teorik modüllerde sistem dışı son eğitim tarihi (`prior_trainings`, ekrandan ve Excel'den), gece işiyle otomatik açılma, "Şimdi başlat", `periodic` atama türü (onaysız tamamlanma), `/manage/periodic` (kararlar #222–225) |
 | **3.3 OSGB dışa aktarım** | İSG modüllerine konu grubu, Raporlar → İSG eğitim kayıt defteri sayfasında "OSGB dosyası" (Excel + CSV): sistemde tamamlanan İSG modülleri + girilen son eğitim tarihleri, tam TC yalnızca İK'ya (kararlar #226–229) |
 | **3.4 Profil ve açık rıza** | Kapsam değişikliği (turnike, İK otomatik aktarım, M365 tek oturum çıkarıldı); açık rıza metni (ayrı tür, TR + EN), onay ekranında ayrı ve isteğe bağlı kutu, profilden verme/geri alma, `explicit_consents`; detaylı profil (birim, pozisyon, e-posta, telefonu kişi değiştirir, profil fotoğrafı), İK kişi ekranında fotoğraf, KVKK dışa aktarma ve anonimleştirme (FG-1.5, FG-1.6, kararlar #230–236) |
+| **3.5 Gelişmiş raporlar** | Raporlar → Yönetim özeti (`/reports/summary`): göstergeler, 12 aylık eğilim grafiği + tablo, Excel; İSG geçerliliğinde girilen son eğitim tarihleri (süresi dolacaklar raporunda da); İK ve üst yöneticiye aylık özet e-postası (kararlar #237–242) |
 
 "Tüm bölümlerin pozisyon kartları" içerik girişidir; kod paketi değildir (pilot kontrol listesinde izlenir).
 
@@ -1035,6 +1039,12 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 234 | İletişim bilgisi | Telefonu kişi profilden değiştirir (`+90…` biçimi, boş bırakılırsa silinir). E-postayı yalnızca İK değiştirir: şifre sıfırlama ve yönetici girişi bu adrese gider |
 | 235 | Profil fotoğrafı | Garage'da, mevcut imzalı yükleme hattıyla (`purpose: profile_photo`: her kullanıcı, yalnızca görsel, `upload.max_image_mb`); worker yeniden kodlar (EXIF/konum silinir). Yalnızca kişinin güncel açık rızası varken bağlanır. Kişi kendisi ya da `people.manage` (İK, sistem yöneticisi; kapsam) yükler/kaldırır. Görür: kişiyi görebilenler (kendisi, İK, kapsamdaki bölüm sorumlusu, eğitmeni) ve personel ekranındaki yöneticiler. Yenisi bağlanınca eskisi depodan silinir |
 | 236 | Fotoğrafın silinmesi | Rıza verilmeyince/geri alınınca ve kişi fotoğrafı kaldırınca hemen; anonimleştirmede gece saklama işinde (`media_assets.status = purged`). Dosya önce depodan silinir; silinemezse işlem yapılmaz ve hata gösterilir (rıza geri alma da yazılmaz, yeniden denenir) |
+| 237 | Yönetim özeti göstergeleri | Bugün itibarıyla: eğitimi süren kişi (atama `active` / `awaiting_decision`), işe başlama onayı bekleyen (`awaiting_readiness`), hedef tarihi geçen eğitim. Seçilen dönemde: işe başlayabilir onayı (bütün atama türleri), ortalama ve medyan işe başlama süresi (yeni personel; işe başlama süresi raporuyla aynı hesap), tamamlanan eğitim modülü (devreden hariç; atamanın ayrı bir tamamlanma tarihi olmadığından modül sayılır), teorik sınavda ilk denemede geçme oranı (1. deneme, teslimi dönemde). İSG: eğitimi süresi dolmuş ve 30/60/90 gün içinde dolacak kişi (bugün itibarıyla, aktif personel), dönemde tamamlanan İSG eğitimi. Varsayılan dönem son 90 gün; hızlı seçim bu ay, geçen ay, son 90 gün, bu yıl. Yalnızca sayılar, kişi adı yok; gösterge, raporu görme yetkisi olan kişide ilgili rapora bağlanır |
+| 238 | Yönetim özeti görünürlüğü | Yetki `reports.summary`. İK ve üst yönetici bütün tesisi, bölüm sorumlusu kapsamındaki birimleri görür (birim süzgeci kapsam içinde). Yalnızca İSG uzmanı olan kişi İSG görünümünü görür: İSG göstergeleri ve İSG sınavlarında ilk deneme, bütün tesis. Sistem yöneticisi, eğitmen, güvenlik ve personel göremez. Eğitim ve sınav göstergeleri kayıttaki pozisyonun birimine, İSG geçerliliği kişinin bugünkü pozisyonuna göre süzülür (önceki raporlarla aynı) |
+| 239 | Eğilim ve Excel | Dönemin bitiş ayıyla biten 12 ay (bugünü geçmez; içinde bulunulan ay "devam ediyor" diye işaretlenir): aylık tamamlanan modül (sütun) ve ilk denemede geçme oranı (çizgi, %0–100) iki ayrı grafikte (iki eksenli grafik yok); klavye ve ekran okuyucuyla gezilir, aynı veri tablo olarak da verilir. Excel: Göstergeler, Aylık eğilim ve Bilgi sayfaları; indirenin dilinde; her indirme `report_exports`'a (`summary`) yazılır |
+| 240 | İSG geçerliliğinin kaynağı | Kişi × modülde son tamamlanış (devreden hariç); sistemde tamamlanışı yoksa girilen son eğitim tarihi + modülün geçerlilik süresi (karar #223). Süresi dolacaklar raporu da girilen tarihleri "Modül (girilen eğitim tarihi)" türüyle listeler; özet ve rapor aynı kaynağı kullandığından sayılar tutar |
+| 241 | Aylık özet e-postası | Önceki ayın özeti (bütün tesis, tam görünüm) İK ve üst yöneticilere gider; bölüm sorumlusu almaz (haftalık ekip özetini alır). `reports.monthly` işi saatte bir çalışır; `reports.monthly_summary_day` (1–28) günü `reports.monthly_summary_hour` saatinden sonraki ilk çalışmada gönderir (varsayılan ayın 1'i 08:00, Europe/Istanbul); `reports.monthly_summary_enabled` ile kapatılır (sysadmin). Ay başına bir kez (`monthly_summary:<YYYY-AA>`, `once`) |
+| 242 | Aylık özet içeriği | Yalnızca sayılar (karar #172 gibi kişi adı yok): tamamlanan modül, işe başlama onayı, ortalama işe başlama süresi, ilk denemede geçme; bugün eğitimi süren, hedefi geçen, İSG eğitimi süresi dolmuş ve 30 gün içinde dolacak kişi; o ayın dönemiyle özete bağlantı. Ay adı ve sayı biçimi alıcının dilinde. E-postası olmayan alıcı yalnızca uygulama içi bildirim alır. Yeni tür `monthly_summary` kayıtlı `notify.email_events` değerine bir kez migration ile eklendi (`0052`; tür yeni olduğundan daha önce kapatılmış olamaz — karar #173'ün istisnası) |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

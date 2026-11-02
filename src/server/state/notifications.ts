@@ -25,6 +25,8 @@ export const NOTIFICATION_KINDS = [
   "recert_deferred",
   "recert_trainer_needed",
   "competency_expiring",
+  // İK + üst yönetici (Faz 3)
+  "monthly_summary",
   // İSG uzmanı (Faz 2)
   "blacklist_added",
   "blacklist_denied",

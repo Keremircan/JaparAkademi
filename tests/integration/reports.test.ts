@@ -1,18 +1,12 @@
 import ExcelJS from "exceljs";
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { addDays, todayIn } from "@/lib/dates";
 import { systemActor } from "@/server/authz/actor";
 import { db } from "@/server/db/client";
 import { dataAccessLog, reportExports } from "@/server/db/schema";
 import { isImmutableViolation } from "@/server/errors";
-import { myLearning } from "@/server/services/assignments";
-import { acknowledgeItem, learnModule, reportReachedEnd } from "@/server/services/assignments/learner";
 import { diffRecord, listAuditLog } from "@/server/services/audit";
-import { answerExam, getAttempt, startExam, submitExam } from "@/server/services/exams";
-import { createModule, setModuleContents } from "@/server/services/modules";
 import { exportPersonalData } from "@/server/services/personal-export";
-import { createQuestion } from "@/server/services/questions";
 import { approveReadiness } from "@/server/services/readiness";
 import { parseFilters, runReport, type ReportKind } from "@/server/services/reports";
 import { exportReport } from "@/server/services/reports/export";
@@ -20,69 +14,9 @@ import { setSetting } from "@/server/services/settings";
 import { owner } from "../support/db";
 import { seedContentPeople } from "../support/content";
 import { createTestUser } from "../support/factories";
-import { moduleInput, publishCard, publishedText } from "../support/training";
-import { choice, opts } from "../support/exam";
+import { scenario } from "../support/report-scenario";
 
-type People = Awaited<ReturnType<typeof seedContentPeople>>;
-type Trainee = Awaited<ReturnType<typeof createTestUser>>;
 type Actor = Parameters<typeof runReport>[0];
-
-/** Pres: ortak İSG modülü (12 ay) + teorik modül + teorik sınav (4 soru, 2 hak). */
-async function setup(p: People) {
-  const sm = p.smUretim.actor;
-  const ohsContent = await publishedText(p.ohs.actor, null, "Genel İSG", "metin", true);
-  const isg = (await createModule(p.ohs.actor, moduleInput(null, "theory", "Genel İSG eğitimi", { isOhs: true, validityMonths: 12, durationMin: 480 }))).id;
-  await setModuleContents(p.ohs.actor, isg, [ohsContent]);
-  const c = await publishedText(sm, p.org.units.pres, "Pres temelleri", "metin");
-  const theory = (await createModule(sm, moduleInput(p.org.units.pres, "theory", "Pres teorisi"))).id;
-  await setModuleContents(sm, theory, [c]);
-  const exam = (await createModule(sm, moduleInput(p.org.units.pres, "theory_exam", "Pres sınavı"))).id;
-  for (let i = 0; i < 4; i++) {
-    await createQuestion(sm, {
-      type: "single_choice", stem: `Pres sınav sorusu ${i}`, options: ["Doğru şık", "Yanlış bir", "Yanlış iki"], correctIndex: 0, explanation: null,
-      topic: "Pres", difficulty: 1, isOhsCritical: false, mediaAssetId: null, moduleIds: [theory], ownerOrgUnitId: p.org.units.pres, isOhs: false,
-    });
-  }
-  const { cardModuleId } = await publishCard(p, p.org.positions.presOp, [theory, exam], sm, {
-    [exam]: { questionCount: 4, passScore: 75, maxAttempts: 2, cooldownHours: 0, durationMin: 10, proctorRequired: false },
-  });
-  return { isg, theory, exam, cardModuleId };
-}
-
-async function finish(u: Trainee, moduleId: string) {
-  const am = (await myLearning(u.actor)).current!.modules.find((m) => m.moduleId === moduleId)!;
-  for (const item of (await learnModule(u.actor, am.id)).items) {
-    await reportReachedEnd(u.actor, item.id);
-    await acknowledgeItem(u.actor, item.id);
-  }
-}
-
-async function takeExam(u: Trainee, examModuleId: string, pass: boolean) {
-  const am = (await myLearning(u.actor)).current!.modules.find((m) => m.moduleId === examModuleId)!;
-  const { attemptId } = await startExam(u.actor, am.id, { code: null, ip: null, userAgent: null });
-  const view = await getAttempt(u.actor, attemptId);
-  if (view.state !== "open") throw new Error("açık değil");
-  for (const item of view.questions) {
-    const right = opts(item).indexOf("Doğru şık");
-    await answerExam(u.actor, attemptId, item.itemId, choice(pass ? right : (right + 1) % opts(item).length));
-  }
-  await submitExam(u.actor, attemptId);
-}
-
-/** Kursiyer: 10 gün önce işe girdi; İSG + kart + teori; sınavda bir kalır, bir geçer; onaylanır. */
-async function scenario(p: People) {
-  const s = await setup(p);
-  const today = todayIn("Europe/Istanbul");
-  const u = await createTestUser({ positionId: p.org.positions.presOp, trainingRequired: true, hireDate: addDays(today, -10) });
-  await finish(u, s.isg);
-  await finish(u, s.cardModuleId);
-  await finish(u, s.theory);
-  await takeExam(u, s.exam, false);
-  await finish(u, s.theory);
-  await takeExam(u, s.exam, true);
-  const a = (await myLearning(u.actor)).current!;
-  return { s, u, a };
-}
 
 const rows = async (actor: Actor, kind: ReportKind, input: Record<string, string> = {}) => {
   const r = await runReport(actor, kind, await parseFilters(kind, input));

@@ -25,6 +25,8 @@ export const QUEUES = {
   trainingDaily: "training.daily",
   /** Bölüm sorumlularına haftalık özet (Pazartesi 08:00; SPEC 10.2). */
   trainingWeekly: "training.weekly",
+  /** İK ve üst yöneticiye aylık yönetim özeti (her saat kontrol; ayarlanan gün ve saatte, ayda bir; iş paketi 3.5). */
+  reportsMonthly: "reports.monthly",
 } as const;
 
 export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];

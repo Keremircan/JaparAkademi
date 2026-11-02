@@ -103,6 +103,10 @@ export const SETTINGS = {
 
   // Raporlar (SPEC 10.1, karar #96)
   "reports.max_rows": def({ schema: positiveInt.max(100_000), default: 10_000, managedBy: SYS }),
+  // Aylık yönetim özeti (iş paketi 3.5, karar #241): İK ve üst yöneticiye önceki ayın sayıları; gün 1–28 (her ayda var)
+  "reports.monthly_summary_enabled": def({ schema: z.boolean(), default: true, managedBy: SYS }),
+  "reports.monthly_summary_day": def({ schema: z.number().int().min(1).max(28), default: 1, managedBy: SYS }),
+  "reports.monthly_summary_hour": def({ schema: z.number().int().min(0).max(23), default: 8, managedBy: SYS }),
 
   // Süre ve hatırlatmalar
   "recert.lead_days": def({ schema: positiveInt.max(365), default: 30, managedBy: SYS }),

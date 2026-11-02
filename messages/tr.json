@@ -2319,7 +2319,8 @@
       "recert_deferred": "{name} için tekrar eğitimi zamanı geldi; açık eğitimi bitince başlayacak.",
       "recert_trainer_needed": "{name} tekrar eğitimine başladı. Pratik modül için eğitmen seçin.",
       "ohs_expired": "{count} kişinin İSG eğitiminin süresi doldu.",
-      "competency_expiring": "{name} adlı kişinin \"{competency}\" yetkinliğinin süresi yaklaşıyor."
+      "competency_expiring": "{name} adlı kişinin \"{competency}\" yetkinliğinin süresi yaklaşıyor.",
+      "monthly_summary": "{monthNo, select, 1 {Ocak} 2 {Şubat} 3 {Mart} 4 {Nisan} 5 {Mayıs} 6 {Haziran} 7 {Temmuz} 8 {Ağustos} 9 {Eylül} 10 {Ekim} 11 {Kasım} 12 {Aralık} other {}} {year} yönetim özeti hazır: {completed, number} tamamlanan eğitim modülü, {approved, number} işe başlama onayı, {overdue, number} hedefi geçen eğitim."
     },
     "email": {
       "app": "JAPAR Akademi",
@@ -2352,8 +2353,10 @@
         "recert_deferred": "Ertelenen bir tekrar eğitimi var",
         "recert_trainer_needed": "Tekrar eğitimi için eğitmen seçilmesi gerekiyor",
         "ohs_expired": "Süresi dolan İSG eğitimleri var",
-        "competency_expiring": "Süresi yaklaşan bir yetkinlik var"
-      }
+        "competency_expiring": "Süresi yaklaşan bir yetkinlik var",
+        "monthly_summary": "Aylık yönetim özeti"
+      },
+      "monthlyBody": "{monthNo, select, 1 {Ocak} 2 {Şubat} 3 {Mart} 4 {Nisan} 5 {Mayıs} 6 {Haziran} 7 {Temmuz} 8 {Ağustos} 9 {Eylül} 10 {Ekim} 11 {Kasım} 12 {Aralık} other {}} {year} · Tamamlanan eğitim modülü: {completed, number} · İşe başlayabilir onayı: {approved, number} · Ortalama işe başlama süresi: {avgDays, select, none {—} other {{avgDays, number} gün}} · Teorik sınavda ilk denemede geçme: {passRate, select, none {—} other {%{passRate, number}}}. Bugün itibarıyla: eğitimi süren {active, number} kişi · hedef tarihi geçen {overdue, number} eğitim · İSG eğitimi süresi dolmuş {ohsExpired, number} kişi · {ohsDays, number} gün içinde dolacak {ohsExpiring, number} kişi. Ayrıntılar için JAPAR Akademi'ye giriş yapın."
     },
     "pagination": "Bildirim sayfaları",
     "push": {
@@ -2561,7 +2564,8 @@
       },
       "itemKind": {
         "module": "Modül",
-        "certificate": "Pozisyon sertifikası"
+        "certificate": "Pozisyon sertifikası",
+        "prior": "Modül (girilen eğitim tarihi)"
       },
       "recertStatus": {
         "opened": "Açıldı",
@@ -2640,6 +2644,80 @@
       "sources": {
         "system": "Sistem",
         "prior": "Girilen tarih"
+      }
+    },
+    "summary": {
+      "title": "Yönetim özeti",
+      "description": "Seçilen dönem ve birim için temel göstergeler ve son 12 ayın eğilimi. Yalnızca sayılar gösterilir; kişi adı yer almaz.",
+      "cardDescription": "Eğitim, işe başlama, sınav ve İSG göstergeleri; son 12 ayın eğilimi.",
+      "ohsOnly": "Yalnızca İSG göstergelerini görüyorsunuz (bütün tesis).",
+      "scopeNote": "Yalnızca sorumlu olduğunuz birimlerin sayıları gösterilir.",
+      "file": "yonetim-ozeti",
+      "export": "Excel indir",
+      "groups": {
+        "training": "Eğitim ve işe başlama",
+        "ohs": "İş sağlığı ve güvenliği",
+        "now": "Bugün itibarıyla",
+        "period": "Seçilen dönemde"
+      },
+      "quick": {
+        "label": "Hızlı dönem seçimi",
+        "thisMonth": "Bu ay",
+        "lastMonth": "Geçen ay",
+        "last90": "Son 90 gün",
+        "thisYear": "Bu yıl"
+      },
+      "kpi": {
+        "activeTrainees": "Eğitimi süren kişi",
+        "awaitingReadiness": "İşe başlama onayı bekleyen",
+        "overdue": "Hedef tarihi geçen eğitim",
+        "readinessApproved": "İşe başlayabilir onayı",
+        "onboardingDays": "Ortalama işe başlama süresi",
+        "onboardingDaysUnit": "Ortalama işe başlama süresi (gün)",
+        "onboardingMedianUnit": "Medyan işe başlama süresi (gün)",
+        "days": "{days} gün",
+        "onboardingDetail": "Medyan {median} gün · {count, number} yeni personel",
+        "firstPass": "Teorik sınavda ilk denemede geçme",
+        "firstPassOhs": "İSG sınavında ilk denemede geçme",
+        "firstPassDetail": "{attempts, number} ilk denemenin {passed, number} tanesi geçti",
+        "firstAttempts": "İlk deneme sayısı",
+        "rate": "%{rate}",
+        "modulesCompleted": "Tamamlanan eğitim modülü",
+        "ohsExpired": "İSG eğitimi süresi dolmuş kişi",
+        "ohsExpiring": "{days} gün içinde süresi dolacak kişi",
+        "ohsCompleted": "Tamamlanan İSG eğitimi",
+        "none": "Veri yok",
+        "open": "Raporu aç",
+        "attention": "Dikkat gerektiriyor"
+      },
+      "trend": {
+        "title": "Son 12 ay",
+        "description": "{from} – {to}, aylık.",
+        "partialNote": "{month} henüz bitmedi; bu ayın sayıları eksik ve grafikte açık renkle gösterilir.",
+        "completed": "Tamamlanan eğitim modülü",
+        "completedOhs": "Tamamlanan İSG eğitimi",
+        "rate": "Teorik sınavda ilk denemede geçme oranı",
+        "rateOhs": "İSG sınavında ilk denemede geçme oranı",
+        "ratePercent": "İlk denemede geçme oranı (%)",
+        "month": "Ay",
+        "attempts": "İlk deneme",
+        "passed": "İlk denemede geçen",
+        "partial": "devam ediyor",
+        "noExams": "Sınav yok",
+        "empty": "Son 12 ayda kayıt yok.",
+        "table": "Sayıları tablo olarak gör",
+        "keyboard": "{title}. Aylar arasında sol ve sağ ok tuşlarıyla gezinebilirsiniz; sayılar aşağıdaki tabloda da var.",
+        "chartAria": "{title}, {from} – {to}. Sayılar grafiğin altındaki tabloda."
+      },
+      "excel": {
+        "sheet": "Göstergeler",
+        "trendSheet": "Aylık eğilim",
+        "indicator": "Gösterge",
+        "value": "Değer",
+        "basis": "Dayanak",
+        "unit": "Birim: {name}",
+        "allUnits": "Birim: Tümü",
+        "privacy": "Yalnızca sayılar; kişi adı yer almaz."
       }
     }
   },
@@ -3074,6 +3152,21 @@
         "label": "Yetkinlik süre uyarısı",
         "hint": "Yetkinliğin bitişine bu kadar gün kala bölüm sorumlusuna bildirim gider ve matriste sarı görünür.",
         "unit": "{n} gün"
+      },
+      "reports_monthly_summary_enabled": {
+        "label": "Aylık yönetim özeti",
+        "hint": "Açıkken İK ve üst yöneticilere her ay önceki ayın sayıları gönderilir: uygulama içi bildirim, e-postası olana e-posta. Kişi adı yer almaz.",
+        "unit": "{n}"
+      },
+      "reports_monthly_summary_day": {
+        "label": "Aylık özetin gönderildiği gün",
+        "hint": "Ayın kaçıncı günü gönderilir (1–28).",
+        "unit": "Ayın {n}. günü"
+      },
+      "reports_monthly_summary_hour": {
+        "label": "Aylık özetin gönderildiği saat",
+        "hint": "Türkiye saatiyle (0–23). Sunucu o saatte kapalıysa aynı gün ilk fırsatta gönderilir.",
+        "unit": "{n}:00"
       }
     },
     "visitorTypes": {

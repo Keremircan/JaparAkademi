@@ -9,6 +9,12 @@ export function todayIn(timeZone: string, now: Date = new Date()): string {
   return `${get("year")}-${get("month")}-${get("day")}`;
 }
 
+/** Verilen saat dilimindeki saat (0–23). */
+export function hourIn(timeZone: string, now: Date = new Date()): number {
+  const parts = new Intl.DateTimeFormat("en-US", { timeZone, hourCycle: "h23", hour: "2-digit" }).formatToParts(now);
+  return Number(parts.find((p) => p.type === "hour")!.value);
+}
+
 function parse(date: string): Date {
   const [y, m, d] = date.split("-").map(Number);
   return new Date(Date.UTC(y!, m! - 1, d!));

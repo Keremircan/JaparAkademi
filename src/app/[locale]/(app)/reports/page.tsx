@@ -1,4 +1,4 @@
-import { BarChart3, Building2, CalendarClock, ClipboardList, FileClock, Grid3x3, HardHat, History, Timer, UsersRound } from "lucide-react";
+import { BarChart3, Building2, CalendarClock, ClipboardList, FileClock, Gauge, Grid3x3, HardHat, History, Timer, UsersRound } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -10,6 +10,7 @@ import { getSectionUser } from "@/server/auth/current-user";
 import { can } from "@/server/authz/policy";
 import { toActor } from "@/server/services/auth";
 import { canViewReport, REPORT_KINDS } from "@/server/services/reports";
+import { canViewSummary } from "@/server/services/reports/summary";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("sections.reports");
@@ -31,22 +32,35 @@ async function Content() {
   const user = await getSectionUser("reports");
   if (!user) return <NotFoundView />;
   const actor = toActor(user);
-  const [t, ts, ta, tm] = await Promise.all([
+  const [t, ts, ta, tm, tsum] = await Promise.all([
     getTranslations("reports"),
     getTranslations("sections.reports"),
     getTranslations("admin.cards.audit"),
     getTranslations("competencies.matrix"),
+    getTranslations("reports.summary"),
   ]);
   const kinds = REPORT_KINDS.filter((k) => canViewReport(actor, k));
   const audit = can(actor, "audit.view");
   const matrix = can(actor, "competencies.view");
+  const summary = canViewSummary(actor);
   return (
     <section className="max-w-4xl">
       <PageHeader title={ts("title")} description={t("intro")} />
-      {kinds.length === 0 && !audit && !matrix ? (
+      {kinds.length === 0 && !audit && !matrix && !summary ? (
         <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("none")}</p>
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2">
+          {summary && (
+            <li>
+              <Link href="/reports/summary" className="flex min-h-24 items-start gap-4 rounded-2xl border bg-card p-5 hover:bg-muted">
+                <Gauge aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-muted-foreground" />
+                <span>
+                  <span className="block text-lg font-medium">{tsum("title")}</span>
+                  <span className="mt-1 block text-sm text-muted-foreground">{tsum("cardDescription")}</span>
+                </span>
+              </Link>
+            </li>
+          )}
           {kinds.map((k) => {
             const Icon = ICONS[k];
             return (

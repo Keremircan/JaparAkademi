@@ -2,7 +2,7 @@ import { and, asc, desc, eq, gte, inArray, isNotNull, lte, or, sql, type SQL } f
 import { alias } from "drizzle-orm/pg-core";
 import type { Actor } from "@/server/authz/actor";
 import { assertCan, assertUser, can, hasRole } from "@/server/authz/policy";
-import { orgScopeFor } from "@/server/authz/scope";
+import { orgScopeFor, type OrgScope } from "@/server/authz/scope";
 import { db } from "@/server/db/client";
 import {
   assignmentModules,
@@ -420,7 +420,7 @@ export async function runReport(actor: Actor, kind: ReportKind, filters: ReportF
 // ---------------------------------------------------------------------------
 
 /** Ham SQL raporları için kapsam + birim/pozisyon koşulu (`pos` takma adlı pozisyon tablosu üzerinde). */
-async function rawUnitCondition(actor: Actor, f: ReportFilters, opts: { ohsAll?: boolean } = {}): Promise<SQL> {
+export async function rawUnitCondition(actor: Actor, f: ReportFilters, opts: { ohsAll?: boolean } = {}): Promise<SQL> {
   const conds: SQL[] = [];
   const scope = opts.ohsAll && hasRole(actor, "ohs_specialist") ? ({ all: true } as const) : await orgScopeFor(actor);
   const list = (ids: string[]) => sql.join(ids.map((id) => sql`${id}::uuid`), sql`, `);
@@ -438,8 +438,40 @@ async function rawUnitCondition(actor: Actor, f: ReportFilters, opts: { ohsAll?:
 }
 
 /**
- * Süresi dolacak eğitim ve sertifikalar: her kişinin her modüldeki son tamamlanışı ve son geçerli pozisyon sertifikası,
- * bitişi tarih aralığında olanlar. İK hepsini, yalnızca İSG uzmanı olan İSG modüllerini görür.
+ * Kişi × modül geçerliliği (kararlar #170, #223, #240): sistemdeki son tamamlanış (devreden kayıt hariç) ve sistemde
+ * tamamlanışı olmayan süreli teorik modülde girilen son eğitim tarihi (`prior_trainings`; bitiş = tarih + geçerlilik ayı).
+ * Sütunlar: id (tamamlanış) | prior_id (girilen tarih), user_id, module_id, title, is_ohs, expires_at.
+ */
+export function validitySource(tz: string): SQL {
+  return sql`
+    select l.id, null::uuid as prior_id, l.user_id, l.module_id, l.title, l.is_ohs, l.expires_at
+    from (
+      select distinct on (a.user_id, am.module_id) am.id, a.user_id, am.module_id, am.title, am.is_ohs, am.expires_at
+      from assignment_modules am join assignments a on a.id = am.assignment_id
+      where am.status = 'completed' and am.completed_via is distinct from 'carried_over'
+      order by a.user_id, am.module_id, am.completed_at desc
+    ) l
+    where l.expires_at is not null
+    union all
+    select null::uuid, pr.id, pr.user_id, pr.module_id, pr.title, pr.is_ohs, pr.expires_at
+    from (
+      select distinct on (pt.user_id, pt.module_id) pt.id, pt.user_id, pt.module_id, m.title, m.is_ohs,
+        ((pt.completed_on + make_interval(months => m.validity_months))::timestamp at time zone ${tz}) as expires_at
+      from prior_trainings pt
+      join modules m on m.id = pt.module_id and m.kind = 'theory' and m.validity_months is not null and m.archived_at is null
+      order by pt.user_id, pt.module_id, pt.created_at desc
+    ) pr
+    -- Sistemde tamamlanışı olan modülde sistem kaydı geçerlidir (karar #223)
+    where not exists (
+      select 1 from assignment_modules am join assignments a on a.id = am.assignment_id
+      where a.user_id = pr.user_id and am.module_id = pr.module_id and am.status = 'completed'
+    )`;
+}
+
+/**
+ * Süresi dolacak eğitim ve sertifikalar: her kişinin her modüldeki geçerliliği (son tamamlanış ya da girilen son eğitim
+ * tarihi) ve son geçerli pozisyon sertifikası, bitişi tarih aralığında olanlar. İK hepsini, yalnızca İSG uzmanı olan
+ * İSG modüllerini görür.
  */
 async function expiringReport(actor: Actor, f: ReportFilters): Promise<ReportResult> {
   const { "reports.max_rows": max, "org.timezone": tz } = await limits();
@@ -453,29 +485,26 @@ async function expiringReport(actor: Actor, f: ReportFilters): Promise<ReportRes
     unit: string;
     position: string;
     item: string;
-    item_kind: "module" | "certificate";
+    item_kind: "module" | "prior" | "certificate";
     is_ohs: boolean;
     expires_at: string;
     recert: "opened" | "waiting" | "none" | null;
   }>(sql`
     select * from (
-      select u.username as sicil, u.name, ou.name as unit, pos.name as position, l.title as item, 'module' as item_kind, l.is_ohs, l.expires_at,
+      select u.username as sicil, u.name, ou.name as unit, pos.name as position, v.title as item,
+        case when v.prior_id is null then 'module' else 'prior' end as item_kind, v.is_ohs, v.expires_at,
         case
-          when exists (select 1 from assignment_modules r where r.renews_id = l.id) then 'opened'
-          when exists (select 1 from assignments o where o.user_id = l.user_id and o.status in ('active', 'awaiting_readiness', 'awaiting_decision')) then 'waiting'
+          when v.id is not null and exists (select 1 from assignment_modules r where r.renews_id = v.id) then 'opened'
+          when v.prior_id is not null and exists (select 1 from assignment_modules r where r.renews_prior_id = v.prior_id) then 'opened'
+          when exists (select 1 from assignments o where o.user_id = v.user_id and o.status in ('active', 'awaiting_readiness', 'awaiting_decision')) then 'waiting'
           else 'none'
         end as recert
-      from (
-        select distinct on (a.user_id, am.module_id) am.id, a.user_id, am.title, am.is_ohs, am.expires_at
-        from assignment_modules am join assignments a on a.id = am.assignment_id
-        where am.status = 'completed' and am.completed_via is distinct from 'carried_over'
-        order by a.user_id, am.module_id, am.completed_at desc
-      ) l
-      join personnel p on p.user_id = l.user_id and p.status = 'active'
-      join users u on u.id = l.user_id
+      from (${validitySource(tz)}) v
+      join personnel p on p.user_id = v.user_id and p.status = 'active'
+      join users u on u.id = v.user_id
       join positions pos on pos.id = p.position_id
       join org_units ou on ou.id = pos.org_unit_id
-      where l.expires_at is not null and ${inRange(sql`l.expires_at`)} and ${unit} ${ohsOnly ? sql`and l.is_ohs` : sql``}
+      where ${inRange(sql`v.expires_at`)} and ${unit} ${ohsOnly ? sql`and v.is_ohs` : sql``}
       ${
         ohsOnly
           ? sql``
@@ -618,17 +647,7 @@ export async function reportFilterOptions(
   guard(actor, kind);
   if (!hasOrgFilters(kind)) return { units: [], positions: [] };
   const scope = kind === "ohs" && hasRole(actor, "ohs_specialist") ? ({ all: true } as const) : await orgScopeFor(actor);
-  const parent = alias(orgUnits, "parent");
-  const all = await db()
-    .select({ id: orgUnits.id, name: orgUnits.name, parentId: orgUnits.parentId, parentName: parent.name })
-    .from(orgUnits)
-    .leftJoin(parent, eq(parent.id, orgUnits.parentId))
-    .orderBy(asc(orgUnits.name));
-  // Her departmanın hemen altında kendi bölümleri
-  const units = all
-    .filter((u) => !u.parentId)
-    .flatMap((d) => [d, ...all.filter((c) => c.parentId === d.id)])
-    .map(({ id, name, parentName }) => ({ id, name, parentName }));
+  const units = await unitOptions(scope);
   const pos = await db()
     .select({ id: positions.id, name: positions.name, orgUnitId: positions.orgUnitId, unitName: orgUnits.name })
     .from(positions)
@@ -636,8 +655,23 @@ export async function reportFilterOptions(
     .orderBy(asc(positions.name));
   const inScope = (id: string) => scope.all || scope.orgUnitIds.has(id);
   return {
-    units: units.filter((u) => inScope(u.id)),
+    units,
     positions: pos.filter((p) => inScope(p.orgUnitId)).map((p) => ({ id: p.id, name: p.name, unitName: p.unitName })),
   };
+}
+
+/** Kapsamdaki birimler: her departmanın hemen altında kendi bölümleri. */
+export async function unitOptions(scope: OrgScope): Promise<{ id: string; name: string; parentName: string | null }[]> {
+  const parent = alias(orgUnits, "parent");
+  const all = await db()
+    .select({ id: orgUnits.id, name: orgUnits.name, parentId: orgUnits.parentId, parentName: parent.name })
+    .from(orgUnits)
+    .leftJoin(parent, eq(parent.id, orgUnits.parentId))
+    .orderBy(asc(orgUnits.name));
+  return all
+    .filter((u) => !u.parentId)
+    .flatMap((d) => [d, ...all.filter((c) => c.parentId === d.id)])
+    .filter((u) => scope.all || scope.orgUnitIds.has(u.id))
+    .map(({ id, name, parentName }) => ({ id, name, parentName }));
 }
 

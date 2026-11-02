@@ -12,6 +12,7 @@ import { dispatchPush } from "@/server/services/push/dispatch";
 import { purgeOldNotifications } from "@/server/services/notifications";
 import { runRetention } from "@/server/services/retention";
 import { runTrainingDaily, sendWeeklySummaries } from "@/server/services/assignments/alerts";
+import { sendMonthlySummary } from "@/server/services/reports/summary";
 import { env } from "@/server/env";
 import { QUEUE_OPTIONS, QUEUES } from "./queues";
 
@@ -72,6 +73,12 @@ export async function registerJobs(boss: PgBoss) {
     logger.info({ managers: n }, "Haftalık özetler gönderildi");
   });
   await boss.schedule(QUEUES.trainingWeekly, "0 8 * * 1", null, { tz: "Europe/Istanbul" });
+  // Aylık yönetim özeti (karar #241): gün ve saat parametre olduğundan her saat başı kontrol edilir
+  await boss.work(QUEUES.reportsMonthly, { batchSize: 1 }, async () => {
+    const n = await sendMonthlySummary(systemActor("worker:reports.monthly"));
+    if (n > 0) logger.info({ recipients: n }, "Aylık yönetim özeti gönderildi");
+  });
+  await boss.schedule(QUEUES.reportsMonthly, "0 * * * *", null, { tz: "Europe/Istanbul" });
 
   await boss.work(QUEUES.heartbeat, async () => {
     await db().execute(sql`select 1`);

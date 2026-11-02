@@ -26,6 +26,7 @@ import { formatCell, type Translate } from "@/server/services/reports/format";
 import { getSettings } from "@/server/services/settings";
 import { Link } from "@/i18n/navigation";
 import { addDays, todayIn } from "@/lib/dates";
+import { EXPIRING_WINDOWS } from "@/server/state/reports";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("sections.reports");
@@ -182,7 +183,7 @@ async function Content({
 
       {kind === "expiring" && (
         <nav aria-label={t("quick.label")} className="flex flex-wrap gap-2">
-          {([30, 60, 90] as const).map((d) => (
+          {EXPIRING_WINDOWS.map((d) => (
             <Link
               key={d}
               href={`/reports/expiring?from=${today}&to=${addDays(today, d)}`}

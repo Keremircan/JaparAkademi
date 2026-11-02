@@ -2284,7 +2284,8 @@
       "recert_deferred": "Refresher training is due for {name}; it will start when their open training ends.",
       "recert_trainer_needed": "{name} has started refresher training. Choose a trainer for the practical module.",
       "ohs_expired": "The OHS training of {count} people has expired.",
-      "competency_expiring": "The \"{competency}\" competency of {name} is about to expire."
+      "competency_expiring": "The \"{competency}\" competency of {name} is about to expire.",
+      "monthly_summary": "The {monthNo, select, 1 {January} 2 {February} 3 {March} 4 {April} 5 {May} 6 {June} 7 {July} 8 {August} 9 {September} 10 {October} 11 {November} 12 {December} other {}} {year} management summary is ready: {completed, number} training modules completed, {approved, number} ready-to-work approvals, {overdue, number} trainings past target date."
     },
     "email": {
       "app": "JAPAR Academy",
@@ -2317,8 +2318,10 @@
         "recert_deferred": "A refresher training has been deferred",
         "recert_trainer_needed": "A trainer must be chosen for refresher training",
         "ohs_expired": "There are expired OHS trainings",
-        "competency_expiring": "A competency is about to expire"
-      }
+        "competency_expiring": "A competency is about to expire",
+        "monthly_summary": "Monthly management summary"
+      },
+      "monthlyBody": "{monthNo, select, 1 {January} 2 {February} 3 {March} 4 {April} 5 {May} 6 {June} 7 {July} 8 {August} 9 {September} 10 {October} 11 {November} 12 {December} other {}} {year} · Training modules completed: {completed, number} · Ready-to-work approvals: {approved, number} · Average time to readiness: {avgDays, select, none {—} other {{avgDays, number} days}} · First-attempt pass rate in theory exams: {passRate, select, none {—} other {{passRate, number}%}}. As of today: {active, number} people in training · {overdue, number} trainings past target date · {ohsExpired, number} people with expired OHS training · {ohsExpiring, number} people whose OHS training expires within {ohsDays, number} days. Sign in to JAPAR Akademi for details."
     },
     "pagination": "Notification pages",
     "push": {
@@ -2526,7 +2529,8 @@
       },
       "itemKind": {
         "module": "Module",
-        "certificate": "Position certificate"
+        "certificate": "Position certificate",
+        "prior": "Module (training date entered)"
       },
       "recertStatus": {
         "opened": "Opened",
@@ -2605,6 +2609,80 @@
       "sources": {
         "system": "System",
         "prior": "Entered date"
+      }
+    },
+    "summary": {
+      "title": "Management summary",
+      "description": "Key indicators for the selected period and unit, and the trend over the last 12 months. Only figures are shown; no names.",
+      "cardDescription": "Training, readiness, exam and OHS indicators; the trend over the last 12 months.",
+      "ohsOnly": "You see only the OHS indicators (whole facility).",
+      "scopeNote": "Only the figures for the units you are responsible for are shown.",
+      "file": "management-summary",
+      "export": "Download Excel",
+      "groups": {
+        "training": "Training and readiness",
+        "ohs": "Occupational health and safety",
+        "now": "As of today",
+        "period": "In the selected period"
+      },
+      "quick": {
+        "label": "Quick period selection",
+        "thisMonth": "This month",
+        "lastMonth": "Last month",
+        "last90": "Last 90 days",
+        "thisYear": "This year"
+      },
+      "kpi": {
+        "activeTrainees": "People in training",
+        "awaitingReadiness": "Awaiting readiness approval",
+        "overdue": "Trainings past target date",
+        "readinessApproved": "Ready-to-work approvals",
+        "onboardingDays": "Average time to readiness",
+        "onboardingDaysUnit": "Average time to readiness (days)",
+        "onboardingMedianUnit": "Median time to readiness (days)",
+        "days": "{days} days",
+        "onboardingDetail": "Median {median} days · {count, number} new employees",
+        "firstPass": "First-attempt pass rate in theory exams",
+        "firstPassOhs": "First-attempt pass rate in OHS exams",
+        "firstPassDetail": "{passed, number} of {attempts, number} first attempts passed",
+        "firstAttempts": "Number of first attempts",
+        "rate": "{rate}%",
+        "modulesCompleted": "Training modules completed",
+        "ohsExpired": "People with expired OHS training",
+        "ohsExpiring": "People whose OHS training expires within {days} days",
+        "ohsCompleted": "OHS trainings completed",
+        "none": "No data",
+        "open": "Open report",
+        "attention": "Needs attention"
+      },
+      "trend": {
+        "title": "Last 12 months",
+        "description": "{from} – {to}, monthly.",
+        "partialNote": "{month} is not over yet; its figures are incomplete and shown in a lighter colour.",
+        "completed": "Training modules completed",
+        "completedOhs": "OHS trainings completed",
+        "rate": "First-attempt pass rate in theory exams",
+        "rateOhs": "First-attempt pass rate in OHS exams",
+        "ratePercent": "First-attempt pass rate (%)",
+        "month": "Month",
+        "attempts": "First attempts",
+        "passed": "Passed on first attempt",
+        "partial": "in progress",
+        "noExams": "No exams",
+        "empty": "No records in the last 12 months.",
+        "table": "Show the figures as a table",
+        "keyboard": "{title}. Use the left and right arrow keys to move between months; the figures are also in the table below.",
+        "chartAria": "{title}, {from} – {to}. The figures are in the table below the chart."
+      },
+      "excel": {
+        "sheet": "Indicators",
+        "trendSheet": "Monthly trend",
+        "indicator": "Indicator",
+        "value": "Value",
+        "basis": "Basis",
+        "unit": "Unit: {name}",
+        "allUnits": "Unit: All",
+        "privacy": "Figures only; no names."
       }
     }
   },
@@ -3039,6 +3117,21 @@
         "label": "Competency expiry warning",
         "hint": "This many days before a competency ends, the section manager is notified and it shows yellow in the matrix.",
         "unit": "{n} days"
+      },
+      "reports_monthly_summary_enabled": {
+        "label": "Monthly management summary",
+        "hint": "When on, HR and top managers receive the previous month's figures every month: an in-app notification, and an email if they have an address. No names are included.",
+        "unit": "{n}"
+      },
+      "reports_monthly_summary_day": {
+        "label": "Day the monthly summary is sent",
+        "hint": "Day of the month it is sent (1–28).",
+        "unit": "Day {n} of the month"
+      },
+      "reports_monthly_summary_hour": {
+        "label": "Time the monthly summary is sent",
+        "hint": "Turkey time (0–23). If the server is down at that time, it is sent at the first chance on the same day.",
+        "unit": "{n}:00"
       }
     },
     "visitorTypes": {
