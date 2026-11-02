@@ -45,10 +45,10 @@ async function Content() {
           .filter((c) => c.show)
           .map(({ key, href, icon: Icon }) => (
             <li key={key}>
-              <Link href={href} className="flex min-h-24 items-start gap-4 rounded-2xl border bg-card p-5 hover:bg-muted">
-                <Icon aria-hidden="true" className="mt-0.5 size-7 shrink-0" />
+              <Link href={href} className="flex min-h-20 items-start gap-3 rounded-xl border bg-card p-4 hover:bg-muted">
+                <Icon aria-hidden="true" className="mt-0.5 size-6 shrink-0" />
                 <span>
-                  <span className="block text-lg font-medium">{t(`visitors.cards.${key}.title`)}</span>
+                  <span className="block text-base font-medium">{t(`visitors.cards.${key}.title`)}</span>
                   <span className="mt-1 block text-sm text-muted-foreground">{t(`visitors.cards.${key}.description`)}</span>
                 </span>
               </Link>

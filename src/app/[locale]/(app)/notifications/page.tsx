@@ -47,9 +47,9 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
         }
       />
       {data.items.length === 0 ? (
-        <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p>
+        <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("empty")}</p>
       ) : (
-        <ul className="divide-y overflow-hidden rounded-2xl border">
+        <ul className="divide-y overflow-hidden rounded-xl border">
           {data.items.map((n) => (
             <li key={n.id}>
               <NotificationItem

@@ -61,15 +61,15 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
         }}
       />
       <section aria-labelledby="company-workers" className="flex flex-col gap-3">
-        <h2 id="company-workers" className="text-xl font-semibold">
+        <h2 id="company-workers" className="text-lg font-semibold">
           {t("companies.workers")}
         </h2>
         {company.workers.length === 0 ? (
           <p className="text-muted-foreground">{t("companies.noWorkers")}</p>
         ) : (
-          <ul className="divide-y rounded-2xl border">
+          <ul className="divide-y rounded-xl border">
             {company.workers.map((w) => (
-              <li key={w.id} className="flex min-h-12 items-center gap-4 px-5 py-2">
+              <li key={w.id} className="flex min-h-12 items-center gap-4 px-4 py-2">
                 <span className="flex-1">{w.fullName}</span>
                 {w.nationalIdMasked && <span className="text-sm text-muted-foreground">{w.nationalIdMasked}</span>}
               </li>

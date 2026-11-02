@@ -41,10 +41,10 @@ export function ImportPreview({
 
   if (result) {
     return (
-      <div role="status" className="flex max-w-2xl flex-col gap-4 rounded-2xl border p-6">
+      <div role="status" className="flex max-w-2xl flex-col gap-4 rounded-xl border p-5">
         <div className="flex items-center gap-3">
           <CheckCircle2 aria-hidden="true" className="size-6" />
-          <h2 className="text-xl font-semibold">{t("committedTitle")}</h2>
+          <h2 className="text-lg font-semibold">{t("committedTitle")}</h2>
         </div>
         <p>{t("committedSummary", { created: result.created, updated: result.updated, unchanged: result.unchanged })}</p>
         {result.created > 0 && (
@@ -67,7 +67,7 @@ export function ImportPreview({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap gap-x-6 gap-y-2 rounded-2xl border p-5">
+      <div className="flex flex-wrap gap-x-6 gap-y-2 rounded-xl border p-4">
         <p className="font-medium">{t("summary", { total: counts.total, valid: counts.valid, errors: counts.errors })}</p>
         <p className="text-muted-foreground">{t("newCount", { count: counts.creates })}</p>
         <p className="text-muted-foreground">{t("updateCount", { count: counts.updates })}</p>
@@ -106,7 +106,7 @@ export function ImportPreview({
         {t("statuses.error")} ({counts.errors})
       </label>
 
-      <div className="overflow-x-auto rounded-2xl border">
+      <div className="overflow-x-auto rounded-xl border">
         <table className="w-full min-w-[40rem] text-left text-sm">
           <thead className="bg-muted">
             <tr>

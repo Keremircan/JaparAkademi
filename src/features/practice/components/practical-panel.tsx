@@ -7,8 +7,8 @@ import type { PracticalExamInfo } from "@/server/services/practice";
 export async function PracticalPanel({ info }: { info: PracticalExamInfo }) {
   const [t, format] = await Promise.all([getTranslations("practice.exam"), getFormatter()]);
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border p-5">
-      <h2 className="flex items-center gap-2 text-xl font-semibold">
+    <div className="flex flex-col gap-4 rounded-xl border p-4">
+      <h2 className="flex items-center gap-2 text-lg font-semibold">
         <ClipboardCheck aria-hidden="true" />
         {t("heading")}
       </h2>

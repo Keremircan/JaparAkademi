@@ -13,8 +13,8 @@ import { answerQuizAction } from "../actions";
 export function QuizPanel({ assignmentModuleId, questions }: { assignmentModuleId: string; questions: QuizItem[] }) {
   const t = useTranslations("learn.quiz");
   return (
-    <section aria-labelledby="quiz-heading" className="flex flex-col gap-4 rounded-2xl border p-4 sm:p-5">
-      <h2 id="quiz-heading" className="text-xl font-semibold">
+    <section aria-labelledby="quiz-heading" className="flex flex-col gap-4 rounded-xl border p-4">
+      <h2 id="quiz-heading" className="text-lg font-semibold">
         {t("heading")}
       </h2>
       <p className="text-muted-foreground">{t("intro")}</p>
@@ -50,7 +50,7 @@ function QuizQuestion({ assignmentModuleId, question, n }: { assignmentModuleId:
   return (
     <li className="flex flex-col gap-3">
       <fieldset disabled={!!answer || pending} className="flex flex-col gap-2">
-        <legend className="mb-2 text-lg font-medium">
+        <legend className="mb-2 text-base font-medium">
           {n}. {question.stem}
         </legend>
         {question.options.map((o, i) => {

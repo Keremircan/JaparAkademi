@@ -48,7 +48,7 @@ async function Content({ params }: { params: Promise<{ assignmentModuleId: strin
         {view.status === "completed" && ` · ${t("moduleDone")}`}
         {view.status === "review_required" && ` · ${t("reviewRequired")}`}
       </p>
-      {!view.canMark && view.status !== "completed" && <p className="rounded-2xl border p-4">{view.open ? t("readOnly") : t("notOpen")}</p>}
+      {!view.canMark && view.status !== "completed" && <p className="rounded-xl border p-4">{view.open ? t("readOnly") : t("notOpen")}</p>}
       <PracticeTasks assignmentModuleId={view.assignmentModuleId} tasks={view.tasks} canMark={view.canMark} />
     </section>
   );

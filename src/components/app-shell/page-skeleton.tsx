@@ -7,7 +7,7 @@ export function PageSkeleton() {
     <div aria-busy="true" className="max-w-2xl">
       <span className="sr-only">{t("loading")}</span>
       <div className="h-8 w-48 animate-pulse rounded-lg bg-muted" />
-      <div className="mt-6 h-24 animate-pulse rounded-2xl bg-muted" />
+      <div className="mt-6 h-24 animate-pulse rounded-xl bg-muted" />
     </div>
   );
 }

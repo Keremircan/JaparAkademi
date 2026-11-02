@@ -19,7 +19,7 @@ export function KioskHome() {
   const [pending, startTransition] = useTransition();
   return (
     <div className="flex flex-col gap-8">
-      <p className="text-lg">{t("intro")}</p>
+      <p className="text-base">{t("intro")}</p>
       <form
         className="flex flex-col gap-4"
         onSubmit={(e) => {

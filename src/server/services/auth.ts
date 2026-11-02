@@ -11,6 +11,7 @@ import { ValidationError } from "@/server/errors";
 import { logger } from "@/server/logger";
 import { getSetting, getSettings } from "@/server/services/settings";
 import { toAppLocale, type AppLocale } from "@/lib/locale";
+import { toTextSize, type TextSize } from "@/lib/text-size";
 
 const authActor = systemActor("auth");
 /** last_seen_at en fazla bu sıklıkta güncellenir (gereksiz yazmayı önler). */
@@ -191,6 +192,8 @@ export type SessionUser = {
   sharedDevice: boolean;
   /** Arayüz dili tercihi (karar #207). */
   locale: AppLocale;
+  /** Yazı boyutu tercihi (karar #244). */
+  textSize: TextSize;
 };
 
 /**
@@ -209,6 +212,7 @@ export async function loadSessionUser(sessionId: string): Promise<SessionUser | 
       status: personnel.status,
       mustChangePassword: personnel.mustChangePassword,
       locale: personnel.locale,
+      textSize: personnel.textSize,
     })
     .from(sessions)
     .innerJoin(personnel, eq(personnel.userId, sessions.userId))
@@ -248,6 +252,7 @@ export async function loadSessionUser(sessionId: string): Promise<SessionUser | 
     mustChangePassword: row.mustChangePassword,
     sharedDevice: row.sharedDevice,
     locale: toAppLocale(row.locale),
+    textSize: toTextSize(row.textSize),
   };
 }
 
@@ -310,6 +315,11 @@ export async function signOut(meta: RequestMeta): Promise<{ setCookieHeaders: He
 /** Kişinin arayüz dili tercihini kaydeder (karar #207). Yalnızca kendi tercihi. */
 export async function setPreferredLocale(user: SessionUser, locale: AppLocale): Promise<void> {
   await withActor(toActor(user), (tx) => tx.update(personnel).set({ locale }).where(eq(personnel.userId, user.userId)));
+}
+
+/** Kişinin yazı boyutu tercihini kaydeder (karar #244). Yalnızca kendi tercihi; bütün cihazlarında geçerlidir. */
+export async function setPreferredTextSize(user: SessionUser, textSize: TextSize): Promise<void> {
+  await withActor(toActor(user), (tx) => tx.update(personnel).set({ textSize }).where(eq(personnel.userId, user.userId)));
 }
 
 export function toActor(user: SessionUser): UserActor {

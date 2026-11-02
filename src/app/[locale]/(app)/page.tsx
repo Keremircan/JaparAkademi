@@ -21,16 +21,16 @@ async function Content() {
 
   return (
     <section className="max-w-3xl">
-      <h1 className="text-2xl font-semibold lg:text-3xl">{t("home.greeting", { name: user.fullName })}</h1>
+      <h1 className="text-xl font-semibold tracking-tight lg:text-2xl">{t("home.greeting", { name: user.fullName })}</h1>
       <p className="mt-2 text-muted-foreground">{t("home.intro")}</p>
-      <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {shortcuts.map((item) => (
           <li key={item.key}>
             <Link
               href={item.href}
-              className="flex min-h-16 items-center gap-4 rounded-2xl border bg-card px-5 py-4 text-lg font-medium hover:bg-muted"
+              className="flex min-h-14 items-center gap-3 rounded-xl border bg-card px-4 py-3 text-base font-medium hover:bg-muted"
             >
-              <NavIcon name={item.key} className="size-7" />
+              <NavIcon name={item.key} className="size-6" />
               {t(`nav.${item.key}`)}
             </Link>
           </li>

@@ -120,11 +120,11 @@ export async function ContentRenderer({
         <ol className="flex flex-col gap-4">
           {b.steps.map((step, i) => (
             <li key={i} className="flex gap-4 rounded-xl border p-4">
-              <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-semibold text-primary-foreground">
+              <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-base font-semibold text-primary-foreground">
                 {i + 1}
               </span>
               <div className="flex min-w-0 flex-1 flex-col gap-2">
-                <p className="text-lg font-semibold">
+                <p className="text-base font-semibold">
                   <span className="sr-only">{t("step", { n: i + 1 })}: </span>
                   {step.title}
                 </p>
@@ -145,7 +145,7 @@ export async function ContentRenderer({
       return (
         <ul className="flex flex-col divide-y rounded-xl border">
           {b.items.map((item, i) => (
-            <li key={i} className="flex min-h-14 items-center gap-3 px-4 py-3">
+            <li key={i} className="flex min-h-12 items-center gap-3 px-4 py-3">
               <span aria-hidden="true" className="size-6 shrink-0 rounded-md border-2" />
               <span className="flex-1">{item.text}</span>
               {item.critical && (

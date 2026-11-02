@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Suspense, type ReactNode } from "react";
 import { AppShell } from "@/components/app-shell/app-shell";
 import { ShellSkeleton } from "@/components/app-shell/shell-skeleton";
+import { TextSizeStyle } from "@/components/app-shell/text-size-style";
 import { bottomTabs, visibleNav } from "@/features/app-shell/navigation";
 import { requireUser } from "@/server/auth/current-user";
 import { toActor } from "@/server/services/auth";
@@ -25,8 +26,11 @@ async function AuthenticatedShell({ children }: { children: ReactNode }) {
   const unread = await unreadCount(toActor(user));
 
   return (
-    <AppShell fullName={user.fullName} items={items} tabs={tabs} hasMore={hasMore} unread={unread}>
-      {children}
-    </AppShell>
+    <>
+      <TextSizeStyle size={user.textSize} />
+      <AppShell fullName={user.fullName} items={items} tabs={tabs} hasMore={hasMore} unread={unread}>
+        {children}
+      </AppShell>
+    </>
   );
 }

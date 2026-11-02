@@ -41,7 +41,7 @@ export function TagPicker({ groups: initial, value, onChange }: { groups: TagGro
 
   return (
     <fieldset className="flex flex-col gap-4">
-      <legend className="mb-2 text-lg font-semibold">{t("title")}</legend>
+      <legend className="mb-2 text-base font-semibold">{t("title")}</legend>
       {groups.map((g) => (
         <div key={g.typeId} className="flex flex-col gap-2">
           <span className="font-medium">{t(`types.${g.key}`)}</span>

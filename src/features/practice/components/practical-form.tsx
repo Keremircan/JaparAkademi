@@ -80,7 +80,7 @@ export function PracticalForm({
   if (step === "sign") {
     return (
       <div className="flex max-w-3xl flex-col gap-5">
-        <div className={`rounded-2xl border-2 p-5 ${passed ? "border-emerald-600" : "border-destructive"}`} role="status">
+        <div className={`rounded-xl border-2 p-4 ${passed ? "border-emerald-600" : "border-destructive"}`} role="status">
           <p className="text-2xl font-bold">{t("scorePreview", { score: score ?? 0 })}</p>
           <p>{passed ? t("willPass") : criticalFail ? t("willFailCritical") : t("willFail", { passScore })}</p>
           <p className="mt-2 text-sm text-muted-foreground">{t("signIntro")}</p>
@@ -119,7 +119,7 @@ export function PracticalForm({
       </p>
       <ol className="flex flex-col gap-3">
         {criteria.map((c, i) => (
-          <li key={c.taskId} className="flex flex-col gap-3 rounded-2xl border p-4">
+          <li key={c.taskId} className="flex flex-col gap-3 rounded-xl border p-4">
             <fieldset className="flex flex-col gap-3">
               <legend className="font-medium">
                 {i + 1}. {c.title}
@@ -131,12 +131,12 @@ export function PracticalForm({
                 )}
               </legend>
               <div className="grid grid-cols-2 gap-2">
-                <label className="flex min-h-14 cursor-pointer items-center justify-center gap-2 rounded-xl border-2 px-3 font-medium has-checked:border-emerald-600 has-checked:bg-emerald-500/10 has-focus-visible:ring-3 has-focus-visible:ring-ring/50">
+                <label className="flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-xl border-2 px-3 font-medium has-checked:border-emerald-600 has-checked:bg-emerald-500/10 has-focus-visible:ring-3 has-focus-visible:ring-ring/50">
                   <input type="radio" className="sr-only" name={`c-${c.taskId}`} checked={c.result === "pass"} onChange={() => set(c.taskId, { result: "pass" })} />
                   <Check aria-hidden="true" />
                   {t("pass")}
                 </label>
-                <label className="flex min-h-14 cursor-pointer items-center justify-center gap-2 rounded-xl border-2 px-3 font-medium has-checked:border-destructive has-checked:bg-destructive/10 has-focus-visible:ring-3 has-focus-visible:ring-ring/50">
+                <label className="flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-xl border-2 px-3 font-medium has-checked:border-destructive has-checked:bg-destructive/10 has-focus-visible:ring-3 has-focus-visible:ring-ring/50">
                   <input type="radio" className="sr-only" name={`c-${c.taskId}`} checked={c.result === "fail"} onChange={() => set(c.taskId, { result: "fail" })} />
                   <X aria-hidden="true" />
                   {t("fail")}
@@ -157,7 +157,7 @@ export function PracticalForm({
       <PhotoList label={t("photos")} value={photos} onChange={setPhotos} />
       <FormError error={error} />
       {!complete && <p className="text-sm text-muted-foreground">{t("completeFirst")}</p>}
-      <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-10 flex items-center justify-between gap-2 rounded-2xl border bg-background/95 p-3 backdrop-blur lg:bottom-4">
+      <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+4rem)] z-10 flex items-center justify-between gap-2 rounded-xl border bg-background/95 p-3 backdrop-blur lg:bottom-4">
         <Button
           size="lg"
           disabled={!complete}

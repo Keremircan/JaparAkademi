@@ -135,9 +135,9 @@ async function Content({
         </ul>
       )}
 
-      <article aria-labelledby="preview-heading" className="mb-8 flex flex-col gap-4 rounded-2xl border p-5">
+      <article aria-labelledby="preview-heading" className="mb-6 flex flex-col gap-4 rounded-xl border p-4">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 id="preview-heading" className="flex-1 text-xl font-semibold">
+          <h2 id="preview-heading" className="flex-1 text-lg font-semibold">
             {version.title}
           </h2>
           <span className="text-xs">
@@ -149,9 +149,9 @@ async function Content({
 
       {/* İngilizce sürüm (karar #207): aynı sürümle birlikte onaylanır */}
       {version.en && (
-        <article aria-labelledby="preview-en-heading" lang="en" className="mb-8 flex flex-col gap-4 rounded-2xl border p-5">
+        <article aria-labelledby="preview-en-heading" lang="en" className="mb-6 flex flex-col gap-4 rounded-xl border p-4">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 id="preview-en-heading" className="flex-1 text-xl font-semibold">
+            <h2 id="preview-en-heading" className="flex-1 text-lg font-semibold">
               {version.en.title}
             </h2>
             <span lang="tr" className="rounded-full bg-muted px-3 py-1 text-xs font-medium">
@@ -163,13 +163,13 @@ async function Content({
       )}
 
       {content.can.approve && step && (
-        <div className="mb-8">
+        <div className="mb-6">
           <ApprovalPanel step={step} approve={approveVersionAction.bind(null, latest.id)} reject={rejectVersionAction.bind(null, latest.id)} />
         </div>
       )}
 
       <section aria-labelledby="history-heading">
-        <h2 id="history-heading" className="mb-3 text-lg font-semibold">
+        <h2 id="history-heading" className="mb-3 text-base font-semibold">
           {t("history")}
         </h2>
         <ol className="flex flex-col gap-3">

@@ -43,10 +43,10 @@ async function Content() {
 
   return (
     <section className="flex max-w-2xl flex-col gap-6">
-      <h1 className="text-2xl font-semibold lg:text-3xl">{ts("title")}</h1>
+      <h1 className="text-xl font-semibold tracking-tight lg:text-2xl">{ts("title")}</h1>
 
       {data.rereads.length > 0 && (
-        <section aria-labelledby="reread-heading" className="flex flex-col gap-2 rounded-2xl border border-amber-500/40 bg-amber-500/5 p-4">
+        <section aria-labelledby="reread-heading" className="flex flex-col gap-2 rounded-xl border border-amber-500/40 bg-amber-500/5 p-4">
           <h2 id="reread-heading" className="flex items-center gap-2 font-semibold">
             <BookOpenCheck aria-hidden="true" className="size-5" />
             {t("rereadHeading")}
@@ -65,13 +65,13 @@ async function Content() {
       )}
 
       {!a ? (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border p-8 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-xl border p-6 text-center">
           <GraduationCap aria-hidden="true" className="size-12 text-muted-foreground" />
-          <p className="text-lg">{ts("empty")}</p>
+          <p className="text-base">{ts("empty")}</p>
         </div>
       ) : (
         <>
-          <div className="flex flex-col gap-3 rounded-2xl border p-5">
+          <div className="flex flex-col gap-3 rounded-xl border p-4">
             <p className="text-muted-foreground">{t("plan", { position: a.positionName })}</p>
             <div className="flex flex-col gap-1">
               <progress max={100} value={a.progress} className="h-4 w-full accent-primary" aria-labelledby="progress-label" />
@@ -90,17 +90,17 @@ async function Content() {
           </div>
 
           {a.status === "awaiting_readiness" ? (
-            <p role="status" className="rounded-2xl border border-emerald-600/40 bg-emerald-500/10 p-5 text-lg">
+            <p role="status" className="rounded-xl border border-emerald-600/40 bg-emerald-500/10 p-4 text-base">
               {t("allDone")}
             </p>
           ) : a.status === "awaiting_decision" ? (
-            <p role="status" className="rounded-2xl border border-amber-500/40 bg-amber-500/5 p-5 text-lg">
+            <p role="status" className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-4 text-base">
               {t("awaitingDecision")}
             </p>
           ) : next ? (
-            <div className="flex flex-col gap-3 rounded-2xl border-2 border-primary p-5">
+            <div className="flex flex-col gap-3 rounded-xl border-2 border-primary p-4">
               <p className="text-sm font-medium uppercase tracking-wide text-primary">{t("nextStep")}</p>
-              <p className="text-xl font-semibold">{next.title}</p>
+              <p className="text-lg font-semibold">{next.title}</p>
               <Button size="lg" className="self-start" nativeButton={false} render={<Link href={`/learn/${a.id}/${next.moduleId}`} />}>
                 {next.status === "available" ? t("start") : t("continue")}
                 <ArrowRight aria-hidden="true" />
@@ -116,7 +116,7 @@ async function Content() {
           )}
 
           <section aria-labelledby="modules-heading" className="flex flex-col gap-3">
-            <h2 id="modules-heading" className="text-lg font-semibold">
+            <h2 id="modules-heading" className="text-base font-semibold">
               {t("modulesHeading")}
             </h2>
             <ModuleList assignment={a} linkable />
@@ -126,7 +126,7 @@ async function Content() {
 
       {certs.length > 0 && (
         <section aria-labelledby="certs-heading" className="flex flex-col gap-3">
-          <h2 id="certs-heading" className="text-lg font-semibold">
+          <h2 id="certs-heading" className="text-base font-semibold">
             {t("certificatesHeading")}
           </h2>
           <CertificateList items={certs} />

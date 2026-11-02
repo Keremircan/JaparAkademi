@@ -35,13 +35,13 @@ async function Content() {
     <section className="max-w-4xl">
       <PageHeader title={t("title")} description={t("description")} back={{ href: "/manage", label: tNav("title") }} />
       {sorted.length === 0 ? (
-        <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p>
+        <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("empty")}</p>
       ) : (
         <ul className="flex flex-col gap-3">
           {sorted.map((a) => (
             <li key={a.id}>
-              <details className="rounded-2xl border">
-                <summary className="flex min-h-16 cursor-pointer flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3">
+              <details className="rounded-xl border">
+                <summary className="flex min-h-16 cursor-pointer flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
                   <span className="w-24 font-mono text-sm text-muted-foreground">{a.sicilNo}</span>
                   <span className="min-w-40 flex-1 font-medium">{a.personName}</span>
                   <span className="text-sm text-muted-foreground">{a.positionName}</span>
@@ -50,7 +50,7 @@ async function Content() {
                     {a.overdue && ` · ${t("overdue")}`}
                   </span>
                 </summary>
-                <div className="border-t px-5 py-4">
+                <div className="border-t px-4 py-3">
                   <AssignmentSummaryView a={a} viewer={actor} />
                 </div>
               </details>

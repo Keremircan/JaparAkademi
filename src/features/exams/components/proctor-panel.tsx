@@ -27,7 +27,7 @@ export function ProctorPanel() {
   const mins = Math.floor(left / 60_000);
 
   return (
-    <div className="flex max-w-xl flex-col gap-4 rounded-2xl border p-5">
+    <div className="flex max-w-xl flex-col gap-4 rounded-xl border p-4">
       {issued && left > 0 ? (
         <div className="flex flex-col items-center gap-2 py-4 text-center">
           <p className="text-muted-foreground">{t("codeLabel")}</p>

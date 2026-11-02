@@ -149,7 +149,7 @@ export function ExamRunner({
 
   return (
     <div className="flex max-w-3xl flex-col gap-5">
-      <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-background/95 p-3 backdrop-blur">
+      <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-background/95 p-3 backdrop-blur">
         <span className="font-semibold">{title}</span>
         <span className={`flex items-center gap-2 font-mono text-xl ${secs < 60 ? "text-destructive" : ""}`} role="timer" aria-label={t("timeLeft", { time: clock })}>
           <Timer aria-hidden="true" className="size-5" />
@@ -177,7 +177,7 @@ export function ExamRunner({
         </ol>
       </nav>
 
-      <fieldset key={q.itemId} className="flex flex-col gap-3 rounded-2xl border p-4 sm:p-5">
+      <fieldset key={q.itemId} className="flex flex-col gap-3 rounded-xl border p-4">
         <legend className="sr-only">{t("questionN", { n: index + 1, total: questions.length })}</legend>
         <div className="flex items-start justify-between gap-3">
           <p className="text-sm text-muted-foreground">{t("questionN", { n: index + 1, total: questions.length })}</p>
@@ -186,7 +186,7 @@ export function ExamRunner({
             {t("readAloud")}
           </Button>
         </div>
-        <p lang={q.locale} className="text-lg font-medium">{q.stem}</p>
+        <p lang={q.locale} className="text-base font-medium">{q.stem}</p>
 
         {q.type === "hotspot" ? (
           <>
@@ -209,7 +209,7 @@ export function ExamRunner({
           q.options.map((o, i) => (
             <label
               key={i}
-              className="flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border px-4 py-2 has-checked:border-primary has-checked:bg-primary/5 has-focus-visible:ring-3 has-focus-visible:ring-ring/50"
+              className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border px-4 py-2 has-checked:border-primary has-checked:bg-primary/5 has-focus-visible:ring-3 has-focus-visible:ring-ring/50"
             >
               <input type="radio" name={`q-${q.itemId}`} className="size-5 accent-primary" checked={answer === i} onChange={() => void save(index, i)} />
               <span className="font-mono">{String.fromCharCode(65 + i)}</span>

@@ -108,8 +108,8 @@ export function PushToggle({ publicKey }: { publicKey: string }) {
     });
 
   return (
-    <section aria-labelledby="push-title" className="mt-6 flex flex-col gap-3 rounded-2xl border p-5">
-      <h2 id="push-title" className="text-lg font-semibold">
+    <section aria-labelledby="push-title" className="mt-6 flex flex-col gap-3 rounded-xl border p-4">
+      <h2 id="push-title" className="text-base font-semibold">
         {t("title")}
       </h2>
       {state === "loading" ? (

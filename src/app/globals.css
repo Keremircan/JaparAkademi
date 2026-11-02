@@ -76,7 +76,8 @@
   --chart-5: oklch(0.269 0 0);
   /* Grafik serisi (yönetim özeti eğilimi): kartın yüzeyinde 3:1 üstü, renk körlüğü denetiminden geçti */
   --viz-series: #2a78d6;
-  --radius: 0.625rem;
+  /* Kompakt arayüz (iş paketi 3.6): daha az yuvarlak köşeler */
+  --radius: 0.5rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -133,6 +134,22 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+/*
+ * Arayüz yoğunluğu (iş paketi 3.6): fareyle kullanılan ekranlarda kök yazı 14px'tir; rem ile tanımlı bütün
+ * ölçüler (yazı, boşluk, yükseklik) birlikte küçülür. Dokunmatik ekranda kök 16px ve en az 48px dokunma alanı
+ * kalır (SPEC 13.1). Küçük yazılar okunabilirlik için 13px (text-sm) ve 12px (text-xs) altına inmez.
+ * "Büyük yazı" tercihi (`TextSizeStyle`) kökü bir kademe büyütür; katmansız olduğu için bu kuralın sonrasında gelir.
+ */
+@media (pointer: fine) {
+  html {
+    font-size: 87.5%;
+  }
+  :root {
+    --text-xs: calc(12rem / 14);
+    --text-sm: calc(13rem / 14);
   }
 }
 /* Zengin metin düzenleyici (TipTap) içeriği; görüntüleyici aynı biçimi sınıflarla verir */

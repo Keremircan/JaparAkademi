@@ -68,8 +68,8 @@ export function EvacuationBoard({
   return (
     <div className="flex flex-col gap-5">
       {rollcall ? (
-        <div className={cn("flex flex-col gap-3 rounded-2xl border-2 p-4", rollcall.kind === "real" ? "border-destructive" : "border-amber-500")}>
-          <p className="flex items-center gap-2 text-lg font-semibold">
+        <div className={cn("flex flex-col gap-3 rounded-xl border-2 p-4", rollcall.kind === "real" ? "border-destructive" : "border-amber-500")}>
+          <p className="flex items-center gap-2 text-base font-semibold">
             <Siren aria-hidden="true" className="size-6" />
             {t("open", { kind: t(`kinds.${rollcall.kind}`), time: rollcall.startedLabel })}
           </p>
@@ -127,7 +127,7 @@ export function EvacuationBoard({
               {t("start")}: {kind === "drill" ? t("startDrill") : t("startReal")}
             </Button>
           ))}
-          <a href={`/api/security/evacuation/pdf?list=inside`} className="inline-flex min-h-14 items-center gap-2 rounded-lg border px-4 font-medium hover:bg-muted">
+          <a href={`/api/security/evacuation/pdf?list=inside`} className="inline-flex min-h-12 items-center gap-2 rounded-lg border px-4 font-medium hover:bg-muted">
             <FileDown aria-hidden="true" className="size-5" />
             {t("pdfInside")}
           </a>
@@ -141,16 +141,16 @@ export function EvacuationBoard({
       )}
 
       {people.length === 0 ? (
-        <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("insideEmpty")}</p>
+        <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("insideEmpty")}</p>
       ) : (
         <ul className="flex flex-col gap-2">
           {people.map((p) => (
             <li
               key={p.visitId}
-              className={cn("flex flex-wrap items-center gap-3 rounded-2xl border p-4", p.safe && "border-emerald-600 bg-emerald-600/5")}
+              className={cn("flex flex-wrap items-center gap-3 rounded-xl border p-4", p.safe && "border-emerald-600 bg-emerald-600/5")}
             >
               <span className="min-w-48 flex-1">
-                <span className="block text-lg font-medium">{p.fullName}</span>
+                <span className="block text-base font-medium">{p.fullName}</span>
                 <span className="block text-sm text-muted-foreground">
                   {p.typeLabel}
                   {p.companyName && ` · ${p.companyName}`} · {p.hostName}

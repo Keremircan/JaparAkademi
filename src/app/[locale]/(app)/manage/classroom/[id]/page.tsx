@@ -82,7 +82,7 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
         />
       ) : (
         <div className="flex flex-col gap-6">
-          <dl className="grid grid-cols-1 gap-3 rounded-2xl border p-5 sm:grid-cols-2">
+          <dl className="grid grid-cols-1 gap-3 rounded-xl border p-4 sm:grid-cols-2">
             <div>
               <dt className="text-sm text-muted-foreground">{t("form.date")}</dt>
               <dd>{format.dateTime(new Date(`${s.sessionDate}T12:00:00`), { dateStyle: "long" })}</dd>
@@ -115,12 +115,12 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
             )}
           </dl>
           <section aria-labelledby="att-heading">
-            <h2 id="att-heading" className="mb-3 text-lg font-semibold">
+            <h2 id="att-heading" className="mb-3 text-base font-semibold">
               {t("form.attendees", { count: s.attendees.length })}
             </h2>
-            <ul className="divide-y rounded-2xl border">
+            <ul className="divide-y rounded-xl border">
               {s.attendees.map((a) => (
-                <li key={a.userId} className="flex min-h-12 flex-wrap items-center gap-x-3 px-5 py-2">
+                <li key={a.userId} className="flex min-h-12 flex-wrap items-center gap-x-3 px-4 py-2">
                   <span className="w-24 font-mono text-sm text-muted-foreground">{a.sicilNo}</span>
                   <span className="flex-1">{a.name}</span>
                   {!a.hasModule && <span className="text-sm text-muted-foreground">{t("noModule")}</span>}

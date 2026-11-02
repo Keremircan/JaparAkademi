@@ -22,6 +22,8 @@ Açılan ekranda adınızı görürsünüz. Kendinize bir şifre belirleyip iki 
 
 **Dil / Language:** giriş ve etkinleştirme ekranının altında **Türkçe / English** seçebilirsiniz. Giriş yaptıktan sonra dili **Profil → Dil / Language**'dan değiştirin; uygulama her girişte seçtiğiniz dille açılır. İngilizce seçtiğinizde bütün ekranlar İngilizce olur; eğitim içerikleri ve sınav soruları İngilizcesi varsa İngilizce, yoksa Türkçe gösterilir. Bildirim e-postaları ve indirdiğiniz Excel/PDF raporları da seçtiğiniz dildedir. Sertifikalar Türkçe düzenlenir; birim, pozisyon ve modül adları girildiği gibi görünür.
 
+**Yazı boyutu:** yazılar size küçük geliyorsa **Profil → Yazı boyutu**'ndan **Büyük**'ü seçin; bütün ekranlar bir kademe büyür. Tercihiniz hesabınıza kaydedilir ve giriş yaptığınız her cihazda geçerlidir.
+
 **Şifrenizi unuttuysanız:** girişte **Şifremi unuttum** → sicil numaranızı yazın. E-posta adresiniz kayıtlıysa şifre yenileme bağlantısı gelir (60 dakika geçerlidir, bir kez kullanılır). E-postanız kayıtlı değilse İK size yeni bir davet verir.
 
 ---

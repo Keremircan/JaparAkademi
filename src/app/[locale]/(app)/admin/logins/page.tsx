@@ -50,7 +50,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
     <section className="flex max-w-5xl flex-col gap-6">
       <PageHeader title={t("title")} description={t("description")} back={{ href: "/admin", label: tNav("title") }} />
 
-      <form method="get" className="flex flex-wrap items-end gap-3 rounded-2xl border p-4" aria-label={t("filters.apply")}>
+      <form method="get" className="flex flex-wrap items-end gap-3 rounded-xl border p-4" aria-label={t("filters.apply")}>
         <label className="flex min-w-60 flex-1 flex-col gap-1">
           <span className="text-sm font-medium">{t("filters.q")}</span>
           <Input name="q" type="search" defaultValue={filters.q ?? ""} maxLength={100} />
@@ -104,13 +104,13 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
       )}
 
       {data.entries.length === 0 ? (
-        <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p>
+        <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("empty")}</p>
       ) : (
-        <ul className="divide-y rounded-2xl border">
+        <ul className="divide-y rounded-xl border">
           {data.entries.map((e) => (
             <li key={e.id}>
               <details>
-                <summary className="flex min-h-14 cursor-pointer flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2">
+                <summary className="flex min-h-12 cursor-pointer flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2">
                   <span className="font-mono text-sm text-muted-foreground">{format.dateTime(e.at, { dateStyle: "short", timeStyle: "medium" })}</span>
                   <span className={`rounded-full px-2 py-0.5 text-xs ${FAILED.has(e.result) ? "bg-destructive/10 text-destructive" : "bg-muted"}`}>
                     {t(`results.${e.result}`)}

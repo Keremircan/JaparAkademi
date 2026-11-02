@@ -54,14 +54,14 @@ async function Content() {
         <OwnerActingNotice actor={access.actor} permission="content.approve_ohs" role="ohs_specialist" />
       </div>
       {classroom.length > 0 && (
-        <section aria-labelledby="classroom-heading" className="mb-8">
-          <h2 id="classroom-heading" className="mb-3 text-lg font-semibold">
+        <section aria-labelledby="classroom-heading" className="mb-6">
+          <h2 id="classroom-heading" className="mb-3 text-base font-semibold">
             {t("classroomHeading")}
           </h2>
-          <ul className="divide-y rounded-2xl border">
+          <ul className="divide-y rounded-xl border">
             {classroom.map((c) => (
               <li key={c.id}>
-                <Link href={`/manage/classroom/${c.id}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 hover:bg-muted">
+                <Link href={`/manage/classroom/${c.id}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-muted">
                   <span className="min-w-48 flex-1">
                     <span className="block font-medium">{c.moduleTitle}</span>
                     <span className="block text-sm text-muted-foreground">
@@ -75,16 +75,16 @@ async function Content() {
           </ul>
         </section>
       )}
-      {queue.length === 0 && cards.length === 0 && classroom.length === 0 && questionQueue.length === 0 && secondSign.length === 0 && readiness.length === 0 && decisions.length === 0 && <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p>}
+      {queue.length === 0 && cards.length === 0 && classroom.length === 0 && questionQueue.length === 0 && secondSign.length === 0 && readiness.length === 0 && decisions.length === 0 && <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("empty")}</p>}
       {cards.length > 0 && (
-        <section aria-labelledby="cards-heading" className="mb-8">
-          <h2 id="cards-heading" className="mb-3 text-lg font-semibold">
+        <section aria-labelledby="cards-heading" className="mb-6">
+          <h2 id="cards-heading" className="mb-3 text-base font-semibold">
             {t("cardsHeading")}
           </h2>
-          <ul className="divide-y rounded-2xl border">
+          <ul className="divide-y rounded-xl border">
             {cards.map((c) => (
               <li key={c.versionId}>
-                <Link href={`/manage/positions/${c.positionId}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 hover:bg-muted">
+                <Link href={`/manage/positions/${c.positionId}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-muted">
                   <span className="min-w-48 flex-1">
                     <span className="block font-medium">
                       {c.positionName} <span className="font-normal text-muted-foreground">· {tt("versionN", { version: c.version })}</span>
@@ -104,14 +104,14 @@ async function Content() {
       <PeopleSection id="readiness" title={t("readinessHeading")} people={readiness} when={when} />
       <PeopleSection id="decisions" title={t("decisionsHeading")} people={decisions} when={when} />
       {secondSign.length > 0 && (
-        <section aria-labelledby="practical-heading" className="mb-8">
-          <h2 id="practical-heading" className="mb-3 text-lg font-semibold">
+        <section aria-labelledby="practical-heading" className="mb-6">
+          <h2 id="practical-heading" className="mb-3 text-base font-semibold">
             {t("practicalHeading")}
           </h2>
-          <ul className="divide-y rounded-2xl border">
+          <ul className="divide-y rounded-xl border">
             {secondSign.map((x) => (
               <li key={x.id}>
-                <Link href={`/trainer/evaluations/${x.id}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 hover:bg-muted">
+                <Link href={`/trainer/evaluations/${x.id}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-muted">
                   <span className="min-w-48 flex-1">
                     <span className="block font-medium">
                       {x.traineeName} <span className="font-normal text-muted-foreground">· {x.title}</span>
@@ -126,14 +126,14 @@ async function Content() {
         </section>
       )}
       {questionQueue.length > 0 && (
-        <section aria-labelledby="questions-heading" className="mb-8">
-          <h2 id="questions-heading" className="mb-3 text-lg font-semibold">
+        <section aria-labelledby="questions-heading" className="mb-6">
+          <h2 id="questions-heading" className="mb-3 text-base font-semibold">
             {t("questionsHeading")}
           </h2>
-          <ul className="divide-y rounded-2xl border">
+          <ul className="divide-y rounded-xl border">
             {questionQueue.map((q) => (
               <li key={q.versionId}>
-                <Link href={`/manage/questions/${q.questionId}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 hover:bg-muted">
+                <Link href={`/manage/questions/${q.questionId}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-muted">
                   <span className="min-w-48 flex-1">
                     <span className="line-clamp-2 block font-medium">{q.stem}</span>
                     <span className="block text-sm text-muted-foreground">
@@ -149,13 +149,13 @@ async function Content() {
       )}
       {queue.length > 0 && (
         <section aria-labelledby="contents-heading">
-          <h2 id="contents-heading" className="mb-3 text-lg font-semibold">
+          <h2 id="contents-heading" className="mb-3 text-base font-semibold">
             {t("contentsHeading")}
           </h2>
-          <ul className="divide-y rounded-2xl border">
+          <ul className="divide-y rounded-xl border">
             {queue.map((q) => (
               <li key={q.versionId}>
-                <Link href={`/manage/library/${q.contentId}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 hover:bg-muted">
+                <Link href={`/manage/library/${q.contentId}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-muted">
                   <TypeIcon type={q.type} className="size-6 shrink-0 text-muted-foreground" />
                   <span className="min-w-48 flex-1">
                     <span className="block font-medium">
@@ -181,14 +181,14 @@ async function Content() {
 function PeopleSection({ id, title, people, when }: { id: string; title: string; people: PendingPerson[]; when: (d: Date | null) => string }) {
   if (people.length === 0) return null;
   return (
-    <section aria-labelledby={`${id}-heading`} className="mb-8">
-      <h2 id={`${id}-heading`} className="mb-3 text-lg font-semibold">
+    <section aria-labelledby={`${id}-heading`} className="mb-6">
+      <h2 id={`${id}-heading`} className="mb-3 text-base font-semibold">
         {title}
       </h2>
-      <ul className="divide-y rounded-2xl border">
+      <ul className="divide-y rounded-xl border">
         {people.map((x) => (
           <li key={x.assignmentId}>
-            <Link href={`/manage/readiness/${x.assignmentId}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 hover:bg-muted">
+            <Link href={`/manage/readiness/${x.assignmentId}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-muted">
               <span className="min-w-48 flex-1">
                 <span className="block font-medium">{x.name}</span>
                 <span className="block text-sm text-muted-foreground">

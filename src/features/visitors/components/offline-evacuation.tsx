@@ -25,14 +25,14 @@ export function OfflineEvacuation() {
   const savedAt = new Date(data.savedAt).toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "short" });
   return (
     <section aria-labelledby="offline-evac" className="w-full max-w-2xl text-left">
-      <h2 id="offline-evac" className="text-xl font-semibold">
+      <h2 id="offline-evac" className="text-lg font-semibold">
         {t("offlineTitle")}
       </h2>
       <p className="text-sm text-muted-foreground">
         {data.rollcall && `${data.rollcall.kind} · ${data.rollcall.startedAt} · `}
         {t("offlineSavedAt", { time: savedAt })}
       </p>
-      <ul className="mt-3 divide-y rounded-2xl border">
+      <ul className="mt-3 divide-y rounded-xl border">
         {data.people.map((p, i) => (
           <li key={i} className="flex flex-wrap items-center gap-x-3 px-4 py-3">
             <span className="flex-1">

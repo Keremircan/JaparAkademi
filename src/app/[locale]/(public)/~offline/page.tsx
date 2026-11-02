@@ -10,7 +10,7 @@ export default async function OfflinePage() {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-4 px-6 text-center">
       <WifiOff aria-hidden="true" className="size-12 text-muted-foreground" />
-      <h1 className="text-2xl font-semibold">{t("title")}</h1>
+      <h1 className="text-xl font-semibold">{t("title")}</h1>
       <p className="max-w-sm text-muted-foreground">{t("description")}</p>
       <form>
         <Button type="submit" size="lg">

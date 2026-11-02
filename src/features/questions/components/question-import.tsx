@@ -83,10 +83,10 @@ export function QuestionImport({ owners }: { owners: { common: boolean; ohsOnly:
 
       {rows.length > 0 && (
         <section aria-labelledby="preview-heading" className="flex flex-col gap-3">
-          <h2 id="preview-heading" className="text-lg font-semibold">
+          <h2 id="preview-heading" className="text-base font-semibold">
             {t("previewHeading", { valid, invalid: rows.length - valid })}
           </h2>
-          <div className="overflow-x-auto rounded-2xl border">
+          <div className="overflow-x-auto rounded-xl border">
             <table className="w-full text-sm">
               <thead className="bg-muted text-left">
                 <tr>

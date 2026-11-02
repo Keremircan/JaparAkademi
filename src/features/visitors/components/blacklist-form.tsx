@@ -22,7 +22,7 @@ export function BlacklistForm({ minDate }: { minDate: string }) {
   const [pending, startTransition] = useTransition();
   const set = (patch: Partial<typeof v>) => setV((x) => ({ ...x, ...patch }));
   return (
-    <div className="flex max-w-2xl flex-col gap-5 rounded-2xl border p-5">
+    <div className="flex max-w-2xl flex-col gap-5 rounded-xl border p-4">
       <Field id="bl-name" label={tf("fullName")}>
         <Input id="bl-name" maxLength={200} autoComplete="off" value={v.fullName} onChange={(e) => set({ fullName: e.target.value })} />
       </Field>

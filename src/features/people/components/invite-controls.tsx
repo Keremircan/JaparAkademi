@@ -29,7 +29,7 @@ export function ChannelPicker({ mailEnabled, allowNone = false }: { mailEnabled:
         return (
           <label
             key={c}
-            className="flex min-h-14 cursor-pointer items-start gap-3 rounded-xl border-2 p-3 has-checked:border-primary has-checked:bg-primary/5 has-disabled:cursor-not-allowed has-disabled:opacity-60"
+            className="flex min-h-12 cursor-pointer items-start gap-3 rounded-xl border-2 p-3 has-checked:border-primary has-checked:bg-primary/5 has-disabled:cursor-not-allowed has-disabled:opacity-60"
           >
             <input
               type="radio"
@@ -58,8 +58,8 @@ export function InvitePanel({ title, invite, children }: { title: string; invite
   const format = useFormatter();
   const [copied, setCopied] = useState(false);
   return (
-    <div role="status" className="flex max-w-xl flex-col gap-4 rounded-2xl border border-primary/30 bg-muted p-6">
-      <h2 className="text-xl font-semibold">{title}</h2>
+    <div role="status" className="flex max-w-xl flex-col gap-4 rounded-xl border border-primary/30 bg-muted p-5">
+      <h2 className="text-lg font-semibold">{title}</h2>
       {invite.channel === "email" && <p>{t("emailSent")}</p>}
       {invite.channel === "whatsapp" && invite.whatsappUrl && (
         <>

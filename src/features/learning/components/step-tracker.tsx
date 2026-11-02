@@ -180,7 +180,7 @@ export function StepTracker({
       )}
       <div ref={sentinel} aria-hidden="true" className="h-px" />
 
-      <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-10 flex flex-col gap-2 rounded-2xl border bg-background/95 p-3 shadow-sm backdrop-blur lg:bottom-4">
+      <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+4rem)] z-10 flex flex-col gap-2 rounded-xl border bg-background/95 p-3 shadow-sm backdrop-blur lg:bottom-4">
         {acknowledged ? (
           <p className="flex min-h-12 items-center gap-2 font-medium text-emerald-700 dark:text-emerald-400">
             <CheckCircle2 aria-hidden="true" />

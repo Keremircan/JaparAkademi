@@ -28,7 +28,7 @@ export function SignatoriesForm({ initial }: { initial: { name: string; title: s
   return (
     <div className="flex max-w-2xl flex-col gap-4">
       {rows.map((r, i) => (
-        <fieldset key={r.key} className="flex flex-col gap-3 rounded-2xl border p-4">
+        <fieldset key={r.key} className="flex flex-col gap-3 rounded-xl border p-4">
           <legend className="px-1 font-medium">{t("person", { n: i + 1 })}</legend>
           <label className="flex flex-col gap-1">
             <span className="text-sm font-medium">{t("name")}</span>

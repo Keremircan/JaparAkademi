@@ -52,11 +52,11 @@ export function InviteeSelector({ items, mailEnabled, max }: { items: InviteeIte
       router.push(`/admin/people/invites/${r.data.batchId}${r.data.sheetPdf ? "?pdf=1" : ""}`);
     });
 
-  if (items.length === 0) return <p className="rounded-2xl border p-5 text-muted-foreground">{t("empty")}</p>;
+  if (items.length === 0) return <p className="rounded-xl border p-4 text-muted-foreground">{t("empty")}</p>;
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="overflow-x-auto rounded-2xl border">
+      <div className="overflow-x-auto rounded-xl border">
         <table className="w-full text-left">
           <thead className="border-b bg-muted/50 text-sm">
             <tr>
@@ -109,7 +109,7 @@ export function InviteeSelector({ items, mailEnabled, max }: { items: InviteeIte
             return (
               <label
                 key={m}
-                className="flex min-h-14 cursor-pointer items-start gap-3 rounded-xl border-2 p-3 has-checked:border-primary has-checked:bg-primary/5 has-disabled:cursor-not-allowed has-disabled:opacity-60"
+                className="flex min-h-12 cursor-pointer items-start gap-3 rounded-xl border-2 p-3 has-checked:border-primary has-checked:bg-primary/5 has-disabled:cursor-not-allowed has-disabled:opacity-60"
               >
                 <input
                   type="radio"
@@ -173,13 +173,13 @@ export function WhatsAppSendList({ rows }: { rows: SendRow[] }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <p role="status" className="text-lg font-medium">
+      <p role="status" className="text-base font-medium">
         {t("progress", { shared: done, total: rows.length })}
       </p>
       <div className="h-2 overflow-hidden rounded-full bg-muted" aria-hidden="true">
         <div className="h-full bg-primary transition-all" style={{ width: `${Math.round((done / rows.length) * 100)}%` }} />
       </div>
-      <ul className="flex flex-col divide-y rounded-2xl border">
+      <ul className="flex flex-col divide-y rounded-xl border">
         {rows.map((r) => {
           const isShared = !!shared[r.invitationId];
           const canSend = r.state === "open" && !!r.whatsappUrl;

@@ -38,12 +38,12 @@ async function Content() {
       <ProctorPanel />
       {sessions.length > 0 && (
         <section aria-labelledby="active-heading">
-          <h2 id="active-heading" className="mb-3 text-lg font-semibold">
+          <h2 id="active-heading" className="mb-3 text-base font-semibold">
             {t("active")}
           </h2>
-          <ul className="divide-y rounded-2xl border">
+          <ul className="divide-y rounded-xl border">
             {sessions.map((s) => (
-              <li key={s.id} className="flex min-h-16 flex-wrap items-center gap-3 px-5 py-3">
+              <li key={s.id} className="flex min-h-16 flex-wrap items-center gap-3 px-4 py-3">
                 <span className="flex-1">
                   {s.location ?? t("noLocation")}
                   <span className="block text-sm text-muted-foreground">

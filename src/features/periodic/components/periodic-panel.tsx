@@ -80,7 +80,7 @@ export function PeriodicPanel({
   return (
     <div className="flex flex-col gap-4">
       {(canRecord || canStart) && rows.length > 0 && (
-        <section aria-labelledby={`${uid}-actions`} className="flex flex-col gap-4 rounded-2xl border p-4">
+        <section aria-labelledby={`${uid}-actions`} className="flex flex-col gap-4 rounded-xl border p-4">
           <h2 id={`${uid}-actions`} className="font-semibold">
             {t("selected", { count: selected.size })}
           </h2>
@@ -127,9 +127,9 @@ export function PeriodicPanel({
       )}
 
       {rows.length === 0 ? (
-        <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p>
+        <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("empty")}</p>
       ) : (
-        <ul className="divide-y rounded-2xl border">
+        <ul className="divide-y rounded-xl border">
           <li className="px-4 py-2">
             <label className="flex min-h-12 items-center gap-3">
               <input

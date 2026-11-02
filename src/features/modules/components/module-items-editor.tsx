@@ -64,7 +64,7 @@ export function ModuleContentsEditor({ moduleId, initial }: { moduleId: string; 
 
   return (
     <section aria-labelledby="contents-heading" className="flex flex-col gap-3">
-      <h2 id="contents-heading" className="text-lg font-semibold">
+      <h2 id="contents-heading" className="text-base font-semibold">
         {t("contentsHeading")}
       </h2>
       {items.length === 0 ? (
@@ -72,7 +72,7 @@ export function ModuleContentsEditor({ moduleId, initial }: { moduleId: string; 
       ) : (
         <ol className="flex flex-col divide-y rounded-xl border">
           {items.map((c, i) => (
-            <li key={c.id} className="flex min-h-14 items-center gap-3 px-3 py-2">
+            <li key={c.id} className="flex min-h-12 items-center gap-3 px-3 py-2">
               <span className="w-6 text-sm text-muted-foreground">{i + 1}.</span>
               <span className="min-w-0 flex-1">
                 <span className="block">{c.title}</span>
@@ -124,7 +124,7 @@ export function ModuleTasksEditor({
 
   return (
     <section aria-labelledby="tasks-heading" className="flex flex-col gap-3">
-      <h2 id="tasks-heading" className="text-lg font-semibold">
+      <h2 id="tasks-heading" className="text-base font-semibold">
         {t("tasksHeading")}
       </h2>
       <p className="text-sm text-muted-foreground">{t("tasksHint")}</p>

@@ -55,7 +55,7 @@ function TextBlock({ text, heading, intro, version }: { text: LegalText; heading
     <section aria-labelledby={`legal-${text.id}`} className="flex flex-col gap-3">
       <div>
         <p className="text-sm font-medium text-muted-foreground">{heading}</p>
-        <h2 id={`legal-${text.id}`} lang={text.locale} className="text-lg font-semibold">
+        <h2 id={`legal-${text.id}`} lang={text.locale} className="text-base font-semibold">
           {text.title}
         </h2>
         <p className="text-sm text-muted-foreground">{version}</p>

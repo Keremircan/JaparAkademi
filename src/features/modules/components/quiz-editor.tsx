@@ -55,7 +55,7 @@ export function QuizEditor({
 
   return (
     <section aria-labelledby="quiz-heading" className="flex flex-col gap-3">
-      <h2 id="quiz-heading" className="text-lg font-semibold">
+      <h2 id="quiz-heading" className="text-base font-semibold">
         {t("heading")}
       </h2>
       <p className="text-sm text-muted-foreground">{t("hint")}</p>

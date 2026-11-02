@@ -37,12 +37,12 @@ async function Content() {
     <section className="max-w-5xl">
       <PageHeader title={t("title")} description={t("description")} back={{ href: "/manage", label: tNav("title") }} />
       {items.length === 0 ? (
-        <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p>
+        <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("empty")}</p>
       ) : (
-        <ul className="divide-y rounded-2xl border">
+        <ul className="divide-y rounded-xl border">
           {items.map((p) => (
             <li key={p.positionId}>
-              <Link href={`/manage/positions/${p.positionId}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 hover:bg-muted">
+              <Link href={`/manage/positions/${p.positionId}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-muted">
                 <span className="min-w-48 flex-1">
                   <span className="block font-medium">{p.name}</span>
                   <span className="block text-sm text-muted-foreground">

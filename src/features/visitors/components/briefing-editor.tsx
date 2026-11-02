@@ -75,11 +75,11 @@ export function BriefingEditor({
   return (
     <div className="flex flex-col gap-8">
       <section aria-labelledby="cards-title" className="flex flex-col gap-4">
-        <h2 id="cards-title" className="text-xl font-semibold">
+        <h2 id="cards-title" className="text-lg font-semibold">
           {t("cards")}
         </h2>
         {cards.map((c, i) => (
-          <fieldset key={c.key} className="flex flex-col gap-4 rounded-2xl border p-4">
+          <fieldset key={c.key} className="flex flex-col gap-4 rounded-xl border p-4">
             <legend className="px-1 font-medium">{t("cardN", { n: i + 1 })}</legend>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="flex flex-col gap-3">
@@ -125,12 +125,12 @@ export function BriefingEditor({
       </section>
 
       <section aria-labelledby="questions-title" className="flex flex-col gap-4">
-        <h2 id="questions-title" className="text-xl font-semibold">
+        <h2 id="questions-title" className="text-lg font-semibold">
           {t("questions")}
         </h2>
         <p className="text-sm text-muted-foreground">{requiredQuestions > 0 ? t("questionsRequired", { count: requiredQuestions }) : t("questionsNone")}</p>
         {questions.map((q, i) => (
-          <fieldset key={q.key} className="flex flex-col gap-4 rounded-2xl border p-4">
+          <fieldset key={q.key} className="flex flex-col gap-4 rounded-xl border p-4">
             <legend className="px-1 font-medium">{t("questionN", { n: i + 1 })}</legend>
             <div className="grid gap-4 md:grid-cols-2">
               <Field id={`${q.key}-str`} label={t("stemTr")}>

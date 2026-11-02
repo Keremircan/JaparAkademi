@@ -67,7 +67,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
     return (
       <section className="max-w-4xl">
         <PageHeader title={t("title")} back={back} />
-        <p role="alert" className="rounded-2xl border border-destructive/40 p-4 text-destructive">
+        <p role="alert" className="rounded-xl border border-destructive/40 p-4 text-destructive">
           {te("report_range_invalid")}
         </p>
       </section>
@@ -185,7 +185,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
     <section className="flex max-w-6xl flex-col gap-6">
       <PageHeader title={t("title")} description={t("description")} back={back} />
 
-      <form method="get" className="flex flex-wrap items-end gap-3 rounded-2xl border p-4" aria-label={tr("filters.apply")}>
+      <form method="get" className="flex flex-wrap items-end gap-3 rounded-xl border p-4" aria-label={tr("filters.apply")}>
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">{tr("filters.from")}</span>
           <Input type="date" name="from" defaultValue={filters.from} className="w-44" />
@@ -238,7 +238,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
       </p>
 
       {(ohsView || !scope.all) && (
-        <p role="note" className="flex gap-2 rounded-2xl border p-4 text-sm">
+        <p role="note" className="flex gap-2 rounded-xl border p-4 text-sm">
           <Info aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
           {ohsView ? t("ohsOnly") : t("scopeNote")}
         </p>
@@ -249,7 +249,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
 
       <section aria-labelledby="trend-heading" className="flex flex-col gap-3">
         <div>
-          <h2 id="trend-heading" className="text-lg font-semibold">
+          <h2 id="trend-heading" className="text-base font-semibold">
             {t("trend.title")}
           </h2>
           <p className="text-sm text-muted-foreground">{t("trend.description", range)}</p>
@@ -262,7 +262,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
           completed={{ title: completedTitle, aria: t("trend.chartAria", { title: completedTitle, ...range }), keyboard: t("trend.keyboard", { title: completedTitle }), empty: t("trend.empty") }}
           rate={{ title: rateTitle, aria: t("trend.chartAria", { title: rateTitle, ...range }), keyboard: t("trend.keyboard", { title: rateTitle }), empty: t("trend.noExams") }}
         />
-        <details className="rounded-2xl border">
+        <details className="rounded-xl border">
           <summary className="flex min-h-12 cursor-pointer items-center px-4 font-medium">{t("trend.table")}</summary>
           <div className="overflow-x-auto border-t">
             <table className="w-full min-w-[32rem] text-sm">
@@ -310,7 +310,7 @@ function TileGroup({
 }) {
   return (
     <section aria-labelledby={`${id}-heading`} className="flex flex-col gap-3">
-      <h2 id={`${id}-heading`} className="text-lg font-semibold">
+      <h2 id={`${id}-heading`} className="text-base font-semibold">
         {title}
       </h2>
       <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -342,11 +342,11 @@ function TileGroup({
           return (
             <li key={tile.key} className="flex">
               {tile.href ? (
-                <Link href={tile.href} className="flex min-h-32 w-full flex-col gap-1 rounded-2xl border bg-card p-4 hover:bg-muted">
+                <Link href={tile.href} className="flex min-h-32 w-full flex-col gap-1 rounded-xl border bg-card p-4 hover:bg-muted">
                   {body}
                 </Link>
               ) : (
-                <div className="flex min-h-32 w-full flex-col gap-1 rounded-2xl border bg-card p-4">{body}</div>
+                <div className="flex min-h-32 w-full flex-col gap-1 rounded-xl border bg-card p-4">{body}</div>
               )}
             </li>
           );

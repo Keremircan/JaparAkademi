@@ -33,7 +33,7 @@ export function ActivationCodeForm() {
         </p>
       )}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="sicilNo" className="text-base">
+        <Label htmlFor="sicilNo" className="text-sm pointer-fine:text-base">
           {t("auth.activate.sicil")}
         </Label>
         <Input
@@ -43,12 +43,11 @@ export function ActivationCodeForm() {
           autoComplete="username"
           required
           defaultValue={state.sicilNo}
-          className="h-12 text-lg"
           aria-invalid={!!state.error}
         />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="code" className="text-base">
+        <Label htmlFor="code" className="text-sm pointer-fine:text-base">
           {t("auth.activate.code")}
         </Label>
         <Input
@@ -58,7 +57,7 @@ export function ActivationCodeForm() {
           autoComplete="one-time-code"
           required
           maxLength={20}
-          className="h-12 font-mono text-lg tracking-widest"
+          className="font-mono tracking-widest"
           aria-describedby="code-hint"
           aria-invalid={!!state.error}
         />
@@ -96,13 +95,13 @@ export function ActivatePasswordForm({ token, minLength }: { token: string; minL
         </div>
       )}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="newPassword" className="text-base">
+        <Label htmlFor="newPassword" className="text-sm pointer-fine:text-base">
           {t("auth.changePassword.new")}
         </Label>
         <PasswordInput id="newPassword" name="newPassword" autoComplete="new-password" required minLength={minLength} aria-describedby="password-rules" />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="confirmPassword" className="text-base">
+        <Label htmlFor="confirmPassword" className="text-sm pointer-fine:text-base">
           {t("auth.changePassword.confirm")}
         </Label>
         <PasswordInput id="confirmPassword" name="confirmPassword" autoComplete="new-password" required aria-invalid={issues.includes("mismatch")} />

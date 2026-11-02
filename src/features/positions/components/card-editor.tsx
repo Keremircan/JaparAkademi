@@ -27,8 +27,8 @@ import { ListEditor } from "./list-editor";
 
 function Section({ id, title, hint, optional, children, disabled }: { id: CardSectionKey; title: string; hint: string; optional?: string; children: ReactNode; disabled?: boolean }) {
   return (
-    <section id={`section-${id}`} aria-labelledby={`h-${id}`} className="scroll-mt-20 rounded-2xl border p-4 sm:p-5">
-      <h2 id={`h-${id}`} className="text-lg font-semibold">
+    <section id={`section-${id}`} aria-labelledby={`h-${id}`} className="scroll-mt-20 rounded-xl border p-4">
+      <h2 id={`h-${id}`} className="text-base font-semibold">
         {SECTION_NUMBER[id]}. {title}
         {optional && <span className="ms-2 text-sm font-normal text-muted-foreground">({optional})</span>}
       </h2>
@@ -132,8 +132,8 @@ export function CardEditor({
         </p>
       )}
 
-      <section aria-labelledby="h-identity" className="rounded-2xl border p-4 sm:p-5">
-        <h2 id="h-identity" className="text-lg font-semibold">
+      <section aria-labelledby="h-identity" className="rounded-xl border p-4">
+        <h2 id="h-identity" className="text-base font-semibold">
           1. {t("sections.identity.title")}
         </h2>
         <p className="mb-4 text-sm text-muted-foreground">{t("sections.identity.hint")}</p>
@@ -402,7 +402,7 @@ export function CardEditor({
         />
       </Section>
 
-      <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-10 flex flex-wrap items-center gap-3 rounded-2xl border bg-background/95 p-3 shadow-sm backdrop-blur lg:bottom-4">
+      <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+4rem)] z-10 flex flex-wrap items-center gap-3 rounded-xl border bg-background/95 p-3 shadow-sm backdrop-blur lg:bottom-4">
         <Button type="button" size="lg" variant="outline" disabled={pending} onClick={() => startTransition(async () => void (await save()))}>
           <Save aria-hidden="true" />
           {pending ? tc("saving") : t("editor.save")}
@@ -412,8 +412,8 @@ export function CardEditor({
         </span>
       </div>
 
-      <section aria-labelledby="submit-heading" className="flex flex-col gap-4 rounded-2xl border bg-muted/40 p-5">
-        <h2 id="submit-heading" className="text-lg font-semibold">
+      <section aria-labelledby="submit-heading" className="flex flex-col gap-4 rounded-xl border bg-muted/40 p-4">
+        <h2 id="submit-heading" className="text-base font-semibold">
           {t("editor.submitHeading")}
         </h2>
         <p className="text-muted-foreground">{t("editor.submitHint")}</p>

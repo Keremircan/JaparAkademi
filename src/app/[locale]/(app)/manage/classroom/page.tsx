@@ -35,7 +35,7 @@ async function Content() {
   ]);
   const row = (s: ClassroomListItem) => (
     <li key={s.id}>
-      <Link href={`/manage/classroom/${s.id}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 hover:bg-muted">
+      <Link href={`/manage/classroom/${s.id}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-muted">
         <span className="min-w-48 flex-1">
           <span className="block font-medium">{s.moduleTitle}</span>
           <span className="block text-sm text-muted-foreground">
@@ -63,15 +63,15 @@ async function Content() {
         }
       />
       {data.pending.length > 0 && (
-        <section aria-labelledby="pending-heading" className="mb-8">
-          <h2 id="pending-heading" className="mb-3 text-lg font-semibold">
+        <section aria-labelledby="pending-heading" className="mb-6">
+          <h2 id="pending-heading" className="mb-3 text-base font-semibold">
             {t("pending")}
           </h2>
-          <ul className="divide-y rounded-2xl border">{data.pending.map(row)}</ul>
+          <ul className="divide-y rounded-xl border">{data.pending.map(row)}</ul>
         </section>
       )}
-      <h2 className="mb-3 text-lg font-semibold">{t("mine")}</h2>
-      {data.mine.length === 0 ? <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p> : <ul className="divide-y rounded-2xl border">{data.mine.map(row)}</ul>}
+      <h2 className="mb-3 text-base font-semibold">{t("mine")}</h2>
+      {data.mine.length === 0 ? <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("empty")}</p> : <ul className="divide-y rounded-xl border">{data.mine.map(row)}</ul>}
     </section>
   );
 }

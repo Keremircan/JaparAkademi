@@ -15,17 +15,20 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <header className="mb-6 flex flex-col gap-3">
+    <header className="mb-5 flex flex-col gap-2">
       {back && (
-        <Link href={back.href} className="flex min-h-12 items-center gap-2 self-start text-muted-foreground hover:text-foreground">
-          <ArrowLeft aria-hidden="true" className="size-5" />
+        <Link
+          href={back.href}
+          className="flex min-h-12 items-center gap-1.5 self-start text-sm text-muted-foreground hover:text-foreground pointer-fine:min-h-8"
+        >
+          <ArrowLeft aria-hidden="true" className="size-4" />
           {back.label}
         </Link>
       )}
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold lg:text-3xl">{title}</h1>
-          {description && <p className="mt-2 max-w-2xl text-muted-foreground">{description}</p>}
+          <h1 className="text-xl font-semibold tracking-tight lg:text-2xl">{title}</h1>
+          {description && <p className="mt-1 max-w-2xl text-sm text-muted-foreground pointer-fine:text-base">{description}</p>}
         </div>
         {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
       </div>

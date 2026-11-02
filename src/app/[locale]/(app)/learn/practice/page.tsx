@@ -28,10 +28,10 @@ async function Content() {
   return (
     <section className="flex max-w-3xl flex-col gap-6">
       <PageHeader title={t("title")} description={t("description")} back={{ href: "/learn", label: tl("title") }} />
-      {modules.length === 0 && <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p>}
+      {modules.length === 0 && <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("empty")}</p>}
       {modules.map((m) => (
         <section key={m.assignmentModuleId} aria-labelledby={`m-${m.assignmentModuleId}`} className="flex flex-col gap-3">
-          <h2 id={`m-${m.assignmentModuleId}`} className="text-lg font-semibold">
+          <h2 id={`m-${m.assignmentModuleId}`} className="text-base font-semibold">
             {m.title}
           </h2>
           <p className="text-sm text-muted-foreground" role="status">

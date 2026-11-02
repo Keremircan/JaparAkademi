@@ -1,0 +1,2 @@
+ALTER TABLE "personnel" ADD COLUMN "text_size" text DEFAULT 'normal' NOT NULL;--> statement-breakpoint
+ALTER TABLE "personnel" ADD CONSTRAINT "personnel_text_size_check" CHECK ("personnel"."text_size" in ('normal','large'));

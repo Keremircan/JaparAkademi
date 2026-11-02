@@ -47,15 +47,15 @@ async function Content() {
     <section className="max-w-4xl">
       <PageHeader title={ts("title")} description={t("intro")} />
       {kinds.length === 0 && !audit && !matrix && !summary ? (
-        <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("none")}</p>
+        <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("none")}</p>
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2">
           {summary && (
             <li>
-              <Link href="/reports/summary" className="flex min-h-24 items-start gap-4 rounded-2xl border bg-card p-5 hover:bg-muted">
+              <Link href="/reports/summary" className="flex min-h-20 items-start gap-3 rounded-xl border bg-card p-4 hover:bg-muted">
                 <Gauge aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-muted-foreground" />
                 <span>
-                  <span className="block text-lg font-medium">{tsum("title")}</span>
+                  <span className="block text-base font-medium">{tsum("title")}</span>
                   <span className="mt-1 block text-sm text-muted-foreground">{tsum("cardDescription")}</span>
                 </span>
               </Link>
@@ -65,10 +65,10 @@ async function Content() {
             const Icon = ICONS[k];
             return (
               <li key={k}>
-                <Link href={`/reports/${k}`} className="flex min-h-24 items-start gap-4 rounded-2xl border bg-card p-5 hover:bg-muted">
+                <Link href={`/reports/${k}`} className="flex min-h-20 items-start gap-3 rounded-xl border bg-card p-4 hover:bg-muted">
                   <Icon aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-muted-foreground" />
                   <span>
-                    <span className="block text-lg font-medium">{t(`kinds.${k}.title`)}</span>
+                    <span className="block text-base font-medium">{t(`kinds.${k}.title`)}</span>
                     <span className="mt-1 block text-sm text-muted-foreground">{t(`kinds.${k}.description`)}</span>
                   </span>
                 </Link>
@@ -77,10 +77,10 @@ async function Content() {
           })}
           {matrix && (
             <li>
-              <Link href="/reports/competency" className="flex min-h-24 items-start gap-4 rounded-2xl border bg-card p-5 hover:bg-muted">
+              <Link href="/reports/competency" className="flex min-h-20 items-start gap-3 rounded-xl border bg-card p-4 hover:bg-muted">
                 <Grid3x3 aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-muted-foreground" />
                 <span>
-                  <span className="block text-lg font-medium">{tm("title")}</span>
+                  <span className="block text-base font-medium">{tm("title")}</span>
                   <span className="mt-1 block text-sm text-muted-foreground">{tm("cardDescription")}</span>
                 </span>
               </Link>
@@ -88,10 +88,10 @@ async function Content() {
           )}
           {audit && (
             <li>
-              <Link href="/admin/audit" className="flex min-h-24 items-start gap-4 rounded-2xl border bg-card p-5 hover:bg-muted">
+              <Link href="/admin/audit" className="flex min-h-20 items-start gap-3 rounded-xl border bg-card p-4 hover:bg-muted">
                 <History aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-muted-foreground" />
                 <span>
-                  <span className="block text-lg font-medium">{ta("title")}</span>
+                  <span className="block text-base font-medium">{ta("title")}</span>
                   <span className="mt-1 block text-sm text-muted-foreground">{ta("description")}</span>
                 </span>
               </Link>

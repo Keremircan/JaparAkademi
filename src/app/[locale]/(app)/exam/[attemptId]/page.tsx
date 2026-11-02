@@ -55,20 +55,20 @@ async function Content({ params }: { params: Promise<{ attemptId: string }> }) {
   const [t, format] = await Promise.all([getTranslations("exams.result"), getFormatter()]);
   return (
     <section className="flex max-w-2xl flex-col gap-6">
-      <h1 className="text-2xl font-semibold">{view.title}</h1>
-      <div className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-6 text-center ${view.passed ? "border-emerald-600" : "border-destructive"}`} role="status">
+      <h1 className="text-xl font-semibold">{view.title}</h1>
+      <div className={`flex flex-col items-center gap-2 rounded-xl border-2 p-5 text-center ${view.passed ? "border-emerald-600" : "border-destructive"}`} role="status">
         {view.passed ? <CheckCircle2 aria-hidden="true" className="size-12 text-emerald-600" /> : <XCircle aria-hidden="true" className="size-12 text-destructive" />}
         <p className="text-4xl font-bold">{t("score", { score: view.score })}</p>
-        <p className="text-lg">{view.passed ? t("passed") : t("failed")}</p>
+        <p className="text-base">{view.passed ? t("passed") : t("failed")}</p>
         <p className="text-sm text-muted-foreground">{t("passScore", { score: view.passScore })}</p>
         {view.failReason === "ohs_critical" && <p className="text-destructive">{t("ohsCritical")}</p>}
         {view.submitReason === "timeout" && <p className="text-sm text-muted-foreground">{t("timeout")}</p>}
       </div>
       <section aria-labelledby="topics-heading">
-        <h2 id="topics-heading" className="mb-2 text-lg font-semibold">
+        <h2 id="topics-heading" className="mb-2 text-base font-semibold">
           {t("topics")}
         </h2>
-        <ul className="divide-y rounded-2xl border">
+        <ul className="divide-y rounded-xl border">
           {view.topics.map((x) => (
             <li key={x.topic} className="flex min-h-12 items-center justify-between gap-3 px-4 py-2">
               <span>{x.topic}</span>
@@ -79,7 +79,7 @@ async function Content({ params }: { params: Promise<{ attemptId: string }> }) {
         <p className="mt-2 text-sm text-muted-foreground">{t("noAnswers")}</p>
       </section>
       {!view.passed && (
-        <p className="rounded-2xl border p-4">
+        <p className="rounded-xl border p-4">
           {view.left > 0
             ? view.nextAvailableAt
               ? t("retryAfter", { left: view.left, date: format.dateTime(view.nextAvailableAt, { dateStyle: "medium", timeStyle: "short" }) })

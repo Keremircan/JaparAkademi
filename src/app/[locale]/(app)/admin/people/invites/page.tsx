@@ -76,8 +76,8 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
       <PageHeader title={t("title")} description={t("description")} back={{ href: "/admin/people", label: tp("title") }} />
 
       {unfinished.length > 0 && (
-        <section aria-labelledby="recent-heading" className="rounded-2xl border p-5">
-          <h2 id="recent-heading" className="mb-3 text-lg font-semibold">
+        <section aria-labelledby="recent-heading" className="rounded-xl border p-4">
+          <h2 id="recent-heading" className="mb-3 text-base font-semibold">
             {t("recent")}
           </h2>
           <ul className="flex flex-col divide-y">
@@ -101,7 +101,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
       )}
 
       {importBatchId ? (
-        <p className="flex flex-wrap items-center gap-3 rounded-2xl border p-4">
+        <p className="flex flex-wrap items-center gap-3 rounded-xl border p-4">
           {t("importFilter")}
           <Link href="/admin/people/invites" className="inline-flex min-h-12 items-center underline underline-offset-4">
             {t("clearImport")}

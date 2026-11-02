@@ -30,12 +30,12 @@ async function Content() {
     <section className="max-w-4xl">
       <PageHeader title={t("title")} description={t("description")} back={{ href: "/admin/people", label: tp("title") }} />
       {rows.length === 0 ? (
-        <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p>
+        <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("empty")}</p>
       ) : (
-        <ul className="divide-y rounded-2xl border">
+        <ul className="divide-y rounded-xl border">
           {rows.map((r) => (
             <li key={r.userId}>
-              <Link href={`/admin/people/${r.userId}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 hover:bg-muted">
+              <Link href={`/admin/people/${r.userId}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-muted">
                 <span className="w-24 font-mono text-sm text-muted-foreground">{r.sicilNo}</span>
                 <span className="min-w-40 flex-1 font-medium">{r.fullName}</span>
                 <span className="text-sm text-muted-foreground">{r.positionName ?? "—"}</span>
