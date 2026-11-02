@@ -1,4 +1,4 @@
-import { Pencil, Plus } from "lucide-react";
+import { FileText, Pencil, Plus, TriangleAlert } from "lucide-react";
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -8,11 +8,13 @@ import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 import { ActionButton } from "@/components/forms/action-button";
 import { Button } from "@/components/ui/button";
 import { legalAccess } from "@/features/legal/access";
-import { publishLegalTextAction } from "@/features/legal/actions";
+import { createLegalSampleAction, publishLegalTextAction } from "@/features/legal/actions";
 import { LegalTextBody } from "@/features/legal/components/legal-text-body";
 import { Link } from "@/i18n/navigation";
+import { placeholderLabel, placeholdersIn } from "@/lib/legal";
 import { cn } from "@/lib/utils";
 import { LEGAL_KINDS, listTexts, type LegalText } from "@/server/services/legal";
+import { hasSample } from "@/server/services/legal-samples";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.legal");
@@ -42,7 +44,8 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
   ]);
   const locales = LEGAL_KINDS[kind].locales as readonly string[];
   const versions = [...new Set(texts.map((x) => x.version))];
-  const byVersion = (v: number) => texts.filter((x) => x.version === v);
+  // Sürümün dilleri türün dil sırasıyla (önce bağlayıcı Türkçe)
+  const byVersion = (v: number) => texts.filter((x) => x.version === v).sort((a, b) => locales.indexOf(a.locale) - locales.indexOf(b.locale));
   const draftVersion = texts.find((x) => !x.publishedAt)?.version;
   const currentVersion = texts.find((x) => x.publishedAt)?.version;
 
@@ -54,10 +57,19 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
         back={{ href: "/admin", label: tNav("title") }}
         actions={
           draftVersion === undefined && (
-            <Button nativeButton={false} render={<Link href={`/admin/legal/new?kind=${kind}&locale=${locales[0]}`} />}>
-              <Plus aria-hidden="true" />
-              {t("newDraft")}
-            </Button>
+            <>
+              <Button nativeButton={false} render={<Link href={`/admin/legal/new?kind=${kind}&locale=${locales[0]}`} />}>
+                <Plus aria-hidden="true" />
+                {t("newDraft")}
+              </Button>
+              {/* Örnek metin (iş paketi 3.8, karar #245): TR + EN taslak birlikte açılır */}
+              {hasSample(kind) && (
+                <ActionButton action={createLegalSampleAction.bind(null, kind)}>
+                  <FileText aria-hidden="true" />
+                  {t("sample.start")}
+                </ActionButton>
+              )}
+            </>
           )
         }
       />
@@ -76,13 +88,20 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
         </nav>
       )}
       {versions.length === 0 ? (
-        <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("empty")}</p>
+        <p className="rounded-xl border border-dashed p-5 text-muted-foreground">
+          {t("empty")}
+          {hasSample(kind) && ` ${t("sample.emptyHint")}`}
+        </p>
       ) : (
         <ul className="flex flex-col gap-4">
           {versions.map((version) => {
             const rows = byVersion(version);
             const published = rows[0]?.publishedAt ?? null;
             const missing = locales.filter((l) => !rows.some((r) => r.locale === l));
+            // Doldurulmamış `[[...]]` alanları (karar #246): kalan varsa yayınla düğmesi yerine liste gösterilir
+            const unfilled = published
+              ? []
+              : rows.map((r) => ({ locale: r.locale, names: placeholdersIn(r.title, r.body) })).filter((x) => x.names.length > 0);
             return (
               <li key={version} className="rounded-xl border">
                 <div className="flex flex-wrap items-center gap-3 border-b px-4 py-3">
@@ -101,7 +120,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
                           {t("addLocale", { locale: t(`locales.${l as "tr" | "en"}`) })}
                         </Button>
                       ))}
-                      {missing.length === 0 && (
+                      {missing.length === 0 && unfilled.length === 0 && (
                         <ActionButton confirmText={t("publishConfirm")} action={publishLegalTextAction.bind(null, rows[0]!.id)}>
                           {t("publish")}
                         </ActionButton>
@@ -109,6 +128,25 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
                     </div>
                   )}
                 </div>
+                {unfilled.length > 0 && (
+                  <div role="note" className="flex gap-3 border-b border-amber-500/40 bg-amber-500/5 px-4 py-3">
+                    <TriangleAlert aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-amber-600" />
+                    <div className="flex min-w-0 flex-col gap-2">
+                      <p className="font-medium">{t("sample.unfilledTitle")}</p>
+                      {unfilled.map(({ locale, names }) => (
+                        <div key={locale} className="flex flex-wrap items-center gap-1.5">
+                          {locales.length > 1 && <span className="mr-1 rounded-full bg-muted px-2 py-0.5 text-xs">{t(`locales.${locale as "tr" | "en"}`)}</span>}
+                          {names.map((name) => (
+                            <code key={name} className="rounded-md border bg-background px-1.5 py-0.5 text-sm">
+                              {placeholderLabel(name)}
+                            </code>
+                          ))}
+                        </div>
+                      ))}
+                      <p className="text-sm text-muted-foreground">{t("sample.unfilledHint")}</p>
+                    </div>
+                  </div>
+                )}
                 {rows.map((text: LegalText) => (
                   <details key={text.id} className="border-b px-4 py-3 last:border-b-0">
                     <summary className="min-h-12 cursor-pointer content-center">

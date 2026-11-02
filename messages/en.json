@@ -197,9 +197,10 @@
       "noConsentOther": "A photo cannot be added because this person has not given explicit consent."
     },
     "consent": {
-      "title": "Explicit consent",
+      "title": "Explicit consent for a profile photo",
       "granted": "You gave explicit consent ({date}).",
-      "notGranted": "You have not given explicit consent; you cannot add a profile photo.",
+      "needed": "Adding a profile photo is optional and needs your explicit consent. If you do not give it, you can use the system in the same way.",
+      "unavailable": "You will be able to add a profile photo once the organisation publishes the explicit consent text.",
       "read": "Read the text: {title}",
       "grant": "Give explicit consent",
       "withdraw": "Withdraw explicit consent",
@@ -377,6 +378,7 @@
     "setting_readonly": "This parameter cannot be changed on screen.",
     "setting_note_required": "Write a reason of at least 10 characters for this parameter.",
     "legal_locale_missing": "Both the Turkish and the English text of this version are required.",
+    "legal_placeholders": "The text still has fields to fill in (marked [[...]]). Fill them in with the organisation's details before publishing.",
     "passport_invalid": "Invalid passport details. Enter the country as two letters (e.g. DE) and the number.",
     "phone_invalid": "The phone number is not valid.",
     "email_invalid": "The e-mail address is not valid.",
@@ -702,7 +704,7 @@
       "current": "Current",
       "titleField": "Title",
       "body": "Text",
-      "bodyHint": "Paste the text approved by the legal/KVKK officer. Separate paragraphs with a blank line.",
+      "bodyHint": "Paste the text approved by the legal/KVKK officer. Separate paragraphs with a blank line; a first line such as “1. Heading” is shown as a heading, and lines starting with “• ” or “- ” as a list.",
       "publish": "Publish",
       "publishConfirm": "A published text cannot be changed. For the employee notice, all employees are asked to accept again. Publish?",
       "empty": "No text yet. No acceptance is requested while no text is published.",
@@ -718,16 +720,23 @@
         "en": "English"
       },
       "addLocale": "Add {locale} text",
-      "missingLocales": "The text in every language is required to publish."
+      "missingLocales": "The text in every language is required to publish.",
+      "sample": {
+        "start": "Start from a sample",
+        "emptyHint": "You can start from a sample text: Turkish and English drafts are created together.",
+        "unfilledTitle": "Fields to fill in before publishing",
+        "unfilledHint": "Edit the text and replace the fields marked [[...]] with the organisation's details. The text cannot be published while these fields remain. Have the text approved by the legal/KVKK officer before publishing.",
+        "formHint": "You can save the draft as it is; the text cannot be published until these fields are filled in."
+      }
     }
   },
   "consent": {
     "title": "Protection of personal data",
     "intro": "Please read the texts below before you continue.",
-    "accept": "I have read it and I accept",
+    "accept": "I have read it and been informed",
     "accepting": "Saving…",
     "version": "Version {version}",
-    "kvkkHeading": "Privacy notice (approval required)",
+    "kvkkHeading": "Privacy notice (required reading)",
     "continue": "Save and continue",
     "explicit": {
       "heading": "Explicit consent (optional)",

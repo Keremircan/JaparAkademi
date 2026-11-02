@@ -4,8 +4,11 @@ import { assertCan, can, type Permission } from "@/server/authz/policy";
 import { db, type DbOrTx } from "@/server/db/client";
 import { consents, explicitConsents, legalTexts } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
-import { NotFoundError, ValidationError } from "@/server/errors";
+import { placeholdersIn } from "@/lib/legal";
+import { NotFoundError, uniqueViolation, ValidationError } from "@/server/errors";
 import type { RequestMeta } from "@/server/services/auth";
+import { getSettings } from "@/server/services/settings";
+import { hasSample, legalSample, type SampleRetention } from "./legal-samples";
 
 /**
  * KVKK aydınlatma metni ve onayı (SPEC 13.3). Metni İK yönetir (karar #5).
@@ -244,6 +247,57 @@ export async function updateDraft(actor: Actor, id: string, input: { title: stri
   await withActor(actor, (tx) => tx.update(legalTexts).set(values).where(eq(legalTexts.id, id)));
 }
 
+/** Örnek metne yazılan saklama süreleri: güncel parametreler (SPEC 12.3). */
+async function sampleRetention(): Promise<SampleRetention> {
+  const s = await getSettings([
+    "retention.personnel_years_after_exit",
+    "retention.login_attempt_days",
+    "retention.audit_years",
+    "retention.visitor_years",
+    "retention.contractor_years",
+    "retention.blacklist_years_after_lift",
+  ]);
+  return {
+    personnelYears: s["retention.personnel_years_after_exit"],
+    loginDays: s["retention.login_attempt_days"],
+    auditYears: s["retention.audit_years"],
+    visitorYears: s["retention.visitor_years"],
+    contractorYears: s["retention.contractor_years"],
+    blacklistYears: s["retention.blacklist_years_after_lift"],
+  };
+}
+
+/**
+ * Örnek metinle yeni sürüm (iş paketi 3.8, karar #245): türün bütün dillerinde taslak birlikte açılır.
+ * Kurum bilgileri `[[...]]` alanı olarak kalır; İK düzenleyip doldurmadan yayınlanmaz (karar #246).
+ */
+export async function createSampleDrafts(actor: Actor, kind: LegalKind): Promise<{ version: number }> {
+  assertKind(actor, kind);
+  if (!hasSample(kind)) throw new ValidationError("invalid_input");
+  const [draft] = await db()
+    .select({ id: legalTexts.id })
+    .from(legalTexts)
+    .where(and(eq(legalTexts.kind, kind), isNull(legalTexts.publishedAt)))
+    .limit(1);
+  if (draft) throw new ValidationError("draft_exists");
+  const retention = await sampleRetention();
+  const [{ v } = { v: 0 }] = await db().select({ v: max(legalTexts.version) }).from(legalTexts).where(eq(legalTexts.kind, kind));
+  const version = (v ?? 0) + 1;
+  const createdBy = actor.kind === "user" ? actor.userId : null;
+  try {
+    await withActor(actor, (tx) =>
+      tx
+        .insert(legalTexts)
+        .values(LEGAL_KINDS[kind].locales.map((locale) => ({ kind, locale, version, createdBy, ...legalSample(kind, locale, retention) }))),
+    );
+  } catch (err) {
+    // Aynı anda başka bir taslak açıldıysa (aynı sürüm numarası) önce o düzenlenmeli
+    if (uniqueViolation(err)) throw new ValidationError("draft_exists");
+    throw err;
+  }
+  return { version };
+}
+
 /**
  * Yayınlar; bu andan sonra metin değiştirilemez ve herkes bir sonraki girişte yeniden onaylar.
  * Çok dilli türde aynı sürümün bütün dilleri birlikte yayınlanır; eksik dil varsa yayınlanmaz.
@@ -252,11 +306,13 @@ export async function publishText(actor: Actor, id: string): Promise<void> {
   const existing = await getLegalText(actor, id);
   if (existing.publishedAt) throw new ValidationError("already_published");
   const siblings = await db()
-    .select({ id: legalTexts.id, locale: legalTexts.locale })
+    .select({ id: legalTexts.id, locale: legalTexts.locale, title: legalTexts.title, body: legalTexts.body })
     .from(legalTexts)
     .where(and(eq(legalTexts.kind, existing.kind), eq(legalTexts.version, existing.version), isNull(legalTexts.publishedAt)));
   const locales = new Set(siblings.map((s) => s.locale));
   if (LEGAL_KINDS[existing.kind].locales.some((l) => !locales.has(l))) throw new ValidationError("legal_locale_missing");
+  // Örnek metindeki `[[...]]` alanları doldurulmadan yayınlanmaz (karar #246)
+  if (siblings.some((s) => placeholdersIn(s.title, s.body).length > 0)) throw new ValidationError("legal_placeholders");
   const now = new Date();
   await withActor(actor, async (tx) => {
     for (const s of siblings) await tx.update(legalTexts).set({ publishedAt: now }).where(eq(legalTexts.id, s.id));

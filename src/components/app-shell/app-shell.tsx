@@ -74,8 +74,13 @@ export function AppShell({ fullName, items, tabs, hasMore, unread, children }: P
         </nav>
         <div className="border-t p-3">
           <p className="truncate px-3 pb-2 text-sm text-muted-foreground">{fullName}</p>
+          {/* Çıkış kırmızı metinle ayırt edilir (iş paketi 3.8, karar #249) */}
           <form action={signOutAction}>
-            <Button type="submit" variant="ghost" className="w-full justify-start">
+            <Button
+              type="submit"
+              variant="ghost"
+              className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive dark:hover:bg-destructive/20"
+            >
               <LogOut aria-hidden="true" />
               {t("auth.signOut")}
             </Button>

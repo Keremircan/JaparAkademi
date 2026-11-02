@@ -197,9 +197,10 @@
       "noConsentOther": "Kişi açık rıza vermediği için fotoğraf eklenemez."
     },
     "consent": {
-      "title": "Açık rıza",
+      "title": "Profil fotoğrafı için açık rıza",
       "granted": "Açık rıza verdiniz ({date}).",
-      "notGranted": "Açık rıza vermediniz; profil fotoğrafı ekleyemezsiniz.",
+      "needed": "Profil fotoğrafı eklemek isteğe bağlıdır ve açık rızanızı gerektirir. Rıza vermezseniz sistemi aynı şekilde kullanırsınız.",
+      "unavailable": "Profil fotoğrafı, kurum açık rıza metnini yayınladığında eklenebilecek.",
       "read": "Metni oku: {title}",
       "grant": "Açık rıza ver",
       "withdraw": "Açık rızayı geri al",
@@ -377,6 +378,7 @@
     "setting_readonly": "Bu parametre ekrandan değiştirilemez.",
     "setting_note_required": "Bu parametre için en az 10 karakterlik bir gerekçe yazın.",
     "legal_locale_missing": "Bu sürümün Türkçe ve İngilizce metinlerinin ikisi de gerekli.",
+    "legal_placeholders": "Metinde doldurulmamış alanlar var ([[...]] ile işaretli). Yayınlamadan önce bu alanları kurum bilgileriyle doldurun.",
     "passport_invalid": "Pasaport bilgisi geçersiz. Ülkeyi iki harfle (ör. DE) ve numarayı girin.",
     "phone_invalid": "Telefon numarası geçersiz.",
     "email_invalid": "E-posta adresi geçersiz.",
@@ -702,7 +704,7 @@
       "current": "Güncel",
       "titleField": "Başlık",
       "body": "Metin",
-      "bodyHint": "Hukuk/KVKK sorumlusunun onayladığı metni yapıştırın. Paragraflar boş satırla ayrılır.",
+      "bodyHint": "Hukuk/KVKK sorumlusunun onayladığı metni yapıştırın. Paragrafları boş satırla ayırın; “1. Başlık” biçimindeki ilk satır başlık, “• ” ya da “- ” ile başlayan satırlar madde olarak gösterilir.",
       "publish": "Yayınla",
       "publishConfirm": "Yayınlanan metin değiştirilemez. Personel metninde tüm personelden yeniden onay istenir. Yayınlansın mı?",
       "empty": "Henüz metin yok. Yayınlanmış metin yokken onay istenmez.",
@@ -718,16 +720,23 @@
         "en": "İngilizce"
       },
       "addLocale": "{locale} metni ekle",
-      "missingLocales": "Yayınlamak için bütün dillerin metni gerekir."
+      "missingLocales": "Yayınlamak için bütün dillerin metni gerekir.",
+      "sample": {
+        "start": "Örnek metinle başla",
+        "emptyHint": "İsterseniz örnek metinle başlayabilirsiniz: Türkçe ve İngilizce taslak birlikte açılır.",
+        "unfilledTitle": "Yayınlamadan önce doldurulması gereken alanlar",
+        "unfilledHint": "Metni düzenleyip [[...]] ile işaretli alanları kurum bilgileriyle değiştirin. Bu alanlar kaldıkça metin yayınlanamaz. Yayınlamadan önce metni hukuk/KVKK sorumlusuna onaylatın.",
+        "formHint": "Taslağı bu hâliyle kaydedebilirsiniz; bu alanlar doldurulmadan metin yayınlanamaz."
+      }
     }
   },
   "consent": {
     "title": "Kişisel verilerin korunması",
     "intro": "Devam etmeden önce aşağıdaki metinleri okuyun.",
-    "accept": "Okudum, onaylıyorum",
+    "accept": "Okudum, bilgilendirildim",
     "accepting": "Kaydediliyor…",
     "version": "Sürüm {version}",
-    "kvkkHeading": "Aydınlatma metni (onay zorunlu)",
+    "kvkkHeading": "Aydınlatma metni (okunması zorunlu)",
     "continue": "Kaydet ve devam et",
     "explicit": {
       "heading": "Açık rıza (isteğe bağlı)",
