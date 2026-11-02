@@ -45,6 +45,8 @@ test("ilk giriş → şifre değiştir → KVKK onayı → rol menüsü → çı
   await expect(page.getByText("ortak cihaz modunda")).toBeVisible();
   // Ortak cihazda push bölümü yok (karar #178)
   await expect(page.getByRole("heading", { name: "Bu cihazda bildirimler" })).toHaveCount(0);
+  // Fotoğraf alanında açık rıza bölümü her zaman görünür (iş paketi 3.8, karar #248)
+  await expect(page.getByRole("heading", { name: "Profil fotoğrafı için açık rıza" })).toBeVisible();
 
   // Büyük yazı (SPEC 13.1, karar #244): bütün arayüz büyür; çıkıştan sonra giriş ekranı yine normal boyuttadır
   // (Next önceki sayfayı gizli tutsa da büyük yazı stili oradan sızmaz)

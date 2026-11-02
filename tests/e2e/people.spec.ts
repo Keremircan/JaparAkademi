@@ -30,8 +30,14 @@ test("karar #185–187: İK personel açar (basılı davet) → kişi kodla hesa
   await page.getByRole("button", { name: "Etkinleştirme kağıdını indir (PDF)" }).click();
   expect((await download).suggestedFilename()).toBe(`etkinlestirme-${newSicil}.pdf`);
 
+  // Bildirim bölümü durumu belli olunca büyümez; altındaki çıkış düğmesi yerinde kalır (iş paketi 3.8, karar #250)
   await page.goto("/profile");
-  await page.getByRole("main").getByRole("button", { name: "Çıkış yap" }).click();
+  const signOut = page.getByRole("main").getByRole("button", { name: "Çıkış yap" });
+  await expect(signOut).toBeVisible();
+  const before = await signOut.boundingBox();
+  await expect(page.getByText(/Bildirim durumu kontrol ediliyor/)).toBeHidden();
+  expect(await signOut.boundingBox()).toEqual(before);
+  await signOut.click();
   await expect(page).toHaveURL(/\/login$/);
 
   // Giriş ekranından "Hesabımı etkinleştir" → sicil + kod → şifre belirleme

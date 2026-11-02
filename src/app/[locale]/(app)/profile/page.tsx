@@ -1,4 +1,4 @@
-import { KeyRound, LogOut, ShieldCheck, UserRoundPlus } from "lucide-react";
+import { KeyRound, LogOut, UserRoundPlus } from "lucide-react";
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
@@ -8,11 +8,9 @@ import { NotFoundView } from "@/components/app-shell/not-found-view";
 import { getSectionUser } from "@/server/auth/current-user";
 import { toActor } from "@/server/services/auth";
 import { myProfile } from "@/server/services/profile";
-import { ActionButton } from "@/components/forms/action-button";
-import { decideConsentAction } from "@/features/profile/actions";
 import { PhoneForm } from "@/features/profile/components/phone-form";
+import { PhotoConsent } from "@/features/profile/components/photo-consent";
 import { ProfilePhoto } from "@/features/profile/components/profile-photo";
-import { LegalTextBody } from "@/features/legal/components/legal-text-body";
 import { myCompetencies } from "@/server/services/competencies";
 import { pushPublicKey } from "@/server/services/push";
 import { PushToggle } from "@/features/push/components/push-toggle";
@@ -50,10 +48,11 @@ async function Content() {
     <section className="max-w-xl">
       <h1 className="text-xl font-semibold tracking-tight lg:text-2xl">{t("profile.title")}</h1>
 
-      {/* Detaylı profil (iş paketi 3.4, kararlar #233–235) */}
+      {/* Detaylı profil (iş paketi 3.4, kararlar #233–235); fotoğraf ve açık rıza bir arada (iş paketi 3.8, karar #248) */}
       <div className="mt-6 rounded-xl border p-4">
-        <ProfilePhoto userId={null} name={profile.fullName} photo={profile.photo} consent={consent.granted} canEdit />
+        <ProfilePhoto userId={null} name={profile.fullName} photo={profile.photo} consent={consent.granted} canEdit={consent.granted} />
         <p className="mt-4 text-lg font-semibold">{profile.fullName}</p>
+        <PhotoConsent consent={consent} />
       </div>
 
       <dl className="mt-6 divide-y rounded-xl border">
@@ -96,38 +95,6 @@ async function Content() {
 
       <LanguageSelect current={user.locale} />
       <TextSizeSelect current={user.textSize} />
-
-      {/* Açık rıza: isteğe bağlı, profilden verilir ya da geri alınır (karar #232) */}
-      {consent.text && (
-        <section aria-labelledby="consent-title" className="mt-6 rounded-xl border p-4">
-          <h2 id="consent-title" className="flex items-center gap-2 text-base font-semibold">
-            <ShieldCheck aria-hidden="true" className="size-5" />
-            {t("profile.consent.title")}
-          </h2>
-          <p role="status" className="mt-1 text-sm">
-            {consent.granted
-              ? t("profile.consent.granted", { date: format.dateTime(consent.decidedAt!, { dateStyle: "medium", timeStyle: "short" }) })
-              : t("profile.consent.notGranted")}
-          </p>
-          <details className="mt-3 rounded-xl border p-3">
-            <summary className="flex min-h-12 cursor-pointer items-center font-medium">{t("profile.consent.read", { title: consent.text.title })}</summary>
-            <div lang={consent.text.locale} className="mt-3 max-h-[40dvh] overflow-y-auto" tabIndex={0}>
-              <LegalTextBody body={consent.text.body} />
-            </div>
-          </details>
-          <div className="mt-4">
-            {consent.granted ? (
-              <ActionButton action={decideConsentAction.bind(null, consent.text.id, false)} confirmText={t("profile.consent.withdrawConfirm")}>
-                {t("profile.consent.withdraw")}
-              </ActionButton>
-            ) : (
-              <ActionButton action={decideConsentAction.bind(null, consent.text.id, true)} variant="default">
-                {t("profile.consent.grant")}
-              </ActionButton>
-            )}
-          </div>
-        </section>
-      )}
 
       {/* Yetkinliklerim (karar #221) */}
       {competencies.length > 0 && (
@@ -185,13 +152,15 @@ async function Content() {
           <KeyRound aria-hidden="true" />
           {t("profile.changePassword")}
         </Button>
-        <form action={signOutAction}>
-          <Button type="submit" variant="outline" size="lg" className="w-full justify-start">
-            <LogOut aria-hidden="true" />
-            {t("auth.signOut")}
-          </Button>
-        </form>
       </div>
+
+      {/* Çıkış en altta, diğer düğmelerden ayrı ve yumuşak kırmızı (iş paketi 3.8, karar #249) */}
+      <form action={signOutAction} className="mt-8 border-t pt-6">
+        <Button type="submit" variant="destructive" size="lg" className="w-full border-destructive/30 dark:border-destructive/40">
+          <LogOut aria-hidden="true" />
+          {t("auth.signOut")}
+        </Button>
+      </form>
     </section>
   );
 }

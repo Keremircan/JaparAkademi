@@ -6,7 +6,8 @@ import { z } from "zod";
 import { actionUser, formText, runAction, type ActionResult } from "@/features/shared/action-result";
 import { redirect } from "@/i18n/navigation";
 import { getRequestMeta } from "@/server/auth/request";
-import { acceptConsent, createDraft, isLegalKind, publishText, updateDraft } from "@/server/services/legal";
+import { acceptConsent, createDraft, createSampleDrafts, isLegalKind, publishText, updateDraft } from "@/server/services/legal";
+import { SAMPLE_KINDS } from "@/server/services/legal-samples";
 import { decideExplicitConsent } from "@/server/services/profile";
 
 const uuid = z.uuid();
@@ -60,6 +61,20 @@ export async function publishLegalTextAction(id: string): Promise<ActionResult> 
   if (!uuid.safeParse(id).success) return { ok: false, error: "invalid_input" };
   const { actor } = await actionUser();
   const result = await runAction(() => publishText(actor, id));
+  if (result.ok) refresh();
+  return result;
+}
+
+const sampleKindSchema = z.enum(SAMPLE_KINDS);
+
+/** "Örnek metinle başla" (iş paketi 3.8): türün TR + EN taslağını örnek metinle açar. */
+export async function createLegalSampleAction(kind: string): Promise<ActionResult> {
+  const parsed = sampleKindSchema.safeParse(kind);
+  if (!parsed.success) return { ok: false, error: "invalid_input" };
+  const { actor } = await actionUser();
+  const result = await runAction(async () => {
+    await createSampleDrafts(actor, parsed.data);
+  });
   if (result.ok) refresh();
   return result;
 }

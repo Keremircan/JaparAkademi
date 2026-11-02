@@ -5,9 +5,11 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState, useTransition } from "react";
 import { FormError } from "@/components/forms/form-error";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { pushStatusAction, subscribePushAction, unsubscribePushAction } from "../actions";
 
-type State = "loading" | "unsupported" | "ios_install" | "denied" | "on" | "off";
+const STATES = ["loading", "off", "on", "unsupported", "ios_install", "denied"] as const;
+type State = (typeof STATES)[number];
 
 function keyBytes(base64url: string): Uint8Array<ArrayBuffer> {
   const b64 = (base64url + "=".repeat((4 - (base64url.length % 4)) % 4)).replace(/-/g, "+").replace(/_/g, "/");
@@ -107,36 +109,52 @@ export function PushToggle({ publicKey }: { publicKey: string }) {
       setState("off");
     });
 
+  const content = (s: State) =>
+    s === "loading" ? (
+      <p className="text-sm text-muted-foreground">{t("loading")}</p>
+    ) : s === "on" || s === "off" ? (
+      <>
+        <p role="status" className="text-sm text-muted-foreground">
+          {t(s === "on" ? "onHint" : "offHint")}
+        </p>
+        {s === state && <FormError error={error} />}
+        {s === "on" ? (
+          <Button variant="outline" size="lg" className="justify-start" disabled={pending} onClick={disable}>
+            <BellOff aria-hidden="true" />
+            {t("disable")}
+          </Button>
+        ) : (
+          <Button size="lg" className="justify-start" disabled={pending} onClick={enable}>
+            <BellRing aria-hidden="true" />
+            {t("enable")}
+          </Button>
+        )}
+      </>
+    ) : (
+      <p role="status" className="text-sm text-muted-foreground">
+        {t(`blocked.${s}`)}
+      </p>
+    );
+
   return (
     <section aria-labelledby="push-title" className="mt-6 flex flex-col gap-3 rounded-xl border p-4">
       <h2 id="push-title" className="text-base font-semibold">
         {t("title")}
       </h2>
-      {state === "loading" ? (
-        <p className="text-sm text-muted-foreground">{t("loading")}</p>
-      ) : state === "on" || state === "off" ? (
-        <>
-          <p role="status" className="text-sm text-muted-foreground">
-            {t(state === "on" ? "onHint" : "offHint")}
-          </p>
-          <FormError error={error} />
-          {state === "on" ? (
-            <Button variant="outline" size="lg" className="justify-start" disabled={pending} onClick={disable}>
-              <BellOff aria-hidden="true" />
-              {t("disable")}
-            </Button>
-          ) : (
-            <Button size="lg" className="justify-start" disabled={pending} onClick={enable}>
-              <BellRing aria-hidden="true" />
-              {t("enable")}
-            </Button>
-          )}
-        </>
-      ) : (
-        <p role="status" className="text-sm text-muted-foreground">
-          {t(`blocked.${state}`)}
-        </p>
-      )}
+      {/* Bütün durumlar üst üste yerleşir ve yalnızca geçerli olan görünür: bölüm en uzun durum kadar yer tutar,
+          durum belli olunca altındaki düğmeler kaymaz (iş paketi 3.8, karar #250) */}
+      <div className="grid">
+        {STATES.map((s) => (
+          <div
+            key={s}
+            className={cn("col-start-1 row-start-1 flex flex-col gap-3", s !== state && "invisible")}
+            aria-hidden={s !== state || undefined}
+            inert={s !== state || undefined}
+          >
+            {content(s)}
+          </div>
+        ))}
+      </div>
     </section>
   );
 }

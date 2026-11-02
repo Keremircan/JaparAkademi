@@ -11,8 +11,8 @@ Uygulama telefonda, tablette ve bilgisayarda çalışır. Telefonunuzun ana ekra
 2. **Sicil no** ve **şifrenizi** yazın, **Giriş yap**'a dokunun.
 3. Eğitim odasındaki ortak bilgisayarda **"Ortak cihaz"** kutusunu işaretleyin; işiniz bitince oturum kendiliğinden kapanır.
 4. Yöneticiler sicil no yerine kayıtlı e-posta adreslerini de yazabilir.
-5. Kişisel verilerin korunması (KVKK) aydınlatma metnini okuyup **Okudum, onaylıyorum**'a dokunun. Bu onay olmadan devam edilemez.
-6. Aynı ekranda bir **açık rıza** metni de varsa ayrı bir kutusu vardır. Kutuyu işaretlemek isteğe bağlıdır: işaretlemezseniz de sistemi kullanırsınız, yalnızca profil fotoğrafı ekleyemezsiniz. Kararınızı sonra **Profil → Açık rıza**'dan değiştirebilirsiniz.
+5. Kişisel verilerin korunması (KVKK) aydınlatma metnini okuyup **Okudum, bilgilendirildim**'e dokunun. Metni okuduğunuzu belirtmeden devam edilemez.
+6. Aynı ekranda bir **açık rıza** metni de varsa ayrı bir kutusu vardır. Kutuyu işaretlemek isteğe bağlıdır: işaretlemezseniz de sistemi kullanırsınız, yalnızca profil fotoğrafı ekleyemezsiniz. Kararınızı sonra **Profil** sayfasındaki fotoğraf alanından değiştirebilirsiniz.
 
 **İlk kez giriş (hesabı etkinleştirme):** İK hesabınızı açınca size bir davet verir: e-posta, WhatsApp mesajı ya da QR kodlu bir kağıt.
 - **E-posta veya WhatsApp:** mesajdaki bağlantıya dokunun.
@@ -70,8 +70,8 @@ Bölüm sorumlunuz "İşe başlayabilir" onayını verince **pozisyon yetkinlik 
 **Profil** sayfasında adınız, sicil numaranız, departmanınız/biriminiz, pozisyonunuz, e-posta adresiniz ve telefonunuz görünür.
 - **Telefon:** numarayı yazıp **Kaydet**'e dokunun (ör. 0532 123 45 67). Boş bırakıp kaydederseniz numara silinir.
 - **E-posta** adresinizi İK değiştirir; yanlışsa İK'ya haber verin.
-- **Profil fotoğrafı:** açık rıza verdiyseniz **Fotoğraf ekle** ile telefonunuzdan ya da bilgisayarınızdan bir fotoğraf seçin. **Fotoğrafı değiştir** ve **Fotoğrafı kaldır** ile güncellersiniz. Fotoğrafınızı siz, İK, bölüm sorumlunuz ve eğitmeniniz görür. Fotoğraftaki konum bilgisi silinir.
-- **Açık rıza:** metni **Metni oku** ile açabilirsiniz. **Açık rıza ver** ya da **Açık rızayı geri al**'a dokunun. Rızanızı geri alırsanız profil fotoğrafınız kalıcı olarak silinir.
+- **Profil fotoğrafı ve açık rıza:** fotoğraf eklemek isteğe bağlıdır ve açık rızanızı gerektirir. Fotoğraf alanındaki **Metni oku** ile açık rıza metnini açın; isterseniz **Açık rıza ver**'e dokunun. Ardından aynı yerde **Fotoğraf ekle** ile telefonunuzdan ya da bilgisayarınızdan bir fotoğraf seçin; **Fotoğrafı değiştir** ve **Fotoğrafı kaldır** ile güncellersiniz. Fotoğrafınızı siz, İK, bölüm sorumlunuz ve eğitmeniniz görür; fotoğraftaki konum bilgisi silinir. **Açık rızayı geri al**'a dokunursanız fotoğrafınız kalıcı olarak silinir. Kurum açık rıza metnini henüz yayınlamadıysa bu alanda fotoğrafın metin yayınlanınca eklenebileceği yazar.
+- **Çıkış yap:** kırmızı düğme sayfanın en altındadır. Bilgisayarda soldaki menünün altında da bulunur.
 
 ### Yetkinliklerim
 Profil sayfanızda hangi makine ya da işte yetkin olduğunuz ve yetkinliğin bitiş tarihi görünür. Süresi yaklaşan yetkinlik sarı, dolan kırmızıdır; yenilemek için bölüm sorumlunuza başvurun.

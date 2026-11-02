@@ -22,7 +22,7 @@ export async function changePassword(page: Page, current: string, next: string) 
  * son ekranı bekler: onay butonu ya da uygulama kabuğundaki sayfa başlığı.
  */
 export async function acceptConsentIfAsked(page: Page) {
-  const consent = page.getByRole("button", { name: "Okudum, onaylıyorum" });
+  const consent = page.getByRole("button", { name: "Okudum, bilgilendirildim" });
   const appHeading = page.locator("#main h1");
   await expect(consent.or(appHeading).first()).toBeVisible({ timeout: 15_000 });
   if (await consent.isVisible()) {
