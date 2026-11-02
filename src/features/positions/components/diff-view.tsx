@@ -69,7 +69,7 @@ export async function SectionsDiff({ sections }: { sections: DiffSection[] }) {
       {sections.map((s) => {
         const isChanged = changed.includes(s);
         return (
-          <details key={s.key} open={isChanged} className="rounded-2xl border">
+          <details key={s.key} open={isChanged} className="rounded-xl border">
             <summary className="flex min-h-12 cursor-pointer items-center gap-3 px-4">
               <span className="flex-1 font-semibold">{s.title}</span>
               <span className={`rounded-full px-2 py-0.5 text-xs ${isChanged ? "bg-amber-500/15 text-amber-800 dark:text-amber-300" : "bg-muted"}`}>

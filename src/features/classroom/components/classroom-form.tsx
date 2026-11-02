@@ -121,7 +121,7 @@ export function ClassroomForm({
         </Button>
       </div>
 
-      <section aria-labelledby="attendees-heading" className="flex flex-col gap-3 rounded-2xl border p-4">
+      <section aria-labelledby="attendees-heading" className="flex flex-col gap-3 rounded-xl border p-4">
         <h2 id="attendees-heading" className="font-semibold">
           {pickTrainer ? t("pickTrainer") : t("attendees", { count: attendees.length })}
         </h2>

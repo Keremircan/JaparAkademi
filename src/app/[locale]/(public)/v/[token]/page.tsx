@@ -34,7 +34,7 @@ async function Content({ params }: { params: Promise<{ token: string }> }) {
   if (view.state === "invalid" || view.state === "not_ready") {
     return (
       <VisitorFrame title={t("title")} path={path} locale={locale} allowLanguage={view.state === "not_ready"}>
-        <p role="alert" className="flex items-center gap-3 text-lg">
+        <p role="alert" className="flex items-center gap-3 text-base">
           <CircleAlert aria-hidden="true" className="size-7 shrink-0 text-destructive" />
           {view.state === "invalid" ? t("invalid") : t("notReady")}
         </p>

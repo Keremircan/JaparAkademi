@@ -35,8 +35,8 @@ export function ApprovalPanel({
   };
 
   return (
-    <section aria-labelledby="approval-heading" className="flex flex-col gap-4 rounded-2xl border-2 border-primary/40 p-5">
-      <h2 id="approval-heading" className="text-lg font-semibold">
+    <section aria-labelledby="approval-heading" className="flex flex-col gap-4 rounded-xl border-2 border-primary/40 p-4">
+      <h2 id="approval-heading" className="text-base font-semibold">
         {t(step === "ohs" ? "headingOhs" : "headingSection")}
       </h2>
       <Field id="approval-comment" label={t("comment")} hint={t("commentHint")}>

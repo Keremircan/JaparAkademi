@@ -63,15 +63,15 @@ async function Content() {
         }
       />
 
-      <h2 className="mb-3 text-lg font-semibold">{tp("evaluate")}</h2>
+      <h2 className="mb-3 text-base font-semibold">{tp("evaluate")}</h2>
       {overview.length === 0 ? (
-        <p className="mb-8 rounded-2xl border border-dashed p-6 text-muted-foreground">{tp("empty")}</p>
+        <p className="mb-6 rounded-xl border border-dashed p-5 text-muted-foreground">{tp("empty")}</p>
       ) : (
-        <ul className="mb-8 flex flex-col gap-3">
+        <ul className="mb-6 flex flex-col gap-3">
           {overview.map((o) => (
-            <li key={o.assignmentId} className="flex flex-col gap-3 rounded-2xl border p-4">
+            <li key={o.assignmentId} className="flex flex-col gap-3 rounded-xl border p-4">
               <div className="flex flex-wrap items-baseline gap-x-3">
-                <span className="text-lg font-medium">{o.name}</span>
+                <span className="text-base font-medium">{o.name}</span>
                 {o.positionName && <span className="text-sm text-muted-foreground">{o.positionName}</span>}
               </div>
               {o.practice.map((m) => (
@@ -117,17 +117,17 @@ async function Content() {
 
       {trainees.length > 0 && (
         <>
-          <h2 className="mb-3 text-lg font-semibold">{t("trainees")}</h2>
+          <h2 className="mb-3 text-base font-semibold">{t("trainees")}</h2>
           <ul className="flex flex-col gap-3">
             {trainees.map((a) => (
               <li key={a.id}>
-                <details className="rounded-2xl border">
-                  <summary className="flex min-h-16 cursor-pointer flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3">
+                <details className="rounded-xl border">
+                  <summary className="flex min-h-16 cursor-pointer flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
                     <span className="min-w-40 flex-1 font-medium">{a.personName}</span>
                     <span className="text-sm text-muted-foreground">{a.positionName}</span>
                     <span className={`text-sm font-medium ${a.overdue ? "text-destructive" : ""}`}>%{a.progress}</span>
                   </summary>
-                  <div className="border-t px-5 py-4">
+                  <div className="border-t px-4 py-3">
                     <AssignmentSummaryView a={a} viewer={actor} />
                   </div>
                 </details>

@@ -32,7 +32,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
   if (!device) {
     return (
       <VisitorFrame title={t("title")} path="/kiosk" locale={locale} allowLanguage={false}>
-        <p role="alert" className="flex items-center gap-3 text-lg">
+        <p role="alert" className="flex items-center gap-3 text-base">
           <CircleAlert aria-hidden="true" className="size-7 shrink-0 text-destructive" />
           {t("notKiosk")}
         </p>
@@ -44,7 +44,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
     const types = (["office", "site", "contractor"] as const).filter((k) => s["visitor.types"][k].enabled);
     return (
       <VisitorFrame title={tr("title")} path="/kiosk?register=1" locale={locale}>
-        <p className="text-lg">{tr("intro")}</p>
+        <p className="text-base">{tr("intro")}</p>
         <RegisterForm types={types} companies={companies} viaKiosk />
       </VisitorFrame>
     );

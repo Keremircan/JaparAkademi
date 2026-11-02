@@ -19,18 +19,19 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        // Erişilebilirlik: varsayılan dokunma alanı en az 48px (SPEC 13.1)
+        // Erişilebilirlik: dokunmatik ekranda dokunma alanı en az 48px (SPEC 13.1); fareyle kullanılan
+        // ekranlarda kompakt (iş paketi 3.6; kök yazı orada 14px olduğundan h-10 = 35px)
         default:
-          "h-12 gap-2 px-4 text-base has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
+          "h-12 gap-2 px-4 text-base pointer-fine:h-10 pointer-fine:px-3.5 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
         xs: "h-6 pointer-coarse:h-12 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-9 pointer-coarse:h-12 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-14 gap-2 px-6 text-lg has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4 [&_svg:not([class*='size-'])]:size-5",
-        icon: "size-12",
+        sm: "h-9 pointer-coarse:h-12 gap-1.5 rounded-[min(var(--radius-md),12px)] px-2.5 text-sm in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
+        lg: "h-12 gap-2 px-5 text-base pointer-fine:h-10 pointer-fine:px-4 has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4 [&_svg:not([class*='size-'])]:size-5",
+        icon: "size-12 pointer-fine:size-10",
         "icon-xs":
           "size-6 pointer-coarse:size-12 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3",
         "icon-sm":
           "size-9 pointer-coarse:size-12 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
-        "icon-lg": "size-14",
+        "icon-lg": "size-12 pointer-fine:size-10",
       },
     },
     defaultVariants: {

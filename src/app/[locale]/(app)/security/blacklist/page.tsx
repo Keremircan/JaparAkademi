@@ -42,11 +42,11 @@ async function Content() {
       <PageHeader title={t("cards.blacklist.title")} description={t("cards.blacklist.description")} back={{ href: "/security", label: tNav("title") }} />
       <BlacklistForm minDate={todayIn(tz)} />
       {rows.length === 0 ? (
-        <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("blacklist.empty")}</p>
+        <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("blacklist.empty")}</p>
       ) : (
         <ul className="flex flex-col gap-3">
           {rows.map((r) => (
-            <li key={r.id} className="flex flex-col gap-2 rounded-2xl border p-5">
+            <li key={r.id} className="flex flex-col gap-2 rounded-xl border p-4">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="flex-1 font-medium">
                   {r.fullName}

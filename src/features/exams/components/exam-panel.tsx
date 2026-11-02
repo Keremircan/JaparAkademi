@@ -9,8 +9,8 @@ export async function ExamPanel({ info }: { info: ExamInfo }) {
   const [t, format] = await Promise.all([getTranslations("exams.start"), getFormatter()]);
   const r = info.rules;
   return (
-    <div className="flex flex-col gap-5 rounded-2xl border p-5">
-      <h2 className="flex items-center gap-2 text-xl font-semibold">
+    <div className="flex flex-col gap-5 rounded-xl border p-4">
+      <h2 className="flex items-center gap-2 text-lg font-semibold">
         <ClipboardCheck aria-hidden="true" />
         {t("heading")}
       </h2>

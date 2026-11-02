@@ -29,12 +29,12 @@ export async function VisitDetail({ actor, visit, base }: { actor: UserActor; vi
   return (
     <div className="flex flex-col gap-6">
       {visit.blacklisted && (
-        <p role="alert" className="flex items-center gap-3 rounded-2xl border border-destructive/40 bg-destructive/10 p-4 text-destructive">
+        <p role="alert" className="flex items-center gap-3 rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-destructive">
           <ShieldAlert aria-hidden="true" className="size-6 shrink-0" />
           {t("detail.blacklistedWarning")}
         </p>
       )}
-      <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 rounded-2xl border p-5">
+      <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 rounded-xl border p-4">
         <dt className="text-muted-foreground">{t("detail.status")}</dt>
         <dd className="font-medium">{t(`status.${visit.status}`)}</dd>
         <dt className="text-muted-foreground">{t("form.type")}</dt>
@@ -44,7 +44,7 @@ export async function VisitDetail({ actor, visit, base }: { actor: UserActor; vi
         <dt className="text-muted-foreground">{t("detail.host")}</dt>
         <dd>{visit.hostUserId ? visit.hostName : t("detail.hostWritten", { name: visit.hostName })}</dd>
         <dt className="text-muted-foreground">{t("detail.code")}</dt>
-        <dd className="font-mono text-lg font-semibold tracking-widest">{visit.code}</dd>
+        <dd className="font-mono text-base font-semibold tracking-widest">{visit.code}</dd>
         <dt className="text-muted-foreground">{t("detail.briefing")}</dt>
         <dd>
           {visit.briefingCompletedAt
@@ -93,7 +93,7 @@ export async function VisitDetail({ actor, visit, base }: { actor: UserActor; vi
 
       {visit.canEdit && (
         <section aria-labelledby="visit-edit" className="flex flex-col gap-4">
-          <h2 id="visit-edit" className="text-xl font-semibold">
+          <h2 id="visit-edit" className="text-lg font-semibold">
             {t("detail.edit")}
           </h2>
           <VisitForm
@@ -116,7 +116,7 @@ export async function VisitDetail({ actor, visit, base }: { actor: UserActor; vi
           />
         </section>
       )}
-      {!visit.canEdit && visit.note && <p className="rounded-2xl border p-5 text-muted-foreground">{visit.note}</p>}
+      {!visit.canEdit && visit.note && <p className="rounded-xl border p-4 text-muted-foreground">{visit.note}</p>}
 
       {visit.canEdit && visit.email && (
         <ActionButton action={resendVisitLinkAction.bind(null, visit.id)}>{t("detail.resendLink")}</ActionButton>
@@ -134,12 +134,12 @@ export async function VisitDetail({ actor, visit, base }: { actor: UserActor; vi
 
       {history.length > 0 && (
         <section aria-labelledby="visit-history" className="flex flex-col gap-3">
-          <h2 id="visit-history" className="text-xl font-semibold">
+          <h2 id="visit-history" className="text-lg font-semibold">
             {t("detail.history")}
           </h2>
-          <ul className="divide-y rounded-2xl border">
+          <ul className="divide-y rounded-xl border">
             {history.map((h) => (
-              <li key={h.id} className="flex min-h-12 flex-wrap items-center gap-x-4 px-5 py-2 text-sm">
+              <li key={h.id} className="flex min-h-12 flex-wrap items-center gap-x-4 px-4 py-2 text-sm">
                 <span className="w-32">{date(h.plannedDate)}</span>
                 <span className="flex-1">
                   {t(`types.${h.visitorType}`)} · {t("list.host", { name: h.hostName })}

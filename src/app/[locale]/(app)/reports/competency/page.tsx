@@ -59,7 +59,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
     <section className="flex flex-col gap-6">
       <PageHeader title={t("matrix.title")} description={t("matrix.description", { days: m.alertDays })} back={{ href: "/reports", label: tNav("back") }} />
 
-      <form method="get" className="flex flex-wrap items-end gap-3 rounded-2xl border p-4" aria-label={t("matrix.unit")}>
+      <form method="get" className="flex flex-wrap items-end gap-3 rounded-xl border p-4" aria-label={t("matrix.unit")}>
         <label className="flex min-w-60 flex-1 flex-col gap-1">
           <span className="text-sm font-medium">{t("matrix.unit")}</span>
           <NativeSelect name="unit" defaultValue={m.unitId ?? ""}>
@@ -95,13 +95,13 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
       </ul>
 
       {!m.unitId ? (
-        <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("matrix.chooseUnit")}</p>
+        <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("matrix.chooseUnit")}</p>
       ) : m.competencies.length === 0 || m.people.length === 0 ? (
-        <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">
+        <p className="rounded-xl border border-dashed p-5 text-muted-foreground">
           {m.competencies.length === 0 ? t("matrix.noCompetencies") : t("matrix.noPeople")}
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border">
+        <div className="overflow-x-auto rounded-xl border">
           <table className="w-full border-collapse text-sm">
             <caption className="sr-only">{t("matrix.title")}</caption>
             <thead>
@@ -150,8 +150,8 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
       )}
 
       {selected?.person && selected.competency && (
-        <section id="cell" aria-labelledby="cell-heading" className="flex max-w-2xl flex-col gap-4 rounded-2xl border p-5">
-          <h2 id="cell-heading" className="text-lg font-semibold">
+        <section id="cell" aria-labelledby="cell-heading" className="flex max-w-2xl flex-col gap-4 rounded-xl border p-4">
+          <h2 id="cell-heading" className="text-base font-semibold">
             {selected.person.fullName} · {selected.competency.name}
           </h2>
           {history.length === 0 ? (

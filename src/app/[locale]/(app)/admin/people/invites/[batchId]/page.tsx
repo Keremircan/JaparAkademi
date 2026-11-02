@@ -46,7 +46,7 @@ async function Content({
         description={t("groupMeta", { date: format.dateTime(batch.createdAt, { dateStyle: "medium", timeStyle: "short" }), name: batch.createdByName })}
         back={{ href: "/admin/people/invites", label: t("back") }}
       />
-      <div className="flex flex-col gap-2 rounded-2xl border p-5">
+      <div className="flex flex-col gap-2 rounded-xl border p-4">
         <p className="font-medium">
           {t("summary", { total: batch.counts.total, email: batch.counts.email, whatsapp: batch.counts.whatsapp, print: batch.counts.print })}
         </p>
@@ -56,7 +56,7 @@ async function Content({
 
       {batch.counts.whatsapp > 0 && (
         <section aria-labelledby="wa-heading" className="flex flex-col gap-3">
-          <h2 id="wa-heading" className="text-lg font-semibold">
+          <h2 id="wa-heading" className="text-base font-semibold">
             {t("whatsappTitle")}
           </h2>
           <p className="text-muted-foreground">{t("whatsappIntro")}</p>

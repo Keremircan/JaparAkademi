@@ -29,7 +29,7 @@ export function ChangePasswordForm({ minLength }: { minLength: number }) {
       )}
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="currentPassword" className="text-base">
+        <Label htmlFor="currentPassword" className="text-sm pointer-fine:text-base">
           {t("auth.changePassword.current")}
         </Label>
         <PasswordInput
@@ -41,7 +41,7 @@ export function ChangePasswordForm({ minLength }: { minLength: number }) {
         />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="newPassword" className="text-base">
+        <Label htmlFor="newPassword" className="text-sm pointer-fine:text-base">
           {t("auth.changePassword.new")}
         </Label>
         <PasswordInput
@@ -55,7 +55,7 @@ export function ChangePasswordForm({ minLength }: { minLength: number }) {
         />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="confirmPassword" className="text-base">
+        <Label htmlFor="confirmPassword" className="text-sm pointer-fine:text-base">
           {t("auth.changePassword.confirm")}
         </Label>
         <PasswordInput

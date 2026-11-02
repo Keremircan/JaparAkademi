@@ -130,7 +130,7 @@ export function VisitForm({
       </div>
 
       {mode === "security" && (
-        <fieldset className="flex flex-col gap-4 rounded-2xl border p-4">
+        <fieldset className="flex flex-col gap-4 rounded-xl border p-4">
           <legend className="px-1 text-base font-medium">{t("idLegend")}</legend>
           {!visitId && (
             <Field id="visit-host" label={t("hostSicil")} optional={t("optional")} hint={t("hostSicilHint")}>

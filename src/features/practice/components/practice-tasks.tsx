@@ -66,7 +66,7 @@ function TaskCard({ task, index, assignmentModuleId, canMark }: { task: Practice
 
   const headingId = `task-${task.taskId}`;
   return (
-    <li className="flex flex-col gap-3 rounded-2xl border p-4" aria-labelledby={headingId}>
+    <li className="flex flex-col gap-3 rounded-xl border p-4" aria-labelledby={headingId}>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
         <div className="min-w-0 flex-1">
           <h3 id={headingId} className="font-medium">

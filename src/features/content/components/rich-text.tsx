@@ -20,11 +20,11 @@ function renderNode(node: RichNode, key: number): ReactNode {
       return <p key={key}>{renderChildren(node)}</p>;
     case "heading":
       return node.attrs?.level === 3 ? (
-        <h4 key={key} className="mt-2 text-lg font-semibold">
+        <h4 key={key} className="mt-2 text-base font-semibold">
           {renderChildren(node)}
         </h4>
       ) : (
-        <h3 key={key} className="mt-3 text-xl font-semibold">
+        <h3 key={key} className="mt-3 text-lg font-semibold">
           {renderChildren(node)}
         </h3>
       );

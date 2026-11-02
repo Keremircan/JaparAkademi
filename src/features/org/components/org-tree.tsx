@@ -10,11 +10,11 @@ import { setOrgUnitActiveAction, setPositionStatusAction } from "../actions";
 export async function OrgTree({ nodes }: { nodes: OrgNode[] }) {
   const t = await getTranslations("admin.org");
   const editLabel = (await getTranslations("common"))("edit");
-  if (nodes.length === 0) return <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p>;
+  if (nodes.length === 0) return <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("empty")}</p>;
   return (
     <ul className="flex flex-col gap-4">
       {nodes.map((dept) => (
-        <li key={dept.id} className="rounded-2xl border">
+        <li key={dept.id} className="rounded-xl border">
           <UnitRow node={dept} t={t} editLabel={editLabel} />
           <div className="border-t px-4 py-3 sm:px-6">
             <Positions node={dept} t={t} />

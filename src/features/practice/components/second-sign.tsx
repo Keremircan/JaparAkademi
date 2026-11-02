@@ -25,8 +25,8 @@ export function SecondSign({ id, managerName }: { id: string; managerName: strin
     });
 
   return (
-    <section aria-labelledby="second-heading" className="flex max-w-3xl flex-col gap-4 rounded-2xl border p-5">
-      <h2 id="second-heading" className="text-lg font-semibold">
+    <section aria-labelledby="second-heading" className="flex max-w-3xl flex-col gap-4 rounded-xl border p-4">
+      <h2 id="second-heading" className="text-base font-semibold">
         {t("title")}
       </h2>
       <p className="text-sm text-muted-foreground">{t("intro")}</p>

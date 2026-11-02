@@ -36,7 +36,7 @@ async function Content({ params }: { params: Promise<{ token: string }> }) {
   if (!result) {
     return (
       <AuthCard title={t("title")}>
-        <p role="alert" className="flex items-center gap-2 text-lg">
+        <p role="alert" className="flex items-center gap-2 text-base">
           <CircleAlert aria-hidden="true" className="size-6 text-destructive" />
           {t("notFound")}
         </p>
@@ -48,7 +48,7 @@ async function Content({ params }: { params: Promise<{ token: string }> }) {
   return (
     <AuthCard title={t("title")}>
       <div className="flex flex-col gap-5">
-        <p className={`flex items-center gap-3 rounded-xl border-2 p-4 text-xl font-semibold ${tone}`} role="status">
+        <p className={`flex items-center gap-3 rounded-xl border-2 p-4 text-lg font-semibold ${tone}`} role="status">
           <Icon aria-hidden="true" className="size-8 shrink-0" />
           {t(`state.${result.state}`)}
         </p>
@@ -70,7 +70,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col">
       <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className="text-lg">{value}</dd>
+      <dd className="text-base">{value}</dd>
     </div>
   );
 }

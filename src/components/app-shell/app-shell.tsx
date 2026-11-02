@@ -46,8 +46,8 @@ export function AppShell({ fullName, items, tabs, hasMore, unread, children }: P
 
       {/* Masaüstü yan menü */}
       <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r bg-sidebar lg:flex">
-        <div className="flex items-center justify-between gap-2 py-3 ps-6 pe-3">
-          <span className="text-lg font-semibold">{t("app.name")}</span>
+        <div className="flex items-center justify-between gap-2 py-2 ps-5 pe-2">
+          <span className="text-base font-semibold">{t("app.name")}</span>
           <BellLink unread={unread} active={isActive(pathname, "/notifications")} />
         </div>
         <nav aria-label={t("nav.mainMenu")} className="flex-1 px-3">
@@ -60,7 +60,7 @@ export function AppShell({ fullName, items, tabs, hasMore, unread, children }: P
                     href={item.href}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "flex min-h-12 items-center gap-3 rounded-lg px-3 text-base hover:bg-sidebar-accent",
+                      "flex min-h-12 items-center gap-3 rounded-md px-3 text-base hover:bg-sidebar-accent pointer-fine:min-h-9",
                       active && "bg-sidebar-accent font-semibold",
                     )}
                   >
@@ -86,11 +86,11 @@ export function AppShell({ fullName, items, tabs, hasMore, unread, children }: P
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Mobil üst başlık */}
         <header className="sticky top-0 z-20 flex min-h-14 items-center border-b bg-background/95 px-4 pt-[env(safe-area-inset-top)] backdrop-blur lg:hidden">
-          <span className="flex-1 text-lg font-semibold">{t("app.name")}</span>
+          <span className="flex-1 text-base font-semibold">{t("app.name")}</span>
           <BellLink unread={unread} active={isActive(pathname, "/notifications")} />
         </header>
 
-        <main id="main" className="flex-1 px-4 py-6 pb-28 lg:px-10 lg:py-10 lg:pb-10">
+        <main id="main" className="flex-1 px-4 py-5 pb-24 lg:px-8 lg:py-8 lg:pb-8">
           {children}
         </main>
 
@@ -128,7 +128,7 @@ function TabLink({
         href={item.href}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "flex min-h-16 flex-col items-center justify-center gap-1 px-1 text-xs text-muted-foreground",
+          "flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 text-xs text-muted-foreground",
           active && "font-semibold text-foreground",
         )}
       >
@@ -147,11 +147,11 @@ function BellLink({ unread, active }: { unread: number; active: boolean }) {
       href="/notifications"
       aria-current={active ? "page" : undefined}
       aria-label={unread ? t("bellUnread", { count: unread }) : t("bell")}
-      className="relative flex size-12 items-center justify-center rounded-lg hover:bg-muted aria-[current=page]:bg-muted"
+      className="relative flex size-12 items-center justify-center rounded-lg hover:bg-muted aria-[current=page]:bg-muted pointer-fine:size-9"
     >
-      <Bell aria-hidden="true" className="size-6" />
+      <Bell aria-hidden="true" className="size-6 pointer-fine:size-5" />
       {unread > 0 && (
-        <span aria-hidden="true" className="absolute top-1.5 right-1.5 min-w-5 rounded-full bg-destructive px-1 text-center text-xs font-semibold leading-5 text-white">
+        <span aria-hidden="true" className="absolute top-1 right-1 min-w-5 rounded-full pointer-fine:-top-0.5 pointer-fine:-right-0.5 bg-destructive px-1 text-center text-xs font-semibold leading-5 text-white">
           {unread > 99 ? "99+" : unread}
         </span>
       )}

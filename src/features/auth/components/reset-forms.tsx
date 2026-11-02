@@ -31,10 +31,10 @@ export function ForgotPasswordForm() {
   return (
     <form action={formAction} className="flex flex-col gap-5" noValidate>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="sicilNo" className="text-base">
+        <Label htmlFor="sicilNo" className="text-sm pointer-fine:text-base">
           {t("sicil")}
         </Label>
-        <Input id="sicilNo" name="sicilNo" inputMode="numeric" autoComplete="username" required className="h-12 text-lg" />
+        <Input id="sicilNo" name="sicilNo" inputMode="numeric" autoComplete="username" required />
       </div>
       <p className="text-sm text-muted-foreground">{t("noEmail")}</p>
       <Button type="submit" size="lg" disabled={pending} className="w-full">
@@ -76,13 +76,13 @@ export function ResetPasswordForm({ token, minLength }: { token: string; minLeng
         </div>
       )}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="newPassword" className="text-base">
+        <Label htmlFor="newPassword" className="text-sm pointer-fine:text-base">
           {t("auth.changePassword.new")}
         </Label>
         <PasswordInput id="newPassword" name="newPassword" autoComplete="new-password" required minLength={minLength} aria-describedby="password-rules" />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="confirmPassword" className="text-base">
+        <Label htmlFor="confirmPassword" className="text-sm pointer-fine:text-base">
           {t("auth.changePassword.confirm")}
         </Label>
         <PasswordInput id="confirmPassword" name="confirmPassword" autoComplete="new-password" required aria-invalid={issues.includes("mismatch")} />

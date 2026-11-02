@@ -31,7 +31,7 @@ export function LoginForm() {
       )}
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="sicilNo" className="text-base">
+        <Label htmlFor="sicilNo" className="text-sm pointer-fine:text-base">
           {t("login.sicilLabel")}
         </Label>
         <Input
@@ -49,7 +49,7 @@ export function LoginForm() {
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="password" className="text-base">
+        <Label htmlFor="password" className="text-sm pointer-fine:text-base">
           {t("login.passwordLabel")}
         </Label>
         <PasswordInput

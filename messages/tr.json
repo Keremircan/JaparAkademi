@@ -171,6 +171,12 @@
       "title": "Dil / Language",
       "hint": "Uygulama, girişte seçtiğiniz dilde açılır. İngilizcesi olmayan içerikler Türkçe gösterilir."
     },
+    "textSize": {
+      "title": "Yazı boyutu",
+      "hint": "Büyük yazı, bütün ekranları bir kademe büyütür. Tercihiniz hesabınıza kaydedilir ve her cihazda geçerlidir.",
+      "normal": "Normal",
+      "large": "Büyük"
+    },
     "contact": {
       "email": "E-posta",
       "emailHint": "E-posta adresinizi İK değiştirir.",

@@ -29,7 +29,7 @@ async function Content() {
   const types = (["office", "site", "contractor"] as const).filter((k) => s["visitor.types"][k].enabled);
   return (
     <VisitorFrame title={t("title")} path="/visit" locale={locale}>
-      <p className="text-lg">{t("intro")}</p>
+      <p className="text-base">{t("intro")}</p>
       <RegisterForm types={types} companies={companies} viaKiosk={false} />
     </VisitorFrame>
   );

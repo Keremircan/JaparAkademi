@@ -60,8 +60,8 @@ export function PersonForm({
     );
     if (!created.invite) {
       return (
-        <div role="status" className="flex max-w-xl flex-col gap-4 rounded-2xl border border-primary/30 bg-muted p-6">
-          <h2 className="text-xl font-semibold">{ti("createdTitle")}</h2>
+        <div role="status" className="flex max-w-xl flex-col gap-4 rounded-xl border border-primary/30 bg-muted p-5">
+          <h2 className="text-lg font-semibold">{ti("createdTitle")}</h2>
           <p>{ti("createdNoInvite")}</p>
           <div className="flex flex-wrap gap-2">
             {toDetail}

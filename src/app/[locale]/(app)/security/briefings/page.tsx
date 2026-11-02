@@ -41,9 +41,9 @@ async function Content() {
       <PageHeader title={t("cards.briefings.title")} description={t("briefings.intro")} back={{ href: "/security", label: tNav("title") }} />
       <ul className="flex flex-col gap-3">
         {rows.map((r) => (
-          <li key={r.type} className="flex flex-wrap items-center gap-4 rounded-2xl border p-5">
+          <li key={r.type} className="flex flex-wrap items-center gap-4 rounded-xl border p-4">
             <span className="min-w-48 flex-1">
-              <span className="block text-lg font-medium">{t(`types.${r.type}`)}</span>
+              <span className="block text-base font-medium">{t(`types.${r.type}`)}</span>
               <span className="block text-sm text-muted-foreground">
                 {r.current
                   ? t("briefings.current", {

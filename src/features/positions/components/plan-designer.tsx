@@ -242,7 +242,7 @@ export function PlanDesigner({
       )}
 
       <FormError error={error} />
-      <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-10 flex flex-wrap items-center gap-3 rounded-2xl border bg-background/95 p-3 shadow-sm backdrop-blur lg:bottom-4">
+      <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+4rem)] z-10 flex flex-wrap items-center gap-3 rounded-xl border bg-background/95 p-3 shadow-sm backdrop-blur lg:bottom-4">
         <Button type="button" size="lg" disabled={pending} onClick={save}>
           <Save aria-hidden="true" />
           {pending ? tc("saving") : t("save")}

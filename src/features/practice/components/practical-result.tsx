@@ -13,10 +13,10 @@ export async function PracticalResult({ view }: { view: PracticalExamView }) {
         <span className="text-sm text-muted-foreground">{t("evaluator", { name: view.evaluatorName })}</span>
       </div>
       {view.status === "returned" && view.returnReason && (
-        <p className="rounded-2xl border border-amber-500/40 bg-amber-500/5 p-4">{t("returned", { name: view.managerName ?? "—", reason: view.returnReason })}</p>
+        <p className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-4">{t("returned", { name: view.managerName ?? "—", reason: view.returnReason })}</p>
       )}
       {view.score !== null && (
-        <div className={`flex items-center gap-3 rounded-2xl border-2 p-5 ${view.passed ? "border-emerald-600" : "border-destructive"}`} role="status">
+        <div className={`flex items-center gap-3 rounded-xl border-2 p-4 ${view.passed ? "border-emerald-600" : "border-destructive"}`} role="status">
           {view.passed ? <CheckCircle2 aria-hidden="true" className="size-10 text-emerald-600" /> : <XCircle aria-hidden="true" className="size-10 text-destructive" />}
           <div>
             <p className="text-2xl font-bold">{t("score", { score: view.score })}</p>
@@ -29,10 +29,10 @@ export async function PracticalResult({ view }: { view: PracticalExamView }) {
         </div>
       )}
       <section aria-labelledby="criteria-heading">
-        <h2 id="criteria-heading" className="mb-2 text-lg font-semibold">
+        <h2 id="criteria-heading" className="mb-2 text-base font-semibold">
           {t("criteria")}
         </h2>
-        <ol className="divide-y rounded-2xl border">
+        <ol className="divide-y rounded-xl border">
           {view.criteria.map((c, i) => (
             <li key={c.taskId} className="flex flex-col gap-1 px-4 py-3">
               <span className="flex items-center gap-2">
@@ -53,14 +53,14 @@ export async function PracticalResult({ view }: { view: PracticalExamView }) {
         </ol>
       </section>
       {view.note && (
-        <p className="rounded-2xl border p-4">
+        <p className="rounded-xl border p-4">
           <span className="font-medium">{t("note")}: </span>
           {view.note}
         </p>
       )}
       {view.photoAssetIds.length > 0 && (
         <section aria-labelledby="photos-heading">
-          <h2 id="photos-heading" className="mb-2 text-lg font-semibold">
+          <h2 id="photos-heading" className="mb-2 text-base font-semibold">
             {t("photos")}
           </h2>
           <ul className="flex flex-wrap gap-2">
@@ -77,7 +77,7 @@ export async function PracticalResult({ view }: { view: PracticalExamView }) {
       )}
       {view.signatures.length > 0 && (
         <section aria-labelledby="signatures-heading">
-          <h2 id="signatures-heading" className="mb-2 text-lg font-semibold">
+          <h2 id="signatures-heading" className="mb-2 text-base font-semibold">
             {t("signatures")}
           </h2>
           <ul className="grid gap-3 sm:grid-cols-3">

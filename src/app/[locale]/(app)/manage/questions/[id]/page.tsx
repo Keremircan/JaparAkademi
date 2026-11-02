@@ -97,8 +97,8 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
         />
       ) : (
         v && (
-          <article className="flex flex-col gap-3 rounded-2xl border p-5">
-            <p className="text-lg font-medium">{v.stem}</p>
+          <article className="flex flex-col gap-3 rounded-xl border p-4">
+            <p className="text-base font-medium">{v.stem}</p>
             <p className="text-sm text-muted-foreground">{t(`form.typeLabels.${v.type}`)}</p>
             {v.type === "hotspot" && v.mediaAssetId ? (
               // Doğru bölgeler yalnızca soru bankasını görebilenlere gösterilir
@@ -162,7 +162,7 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
       )}
 
       <section aria-labelledby="versions-heading" className="mt-8">
-        <h2 id="versions-heading" className="mb-3 text-lg font-semibold">
+        <h2 id="versions-heading" className="mb-3 text-base font-semibold">
           {t("versions")}
         </h2>
         <ol className="flex flex-col gap-2">

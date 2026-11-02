@@ -57,12 +57,12 @@ async function Content() {
       />
       {history.length > 0 && (
         <section aria-labelledby="rollcall-history" className="flex flex-col gap-2">
-          <h2 id="rollcall-history" className="text-xl font-semibold">
+          <h2 id="rollcall-history" className="text-lg font-semibold">
             {t("history")}
           </h2>
-          <ul className="divide-y rounded-2xl border">
+          <ul className="divide-y rounded-xl border">
             {history.map((h) => (
-              <li key={h.id} className="flex min-h-12 flex-wrap items-center gap-x-4 px-5 py-2 text-sm">
+              <li key={h.id} className="flex min-h-12 flex-wrap items-center gap-x-4 px-4 py-2 text-sm">
                 <span className="flex-1">
                   {t("historyRow", { kind: t(`kinds.${h.kind}`), time: time(h.startedAt), safe: h.safe, total: h.total })}
                   {!h.endedAt && ` · ${t("openNow")}`} · {h.startedByName}

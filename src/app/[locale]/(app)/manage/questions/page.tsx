@@ -132,12 +132,12 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
         {t("total", { count: result.total })}
       </p>
       {result.items.length === 0 ? (
-        <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p>
+        <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("empty")}</p>
       ) : (
-        <ul className="divide-y rounded-2xl border">
+        <ul className="divide-y rounded-xl border">
           {result.items.map((x) => (
             <li key={x.id}>
-              <Link href={`/manage/questions/${x.id}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 hover:bg-muted">
+              <Link href={`/manage/questions/${x.id}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-muted">
                 <span className="min-w-60 flex-1">
                   <span className="block line-clamp-2 font-medium">{x.stem}</span>
                   <span className="block text-sm text-muted-foreground">

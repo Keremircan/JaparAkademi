@@ -171,6 +171,12 @@
       "title": "Dil / Language",
       "hint": "The app opens in the language you choose here. Content without an English version is shown in Turkish."
     },
+    "textSize": {
+      "title": "Text size",
+      "hint": "Large text makes every screen one step larger. Your choice is saved to your account and applies on every device.",
+      "normal": "Normal",
+      "large": "Large"
+    },
     "contact": {
       "email": "Email",
       "emailHint": "HR changes your email address.",

@@ -34,11 +34,11 @@ async function Content() {
       <PageHeader title={t("title")} description={t("description")} back={{ href: "/admin", label: tNav("title") }} />
       <RegisterDevice />
       {rows.length === 0 ? (
-        <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p>
+        <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("empty")}</p>
       ) : (
-        <ul className="divide-y rounded-2xl border">
+        <ul className="divide-y rounded-xl border">
           {rows.map((d) => (
-            <li key={d.id} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3">
+            <li key={d.id} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
               <span className="min-w-48 flex-1">
                 <span className="block font-medium">{d.name}</span>
                 <span className="block text-sm text-muted-foreground">

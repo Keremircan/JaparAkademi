@@ -68,20 +68,20 @@ async function Content({ params }: { params: Promise<{ assignmentId: string }> }
       />
       <OwnerActingNotice actor={actor} permission="readiness.decide" role="section_manager" />
       {view.reason === "recertification" && (
-        <p className="rounded-2xl border border-sky-600/40 bg-sky-600/5 p-4">{t("recertNotice")}</p>
+        <p className="rounded-xl border border-sky-600/40 bg-sky-600/5 p-4">{t("recertNotice")}</p>
       )}
-      <p className="rounded-2xl border p-4" role="status">
+      <p className="rounded-xl border p-4" role="status">
         {t(`status.${view.status}`)}
         {view.person.trainerName && ` · ${t("trainer", { name: view.person.trainerName })}`}
       </p>
 
       <section aria-labelledby="modules-heading" className="flex flex-col gap-2">
-        <h2 id="modules-heading" className="text-lg font-semibold">
+        <h2 id="modules-heading" className="text-base font-semibold">
           {t("modules")}
         </h2>
-        <ul className="divide-y rounded-2xl border">
+        <ul className="divide-y rounded-xl border">
           {view.modules.map((m) => (
-            <li key={m.id} className="flex min-h-14 flex-wrap items-center gap-3 px-4 py-2">
+            <li key={m.id} className="flex min-h-12 flex-wrap items-center gap-3 px-4 py-2">
               {m.status === "completed" ? (
                 <CheckCircle2 aria-hidden="true" className="size-5 shrink-0 text-emerald-600" />
               ) : m.status === "review_required" ? (
@@ -120,10 +120,10 @@ async function Content({ params }: { params: Promise<{ assignmentId: string }> }
 
       {view.history.length > 0 && (
         <section aria-labelledby="history-heading" className="flex flex-col gap-2">
-          <h2 id="history-heading" className="text-lg font-semibold">
+          <h2 id="history-heading" className="text-base font-semibold">
             {t("history")}
           </h2>
-          <ul className="divide-y rounded-2xl border">
+          <ul className="divide-y rounded-xl border">
             {view.history.map((h) => (
               <li key={h.id} className="flex flex-col gap-1 px-4 py-3">
                 <span className="font-medium">{t(`decisions.${h.decision}`)}</span>
@@ -140,7 +140,7 @@ async function Content({ params }: { params: Promise<{ assignmentId: string }> }
 
       {certs.length > 0 && (
         <section aria-labelledby="certs-heading" className="flex flex-col gap-2">
-          <h2 id="certs-heading" className="text-lg font-semibold">
+          <h2 id="certs-heading" className="text-base font-semibold">
             {t("certificates")}
           </h2>
           <CertificateList items={certs} />

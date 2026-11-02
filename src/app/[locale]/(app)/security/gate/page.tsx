@@ -48,9 +48,9 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
   const date = (d: string) => format.dateTime(new Date(`${d}T12:00:00`), { dateStyle: "medium" });
 
   const Row = ({ r }: { r: (typeof rows)[number] }) => (
-    <li className="flex flex-col gap-3 rounded-2xl border p-4">
+    <li className="flex flex-col gap-3 rounded-xl border p-4">
       <div className="flex flex-wrap items-start gap-x-4 gap-y-1">
-        <span className="font-mono text-lg font-semibold tracking-widest">{r.code}</span>
+        <span className="font-mono text-base font-semibold tracking-widest">{r.code}</span>
         <span className="min-w-48 flex-1">
           <Link href={`/security/visits/${r.id}`} className="flex items-center gap-2 font-medium underline-offset-4 hover:underline">
             {r.blacklisted && <ShieldAlert aria-hidden="true" className="size-5 text-destructive" />}
@@ -101,7 +101,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
       </form>
       {inside.length > 0 && (
         <section aria-labelledby="gate-inside" className="flex flex-col gap-3">
-          <h2 id="gate-inside" className="text-xl font-semibold">
+          <h2 id="gate-inside" className="text-lg font-semibold">
             {t("inside")} ({inside.length})
           </h2>
           <ul className="flex flex-col gap-3">
@@ -112,7 +112,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
         </section>
       )}
       {waiting.length === 0 && inside.length === 0 ? (
-        <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p>
+        <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("empty")}</p>
       ) : (
         <ul className="flex flex-col gap-3">
           {waiting.map((r) => (

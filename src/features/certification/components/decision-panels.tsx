@@ -47,13 +47,13 @@ export function ReadinessPanel({ assignmentId, reopenable }: { assignmentId: str
     });
 
   return (
-    <section aria-labelledby="readiness-heading" className="flex flex-col gap-4 rounded-2xl border-2 border-primary p-5">
-      <h2 id="readiness-heading" className="text-lg font-semibold">
+    <section aria-labelledby="readiness-heading" className="flex flex-col gap-4 rounded-xl border-2 border-primary p-4">
+      <h2 id="readiness-heading" className="text-base font-semibold">
         {t("title")}
       </h2>
       <div role="radiogroup" aria-label={t("title")} className="grid grid-cols-2 gap-2">
         {(["approve", "reject"] as const).map((m) => (
-          <label key={m} className="flex min-h-14 cursor-pointer items-center justify-center gap-2 rounded-xl border-2 px-3 font-medium has-checked:border-primary has-checked:bg-primary/10">
+          <label key={m} className="flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-xl border-2 px-3 font-medium has-checked:border-primary has-checked:bg-primary/10">
             <input type="radio" className="sr-only" name="readiness-mode" checked={mode === m} onChange={() => setMode(m)} />
             {m === "approve" ? <Check aria-hidden="true" /> : <Undo2 aria-hidden="true" />}
             {t(m)}
@@ -126,8 +126,8 @@ export function ProcessPanel({
   }
 
   return (
-    <section aria-labelledby="process-heading" className="flex flex-col gap-4 rounded-2xl border-2 border-amber-500 p-5">
-      <h2 id="process-heading" className="flex items-center gap-2 text-lg font-semibold">
+    <section aria-labelledby="process-heading" className="flex flex-col gap-4 rounded-xl border-2 border-amber-500 p-4">
+      <h2 id="process-heading" className="flex items-center gap-2 text-base font-semibold">
         <Gavel aria-hidden="true" />
         {t("title")}
       </h2>
@@ -135,7 +135,7 @@ export function ProcessPanel({
       <fieldset className="flex flex-col gap-2">
         <legend className="sr-only">{t("title")}</legend>
         {(["extra_attempt", "extra_training", "end_process"] as const).map((d) => (
-          <label key={d} className="flex min-h-14 cursor-pointer items-start gap-3 rounded-xl border-2 p-3 has-checked:border-primary has-checked:bg-primary/5">
+          <label key={d} className="flex min-h-12 cursor-pointer items-start gap-3 rounded-xl border-2 p-3 has-checked:border-primary has-checked:bg-primary/5">
             <input type="radio" className="mt-1 size-5 accent-primary" name="process-decision" checked={decision === d} onChange={() => setDecision(d)} />
             <span>
               <span className="block font-medium">{t(`options.${d}.label`)}</span>

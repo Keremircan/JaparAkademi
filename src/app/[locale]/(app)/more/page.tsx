@@ -27,11 +27,11 @@ async function Content() {
 
   return (
     <section className="max-w-xl">
-      <h1 className="text-2xl font-semibold">{t("sections.more.title")}</h1>
-      <ul className="mt-6 divide-y rounded-2xl border">
+      <h1 className="text-xl font-semibold">{t("sections.more.title")}</h1>
+      <ul className="mt-6 divide-y rounded-xl border">
         {visibleNav(user.roles).map((item) => (
           <li key={item.key}>
-            <Link href={item.href} className="flex min-h-14 items-center gap-4 px-5 text-lg hover:bg-muted">
+            <Link href={item.href} className="flex min-h-12 items-center gap-4 px-4 text-base hover:bg-muted">
               <NavIcon name={item.key} className="size-6" />
               {t(`nav.${item.key}`)}
             </Link>

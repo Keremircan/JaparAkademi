@@ -19,8 +19,8 @@ export function RegisterDevice() {
   const [done, setDone] = useState(false);
   const [pending, startTransition] = useTransition();
   return (
-    <div className="flex max-w-xl flex-col gap-3 rounded-2xl border p-5">
-      <h2 className="text-lg font-semibold">{t("registerTitle")}</h2>
+    <div className="flex max-w-xl flex-col gap-3 rounded-xl border p-4">
+      <h2 className="text-base font-semibold">{t("registerTitle")}</h2>
       <p className="text-sm text-muted-foreground">{t("registerHint")}</p>
       <Field id="device-name" label={t("name")}>
         <Input id="device-name" maxLength={100} value={name} onChange={(e) => setName(e.target.value)} placeholder={t("namePlaceholder")} />

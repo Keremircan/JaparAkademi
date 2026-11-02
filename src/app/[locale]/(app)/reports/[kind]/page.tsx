@@ -83,7 +83,7 @@ async function Content({
         />
         <p
           role="alert"
-          className="rounded-2xl border border-destructive/40 p-4 text-destructive"
+          className="rounded-xl border border-destructive/40 p-4 text-destructive"
         >
           {(await getTranslations("errors"))("report_range_invalid")}
         </p>
@@ -119,7 +119,7 @@ async function Content({
 
       <form
         method="get"
-        className="flex flex-wrap items-end gap-3 rounded-2xl border p-4"
+        className="flex flex-wrap items-end gap-3 rounded-xl border p-4"
         aria-label={t("filters.apply")}
       >
         {hasDateFilters(kind) && (
@@ -216,8 +216,8 @@ async function Content({
       </div>
 
       {kind === "ohs" && (
-        <section aria-labelledby="osgb-heading" className="flex flex-col gap-3 rounded-2xl border p-5">
-          <h2 id="osgb-heading" className="flex items-center gap-2 text-lg font-semibold">
+        <section aria-labelledby="osgb-heading" className="flex flex-col gap-3 rounded-xl border p-4">
+          <h2 id="osgb-heading" className="flex items-center gap-2 text-base font-semibold">
             <Send aria-hidden="true" className="size-5" />
             {t("osgb.heading")}
           </h2>
@@ -247,7 +247,7 @@ async function Content({
         <p
           key={w}
           role="status"
-          className="flex gap-2 rounded-2xl border border-amber-500/40 bg-amber-500/5 p-4"
+          className="flex gap-2 rounded-xl border border-amber-500/40 bg-amber-500/5 p-4"
         >
           <TriangleAlert
             aria-hidden="true"
@@ -263,16 +263,16 @@ async function Content({
           aria-labelledby={`t-${tbl.key}`}
           className="flex flex-col gap-2"
         >
-          <h2 id={`t-${tbl.key}`} className="text-lg font-semibold">
+          <h2 id={`t-${tbl.key}`} className="text-base font-semibold">
             {tr(`kinds.${kind}.tables.${tbl.key}`)}
           </h2>
           {tbl.rows.length === 0 ? (
-            <p className="rounded-2xl border border-dashed p-5 text-muted-foreground">
+            <p className="rounded-xl border border-dashed p-4 text-muted-foreground">
               {t("empty")}
             </p>
           ) : (
             <>
-              <div className="overflow-x-auto rounded-2xl border">
+              <div className="overflow-x-auto rounded-xl border">
                 <table className="w-full min-w-max text-sm">
                   <thead className="bg-muted/50 text-start">
                     <tr>

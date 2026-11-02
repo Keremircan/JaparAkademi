@@ -43,8 +43,8 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
       <PageHeader title={t("title")} description={t("description")} back={{ href: "/manage", label: tNav("title") }} />
 
       {!archived && (options.common || options.units.length > 0) && (
-        <section aria-labelledby="new-heading" className="flex flex-col gap-4 rounded-2xl border p-5">
-          <h2 id="new-heading" className="text-lg font-semibold">
+        <section aria-labelledby="new-heading" className="flex flex-col gap-4 rounded-xl border p-4">
+          <h2 id="new-heading" className="text-base font-semibold">
             {t("new")}
           </h2>
           <CompetencyForm mode="create" units={options.units} common={options.common} />
@@ -52,7 +52,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
       )}
 
       <div className="flex flex-wrap items-center gap-3">
-        <h2 className="flex-1 text-lg font-semibold">{archived ? t("archivedHeading") : t("listHeading")}</h2>
+        <h2 className="flex-1 text-base font-semibold">{archived ? t("archivedHeading") : t("listHeading")}</h2>
         <Link href={archived ? "/manage/competencies" : "/manage/competencies?archived=1"} className="inline-flex min-h-12 items-center underline underline-offset-4">
           {archived ? t("showActive") : t("showArchived")}
         </Link>
@@ -62,13 +62,13 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
       </div>
 
       {rows.length === 0 ? (
-        <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p>
+        <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("empty")}</p>
       ) : (
-        <ul className="divide-y rounded-2xl border">
+        <ul className="divide-y rounded-xl border">
           {rows.map((c) => (
             <li key={c.id}>
               <details>
-                <summary className="flex min-h-14 cursor-pointer flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3">
+                <summary className="flex min-h-12 cursor-pointer flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3">
                   <span className="font-medium">{c.name}</span>
                   <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{t(`form.kinds.${c.kind}`)}</span>
                   <span className="text-sm text-muted-foreground">{c.unitName ?? t("form.common")}</span>

@@ -4,9 +4,10 @@ import { refresh } from "next/cache";
 import { z } from "zod";
 import { redirect } from "@/i18n/navigation";
 import { APP_LOCALES } from "@/lib/locale";
+import { TEXT_SIZES } from "@/lib/text-size";
 import { actionUser, runAction, type ActionResult } from "@/features/shared/action-result";
 import { getRequestMeta, setLocaleCookie } from "@/server/auth/request";
-import { setPreferredLocale } from "@/server/services/auth";
+import { setPreferredLocale, setPreferredTextSize } from "@/server/services/auth";
 import { decideExplicitConsent, removeProfilePhoto, setProfilePhoto, updateOwnPhone } from "@/server/services/profile";
 
 const localeSchema = z.enum(APP_LOCALES);
@@ -19,6 +20,17 @@ export async function setLocaleAction(formData: FormData): Promise<void> {
   await setPreferredLocale(user, parsed.data);
   await setLocaleCookie(parsed.data);
   redirect({ href: "/profile", locale: parsed.data });
+}
+
+const textSizeSchema = z.enum(TEXT_SIZES);
+
+/** Profilde yazı boyutu tercihi (karar #244): hesaba yazılır, kabuk yeni boyutla yenilenir. */
+export async function setTextSizeAction(formData: FormData): Promise<void> {
+  const parsed = textSizeSchema.safeParse(formData.get("textSize"));
+  const { user } = await actionUser();
+  if (!parsed.success) return;
+  await setPreferredTextSize(user, parsed.data);
+  refresh();
 }
 
 // ---- Detaylı profil ve açık rıza (iş paketi 3.4) ----

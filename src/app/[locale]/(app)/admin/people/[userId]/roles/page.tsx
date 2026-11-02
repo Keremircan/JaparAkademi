@@ -36,12 +36,12 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
     <section className="max-w-3xl">
       <PageHeader title={t("title")} description={`${person.fullName} · ${t("intro")}`} back={{ href: `/admin/people/${userId}`, label: person.fullName }} />
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border p-5">
-          <h2 className="mb-3 text-lg font-semibold">{t("roles")}</h2>
+        <div className="rounded-xl border p-4">
+          <h2 className="mb-3 text-base font-semibold">{t("roles")}</h2>
           <RolesForm userId={userId} roles={person.roles} canGrantOwner={isOwner(access.actor)} />
         </div>
-        <div className="rounded-2xl border p-5">
-          <h2 className="mb-3 text-lg font-semibold">{t("scopes")}</h2>
+        <div className="rounded-xl border p-4">
+          <h2 className="mb-3 text-base font-semibold">{t("scopes")}</h2>
           {isManager ? (
             <>
               {person.scopeOrgUnitIds.length === 0 && <p className="mb-3 text-sm text-destructive">{t("noScopes")}</p>}

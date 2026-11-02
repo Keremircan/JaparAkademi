@@ -7,11 +7,11 @@ import { RevokeButton } from "./revoke-button";
 export async function CertificateList({ items, canRevoke = false }: { items: CertificateSummary[]; canRevoke?: boolean }) {
   const [t, format] = await Promise.all([getTranslations("certificates.list"), getFormatter()]);
   const date = (d: Date) => format.dateTime(d, { dateStyle: "medium" });
-  if (items.length === 0) return <p className="rounded-2xl border border-dashed p-5 text-muted-foreground">{t("empty")}</p>;
+  if (items.length === 0) return <p className="rounded-xl border border-dashed p-4 text-muted-foreground">{t("empty")}</p>;
   return (
     <ul className="flex flex-col gap-3">
       {items.map((c) => (
-        <li key={c.id} className="flex flex-col gap-3 rounded-2xl border p-4">
+        <li key={c.id} className="flex flex-col gap-3 rounded-xl border p-4">
           <div className="flex items-start gap-3">
             <FileBadge aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-muted-foreground" />
             <div className="min-w-0 flex-1">

@@ -9,7 +9,7 @@ import { IdentityView } from "./identity-view";
 function Block({ id, title, children }: { id: CardSectionKey | "identity" | "plan"; title: string; children: ReactNode }) {
   return (
     <section id={`section-${id}`} aria-labelledby={`v-${id}`} className="scroll-mt-20 border-t pt-4 first:border-t-0 first:pt-0">
-      <h3 id={`v-${id}`} className="mb-2 text-lg font-semibold">
+      <h3 id={`v-${id}`} className="mb-2 text-base font-semibold">
         {SECTION_NUMBER[id]}. {title}
       </h3>
       {children}

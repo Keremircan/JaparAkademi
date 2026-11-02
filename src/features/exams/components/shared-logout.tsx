@@ -18,7 +18,7 @@ export function SharedDeviceLogout({ seconds }: { seconds: number }) {
     if (left <= 0) void signOutAction();
   }, [left]);
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/5 p-4" role="status">
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-500/40 bg-amber-500/5 p-4" role="status">
       <span className="flex-1">{t("sharedLogout", { seconds: Math.max(0, left) })}</span>
       <Button variant="outline" onClick={() => void signOutAction()}>
         <LogOut aria-hidden="true" />

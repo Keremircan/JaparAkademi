@@ -45,8 +45,18 @@ test("ilk giriş → şifre değiştir → KVKK onayı → rol menüsü → çı
   await expect(page.getByText("ortak cihaz modunda")).toBeVisible();
   // Ortak cihazda push bölümü yok (karar #178)
   await expect(page.getByRole("heading", { name: "Bu cihazda bildirimler" })).toHaveCount(0);
+
+  // Büyük yazı (SPEC 13.1, karar #244): bütün arayüz büyür; çıkıştan sonra giriş ekranı yine normal boyuttadır
+  // (Next önceki sayfayı gizli tutsa da büyük yazı stili oradan sızmaz)
+  const rootFontSize = () => page.evaluate(() => getComputedStyle(document.documentElement).fontSize);
+  const normalSize = await rootFontSize();
+  await page.getByRole("button", { name: "Büyük" }).click();
+  await expect(page.getByRole("button", { name: "Büyük" })).toHaveAttribute("aria-pressed", "true");
+  await expect.poll(rootFontSize).not.toBe(normalSize);
+
   await page.getByRole("main").getByRole("button", { name: "Çıkış yap" }).click();
   await expect(page).toHaveURL(/\/login$/);
+  await expect.poll(rootFontSize).toBe(normalSize);
 
   await page.goto("/");
   await expect(page).toHaveURL(/\/login$/);

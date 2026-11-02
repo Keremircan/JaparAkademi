@@ -90,15 +90,15 @@ async function Content() {
         if (items.length === 0) return null;
         return (
           <section key={group} aria-labelledby={`group-${group}`} className="flex flex-col gap-3">
-            <h2 id={`group-${group}`} className="text-xl font-semibold">
+            <h2 id={`group-${group}`} className="text-lg font-semibold">
               {t(`groups.${group}`)}
             </h2>
             {group === "retention" && <p className="text-sm text-muted-foreground">{t("retentionHint")}</p>}
             <ul className="flex flex-col gap-3">
               {items.map((row) => (
-                <li key={row.key} data-setting={row.key} className="flex flex-col gap-3 rounded-2xl border p-5">
+                <li key={row.key} data-setting={row.key} className="flex flex-col gap-3 rounded-xl border p-4">
                   <div>
-                    <h3 className="text-lg font-medium">{t(`items.${msgKey(row.key)}.label` as K)}</h3>
+                    <h3 className="text-base font-medium">{t(`items.${msgKey(row.key)}.label` as K)}</h3>
                     <p className="text-sm text-muted-foreground">{t(`items.${msgKey(row.key)}.hint` as K)}</p>
                   </div>
                   <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">

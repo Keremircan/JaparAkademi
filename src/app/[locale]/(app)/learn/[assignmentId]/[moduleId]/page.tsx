@@ -69,7 +69,7 @@ async function Content({
       <PageHeader title={m.title} back={{ href: "/learn", label: tl("title") }} />
 
       {done && (
-        <p role="status" className="flex items-center gap-2 rounded-2xl border border-emerald-600/40 bg-emerald-500/10 p-4">
+        <p role="status" className="flex items-center gap-2 rounded-xl border border-emerald-600/40 bg-emerald-500/10 p-4">
           <CheckCircle2 aria-hidden="true" />
           {m.completedVia === "classroom" ? t("module.doneClassroom") : t("module.done")}
           <Link href="/learn" className="ms-auto inline-flex min-h-12 items-center underline underline-offset-4">
@@ -78,14 +78,14 @@ async function Content({
         </p>
       )}
       {!m.remoteAllowed && !done && (
-        <p role="status" className="flex gap-2 rounded-2xl border border-amber-500/40 bg-amber-500/5 p-4">
+        <p role="status" className="flex gap-2 rounded-xl border border-amber-500/40 bg-amber-500/5 p-4">
           <Info aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
           {t("module.classroomOnly")}
         </p>
       )}
 
       {m.status === "review_required" && (
-        <p role="status" className="flex gap-2 rounded-2xl border border-amber-500/40 bg-amber-500/5 p-4">
+        <p role="status" className="flex gap-2 rounded-xl border border-amber-500/40 bg-amber-500/5 p-4">
           <Info aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
           {t("module.reviewRequired")}
         </p>
@@ -125,7 +125,7 @@ async function Content({
           {item && (
             <article aria-labelledby="step-heading" className="flex flex-col gap-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 id="step-heading" className="text-xl font-semibold">
+                <h2 id="step-heading" className="text-lg font-semibold">
                   {t("module.stepOf", { n: index + 1, total: m.items.length })}: {titleOf(item)}
                 </h2>
                 {(item.kind === "card_section" || ["text", "instruction", "checklist"].includes(item.contentType ?? "")) && <ReadAloud targetId="step-body" lang={item.locale ?? "tr"} />}

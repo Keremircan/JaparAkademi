@@ -43,10 +43,10 @@ async function Content({ params }: { params: Promise<{ batchId: string }> }) {
         back={{ href: "/admin/people/import", label: t("title") }}
       />
       {batch.status === "cancelled" ? (
-        <p className="rounded-2xl border p-6">{t("expired")}</p>
+        <p className="rounded-xl border p-5">{t("expired")}</p>
       ) : (
         <>
-          {batch.status === "committed" && <p className="mb-4 rounded-2xl border p-4">{t("alreadyCommitted")}</p>}
+          {batch.status === "committed" && <p className="mb-4 rounded-xl border p-4">{t("alreadyCommitted")}</p>}
           <ImportPreview
             batchId={batch.id}
             status={batch.status}

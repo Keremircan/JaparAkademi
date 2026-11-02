@@ -41,7 +41,7 @@ export function ImportUploadForm() {
         ))}
       </fieldset>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="file" className="text-base">
+        <Label htmlFor="file" className="text-sm pointer-fine:text-base">
           {t("file")}
         </Label>
         <input

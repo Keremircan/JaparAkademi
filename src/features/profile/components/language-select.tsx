@@ -11,8 +11,8 @@ export const LOCALE_NAMES: Record<AppLocale, string> = { tr: "Türkçe", en: "En
 export async function LanguageSelect({ current }: { current: AppLocale }) {
   const t = await getTranslations("profile.language");
   return (
-    <section aria-labelledby="language-title" className="mt-6 rounded-2xl border p-5">
-      <h2 id="language-title" className="flex items-center gap-2 text-lg font-semibold">
+    <section aria-labelledby="language-title" className="mt-6 rounded-xl border p-4">
+      <h2 id="language-title" className="flex items-center gap-2 text-base font-semibold">
         <Languages aria-hidden="true" className="size-5" />
         {t("title")}
       </h2>

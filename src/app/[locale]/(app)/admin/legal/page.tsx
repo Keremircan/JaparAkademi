@@ -76,7 +76,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
         </nav>
       )}
       {versions.length === 0 ? (
-        <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("empty")}</p>
+        <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("empty")}</p>
       ) : (
         <ul className="flex flex-col gap-4">
           {versions.map((version) => {
@@ -84,8 +84,8 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
             const published = rows[0]?.publishedAt ?? null;
             const missing = locales.filter((l) => !rows.some((r) => r.locale === l));
             return (
-              <li key={version} className="rounded-2xl border">
-                <div className="flex flex-wrap items-center gap-3 border-b px-5 py-3">
+              <li key={version} className="rounded-xl border">
+                <div className="flex flex-wrap items-center gap-3 border-b px-4 py-3">
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold">{t("version", { version })}</p>
                     <p className="text-sm text-muted-foreground">
@@ -110,7 +110,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
                   )}
                 </div>
                 {rows.map((text: LegalText) => (
-                  <details key={text.id} className="border-b px-5 py-3 last:border-b-0">
+                  <details key={text.id} className="border-b px-4 py-3 last:border-b-0">
                     <summary className="min-h-12 cursor-pointer content-center">
                       {locales.length > 1 && <span className="mr-2 rounded-full bg-muted px-2 py-0.5 text-xs">{t(`locales.${text.locale as "tr" | "en"}`)}</span>}
                       {text.title}
@@ -126,7 +126,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
                     </div>
                   </details>
                 ))}
-                {!published && missing.length > 0 && <p className="px-5 py-3 text-sm text-muted-foreground">{t("missingLocales")}</p>}
+                {!published && missing.length > 0 && <p className="px-4 py-3 text-sm text-muted-foreground">{t("missingLocales")}</p>}
               </li>
             );
           })}

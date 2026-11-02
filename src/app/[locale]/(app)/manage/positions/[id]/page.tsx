@@ -103,7 +103,7 @@ async function Content({ params, searchParams }: { params: Promise<{ id: string 
         }
       />
 
-      {!latest && <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{o.can.create ? t("noCardYet") : t("noCardReadonly")}</p>}
+      {!latest && <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{o.can.create ? t("noCardYet") : t("noCardReadonly")}</p>}
       {o.lastReviewedAt && (
         <p className={`mb-4 text-sm ${o.stale ? "text-amber-800 dark:text-amber-300" : "text-muted-foreground"}`} role="status">
           {t("lastReviewed", { date: format.dateTime(o.lastReviewedAt, { dateStyle: "medium" }) })}
@@ -124,9 +124,9 @@ async function Content({ params, searchParams }: { params: Promise<{ id: string 
       {latest && step === "ohs" && <p className="mb-6 text-sm text-muted-foreground">{t("ohsReason")}</p>}
 
       {card && shown && (
-        <article aria-labelledby="card-heading" className="mb-8 flex flex-col gap-4 rounded-2xl border p-5">
+        <article aria-labelledby="card-heading" className="mb-6 flex flex-col gap-4 rounded-xl border p-4">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 id="card-heading" className="flex-1 text-xl font-semibold">
+            <h2 id="card-heading" className="flex-1 text-lg font-semibold">
               {t("cardTitle")}
             </h2>
             <span className="text-xs">
@@ -138,14 +138,14 @@ async function Content({ params, searchParams }: { params: Promise<{ id: string 
       )}
 
       {o.can.approve && step && latest && (
-        <div className="mb-8">
+        <div className="mb-6">
           <ApprovalPanel step={step} approve={approveCardAction.bind(null, latest.id)} reject={rejectCardAction.bind(null, latest.id)} />
         </div>
       )}
 
       {o.versions.length > 0 && (
         <section aria-labelledby="history-heading">
-          <h2 id="history-heading" className="mb-3 text-lg font-semibold">
+          <h2 id="history-heading" className="mb-3 text-base font-semibold">
             {tc("history")}
           </h2>
           <ol className="flex flex-col gap-3">

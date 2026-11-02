@@ -17,6 +17,7 @@ import { myCompetencies } from "@/server/services/competencies";
 import { pushPublicKey } from "@/server/services/push";
 import { PushToggle } from "@/features/push/components/push-toggle";
 import { LanguageSelect } from "@/features/profile/components/language-select";
+import { TextSizeSelect } from "@/features/profile/components/text-size-select";
 import { Suspense } from "react";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 
@@ -47,33 +48,33 @@ async function Content() {
 
   return (
     <section className="max-w-xl">
-      <h1 className="text-2xl font-semibold lg:text-3xl">{t("profile.title")}</h1>
+      <h1 className="text-xl font-semibold tracking-tight lg:text-2xl">{t("profile.title")}</h1>
 
       {/* Detaylı profil (iş paketi 3.4, kararlar #233–235) */}
-      <div className="mt-6 rounded-2xl border p-5">
+      <div className="mt-6 rounded-xl border p-4">
         <ProfilePhoto userId={null} name={profile.fullName} photo={profile.photo} consent={consent.granted} canEdit />
-        <p className="mt-4 text-xl font-semibold">{profile.fullName}</p>
+        <p className="mt-4 text-lg font-semibold">{profile.fullName}</p>
       </div>
 
-      <dl className="mt-6 divide-y rounded-2xl border">
-        <div className="px-5 py-4">
+      <dl className="mt-6 divide-y rounded-xl border">
+        <div className="px-4 py-3">
           <dt className="text-sm text-muted-foreground">{t("profile.sicil")}</dt>
-          <dd className="mt-1 text-lg font-medium">{profile.sicilNo}</dd>
+          <dd className="mt-1 text-base font-medium">{profile.sicilNo}</dd>
         </div>
-        <div className="px-5 py-4">
+        <div className="px-4 py-3">
           <dt className="text-sm text-muted-foreground">{t("profile.department")}</dt>
-          <dd className="mt-1 text-lg font-medium">{profile.unitPath ?? t("common.none")}</dd>
+          <dd className="mt-1 text-base font-medium">{profile.unitPath ?? t("common.none")}</dd>
         </div>
-        <div className="px-5 py-4">
+        <div className="px-4 py-3">
           <dt className="text-sm text-muted-foreground">{t("profile.position")}</dt>
-          <dd className="mt-1 text-lg font-medium">{profile.positionName ?? t("profile.noPosition")}</dd>
+          <dd className="mt-1 text-base font-medium">{profile.positionName ?? t("profile.noPosition")}</dd>
         </div>
-        <div className="px-5 py-4">
+        <div className="px-4 py-3">
           <dt className="text-sm text-muted-foreground">{t("profile.contact.email")}</dt>
-          <dd className="mt-1 text-lg font-medium break-all">{profile.email ?? t("common.none")}</dd>
+          <dd className="mt-1 text-base font-medium break-all">{profile.email ?? t("common.none")}</dd>
           <dd className="text-sm text-muted-foreground">{t("profile.contact.emailHint")}</dd>
         </div>
-        <div className="px-5 py-4">
+        <div className="px-4 py-3">
           <dt className="text-sm text-muted-foreground">
             <label htmlFor="phone">{t("profile.contact.phone")}</label>
           </dt>
@@ -81,7 +82,7 @@ async function Content() {
             <PhoneForm phone={profile.phone} />
           </dd>
         </div>
-        <div className="px-5 py-4">
+        <div className="px-4 py-3">
           <dt className="text-sm text-muted-foreground">{t("profile.roles")}</dt>
           <dd className="mt-2 flex flex-wrap gap-2">
             {user.baseRoles.map((role) => (
@@ -94,11 +95,12 @@ async function Content() {
       </dl>
 
       <LanguageSelect current={user.locale} />
+      <TextSizeSelect current={user.textSize} />
 
       {/* Açık rıza: isteğe bağlı, profilden verilir ya da geri alınır (karar #232) */}
       {consent.text && (
-        <section aria-labelledby="consent-title" className="mt-6 rounded-2xl border p-5">
-          <h2 id="consent-title" className="flex items-center gap-2 text-lg font-semibold">
+        <section aria-labelledby="consent-title" className="mt-6 rounded-xl border p-4">
+          <h2 id="consent-title" className="flex items-center gap-2 text-base font-semibold">
             <ShieldCheck aria-hidden="true" className="size-5" />
             {t("profile.consent.title")}
           </h2>
@@ -129,8 +131,8 @@ async function Content() {
 
       {/* Yetkinliklerim (karar #221) */}
       {competencies.length > 0 && (
-        <section aria-labelledby="competencies-title" className="mt-6 rounded-2xl border p-5">
-          <h2 id="competencies-title" className="text-lg font-semibold">
+        <section aria-labelledby="competencies-title" className="mt-6 rounded-xl border p-4">
+          <h2 id="competencies-title" className="text-base font-semibold">
             {t("competencies.mine.title")}
           </h2>
           <ul className="mt-3 flex flex-col gap-2">
@@ -159,8 +161,8 @@ async function Content() {
         (publicKey ? (
           <PushToggle publicKey={publicKey} />
         ) : (
-          <section aria-labelledby="push-title" className="mt-6 rounded-2xl border p-5">
-            <h2 id="push-title" className="text-lg font-semibold">
+          <section aria-labelledby="push-title" className="mt-6 rounded-xl border p-4">
+            <h2 id="push-title" className="text-base font-semibold">
               {t("push.title")}
             </h2>
             <p role="status" className="mt-2 text-sm text-muted-foreground">{t("push.blocked.server")}</p>

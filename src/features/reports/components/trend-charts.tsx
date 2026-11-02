@@ -132,10 +132,10 @@ function ChartFrame({
   };
 
   return (
-    <figure className="flex min-w-0 flex-col gap-2 rounded-2xl border bg-card p-4">
+    <figure className="flex min-w-0 flex-col gap-2 rounded-xl border bg-card p-4">
       <figcaption className="font-medium">{texts.title}</figcaption>
       {empty ? (
-        <p className="flex min-h-24 items-center text-muted-foreground">{texts.empty}</p>
+        <p className="flex min-h-20 items-center text-muted-foreground">{texts.empty}</p>
       ) : (
         <div
           ref={ref}

@@ -59,7 +59,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
     <section className="flex max-w-6xl flex-col gap-6">
       <PageHeader title={t("title")} description={t("description", { days: data.leadDays })} back={{ href: "/manage", label: tNav("title") }} />
 
-      <form method="get" className="flex flex-wrap items-end gap-3 rounded-2xl border p-4" aria-label={t("filters.apply")}>
+      <form method="get" className="flex flex-wrap items-end gap-3 rounded-xl border p-4" aria-label={t("filters.apply")}>
         <label className="flex min-w-48 flex-1 flex-col gap-1">
           <span className="text-sm font-medium">{t("filters.q")}</span>
           <Input name="q" type="search" defaultValue={filters.q ?? ""} maxLength={100} />
@@ -108,8 +108,8 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
       <PeriodicPanel rows={data.rows} modules={data.modules} canRecord={data.can.record} canStart={data.can.start} today={todayIn(tz)} />
 
       {data.can.record && (
-        <section aria-labelledby="import-heading" className="flex flex-col gap-3 rounded-2xl border p-5">
-          <h2 id="import-heading" className="text-lg font-semibold">
+        <section aria-labelledby="import-heading" className="flex flex-col gap-3 rounded-xl border p-4">
+          <h2 id="import-heading" className="text-base font-semibold">
             {t("import.heading")}
           </h2>
           <PriorImport />

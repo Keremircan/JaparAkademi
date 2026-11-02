@@ -18,12 +18,12 @@ type Row = {
 /** Ziyaret listesi (ev sahibi ve güvenlik görünümü). Kara liste işareti yalnızca güvenlik/İSG verisinde gelir. */
 export async function VisitList({ rows, base, showHost }: { rows: Row[]; base: string; showHost: boolean }) {
   const [t, format] = await Promise.all([getTranslations("visitors"), getFormatter()]);
-  if (rows.length === 0) return <p className="rounded-2xl border border-dashed p-6 text-muted-foreground">{t("list.empty")}</p>;
+  if (rows.length === 0) return <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("list.empty")}</p>;
   return (
-    <ul className="divide-y rounded-2xl border">
+    <ul className="divide-y rounded-xl border">
       {rows.map((r) => (
         <li key={r.id}>
-          <Link href={`${base}/${r.id}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 hover:bg-muted">
+          <Link href={`${base}/${r.id}`} className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-muted">
             <span className="w-28 shrink-0 text-sm text-muted-foreground">{format.dateTime(new Date(`${r.plannedDate}T12:00:00`), { dateStyle: "medium" })}</span>
             <span className="min-w-48 flex-1">
               <span className="flex items-center gap-2 font-medium">

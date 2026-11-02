@@ -38,7 +38,7 @@ export default function Page({ params }: PageProps<"/[locale]/admin/people/[user
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="grid gap-1 px-5 py-3 sm:grid-cols-[14rem_1fr]">
+    <div className="grid gap-1 px-4 py-3 sm:grid-cols-[14rem_1fr]">
       <dt className="text-sm text-muted-foreground">{label}</dt>
       <dd>{children}</dd>
     </div>
@@ -104,12 +104,12 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
         }
       />
 
-      <h2 className="mb-2 text-lg font-semibold">{t("detail.info")}</h2>
+      <h2 className="mb-2 text-base font-semibold">{t("detail.info")}</h2>
       {/* Profil fotoğrafı (iş paketi 3.4): kişinin açık rızası varken İK yükleyebilir */}
-      <div className="mb-4 rounded-2xl border p-5">
+      <div className="mb-4 rounded-xl border p-4">
         <ProfilePhoto userId={person.userId} name={person.fullName} photo={photo.photo} consent={photo.consent} canEdit={photo.canEdit && canManage} />
       </div>
-      <dl className="mb-8 divide-y rounded-2xl border">
+      <dl className="mb-6 divide-y rounded-xl border">
         <Row label={t("form.position")}>{position?.label ?? t("form.noPosition")}</Row>
         <Row label={t("form.hireDate")}>{fmtDate(person.hireDate)}</Row>
         <Row label={t("form.employmentType")}>{t(`form.employmentTypes.${person.employmentType}`)}</Row>
@@ -132,11 +132,11 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
       </dl>
 
       {canAssign && (
-        <section aria-labelledby="training-heading" className="mb-8">
-          <h2 id="training-heading" className="mb-2 text-lg font-semibold">
+        <section aria-labelledby="training-heading" className="mb-6">
+          <h2 id="training-heading" className="mb-2 text-base font-semibold">
             {ta("heading")}
           </h2>
-          <div className="flex flex-col gap-4 rounded-2xl border px-5 py-4">
+          <div className="flex flex-col gap-4 rounded-xl border px-4 py-3">
             {open ? (
               <>
                 <AssignmentSummaryView a={open} viewer={access.actor} />
@@ -175,8 +175,8 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
       )}
 
       {canAssign && (
-        <section aria-labelledby="certificates-heading" className="mb-8">
-          <h2 id="certificates-heading" className="mb-2 text-lg font-semibold">
+        <section aria-labelledby="certificates-heading" className="mb-6">
+          <h2 id="certificates-heading" className="mb-2 text-base font-semibold">
             {tcert("title")}
           </h2>
           <CertificateList items={certs} canRevoke={can(access.actor, "certificates.revoke") && !isSelf} />
@@ -184,13 +184,13 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
       )}
 
       {can(access.actor, "people.export_personal") && !isSelf && (
-        <div className="mb-8">
+        <div className="mb-6">
           <PersonalExportButton userId={person.userId} />
         </div>
       )}
 
-      <h2 className="mb-2 text-lg font-semibold">{t("detail.roles")}</h2>
-      <div className="mb-8 rounded-2xl border px-5 py-4">
+      <h2 className="mb-2 text-base font-semibold">{t("detail.roles")}</h2>
+      <div className="mb-6 rounded-xl border px-4 py-3">
         <div className="flex flex-wrap gap-2">
           {person.roles.map((r) => (
             <span key={r} className="rounded-full bg-muted px-3 py-1 text-sm">
@@ -208,8 +208,8 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
         )}
       </div>
 
-      <h2 className="mb-2 text-lg font-semibold">{t("detail.account")}</h2>
-      <div className="mb-8 flex flex-col gap-4 rounded-2xl border px-5 py-4">
+      <h2 className="mb-2 text-base font-semibold">{t("detail.account")}</h2>
+      <div className="mb-6 flex flex-col gap-4 rounded-xl border px-4 py-3">
         <p className="text-sm text-muted-foreground">
           {t("detail.lastLogin")}:{" "}
           {person.lastLoginAt ? format.dateTime(person.lastLoginAt, { dateStyle: "medium", timeStyle: "short" }) : t("detail.never")}
@@ -229,8 +229,8 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
 
       {canManage && !isSelf && (
         <>
-          <h2 className="mb-2 text-lg font-semibold">{t("detail.statusTitle")}</h2>
-          <div className="rounded-2xl border px-5 py-4">
+          <h2 className="mb-2 text-base font-semibold">{t("detail.statusTitle")}</h2>
+          <div className="rounded-xl border px-4 py-3">
             <StatusControls userId={person.userId} status={person.status} />
           </div>
         </>

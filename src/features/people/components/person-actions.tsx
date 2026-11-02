@@ -12,10 +12,10 @@ import { revealNationalIdAction, setPersonStatusAction } from "../actions";
 export function RevealNationalId({ userId, masked }: { userId: string; masked: string }) {
   const t = useTranslations("admin.people.detail");
   const [value, setValue] = useState<string | null>(null);
-  if (value) return <span className="font-mono text-lg">{value}</span>;
+  if (value) return <span className="font-mono text-base">{value}</span>;
   return (
     <span className="flex flex-col gap-1">
-      <span className="font-mono text-lg">{masked}</span>
+      <span className="font-mono text-base">{masked}</span>
       <ActionButton<string | null>
         variant="ghost"
         action={revealNationalIdAction.bind(null, userId)}
