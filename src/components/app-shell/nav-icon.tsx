@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  CalendarClock,
   ClipboardCheck,
   Ellipsis,
   GraduationCap,
@@ -15,6 +16,7 @@ import type { NavKey } from "@/features/app-shell/navigation";
 const ICONS: Record<NavKey | "more", LucideIcon> = {
   home: House,
   learn: GraduationCap,
+  schedule: CalendarClock,
   trainer: ClipboardCheck,
   manage: LayoutDashboard,
   reports: BarChart3,

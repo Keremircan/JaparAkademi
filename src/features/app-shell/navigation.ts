@@ -5,7 +5,7 @@ import type { Role } from "@/server/authz/roles";
  * Menü bölümleri ve hangi rollerin gördüğü (tek kaynak).
  * Menüde görünmek yalnızca kolaylıktır; her sayfa ayrıca sunucuda requireSection ile korunur.
  */
-export const NAV_KEYS = ["home", "learn", "trainer", "manage", "reports", "security", "admin", "profile"] as const;
+export const NAV_KEYS = ["home", "learn", "schedule", "trainer", "manage", "reports", "security", "admin", "profile"] as const;
 export type NavKey = (typeof NAV_KEYS)[number];
 
 type NavItem = { key: NavKey; href: string; roles: readonly Role[] | "all" };
@@ -13,6 +13,8 @@ type NavItem = { key: NavKey; href: string; roles: readonly Role[] | "all" };
 export const NAV_ITEMS: readonly NavItem[] = [
   { key: "home", href: "/", roles: "all" },
   { key: "learn", href: "/learn", roles: "all" },
+  // Çalışma programı (iş paketi 3.9, karar #256): herkes kendi pozisyonunun programını görür
+  { key: "schedule", href: "/schedule", roles: "all" },
   { key: "trainer", href: "/trainer", roles: ["trainer"] },
   { key: "manage", href: "/manage", roles: ["trainer", "section_manager", "ohs_specialist", "hr"] },
   { key: "reports", href: "/reports", roles: PERMISSIONS["reports.view"] },

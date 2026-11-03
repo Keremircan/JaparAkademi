@@ -379,6 +379,20 @@
       "when": 1793618094315,
       "tag": "0053_personnel_text_size",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1793729950117,
+      "tag": "0054_work_schedules",
+      "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1793729966304,
+      "tag": "0055_work_schedules_triggers",
+      "breakpoints": true
     }
   ]
 }

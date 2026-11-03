@@ -25,6 +25,7 @@ import { documentNo } from "@/server/state/certification";
 import { toAppLocale, type AppLocale } from "@/lib/locale";
 import { messagesFor } from "@/server/i18n/messages";
 import { formatCell, type Translate } from "./reports/format";
+import { scheduleDataFor } from "./schedules";
 import { getSettings } from "./settings";
 
 /**
@@ -89,6 +90,8 @@ export async function exportPersonalData(actor: Actor, userId: string, locale: A
     .innerJoin(legalTexts, eq(legalTexts.id, explicitConsents.legalTextId))
     .where(eq(explicitConsents.userId, userId))
     .orderBy(asc(explicitConsents.decidedAt));
+  // Vardiya seçimi ve kişinin kendi çalışma programı (iş paketi 3.9, karar #257)
+  const schedule = await scheduleDataFor(db(), userId);
 
   const wb = new ExcelJS.Workbook();
   const sheet = (name: string, headers: string[], rows: (string | number)[][]) => {
@@ -135,6 +138,17 @@ export async function exportPersonalData(actor: Actor, userId: string, locale: A
     "explicitConsents",
     ["legalText", "version", "decision", "decidedAt"],
     explicitRows.map((r) => [r.title, r.version, t(`decisions.${r.c.granted ? "granted" : "refused"}`), v(r.c.decidedAt)]),
+  );
+  const chosen = (name: string) => T(`common.${name === schedule.choice ? "yes" : "no"}`);
+  sheet(
+    "schedules",
+    ["schedule", "chosenShift", "day", "time", "itemTitle", "note", "updatedAt"],
+    [
+      ...(schedule.choice && !schedule.copies.some((c) => c.name === schedule.choice) ? [[schedule.choice, chosen(schedule.choice), "—", "—", "—", "—", "—"]] : []),
+      ...schedule.copies.flatMap((c) =>
+        c.items.map((i) => [c.name, chosen(c.name), i.weekday ? T(`schedules.days.${i.weekday}`) : "—", i.time, i.title, i.note ?? "—", v(c.updatedAt)]),
+      ),
+    ],
   );
 
   const buffer = Buffer.from(await wb.xlsx.writeBuffer());

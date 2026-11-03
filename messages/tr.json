@@ -28,6 +28,7 @@
     "mainMenu": "Ana menü",
     "home": "Ana sayfa",
     "learn": "Eğitimlerim",
+    "schedule": "Programım",
     "trainer": "Eğitmen",
     "manage": "Yönetim",
     "reports": "Raporlar",
@@ -444,7 +445,12 @@
     "competency_invalid": "Seçilen yetkinlik bu modülün birimine ait değil ya da arşivlenmiş.",
     "prior_date_invalid": "Son eğitim tarihi geçersiz ya da bugünden sonra.",
     "photo_consent_required": "Profil fotoğrafı için kişinin açık rızası gerekir.",
-    "photo_delete_failed": "Fotoğraf şu anda silinemedi. Biraz sonra yeniden deneyin."
+    "photo_delete_failed": "Fotoğraf şu anda silinemedi. Biraz sonra yeniden deneyin.",
+    "schedule_days_required": "En az bir gün seçin.",
+    "schedule_weekday_required": "Haftalık programda her satırın günü seçilmeli.",
+    "schedule_name_taken": "Bu pozisyonda aynı adla bir program var.",
+    "schedule_item_incomplete": "Her satırda saat ve başlık olmalı.",
+    "schedule_name_required": "Program adını yazın."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -790,6 +796,10 @@
       "periodic": {
         "title": "Periyodik eğitimler",
         "description": "Eski personelin süreli eğitimleri: son eğitim tarihleri ve toplu başlatma."
+      },
+      "schedules": {
+        "title": "Çalışma programları",
+        "description": "Pozisyon ve vardiya başına günlük ya da haftalık akış; programını kendine göre değiştirenler."
       }
     },
     "pendingCount": "{count} kayıt onay bekliyor"
@@ -2335,7 +2345,9 @@
       "recert_trainer_needed": "{name} tekrar eğitimine başladı. Pratik modül için eğitmen seçin.",
       "ohs_expired": "{count} kişinin İSG eğitiminin süresi doldu.",
       "competency_expiring": "{name} adlı kişinin \"{competency}\" yetkinliğinin süresi yaklaşıyor.",
-      "monthly_summary": "{monthNo, select, 1 {Ocak} 2 {Şubat} 3 {Mart} 4 {Nisan} 5 {Mayıs} 6 {Haziran} 7 {Temmuz} 8 {Ağustos} 9 {Eylül} 10 {Ekim} 11 {Kasım} 12 {Aralık} other {}} {year} yönetim özeti hazır: {completed, number} tamamlanan eğitim modülü, {approved, number} işe başlama onayı, {overdue, number} hedefi geçen eğitim."
+      "monthly_summary": "{monthNo, select, 1 {Ocak} 2 {Şubat} 3 {Mart} 4 {Nisan} 5 {Mayıs} 6 {Haziran} 7 {Temmuz} 8 {Ağustos} 9 {Eylül} 10 {Ekim} 11 {Kasım} 12 {Aralık} other {}} {year} yönetim özeti hazır: {completed, number} tamamlanan eğitim modülü, {approved, number} işe başlama onayı, {overdue, number} hedefi geçen eğitim.",
+      "schedule_updated": "\"{name}\" çalışma programı güncellendi. Programım ekranından bakın.",
+      "schedule_removed": "\"{name}\" çalışma programı kaldırıldı. Programım ekranından vardiyanızı kontrol edin."
     },
     "email": {
       "app": "JAPAR Akademi",
@@ -2369,7 +2381,9 @@
         "recert_trainer_needed": "Tekrar eğitimi için eğitmen seçilmesi gerekiyor",
         "ohs_expired": "Süresi dolan İSG eğitimleri var",
         "competency_expiring": "Süresi yaklaşan bir yetkinlik var",
-        "monthly_summary": "Aylık yönetim özeti"
+        "monthly_summary": "Aylık yönetim özeti",
+        "schedule_updated": "Çalışma programınız güncellendi",
+        "schedule_removed": "Çalışma programınız kaldırıldı"
       },
       "monthlyBody": "{monthNo, select, 1 {Ocak} 2 {Şubat} 3 {Mart} 4 {Nisan} 5 {Mayıs} 6 {Haziran} 7 {Temmuz} 8 {Ağustos} 9 {Eylül} 10 {Ekim} 11 {Kasım} 12 {Aralık} other {}} {year} · Tamamlanan eğitim modülü: {completed, number} · İşe başlayabilir onayı: {approved, number} · Ortalama işe başlama süresi: {avgDays, select, none {—} other {{avgDays, number} gün}} · Teorik sınavda ilk denemede geçme: {passRate, select, none {—} other {%{passRate, number}}}. Bugün itibarıyla: eğitimi süren {active, number} kişi · hedef tarihi geçen {overdue, number} eğitim · İSG eğitimi süresi dolmuş {ohsExpired, number} kişi · {ohsDays, number} gün içinde dolacak {ohsExpiring, number} kişi. Ayrıntılar için JAPAR Akademi'ye giriş yapın."
     },
@@ -2774,7 +2788,8 @@
       "exams": "Sınavlar",
       "certificates": "Belgeler",
       "consents": "KVKK onayları",
-      "explicitConsents": "Açık rıza kararları"
+      "explicitConsents": "Açık rıza kararları",
+      "schedules": "Çalışma programım"
     },
     "columns": {
       "sicil": "Sicil no",
@@ -2811,7 +2826,14 @@
       "version": "Sürüm",
       "acceptedAt": "Onay tarihi",
       "decision": "Karar",
-      "decidedAt": "Karar tarihi"
+      "decidedAt": "Karar tarihi",
+      "schedule": "Çalışma programı",
+      "chosenShift": "Seçilen vardiya",
+      "day": "Gün",
+      "time": "Saat",
+      "itemTitle": "Başlık",
+      "note": "Not",
+      "updatedAt": "Değişiklik tarihi"
     },
     "decisions": {
       "granted": "Rıza verdi",
@@ -3853,5 +3875,124 @@
       "commit": "{count} tarihi kaydet",
       "done": "{saved} tarih kaydedildi, {skipped} satır atlandı."
     }
+  },
+  "schedules": {
+    "title": "Programım",
+    "description": "Pozisyonunuzun çalışma programı. Yalnızca yol gösterir.",
+    "none": "Pozisyonunuz için henüz bir çalışma programı yok.",
+    "noPosition": "Size bir pozisyon tanımlanmadığı için çalışma programı yok.",
+    "guidance": "Program yalnızca yol gösterir; uyulup uyulmadığı izlenmez.",
+    "days": {
+      "1": "Pazartesi",
+      "2": "Salı",
+      "3": "Çarşamba",
+      "4": "Perşembe",
+      "5": "Cuma",
+      "6": "Cumartesi",
+      "7": "Pazar"
+    },
+    "daysShort": {
+      "1": "Pzt",
+      "2": "Sal",
+      "3": "Çar",
+      "4": "Per",
+      "5": "Cum",
+      "6": "Cmt",
+      "7": "Paz"
+    },
+    "kinds": {
+      "daily": "Günlük",
+      "weekly": "Haftalık"
+    },
+    "dailyDays": "Geçerli günler: {days}",
+    "startsAt": "Vardiya başlangıcı: {time}",
+    "status": {
+      "follows": "Pozisyon programı",
+      "own": "Size özel",
+      "decide": "Karar bekliyor"
+    },
+    "choose": {
+      "title": "Vardiyanızı seçin",
+      "hint": "Pozisyonunuzda birden çok vardiya programı var. Çalıştığınız vardiyayı seçin; vardiyanız değişince buradan değiştirebilirsiniz.",
+      "current": "Vardiyanız: {name}",
+      "change": "Vardiyayı değiştir",
+      "select": "{name} seç"
+    },
+    "today": {
+      "title": "Bugünün akışı",
+      "shift": "{name} vardiyası",
+      "night": "{day} günü başlayan vardiya",
+      "empty": "Bugün için program yok.",
+      "now": "Şu an",
+      "open": "Programım"
+    },
+    "edit": "Programımı düzenle",
+    "revert": "Pozisyon programına dön",
+    "revertConfirm": "Kendi değişiklikleriniz silinecek ve pozisyon programına döneceksiniz. Devam edilsin mi?",
+    "decide": {
+      "title": "\"{name}\" programı güncellendi",
+      "hint": "Bu programı kendinize göre değiştirmiştiniz. Yeni programa geçebilir ya da kendi programınızı koruyabilirsiniz.",
+      "diff": "Sizin programınız ile yeni program arasındaki farklar",
+      "switch": "Yeni programa geç",
+      "keep": "Kendi programımı koru"
+    },
+    "editor": {
+      "title": "Programımı düzenle",
+      "description": "Saat, başlık ve not ekleyip çıkarabilirsiniz. Kaydettiğinizde program size özel olur.",
+      "visibleToHr": "Değişikliklerinizi İK görebilir.",
+      "day": "Gün",
+      "time": "Saat",
+      "itemTitle": "Başlık",
+      "note": "Not",
+      "add": "Satır ekle",
+      "remove": "{n}. satırı kaldır",
+      "row": "{n}. satır",
+      "empty": "En az bir satır ekleyin.",
+      "save": "Kaydet",
+      "cancel": "Vazgeç"
+    },
+    "manage": {
+      "title": "Çalışma programları",
+      "description": "Her pozisyon için günlük ya da haftalık akış hazırlayın. Vardiyalı pozisyonlarda her vardiya için ayrı program açın; personel kendi vardiyasını seçer.",
+      "people": "{count} kişi",
+      "noProgram": "Program yok",
+      "changedCount": "{count} kişi değiştirdi",
+      "choosersCount": "{count} kişi seçti",
+      "new": "Yeni program",
+      "editProgram": "Programı düzenle",
+      "empty": "Etkin pozisyon yok.",
+      "position": "Pozisyon",
+      "unit": "Birim",
+      "programs": "Programlar",
+      "noPrograms": "Bu pozisyon için henüz program yok.",
+      "multipleHint": "Birden çok program varsa personel kendi vardiyasını seçer.",
+      "changedTitle": "Programını değiştirenler",
+      "changedEmpty": "Programı kendine göre değiştiren yok.",
+      "changedAt": "Değişiklik: {date}",
+      "diff": "Pozisyon programı ile farklar",
+      "awaiting": "Güncellemeden sonra henüz karar vermedi",
+      "form": {
+        "name": "Program adı",
+        "nameHint": "Ör. Gündüz, Gece, A vardiyası. Tek program varsa \"Genel\" yazabilirsiniz.",
+        "kind": "Program türü",
+        "daily": "Günlük",
+        "dailyHint": "Seçilen günlerde aynı akış",
+        "weekly": "Haftalık",
+        "weeklyHint": "Her gün ayrı akış (her satırda gün seçilir)",
+        "days": "Geçerli günler",
+        "startTime": "Vardiya başlangıcı",
+        "startTimeHint": "Gece yarısını geçen vardiyada başlangıç saatini girin (ör. 22:00): bu saatten önceki satırlar ertesi sabaha sayılır. Gündüz vardiyasında 00:00 bırakabilirsiniz.",
+        "items": "Akış",
+        "save": "Kaydet",
+        "delete": "Programı kaldır",
+        "deleteConfirm": "Program kaldırılacak. Bu programı seçenlerin seçimi ve kendine göre değiştirenlerin programı silinecek; bu kişilere bildirim gider. Devam edilsin mi?",
+        "updateNote": "Kaydettiğinizde program hemen geçerli olur. Programı kendine göre değiştirmiş kişilere bildirim gider; yeni programa geçmeyi ya da kendi programlarını korumayı seçerler."
+      },
+      "updatedAt": "Son güncelleme: {date}",
+      "notChosen": "{count} kişi henüz vardiya seçmedi"
+    },
+    "nextDay": "ertesi gün",
+    "positionLabel": "Pozisyonunuz: {name}",
+    "programHeading": "Programın tamamı"
   }
 }

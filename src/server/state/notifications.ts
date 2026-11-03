@@ -11,6 +11,9 @@ export const NOTIFICATION_KINDS = [
   "certificate_ready",
   "recert_started",
   "reread_assigned",
+  // Çalışma programı (iş paketi 3.9): değiştirdiği program güncellendi / seçtiği program kaldırıldı
+  "schedule_updated",
+  "schedule_removed",
   // Eğitmen
   "trainee_assigned",
   "practical_exam_available",
@@ -41,10 +44,11 @@ export const NOTIFICATION_KINDS = [
 
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
-/** Varsayılan: sınav sonucu ve sistem alarmı yalnızca uygulama içi; diğerleri e-posta da (karar #85). */
-export const DEFAULT_EMAIL_EVENTS: NotificationKind[] = NOTIFICATION_KINDS.filter(
-  (k) => k !== "exam_result" && k !== "email_failed" && k !== "retention_completed",
-);
+/** Yalnızca uygulama içi (ve telefon) giden türler: e-postaya değmeyecek kadar sık ya da sistem içi (kararlar #85, #256). */
+const IN_APP_ONLY: readonly NotificationKind[] = ["exam_result", "email_failed", "retention_completed", "schedule_updated", "schedule_removed"];
+
+/** Varsayılan: yukarıdakiler dışındaki türler e-postayla da gider (karar #85). */
+export const DEFAULT_EMAIL_EVENTS: NotificationKind[] = NOTIFICATION_KINDS.filter((k) => !IN_APP_ONLY.includes(k));
 
 /** Yeniden deneme bekleme süresi: 1, 5, 15, 60 dk… (üstel, en çok 6 saat). */
 export function nextAttemptDelayMs(attempts: number): number {

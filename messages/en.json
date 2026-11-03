@@ -28,6 +28,7 @@
     "mainMenu": "Main menu",
     "home": "Home",
     "learn": "My training",
+    "schedule": "My schedule",
     "trainer": "Trainer",
     "manage": "Management",
     "reports": "Reports",
@@ -444,7 +445,12 @@
     "competency_invalid": "The selected competency does not belong to this module's unit or is archived.",
     "prior_date_invalid": "The last training date is invalid or after today.",
     "photo_consent_required": "A profile photo requires the person's explicit consent.",
-    "photo_delete_failed": "The photo could not be deleted right now. Please try again shortly."
+    "photo_delete_failed": "The photo could not be deleted right now. Please try again shortly.",
+    "schedule_days_required": "Choose at least one day.",
+    "schedule_weekday_required": "In a weekly schedule every row needs a day.",
+    "schedule_name_taken": "This position already has a schedule with this name.",
+    "schedule_item_incomplete": "Every row needs a time and a title.",
+    "schedule_name_required": "Enter a schedule name."
   },
   "notFound": {
     "title": "Page not found",
@@ -790,6 +796,10 @@
       "periodic": {
         "title": "Periodic training",
         "description": "Recurring training of existing employees: last training dates and bulk start."
+      },
+      "schedules": {
+        "title": "Work schedules",
+        "description": "Daily or weekly flow per position and shift; people who changed it for themselves."
       }
     },
     "pendingCount": "{count} records awaiting approval"
@@ -2300,7 +2310,9 @@
       "recert_trainer_needed": "{name} has started refresher training. Choose a trainer for the practical module.",
       "ohs_expired": "The OHS training of {count} people has expired.",
       "competency_expiring": "The \"{competency}\" competency of {name} is about to expire.",
-      "monthly_summary": "The {monthNo, select, 1 {January} 2 {February} 3 {March} 4 {April} 5 {May} 6 {June} 7 {July} 8 {August} 9 {September} 10 {October} 11 {November} 12 {December} other {}} {year} management summary is ready: {completed, number} training modules completed, {approved, number} ready-to-work approvals, {overdue, number} trainings past target date."
+      "monthly_summary": "The {monthNo, select, 1 {January} 2 {February} 3 {March} 4 {April} 5 {May} 6 {June} 7 {July} 8 {August} 9 {September} 10 {October} 11 {November} 12 {December} other {}} {year} management summary is ready: {completed, number} training modules completed, {approved, number} ready-to-work approvals, {overdue, number} trainings past target date.",
+      "schedule_updated": "The \"{name}\" work schedule was updated. Check it on My schedule.",
+      "schedule_removed": "The \"{name}\" work schedule was removed. Check your shift on My schedule."
     },
     "email": {
       "app": "JAPAR Academy",
@@ -2334,7 +2346,9 @@
         "recert_trainer_needed": "A trainer must be chosen for refresher training",
         "ohs_expired": "There are expired OHS trainings",
         "competency_expiring": "A competency is about to expire",
-        "monthly_summary": "Monthly management summary"
+        "monthly_summary": "Monthly management summary",
+        "schedule_updated": "Your work schedule was updated",
+        "schedule_removed": "Your work schedule was removed"
       },
       "monthlyBody": "{monthNo, select, 1 {January} 2 {February} 3 {March} 4 {April} 5 {May} 6 {June} 7 {July} 8 {August} 9 {September} 10 {October} 11 {November} 12 {December} other {}} {year} · Training modules completed: {completed, number} · Ready-to-work approvals: {approved, number} · Average time to readiness: {avgDays, select, none {—} other {{avgDays, number} days}} · First-attempt pass rate in theory exams: {passRate, select, none {—} other {{passRate, number}%}}. As of today: {active, number} people in training · {overdue, number} trainings past target date · {ohsExpired, number} people with expired OHS training · {ohsExpiring, number} people whose OHS training expires within {ohsDays, number} days. Sign in to JAPAR Akademi for details."
     },
@@ -2739,7 +2753,8 @@
       "exams": "Exams",
       "certificates": "Documents",
       "consents": "KVKK acceptances",
-      "explicitConsents": "Explicit consent decisions"
+      "explicitConsents": "Explicit consent decisions",
+      "schedules": "My work schedule"
     },
     "columns": {
       "sicil": "Employee no",
@@ -2776,7 +2791,14 @@
       "version": "Version",
       "acceptedAt": "Accepted on",
       "decision": "Decision",
-      "decidedAt": "Decision date"
+      "decidedAt": "Decision date",
+      "schedule": "Work schedule",
+      "chosenShift": "Chosen shift",
+      "day": "Day",
+      "time": "Time",
+      "itemTitle": "Title",
+      "note": "Note",
+      "updatedAt": "Changed on"
     },
     "decisions": {
       "granted": "Gave consent",
@@ -3802,5 +3824,124 @@
       "commit": "Save {count} dates",
       "done": "{saved} dates saved, {skipped} rows skipped."
     }
+  },
+  "schedules": {
+    "title": "My schedule",
+    "description": "Your position's work schedule. It is guidance only.",
+    "none": "There is no work schedule for your position yet.",
+    "noPosition": "You have no position assigned, so there is no work schedule.",
+    "guidance": "The schedule is guidance only; nobody tracks whether it is followed.",
+    "days": {
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday",
+      "7": "Sunday"
+    },
+    "daysShort": {
+      "1": "Mon",
+      "2": "Tue",
+      "3": "Wed",
+      "4": "Thu",
+      "5": "Fri",
+      "6": "Sat",
+      "7": "Sun"
+    },
+    "kinds": {
+      "daily": "Daily",
+      "weekly": "Weekly"
+    },
+    "dailyDays": "Days: {days}",
+    "startsAt": "Shift starts: {time}",
+    "status": {
+      "follows": "Position schedule",
+      "own": "Your own version",
+      "decide": "Decision needed"
+    },
+    "choose": {
+      "title": "Choose your shift",
+      "hint": "Your position has more than one shift schedule. Choose the shift you work; change it here when your shift changes.",
+      "current": "Your shift: {name}",
+      "change": "Change shift",
+      "select": "Choose {name}"
+    },
+    "today": {
+      "title": "Today's flow",
+      "shift": "{name} shift",
+      "night": "Shift that started on {day}",
+      "empty": "No schedule for today.",
+      "now": "Now",
+      "open": "My schedule"
+    },
+    "edit": "Edit my schedule",
+    "revert": "Back to the position schedule",
+    "revertConfirm": "Your own changes will be deleted and you will follow the position schedule again. Continue?",
+    "decide": {
+      "title": "The \"{name}\" schedule was updated",
+      "hint": "You had changed this schedule for yourself. You can switch to the new schedule or keep your own.",
+      "diff": "Differences between your schedule and the new one",
+      "switch": "Switch to the new schedule",
+      "keep": "Keep my schedule"
+    },
+    "editor": {
+      "title": "Edit my schedule",
+      "description": "You can add or remove times, titles and notes. Once you save, the schedule becomes your own version.",
+      "visibleToHr": "HR can see your changes.",
+      "day": "Day",
+      "time": "Time",
+      "itemTitle": "Title",
+      "note": "Note",
+      "add": "Add row",
+      "remove": "Remove row {n}",
+      "row": "Row {n}",
+      "empty": "Add at least one row.",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "manage": {
+      "title": "Work schedules",
+      "description": "Prepare a daily or weekly flow for each position. For shift positions, open a separate schedule for each shift; staff choose their own shift.",
+      "people": "{count, plural, one {# person} other {# people}}",
+      "noProgram": "No schedule",
+      "changedCount": "{count, plural, one {# person changed it} other {# people changed it}}",
+      "choosersCount": "{count, plural, one {# person chose it} other {# people chose it}}",
+      "new": "New schedule",
+      "editProgram": "Edit schedule",
+      "empty": "No active positions.",
+      "position": "Position",
+      "unit": "Unit",
+      "programs": "Schedules",
+      "noPrograms": "No schedule for this position yet.",
+      "multipleHint": "With more than one schedule, staff choose their own shift.",
+      "changedTitle": "People who changed it",
+      "changedEmpty": "Nobody has changed it for themselves.",
+      "changedAt": "Changed: {date}",
+      "diff": "Differences from the position schedule",
+      "awaiting": "Has not decided since the update",
+      "form": {
+        "name": "Schedule name",
+        "nameHint": "E.g. Day, Night, Shift A. With a single schedule you can write \"General\".",
+        "kind": "Schedule type",
+        "daily": "Daily",
+        "dailyHint": "Same flow on the selected days",
+        "weekly": "Weekly",
+        "weeklyHint": "A separate flow for each day (choose the day on each row)",
+        "days": "Days",
+        "startTime": "Shift start",
+        "startTimeHint": "For a shift that passes midnight, enter its start time (e.g. 22:00): rows earlier than this count as the next morning. For a day shift you can leave 00:00.",
+        "items": "Flow",
+        "save": "Save",
+        "delete": "Remove schedule",
+        "deleteConfirm": "The schedule will be removed. The shift choice of people who chose it and the own versions of people who changed it will be deleted; they will be notified. Continue?",
+        "updateNote": "The schedule takes effect as soon as you save. People who changed it for themselves are notified and choose between the new schedule and their own."
+      },
+      "updatedAt": "Last updated: {date}",
+      "notChosen": "{count, plural, one {# person has not chosen a shift yet} other {# people have not chosen a shift yet}}"
+    },
+    "nextDay": "next day",
+    "positionLabel": "Your position: {name}",
+    "programHeading": "Full schedule"
   }
 }

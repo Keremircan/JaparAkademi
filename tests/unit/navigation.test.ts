@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { bottomTabs, canSeeNav, MAX_BOTTOM_TABS, visibleNav } from "@/features/app-shell/navigation";
 
 describe("Rol bazlı menü", () => {
-  it("temel personel yalnızca ana sayfa, eğitimlerim ve profili görür", () => {
-    expect(visibleNav(["personnel"]).map((i) => i.key)).toEqual(["home", "learn", "profile"]);
+  it("temel personel yalnızca ana sayfa, eğitimlerim, programım ve profili görür (karar #256)", () => {
+    expect(visibleNav(["personnel"]).map((i) => i.key)).toEqual(["home", "learn", "schedule", "profile"]);
   });
 
   it("güvenlik görevlisi güvenlik bölümünü görür, yönetim bölümünü görmez", () => {

@@ -263,6 +263,13 @@ export default async function globalSetup() {
     await updateAssignment(hrActor, (await myLearning(pracActor)).current!.id, { trainerUserId: trainerAccount.userId, targetDate: null });
   }
 
+  // Çalışma programı (iş paketi 3.9): programı olmayan bir pozisyon ve bu pozisyonda personel
+  for (const project of ["mobile", "desktop"]) {
+    const p = project[0];
+    const shiftPos = await createPosition(sys, { orgUnitId: section.id, name: `E2E Vardiya Pozisyonu ${suffix} ${p}`, code: `E2E-VRD-${suffix}-${p}`.toUpperCase(), collarType: "blue" });
+    await createAccount(sys, { sicilNo: `E2E-${suffix}-PRG${p}`, fullName: `Deneme Programım ${p}`, password: E2E_PASSWORD, positionId: shiftPos.id, mustChangePassword: false });
+  }
+
   await mkdir(path.dirname(E2E_IMPORT_FILE), { recursive: true });
   await writeFile(
     E2E_IMPORT_FILE,

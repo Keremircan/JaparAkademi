@@ -15,6 +15,18 @@ export function hourIn(timeZone: string, now: Date = new Date()): number {
   return Number(parts.find((p) => p.type === "hour")!.value);
 }
 
+/** Verilen saat dilimindeki günün dakikası (0–1439). */
+export function minutesIn(timeZone: string, now: Date = new Date()): number {
+  const parts = new Intl.DateTimeFormat("en-US", { timeZone, hourCycle: "h23", hour: "2-digit", minute: "2-digit" }).formatToParts(now);
+  return Number(parts.find((p) => p.type === "hour")!.value) * 60 + Number(parts.find((p) => p.type === "minute")!.value);
+}
+
+/** ISO haftanın günü: 1 = Pazartesi … 7 = Pazar ("YYYY-MM-DD" takvim günü için). */
+export function isoWeekday(date: string): 1 | 2 | 3 | 4 | 5 | 6 | 7 {
+  const day = parse(date).getUTCDay();
+  return (day === 0 ? 7 : day) as 1 | 2 | 3 | 4 | 5 | 6 | 7;
+}
+
 function parse(date: string): Date {
   const [y, m, d] = date.split("-").map(Number);
   return new Date(Date.UTC(y!, m! - 1, d!));

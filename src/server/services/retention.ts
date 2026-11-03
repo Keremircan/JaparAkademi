@@ -12,6 +12,7 @@ import { notify, usersWithRole } from "./notifications";
 import { getSettings } from "./settings";
 import { purgeExpiredInviteLinks } from "@/server/services/invitation-batches";
 import { purgeAnonymizedProfilePhotos } from "./profile";
+import { deleteScheduleDataOf } from "./schedules";
 
 /**
  * Saklama süresi işleri (SPEC 12.3, iş paketi 2.1, kararlar #120–125). Worker her gece çalıştırır.
@@ -59,6 +60,11 @@ export async function anonymizeDuePersonnel(actor: Actor, now: Date = new Date()
       await tx.execute(sql`select app_anonymize_prior_trainings(array[${sql.join(rows.map((r) => sql`${r.id}`), sql`, `)}]::uuid[])`);
       // Açık rıza kayıtlarındaki IP / tarayıcı (iş paketi 3.4)
       await tx.execute(sql`select app_anonymize_explicit_consents(array[${sql.join(rows.map((r) => sql`${r.id}`), sql`, `)}]::uuid[])`);
+      // Vardiya seçimi ve kişinin kendi çalışma programı (iş paketi 3.9, karar #257)
+      await deleteScheduleDataOf(
+        tx,
+        rows.map((r) => r.id),
+      );
       await notify(tx, {
         kind: "retention_completed",
         userIds: await usersWithRole(tx, "sysadmin"),

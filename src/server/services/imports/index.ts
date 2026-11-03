@@ -9,6 +9,7 @@ import { withActor } from "@/server/db/with-actor";
 import { syncAssignmentForPerson } from "@/server/services/assignments/engine";
 import { NotFoundError, ValidationError } from "@/server/errors";
 import { insertAccount, prepareInvitedAccount } from "@/server/services/accounts";
+import { dropSchedulesOutsidePosition } from "@/server/services/schedules";
 import {
   checkRows,
   MAX_IMPORT_BYTES,
@@ -272,7 +273,10 @@ export async function commitImport(
             : next;
         await tx.update(personnel).set(values).where(eq(personnel.userId, userId));
         await tx.update(users).set({ name: next.fullName }).where(eq(users.id, userId));
-        if (next.positionId !== current.positionId) await syncAssignmentForPerson(tx, userId, actor.userId);
+        if (next.positionId !== current.positionId) {
+          await syncAssignmentForPerson(tx, userId, actor.userId);
+          await dropSchedulesOutsidePosition(tx, userId);
+        }
         updated++;
       } else unchanged++;
       resultByRow.set(row.id, { status: changed ? "updated" : "unchanged", userId });
