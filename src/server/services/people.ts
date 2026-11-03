@@ -22,6 +22,7 @@ import { insertAccount, prepareInvitedAccount } from "@/server/services/accounts
 import { issueInvitation, type IssuedInvite } from "@/server/services/invitations";
 import { type InviteChannel, normalizePhone } from "@/server/state/invitations";
 import { activeRoleCount, assertLoginEmailUsable, EMAIL_LOGIN_ROLES } from "@/server/services/roles";
+import { dropSchedulesOutsidePosition } from "@/server/services/schedules";
 
 /**
  * Personel yönetimi (SPEC 4.1, ekran 15). İK ve sistem yöneticisi.
@@ -297,6 +298,8 @@ export async function updatePerson(actor: Actor, userId: string, input: PersonIn
       if (roles.some((r) => (EMAIL_LOGIN_ROLES as readonly string[]).includes(r.role))) await assertLoginEmailUsable(userId, tx);
       // Pozisyon değiştiyse atama yenilenir (FG-3.3); eğitimi gerekene plan atanır (FG-3.2)
       await syncAssignmentForPerson(tx, userId, actor.kind === "user" ? actor.userId : null);
+      // Başka pozisyonun vardiya seçimi ve kendi programları silinir (iş paketi 3.9, karar #257)
+      await dropSchedulesOutsidePosition(tx, userId);
     });
   } catch (err) {
     if (/national_?id/i.test(uniqueViolation(err) ?? "")) throw new ValidationError("national_id_taken");

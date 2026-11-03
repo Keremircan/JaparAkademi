@@ -13,3 +13,4 @@ export * from "./certification";
 export * from "./notifications";
 export * from "./reports";
 export * from "./visitors";
+export * from "./schedules";

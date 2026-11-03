@@ -41,6 +41,15 @@ Sistem kimseyi otomatik reddetmez; karar sizindir ve değiştirilemez.
 - Tarihi bilinmeyenleri seçip **Şimdi başlat** ile hemen eğitime alın.
 - Periyodik eğitimde pratik ve işe başlama onayı yoktur; modüller bitince tamamlanır.
 
+### Çalışma programları
+- **Yönetim → Çalışma programları**: pozisyonlar birim birim listelenir; her pozisyonda kişi sayısı, programlar ve programını kendine göre değiştiren sayısı görünür.
+- Pozisyonu açın → **Yeni program**: program adı (ör. Gündüz, Gece; tek programda "Genel"), tür (**Günlük**: seçilen günlerde aynı akış; **Haftalık**: her satırda gün seçilir), vardiya başlangıcı ve satırlar (saat, başlık, isteğe bağlı not). Gece yarısını geçen vardiyada başlangıcı girin (ör. 22:00): bu saatten önceki satırlar ertesi sabaha sayılır.
+- Vardiyalı pozisyonda her vardiya için ayrı program açın; personel kendi vardiyasını seçer. Sayfada her programı seçen sayısı ve henüz vardiya seçmeyenler görünür.
+- Onay adımı yoktur: kaydedince program hemen geçerli olur. Akışı değiştirirseniz programı kendine göre değiştirmiş kişilere bildirim gider; yeni programa geçer ya da kendi programlarını korurlar. Türü (günlük/haftalık) değiştirirseniz kişilerin kendi programları silinir.
+- **Programını değiştirenler**: kişiye dokununca pozisyon programına göre farkı görürsünüz (salt okunur). "Güncellemeden sonra henüz karar vermedi" etiketi, güncellemeden sonra seçim yapmayanları gösterir.
+- **Programı kaldır**: seçenlerin vardiya seçimi ve kendine göre değiştirenlerin programı silinir; bu kişilere bildirim gider.
+- Program yalnızca yol gösterir; uyulup uyulmadığı izlenmez. Pozisyonu değişen kişinin eski pozisyondaki seçimi ve kendi programı silinir; kişi verisi dışa aktarmasında "Çalışma programım" sayfası yer alır.
+
 ### Raporlar ve KVKK
 - **Raporlar**: eğitim ilerleme, sınav sonuçları, İSG eğitim kayıt defteri, işe başlama süresi, süresi dolacak eğitim ve sertifikalar (İSG + İK; 30/60/90 gün ya da süresi dolmuş), içerik güncellik (bölüm sorumlusu + İK). Filtreleyin, önizleyin, Excel/PDF indirin; her indirme kayda geçer. İK, İSG eğitim kayıt defterindeki **OSGB dosyası**nı tam TC kimlik numarasıyla indirir; her indirmede dosyadaki kişiler için kişisel veri erişim kaydı tutulur.
 - **Raporlar → Yönetim özeti**: eğitim ve İSG durumunun tek sayfalık özeti. Eğitimi süren, onay bekleyen ve hedef tarihi geçen kişiler; dönemde işe başlama onayı ve ortalama süre, tamamlanan modül, teorik sınavda ilk denemede geçme oranı; İSG eğitimi süresi dolmuş ve 30/60/90 gün içinde dolacak kişiler; son 12 ayın grafiği (altında tablo görünümü). Dönem (bu ay, geçen ay, son 90 gün, bu yıl ya da tarih) ve birim seçin; bir göstergeye dokununca ilgili rapor açılır. Excel indirilebilir, indirme kayda geçer. Yalnızca sayılar yer alır, kişi adı yoktur. Eski personel için girilen son eğitim tarihleri İSG geçerliliğinde ve süresi dolacaklar raporunda da sayılır.

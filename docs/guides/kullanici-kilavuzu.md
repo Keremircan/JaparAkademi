@@ -76,6 +76,13 @@ Bölüm sorumlunuz "İşe başlayabilir" onayını verince **pozisyon yetkinlik 
 ### Yetkinliklerim
 Profil sayfanızda hangi makine ya da işte yetkin olduğunuz ve yetkinliğin bitiş tarihi görünür. Süresi yaklaşan yetkinlik sarı, dolan kırmızıdır; yenilemek için bölüm sorumlunuza başvurun.
 
+### Programım (çalışma programı)
+Menüdeki **Programım** pozisyonunuzun çalışma programını gösterir: gün içinde hangi saatte ne yapılacağı. Program yalnızca yol gösterir; uyulup uyulmadığı izlenmez.
+- **Bugünün akışı:** ana sayfada ve Programım'da bugünün satırları görünür; şu anki satır **Şu an** ile vurgulanır. Gece vardiyasında akış vardiyanın başladığı güne göredir (ör. 22:00'de başlayan vardiya sabaha kadar sürer; gece yarısından sonraki satırlarda "ertesi gün" yazar).
+- **Vardiya seçimi:** pozisyonunuzda birden çok vardiya programı varsa çalıştığınız vardiyayı seçin (ör. **Gündüz seç**). Vardiyanız değişince Programım → **Vardiyayı değiştir**.
+- **Programımı düzenle:** satır ekleyip silebilir; saat, başlık ve not değiştirebilirsiniz. Kaydedince program size özel olur. **Değişikliklerinizi İK görebilir.** **Pozisyon programına dön** ile kendi değişikliklerinizi silersiniz.
+- **Program güncellenince:** programı kendinize göre değiştirdiyseniz bildirim gelir. Programım'da farkları görüp **Yeni programa geç** ya da **Kendi programımı koru** deyin.
+
 ### Bildirimler
 Üst çubuktaki **zil** okunmamış bildirim sayısını gösterir. Bildirime dokununca ilgili ekran açılır. E-posta adresiniz kayıtlıysa bazı bildirimler e-postayla da gelir (e-postada ayrıntı yer almaz).
 
