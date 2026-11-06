@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNotNull, isNull, lt, type SQL } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, isNotNull, isNull, lt, or, type SQL } from "drizzle-orm";
 import type { Actor } from "@/server/authz/actor";
 import { assertCan, assertUser } from "@/server/authz/policy";
 import { orgScopeFor } from "@/server/authz/scope";
@@ -81,6 +81,12 @@ export async function listInvitees(actor: Actor, filter: InviteeFilter = {}): Pr
       ),
     );
   }
+  // Arama sınırdan (LIST_LIMIT) önce uygulanır; yoksa alfabede geride kalan kişi aranınca bulunamaz
+  const search = filter.q?.trim();
+  if (search) {
+    const like = `%${search.replace(/[%_\\]/g, (c) => `\\${c}`)}%`;
+    conds.push(or(ilike(personnel.sicilNo, like), ilike(personnel.fullName, like))!);
+  }
   const people = await db()
     .select({
       userId: personnel.userId,
@@ -114,7 +120,6 @@ export async function listInvitees(actor: Actor, filter: InviteeFilter = {}): Pr
   for (const i of invites) if (!latest.has(i.userId)) latest.set(i.userId, i);
   const { "auth.invite_code_attempts": maxAttempts } = await getSettings(["auth.invite_code_attempts"]);
   const now = new Date();
-  const q = filter.q?.trim().toLocaleLowerCase("tr");
 
   return allowed
     .map((p) => {
@@ -133,8 +138,7 @@ export async function listInvitees(actor: Actor, filter: InviteeFilter = {}): Pr
         expiresAt: state === "invite_pending" ? (inv?.expiresAt ?? null) : null,
       };
     })
-    .filter((r) => !filter.state || r.state === filter.state)
-    .filter((r) => !q || r.fullName.toLocaleLowerCase("tr").includes(q) || r.sicilNo.toLocaleLowerCase("tr").includes(q));
+    .filter((r) => !filter.state || r.state === filter.state);
 }
 
 export type BatchResult = {

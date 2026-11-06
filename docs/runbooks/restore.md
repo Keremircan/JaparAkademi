@@ -47,6 +47,7 @@ $C up -d
 3. Kayıt sayıları yedek anındakilerle aynı: `$C exec postgres psql -U postgres -d akademi -c "select count(*) from personnel"`
 4. Bir video/PDF içeriği açılıyor; bir sertifikanın PDF'i iniyor.
 5. Denetim kaydı ekranında yedek anına kadarki kayıtlar görünüyor.
+6. Yedek tarihinden sonra üst yönetici bir kişiyi kalıcı olarak sildiyse (karar #264) o kişi yedekle geri gelir: KVKK başvuru kayıtlarınıza bakıp silmeyi yeniden yapın.
 
 ## Son test
 

@@ -87,7 +87,8 @@ describe("Personel anonimleştirme (SPEC 12.3, iş paketi 2.1)", () => {
 
     const p = await person(u.userId);
     expect(p.fullName).toMatch(/^Anonim #[0-9A-F]{8}$/);
-    expect(p.sicilNo).toMatch(/^ANON-[0-9A-F]{8}$/);
+    expect(p.sicilNo).toMatch(/^ANON-[0-9A-F]{12}$/);
+    expect(p.fullName).toBe(`Anonim #${p.sicilNo.slice(-8)}`);
     expect(p).toMatchObject({ email: null, phone: null, nationalIdEnc: null, nationalIdHmac: null, nationalIdMasked: null });
     expect(p.anonymizedAt).toBeInstanceOf(Date);
 

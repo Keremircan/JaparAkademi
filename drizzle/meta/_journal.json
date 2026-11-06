@@ -393,6 +393,27 @@
       "when": 1793729966304,
       "tag": "0055_work_schedules_triggers",
       "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1793957642088,
+      "tag": "0056_person_erasures",
+      "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "7",
+      "when": 1793957645532,
+      "tag": "0057_person_erasures_triggers",
+      "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1793959428677,
+      "tag": "0058_anonymize_unique_ids",
+      "breakpoints": true
     }
   ]
 }

@@ -17,6 +17,7 @@ import {
   updatePerson,
 } from "@/server/services/people";
 import { setRoles, setSectionManagerScopes } from "@/server/services/roles";
+import { erasePerson } from "@/server/services/erasure";
 import { ROLES } from "@/server/authz/roles";
 
 const uuid = z.uuid();
@@ -166,6 +167,20 @@ export async function setPersonStatusAction(
   if (!parsed.success) return { ok: false, error: "invalid_input" };
   const { actor } = await actionUser();
   const result = await runAction(() => setPersonStatus(actor, parsed.data.userId, parsed.data));
+  if (result.ok) refresh();
+  return result;
+}
+
+/** Kişiyi kalıcı silme: üst yönetici, yazılı onay + gerekçe (kararlar #264–267). Sonuç aynı sayfada gösterilir. */
+export async function erasePersonAction(userId: string, _prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+  const parsed = z
+    .object({ userId: uuid, reason: z.string().max(2000), confirmation: z.string().max(500) })
+    .safeParse({ userId, reason: formData.get("reason") ?? "", confirmation: formData.get("confirmation") ?? "" });
+  if (!parsed.success) return { ok: false, error: "invalid_input" };
+  const { actor } = await actionUser();
+  const result = await runAction(async () => {
+    await erasePerson(actor, parsed.data.userId, parsed.data);
+  });
   if (result.ok) refresh();
   return result;
 }
