@@ -91,6 +91,7 @@
       "sicil": "Employee no",
       "send": "Send link",
       "sending": "Sending…",
+      "missingSicil": "Please enter your employee number.",
       "sent": "Your request has been received. If your email address is registered, a link will arrive within a few minutes.",
       "noEmail": "If your email address is not registered, HR will give you a new password link (by WhatsApp or on a printed sheet).",
       "mailOff": "Emails cannot be sent right now. Contact HR for a new password link; they will give it to you by WhatsApp or on a printed sheet.",

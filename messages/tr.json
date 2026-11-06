@@ -91,6 +91,7 @@
       "sicil": "Sicil no",
       "send": "Bağlantı gönder",
       "sending": "Gönderiliyor…",
+      "missingSicil": "Lütfen sicil no giriniz.",
       "sent": "İsteğiniz alındı. E-posta adresiniz kayıtlıysa birkaç dakika içinde bir bağlantı gelecek.",
       "noEmail": "E-posta adresiniz kayıtlı değilse İK size yeni şifre bağlantısı verir (WhatsApp ya da basılı kağıtla).",
       "mailOff": "Şu anda e-posta gönderilemiyor. Yeni şifre bağlantısı için İK ile görüşün; bağlantıyı size WhatsApp ya da basılı kağıtla verirler.",

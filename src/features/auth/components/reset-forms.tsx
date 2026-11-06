@@ -30,11 +30,24 @@ export function ForgotPasswordForm() {
   }
   return (
     <form action={formAction} className="flex flex-col gap-5" noValidate>
+      {state.missing && (
+        <p id="sicilNo-error" role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-destructive">
+          {t("missingSicil")}
+        </p>
+      )}
       <div className="flex flex-col gap-2">
         <Label htmlFor="sicilNo" className="text-sm pointer-fine:text-base">
           {t("sicil")}
         </Label>
-        <Input id="sicilNo" name="sicilNo" inputMode="numeric" autoComplete="username" required />
+        <Input
+          id="sicilNo"
+          name="sicilNo"
+          inputMode="numeric"
+          autoComplete="username"
+          required
+          aria-invalid={state.missing || undefined}
+          aria-describedby={state.missing ? "sicilNo-error" : undefined}
+        />
       </div>
       <p className="text-sm text-muted-foreground">{t("noEmail")}</p>
       <Button type="submit" size="lg" disabled={pending} className="w-full">
