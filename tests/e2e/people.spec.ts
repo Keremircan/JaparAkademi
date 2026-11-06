@@ -170,3 +170,64 @@ test("karar #201: WhatsApp gönderim listesi — gönderilen satır işaretlenir
   await expect(reopened.getByText("1 / 1 gönderildi", { exact: true })).toBeVisible();
   await expect(reopened.getByRole("button", { name: "Tekrar aç" })).toBeVisible();
 });
+
+test("kararlar #264–267: üst yönetici işten ayrılan kişiyi onay penceresiyle kalıcı olarak siler", async ({ page }, testInfo) => {
+  test.setTimeout(90_000);
+  const p = testInfo.project.name[0];
+  const suffix = process.env.E2E_SUFFIX!;
+  const sicil = `E2E-${suffix}-DEL${p}`;
+  const name = `Işıl Silinecek ${p.toUpperCase()}`;
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul" }).format(new Date());
+
+  await login(page, `E2E-${suffix}-OWN${p}`, E2E_PASSWORD);
+  await acceptConsentIfAsked(page);
+  await page.goto(`/admin/people?q=${encodeURIComponent(sicil)}`);
+  await page.getByRole("link", { name: new RegExp(name) }).click();
+  const main = page.getByRole("main").filter({ visible: true });
+  await expect(main.getByRole("heading", { name: "Kişiyi kalıcı olarak sil" })).toBeVisible();
+
+  // Aktif kişi silinemez: önce işten ayrıldı olarak işaretlenir
+  await expect(main.getByText(/yalnızca işten ayrılmış kişide yapılabilir/)).toBeVisible();
+  await expect(main.getByRole("button", { name: "Kişiyi kalıcı olarak sil" })).toHaveCount(0);
+  await main.getByLabel("Ayrılış tarihi").fill(today);
+  await main.getByRole("button", { name: "İşten ayrıldı olarak işaretle" }).click();
+
+  // Pencere: uyarı, gerekçe ve "<Ad Soyad> silmeyi onaylıyorum" yazılana kadar silme düğmesi pasif
+  await main.getByRole("button", { name: "Kişiyi kalıcı olarak sil" }).click();
+  const dialog = page.getByRole("alertdialog", { name: "Kişiyi kalıcı olarak sil" });
+  await expect(dialog.getByText("Kişiye ait tüm kişisel veriler silinecektir!", { exact: false })).toBeVisible();
+  await expect(dialog.getByText(`${name} silmeyi onaylıyorum`)).toBeVisible();
+  const submit = dialog.getByRole("button", { name: "Kalıcı olarak sil" });
+  await expect(submit).toBeDisabled();
+  await dialog.getByLabel("Silme gerekçesi").fill("KVKK silme talebi, e2e");
+  await dialog.getByLabel(/Onaylamak için/).fill("silmeyi onaylıyorum");
+  await expect(submit).toBeDisabled();
+
+  // Vazgeç pencereyi kapatır, kişi silinmez; yeniden açınca alanlar boş
+  await dialog.getByRole("button", { name: "Vazgeç" }).click();
+  await expect(dialog).toBeHidden();
+  await main.getByRole("button", { name: "Kişiyi kalıcı olarak sil" }).click();
+  await expect(dialog.getByLabel("Silme gerekçesi")).toHaveValue("");
+
+  await dialog.getByLabel("Silme gerekçesi").fill("KVKK silme talebi, e2e");
+  // Büyük/küçük harf ve Türkçe I/ı farkı önemsiz
+  await dialog.getByLabel(/Onaylamak için/).fill(`ışıl silinecek ${p} silmeyi onaylıyorum`);
+  await expect(submit).toBeEnabled();
+  await submit.click();
+
+  // Sayfa kişide kalır: ad "Anonim #…", silme bilgisi görünür, yönetim düğmeleri kalkar
+  await expect(dialog).toBeHidden();
+  await expect(main.getByTestId("person-erased")).toContainText("kişisel verileri");
+  await expect(main.getByTestId("person-erased")).toBeInViewport();
+  await expect(main.getByTestId("person-erased")).toContainText("Gerekçe: KVKK silme talebi, e2e");
+  await expect(main.getByRole("heading", { level: 1 })).toHaveText(/^Anonim #[0-9A-F]{8}$/);
+  await expect(main.getByText(name).filter({ visible: true })).toHaveCount(0);
+  await expect(main.getByRole("button", { name: "Kişiyi kalıcı olarak sil" })).toHaveCount(0);
+  await expect(main.getByRole("button", { name: "Aktifleştir" })).toHaveCount(0);
+
+  // Silinen kişi giriş yapamaz
+  await page.goto("/profile");
+  await page.getByRole("main").getByRole("button", { name: "Çıkış yap" }).click();
+  await login(page, sicil, E2E_PASSWORD);
+  await expect(page.getByText("Sicil no veya şifre hatalı.")).toBeVisible();
+});

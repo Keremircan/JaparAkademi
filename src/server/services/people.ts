@@ -23,10 +23,12 @@ import { issueInvitation, type IssuedInvite } from "@/server/services/invitation
 import { type InviteChannel, normalizePhone } from "@/server/state/invitations";
 import { activeRoleCount, assertLoginEmailUsable, EMAIL_LOGIN_ROLES } from "@/server/services/roles";
 import { dropSchedulesOutsidePosition } from "@/server/services/schedules";
+import { assertNotErased } from "@/server/services/people-guard";
 
 /**
  * Personel yönetimi (SPEC 4.1, ekran 15). İK ve sistem yöneticisi.
- * Sicil no değiştirilemez (giriş kimliğidir). Silme yoktur; pasife alma / işten çıkış vardır.
+ * Sicil no değiştirilemez (giriş kimliğidir). Satır silme yoktur; pasife alma / işten çıkış vardır. Üst yöneticinin
+ * "kalıcı silmesi" kişiyi anonimleştirir (`services/erasure.ts`, karar #264); sonra kişi değiştirilemez.
  */
 
 export type PersonStatus = "active" | "passive" | "terminated";
@@ -142,6 +144,8 @@ export type PersonDetail = {
   mustChangePassword: boolean;
   lockedUntil: Date | null;
   lastLoginAt: Date | null;
+  /** Kişisel verisi silindiyse (saklama işi ya da üst yöneticinin kalıcı silmesi, karar #266) */
+  anonymizedAt: Date | null;
   roles: Role[];
   scopeOrgUnitIds: string[];
 };
@@ -181,6 +185,7 @@ export async function getPerson(actor: Actor, userId: string): Promise<PersonDet
     mustChangePassword: p.mustChangePassword,
     lockedUntil: p.lockedUntil,
     lastLoginAt: p.lastLoginAt,
+    anonymizedAt: p.anonymizedAt,
     roles: roleRows.map((r) => r.role),
     scopeOrgUnitIds: scopeRows.map((s) => s.orgUnitId),
   };
@@ -267,6 +272,7 @@ export async function createPerson(
 /** Personel bilgilerini günceller. TC alanı boş bırakılırsa mevcut değer korunur. */
 export async function updatePerson(actor: Actor, userId: string, input: PersonInput): Promise<void> {
   assertCan(actor, "people.manage");
+  await assertNotErased(userId);
   await assertActivePosition(input.positionId);
   const fullName = input.fullName.trim().replace(/\s+/g, " ");
   if (fullName.length < 2) throw new ValidationError("invalid_full_name");
@@ -318,6 +324,7 @@ export async function setPersonStatus(
     throw new ValidationError("cannot_deactivate_self");
   }
   if (input.status === "terminated" && !input.endDate) throw new ValidationError("end_date_required");
+  await assertNotErased(userId);
   if (input.status !== "active") {
     const own = await db().select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, userId));
     // Son aktif üst yönetici pasife alınamaz (karar #193); üst yöneticiyi yalnızca üst yönetici pasife alır

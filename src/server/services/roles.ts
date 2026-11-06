@@ -6,6 +6,7 @@ import { db, type DbOrTx } from "@/server/db/client";
 import { orgUnits, personnel, roleScopes, userRoles } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { NotFoundError, ValidationError } from "@/server/errors";
+import { assertNotErased } from "./people-guard";
 
 /**
  * Rol ve kapsam yönetimi (yalnızca sistem yöneticisi, karar #3).
@@ -46,6 +47,7 @@ export async function setRoles(actor: Actor, userId: string, roles: readonly Rol
 
   const [person] = await db().select({ status: personnel.status }).from(personnel).where(eq(personnel.userId, userId)).limit(1);
   if (!person) throw new NotFoundError("person");
+  await assertNotErased(userId);
 
   const current = new Set(
     (await db().select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, userId))).map((r) => r.role),

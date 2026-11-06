@@ -30,6 +30,7 @@ import {
 import messages from "../../../messages/tr.json";
 import { isIpBlocked, recordAttempt, signIn, type RequestMeta, type SignInResult } from "./auth";
 import { getSetting, getSettings } from "./settings";
+import { assertNotErased } from "./people-guard";
 
 /**
  * Hesaba davet ve etkinleştirme (iş paketi 2.6b, kararlar #185–191).
@@ -205,6 +206,7 @@ export async function reinvite(actor: Actor, userId: string, channel: InviteChan
   assertCan(actor, "people.manage");
   assertUser(actor);
   if (actor.userId === userId) throw new ValidationError("cannot_invite_self");
+  await assertNotErased(userId);
   const block = await resetBlockFor(actor, userId);
   if (block) throw new ValidationError(block);
   const hash = await unusablePasswordHash();

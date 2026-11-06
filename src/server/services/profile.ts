@@ -1,4 +1,4 @@
-import { and, eq, isNotNull, ne } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, ne } from "drizzle-orm";
 import type { Actor, UserActor } from "@/server/authz/actor";
 import { assertUser, can } from "@/server/authz/policy";
 import { isPersonInScope } from "@/server/authz/scope";
@@ -19,6 +19,7 @@ import {
   type ExplicitConsentState,
 } from "./legal";
 import { assetsInfo, type AssetInfo } from "./media";
+import { assertNotErased } from "./people-guard";
 
 /**
  * Detaylı profil ve açık rıza (iş paketi 3.4, kararlar #230–236).
@@ -125,6 +126,7 @@ async function deletePhotoObjects(asset: PhotoAsset): Promise<void> {
 export async function setProfilePhoto(actor: Actor, userId: string, assetId: string): Promise<void> {
   assertUser(actor);
   if (!(await canEditPhotoOf(actor, userId))) throw new ForbiddenError("profile.photo");
+  await assertNotErased(userId);
   if (!(await hasExplicitConsent(userId))) throw new ValidationError("photo_consent_required");
   const [asset] = await db().select().from(mediaAssets).where(eq(mediaAssets.id, assetId)).limit(1);
   if (!asset || asset.createdBy !== actor.userId) throw new NotFoundError("media");
@@ -206,13 +208,22 @@ export async function canViewProfilePhoto(actor: Actor, assetId: string): Promis
   return !!row && (await canViewProfilePhotoOf(actor, row.userId));
 }
 
-/** Gece saklama işi: anonimleştirilen kişilerin profil fotoğrafları depodan silinir ve bağ kaldırılır. */
-export async function purgeAnonymizedProfilePhotos(actor: Actor, limit = 200): Promise<number> {
+/**
+ * Gece saklama işi: anonimleştirilen kişilerin profil fotoğrafları depodan silinir ve bağ kaldırılır.
+ * `userIds` verilirse yalnızca o kişiler (kalıcı silmede hemen, karar #267).
+ */
+export async function purgeAnonymizedProfilePhotos(actor: Actor, limit = 200, userIds?: readonly string[]): Promise<number> {
   const rows = await db()
     .select({ userId: personnel.userId, id: mediaAssets.id, objectKey: mediaAssets.objectKey, derived: mediaAssets.derived })
     .from(personnel)
     .innerJoin(mediaAssets, eq(mediaAssets.id, personnel.photoAssetId))
-    .where(and(isNotNull(personnel.anonymizedAt), ne(mediaAssets.status, "purged")))
+    .where(
+      and(
+        isNotNull(personnel.anonymizedAt),
+        ne(mediaAssets.status, "purged"),
+        ...(userIds ? [inArray(personnel.userId, [...userIds])] : []),
+      ),
+    )
     .limit(limit);
   if (rows.length === 0) return 0;
   await deleteObjects(rows.flatMap(objectKeys));

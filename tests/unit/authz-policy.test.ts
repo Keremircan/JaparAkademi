@@ -53,6 +53,11 @@ describe("Yetki politikası (SPEC 2.3)", () => {
     }
   });
 
+  it("karar #264: kişiyi kalıcı silme yetkisi yalnızca üst yöneticide", () => {
+    expect(can(user("owner"), "people.erase")).toBe(true);
+    expect(can(user("hr", "sysadmin", "ohs_specialist", "section_manager", "trainer", "security"), "people.erase")).toBe(false);
+  });
+
   it("çoklu rolde yetkiler birleşir", () => {
     const multi = user("trainer", "section_manager");
     expect(can(multi, "practice.mark")).toBe(true);

@@ -1,7 +1,7 @@
 import { and, eq, inArray, isNotNull, isNull, lte, ne, sql } from "drizzle-orm";
 import type { Actor } from "@/server/authz/actor";
-import { db } from "@/server/db/client";
-import { blacklistEntries, mediaAssets, personnel, signatures, visitors, visitorSignatures, visits } from "@/server/db/schema";
+import { db, type Tx } from "@/server/db/client";
+import { accountInvitations, blacklistEntries, mediaAssets, personnel, signatures, visitors, visitorSignatures, visits } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { todayIn } from "@/lib/dates";
 import { logger } from "@/server/logger";
@@ -33,6 +33,36 @@ export type RetentionResult = {
   loginAttempts: number;
 };
 
+const uuidArray = (ids: readonly string[]) =>
+  sql`array[${sql.join(
+    ids.map((id) => sql`${id}`),
+    sql`, `,
+  )}]::uuid[]`;
+
+/**
+ * Kişi verisini anonimleştirir (karar #120): gece saklama işi ve üst yöneticinin kalıcı silmesi (karar #264) ortak
+ * kullanır. Yalnızca işten ayrılmış ve henüz anonimleştirilmemiş kişiler işlenir; anonimleştirilen kimlikler döner.
+ */
+export async function anonymizePeople(tx: Tx, userIds: readonly string[]): Promise<string[]> {
+  if (userIds.length === 0) return [];
+  const rows = await tx.execute<{ id: string }>(sql`select app_anonymize_people(${uuidArray(userIds)}) as id`);
+  const ids = rows.map((r) => r.id);
+  if (ids.length === 0) return [];
+  // Yetkinlik kayıtlarındaki gerekçe metinleri (karar #219) ve sistem dışı eğitim notları (iş paketi 3.2)
+  await tx.execute(sql`select app_anonymize_competency_grants(${uuidArray(ids)})`);
+  await tx.execute(sql`select app_anonymize_prior_trainings(${uuidArray(ids)})`);
+  // Açık rıza kayıtlarındaki IP / tarayıcı (iş paketi 3.4)
+  await tx.execute(sql`select app_anonymize_explicit_consents(${uuidArray(ids)})`);
+  // Vardiya seçimi ve kişinin kendi çalışma programı (iş paketi 3.9, karar #257)
+  await deleteScheduleDataOf(tx, ids);
+  // Kullanılmamış davetler geçersiz olur, saklanan WhatsApp bağlantısı silinir: kişiye yeniden hesap açılamaz (karar #266)
+  await tx
+    .update(accountInvitations)
+    .set({ linkEnc: null, revokedAt: sql`coalesce(${accountInvitations.revokedAt}, now())` })
+    .where(and(inArray(accountInvitations.userId, ids), isNull(accountInvitations.usedAt)));
+  return ids;
+}
+
 /** Süresi dolan ayrılmış personeli anonimleştirir ve sistem yöneticilerine bildirir (karar #125). */
 export async function anonymizeDuePersonnel(actor: Actor, now: Date = new Date()): Promise<number> {
   const s = await getSettings(["org.timezone", "retention.personnel_years_after_exit"]);
@@ -45,26 +75,9 @@ export async function anonymizeDuePersonnel(actor: Actor, now: Date = new Date()
     .limit(MAX_PEOPLE_PER_RUN);
   if (due.length === 0) return 0;
 
-  const ids = due.map((d) => d.userId);
   return withActor(actor, async (tx) => {
-    const rows = await tx.execute<{ id: string }>(
-      sql`select app_anonymize_people(array[${sql.join(
-        ids.map((id) => sql`${id}`),
-        sql`, `,
-      )}]::uuid[]) as id`,
-    );
-    const n = rows.length;
+    const n = (await anonymizePeople(tx, due.map((d) => d.userId))).length;
     if (n > 0) {
-      // Yetkinlik kayıtlarındaki gerekçe metinleri (karar #219)
-      await tx.execute(sql`select app_anonymize_competency_grants(array[${sql.join(rows.map((r) => sql`${r.id}`), sql`, `)}]::uuid[])`);
-      await tx.execute(sql`select app_anonymize_prior_trainings(array[${sql.join(rows.map((r) => sql`${r.id}`), sql`, `)}]::uuid[])`);
-      // Açık rıza kayıtlarındaki IP / tarayıcı (iş paketi 3.4)
-      await tx.execute(sql`select app_anonymize_explicit_consents(array[${sql.join(rows.map((r) => sql`${r.id}`), sql`, `)}]::uuid[])`);
-      // Vardiya seçimi ve kişinin kendi çalışma programı (iş paketi 3.9, karar #257)
-      await deleteScheduleDataOf(
-        tx,
-        rows.map((r) => r.id),
-      );
       await notify(tx, {
         kind: "retention_completed",
         userIds: await usersWithRole(tx, "sysadmin"),
@@ -77,14 +90,23 @@ export async function anonymizeDuePersonnel(actor: Actor, now: Date = new Date()
   });
 }
 
-/** Anonimleştirilen kişilerin imza görsellerini depodan siler (karar #123); imza kaydı ve özeti kalır. */
-export async function purgeAnonymizedSignatureImages(actor: Actor): Promise<number> {
+/**
+ * Anonimleştirilen kişilerin imza görsellerini depodan siler (karar #123); imza kaydı ve özeti kalır.
+ * `userIds` verilirse yalnızca o kişiler (kalıcı silmede hemen, karar #267).
+ */
+export async function purgeAnonymizedSignatureImages(actor: Actor, userIds?: readonly string[]): Promise<number> {
   const assets = await db()
     .selectDistinct({ id: mediaAssets.id, objectKey: mediaAssets.objectKey, derived: mediaAssets.derived })
     .from(signatures)
     .innerJoin(personnel, eq(personnel.userId, signatures.signerUserId))
     .innerJoin(mediaAssets, eq(mediaAssets.id, signatures.imageAssetId))
-    .where(and(isNotNull(personnel.anonymizedAt), ne(mediaAssets.status, "purged")))
+    .where(
+      and(
+        isNotNull(personnel.anonymizedAt),
+        ne(mediaAssets.status, "purged"),
+        ...(userIds ? [inArray(personnel.userId, [...userIds])] : []),
+      ),
+    )
     .limit(MAX_IMAGES_PER_RUN);
   if (assets.length === 0) return 0;
 

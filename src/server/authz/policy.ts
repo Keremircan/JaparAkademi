@@ -21,6 +21,8 @@ export const PERMISSIONS = {
   "people.view": ["hr", "sysadmin"],
   "people.manage": ["hr", "sysadmin"],
   "people.view_national_id": ["hr"],
+  // Kişiyi kalıcı silme = saklama süresini beklemeden anonimleştirme (kararlar #264–267): yalnızca üst yönetici
+  "people.erase": [],
   // KVKK aydınlatma metinleri (karar: İK yönetir)
   "legal.manage": ["hr"],
   "devices.manage": ["sysadmin"],

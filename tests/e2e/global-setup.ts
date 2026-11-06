@@ -272,6 +272,13 @@ export default async function globalSetup() {
     await createAccount(sys, { sicilNo: `E2E-${suffix}-PRG${p}`, fullName: `Deneme Programım ${p}`, password: E2E_PASSWORD, positionId: shiftPos.id, mustChangePassword: false });
   }
 
+  // Kişiyi kalıcı silme (kararlar #264–267): üst yönetici ve silinecek kişi
+  for (const project of ["mobile", "desktop"]) {
+    const p = project[0];
+    await createAccount(sys, { sicilNo: `E2E-${suffix}-OWN${p}`, fullName: `Deneme Üst Yönetici ${p}`, password: E2E_PASSWORD, roles: ["owner"], mustChangePassword: false });
+    await createAccount(sys, { sicilNo: `E2E-${suffix}-DEL${p}`, fullName: `Işıl Silinecek ${p.toUpperCase()}`, password: E2E_PASSWORD, email: `e2e-del-${suffix}-${p}@japar.test`.toLowerCase(), mustChangePassword: false });
+  }
+
   await mkdir(path.dirname(E2E_IMPORT_FILE), { recursive: true });
   await writeFile(
     E2E_IMPORT_FILE,

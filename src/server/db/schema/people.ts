@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { boolean, check, date, index, integer, pgEnum, pgTable, primaryKey, text, uuid } from "drizzle-orm/pg-core";
+import { boolean, check, date, index, integer, pgEnum, pgTable, primaryKey, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { ROLES } from "@/server/authz/roles";
 import { users } from "./auth";
 import { mediaAssets } from "./content";
@@ -218,4 +218,28 @@ export const ownerActions = pgTable(
     subjectId: uuid().notNull(),
   },
   (t) => [index("owner_actions_actor_idx").on(t.actorId, t.at)],
+);
+
+/**
+ * Kişiyi kalıcı silme kaydı (kararlar #264–267): üst yönetici işten ayrılmış kişiyi saklama süresini beklemeden
+ * anonimleştirir. KVKK silme yönetmeliği gereği işlem kaydı tutulur; kişi verisi içermez (kişi artık "Anonim #…").
+ * Değiştirilemez; kişi başına bir kayıt.
+ */
+export const personErasures = pgTable(
+  "person_erasures",
+  {
+    id: id(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    erasedBy: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    reason: text().notNull(),
+    erasedAt: tstz("erased_at").notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("person_erasures_user_idx").on(t.userId),
+    check("person_erasures_reason_check", sql`char_length(${t.reason}) between 3 and 500`),
+  ],
 );
