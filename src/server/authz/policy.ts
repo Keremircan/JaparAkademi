@@ -13,6 +13,8 @@ export const PERMISSIONS = {
   "audit.view": ["sysadmin"],
   // Giriş kayıtları ekranı (karar #215); owner her yetkiye sahiptir
   "logins.view": ["sysadmin"],
+  // E-posta durumu ve deneme e-postası (iş paketi 3.7, karar #261)
+  "mail.manage": ["sysadmin"],
   "roles.manage": ["sysadmin"],
   // Organizasyon ve personel
   "org.manage": ["hr", "sysadmin"],

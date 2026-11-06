@@ -63,6 +63,37 @@ test("karar #185–187: İK personel açar (basılı davet) → kişi kodla hesa
   await page.getByLabel("Etkinleştirme kodu").fill(code);
   await page.getByRole("button", { name: "Devam" }).click();
   await expect(page.getByText(/Bu bağlantı ya da kod geçersiz/)).toBeVisible();
+
+  // FG-3.7 karar #259: şifresini unutan kişi → İK kişi sayfasından sıfırlar (basılı kod), eski şifre geçersiz olur
+  await login(page, hrSicil(testInfo.project.name), E2E_PASSWORD);
+  await acceptConsentIfAsked(page);
+  await page.goto(`/admin/people?q=${encodeURIComponent(newSicil)}`);
+  await page.getByRole("link", { name: /Çağrı Şükrü İnce/ }).click();
+  await expect(page.getByTestId("account-state")).toHaveText("Etkin");
+  await page.getByRole("button", { name: "Şifreyi sıfırla" }).click();
+  await page.getByRole("radio", { name: /Basılı kağıt/ }).check();
+  page.once("dialog", (dialog) => void dialog.accept());
+  await page.getByRole("button", { name: "Bağlantıyı oluştur" }).click();
+  await expect(page.getByRole("heading", { name: "Şifre sıfırlandı, yeni şifre bağlantısı hazır" })).toBeVisible();
+  const resetCode = (await page.getByTestId("invite-code").textContent())!.trim();
+  expect(resetCode).toMatch(/^\d{4} \d{4}$/);
+  await page.goto("/profile");
+  await page.getByRole("main").getByRole("button", { name: "Çıkış yap" }).click();
+  await expect(page).toHaveURL(/\/login$/);
+
+  await login(page, newSicil, E2E_NEW_PASSWORD);
+  await expect(page.getByText("Sicil no veya şifre hatalı.")).toBeVisible();
+
+  // Kişi yeni kodla şifresini yeniden belirler
+  await page.goto("/activate");
+  await page.getByLabel("Sicil no").fill(newSicil);
+  await page.getByLabel("Etkinleştirme kodu").fill(resetCode);
+  await page.getByRole("button", { name: "Devam" }).click();
+  await page.getByLabel("Yeni şifre", { exact: true }).fill(E2E_NEW_PASSWORD);
+  await page.getByLabel("Yeni şifre (tekrar)").fill(E2E_NEW_PASSWORD);
+  await page.getByRole("button", { name: "Hesabımı etkinleştir" }).click();
+  await acceptConsentIfAsked(page);
+  await expect(page.getByRole("heading", { name: "Merhaba, Çağrı Şükrü İnce" })).toBeVisible();
 });
 
 test("FG-1.4, karar #198–200: İK Excel'den aktarır (davetsiz), sonra Davetler ekranından hepsine basılı davet", async ({ page }, testInfo) => {

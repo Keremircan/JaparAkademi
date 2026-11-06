@@ -91,6 +91,10 @@ export const SETTINGS = {
   "notify.email_events": def({ schema: z.array(z.enum(NOTIFICATION_KINDS)), default: DEFAULT_EMAIL_EVENTS, managedBy: SYS }),
   "notify.retention_days": def({ schema: positiveInt.max(3650), default: 180, managedBy: SYS }),
   "mail.max_attempts": def({ schema: positiveInt.max(20), default: 5, managedBy: SYS }),
+  // Günlük e-posta sınırı (iş paketi 3.7, karar #260): Resend ücretsiz planı günde 100; 0 = sınırsız.
+  // Bağlantı e-postaları (şifre sıfırlama, davet, ziyaretçi) önce gider; bildirimler ayrılan payı kullanamaz
+  "mail.daily_limit": def({ schema: z.number().int().min(0).max(1_000_000), default: 100, managedBy: SYS }),
+  "mail.link_reserve": def({ schema: z.number().int().min(0).max(1_000_000), default: 20, managedBy: SYS }),
   // Web push (iş paketi 2.6, karar #180): varsayılan bütün türler; push yalnızca "Yeni bildiriminiz var" taşır
   "notify.push_events": def({ schema: z.array(z.enum(NOTIFICATION_KINDS)), default: [...NOTIFICATION_KINDS], managedBy: SYS }),
   "push.max_attempts": def({ schema: positiveInt.max(10), default: 3, managedBy: SYS }),

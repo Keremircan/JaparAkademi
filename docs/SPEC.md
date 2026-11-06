@@ -21,7 +21,7 @@ JAPAR Akademi, JAPAR'a yeni başlayan her personelin işe başlamadan önce pozi
 2. **Tek kaynak.** Pozisyon kartı hem iş tanımı hem eğitim içeriğidir. İş tanımı değişirse eğitim de değişir.
 3. **Karar insana bırakılır.** Sistem personeli otomatik olarak işten çıkarmaz, reddetmez. Tüm haklarda başarısız olan personel için bildirim gönderir, kararı İK ve bölüm sorumlusu verir.
 4. **Herkes için kullanılabilir.** Okuma-yazma seviyesi düşük personel için büyük butonlar, görsel ağırlıklı içerik ve sesli okuma sunulur.
-5. **Veri kendi sunucumuzda.** Bütün veriler kurumun VPS'indedir (Hostinger, Almanya; karar #174). Kişisel veri başka bir üçüncü taraf servise gönderilmez. İstisnalar: kurumun Microsoft 365 kiracısı (e-posta) ve web push servisleri (yalnızca şifreli bildirim kimliği).
+5. **Veri kendi sunucumuzda.** Bütün veriler kurumun VPS'indedir (Hostinger, Almanya; karar #174). Kişisel veri başka bir üçüncü taraf servise gönderilmez. İstisnalar: e-posta gönderim servisi (Resend, ABD; yedek olarak kurumun Microsoft 365 kiracısı — karar #258) ve web push servisleri (yalnızca şifreli bildirim kimliği).
 6. **Her eşik bir parametredir.** Sınav notları, süreler, haklar ve geçerlilik süreleri kodda sabit yazılmaz.
 
 ### 1.4 Kapsam
@@ -36,7 +36,7 @@ JAPAR Akademi, JAPAR'a yeni başlayan her personelin işe başlamadan önce pozi
 - Bordro, puantaj ve izin hesapları (JAPAR İK uygulamasında kalır). Personel Akademi'de ekrandan ve Excel'le yönetilir; İK uygulamasıyla otomatik aktarım yoktur (karar #230)
 - İşe alım ve aday değerlendirme
 - Turnike/kartlı geçiş donanımı ve entegrasyonu (kapsam dışı, karar #230)
-- Microsoft 365 (Entra ID) ile tek oturum (kapsam dışı, karar #230); Microsoft 365 yalnızca e-posta gönderimi için kullanılır
+- Microsoft 365 (Entra ID) ile tek oturum (kapsam dışı, karar #230); e-posta Resend ile gönderilir, Microsoft 365 (Graph) yalnızca yedek gönderim sürücüsüdür (karar #258)
 - **SMS.** Maliyet nedeniyle hiçbir fazda SMS kullanılmaz. Bildirim kanalları: uygulama içi, web push ve e-posta.
 - Ayrı native mobil uygulama (mobil uyumlu web + kurulabilir PWA yeterlidir)
 
@@ -370,7 +370,7 @@ Tüm raporlar ekranda filtrelenebilir ve **Excel (xlsx) / PDF** olarak dışa ak
 \* "Satın alma" ayrı bir rol değildir. Bu rapor, İSG veya İK tarafından dışa aktarılarak paylaşılır.
 
 ### 10.2 Bildirimler
-Kanallar: **uygulama içi** (her zaman), **web push** (PWA, Faz 2) ve **e-posta** (Microsoft Graph; kullanıcının e-postası varsa). **SMS yoktur.** Her olay türü için hangi kanalların kullanılacağı sysadmin parametresidir. Kullanıcı push bildirimlerini cihaz bazında açıp kapatır (Profil); uygulama içi bildirim her zaman gider. Push yalnızca "Yeni bildiriminiz var" yazar (kararlar #175–184).
+Kanallar: **uygulama içi** (her zaman), **web push** (PWA, Faz 2) ve **e-posta** (Resend, yedek Microsoft Graph; kullanıcının e-postası varsa; günlük sınır ve bağlantı önceliği, karar #260). **SMS yoktur.** Her olay türü için hangi kanalların kullanılacağı sysadmin parametresidir. Kullanıcı push bildirimlerini cihaz bazında açıp kapatır (Profil); uygulama içi bildirim her zaman gider. Push yalnızca "Yeni bildiriminiz var" yazar (kararlar #175–184).
 
 | Alıcı | Olay | Faz |
 |---|---|---|
@@ -404,7 +404,7 @@ Kanallar: **uygulama içi** (her zaman), **web push** (PWA, Faz 2) ve **e-posta*
 | Video | ffmpeg (worker konteynerinde) → HLS 360p/720p, oynatıcı: hls.js |
 | PDF | `@react-pdf/renderer` (sertifika, katılım belgesi, raporlar), QR: `qrcode` |
 | Excel | `exceljs` (içe/dışa aktarma) |
-| E-posta | Microsoft Graph API (`Mail.Send`, uygulama izni) |
+| E-posta | Resend API (`MAIL_TRANSPORT=resend`, karar #258); yedek: Microsoft Graph API (`Mail.Send`, uygulama izni) |
 | PWA | Serwist (yalnızca uygulama kabuğu ve statik varlık önbelleği; çevrimdışı yazma yok), Web Push (VAPID, Faz 2) |
 | Sesli okuma | Web Speech API (tarayıcı) |
 | Doğrulama | Zod (tüm Server Action ve Route Handler girdileri) |
@@ -428,7 +428,7 @@ Kanallar: **uygulama içi** (her zaman), **web push** (PWA, Faz 2) ve **e-posta*
 └───────────────┬───────────────────────────────┬──────────────────────────────┘
                 │                               │
 ┌───────────────▼──────────────┐   ┌────────────▼──────────────┐   ┌──────────┐
-│ PostgreSQL 17                 │   │ worker (pg-boss)           │──▶│ MS Graph │
+│ PostgreSQL 17                 │   │ worker (pg-boss)           │──▶│ Resend   │
 │  iş tabloları + audit trigger │◀──│  video dönüştürme (ffmpeg) │   │ (e-posta)│
 │  değiştirilemezlik trigger'ı  │   │  PDF üretimi, bildirimler  │   └──────────┘
 │  pg-boss şeması               │   │  süre dolumu, anonimleştir │
@@ -496,7 +496,7 @@ src/
 │  ├─ state/                            # durum makineleri
 │  ├─ jobs/ (pg-boss iş tanımları)
 │  ├─ storage/ (S3 istemcisi — Garage)
-│  ├─ mail/ (Graph istemcisi)
+│  ├─ mail/ (Resend + Graph istemcisi)
 │  └─ crypto/ (TC şifreleme, HMAC)
 ├─ components/ (ui/, app-shell/, mobile/)
 ├─ lib/ (utils, dates — Europe/Istanbul)
@@ -650,7 +650,7 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
 | Zayıf bağlantı | HLS uyarlanabilir video + elle düşük kalite seçeneği. Uygulama kabuğu önbellekte; ilk yükleme JS < 250 KB gzip |
 | Güvenlik | HTTPS (HSTS), CSP, rol bazlı yetki (Bölüm 11.3), tüm değişiklikler denetim kaydında, private depolama + imzalı URL, şifre politikası + kilit, gizli anahtarlar `.env` dosyasında (repo dışı), bağımlılık güvenlik taraması CI'da |
 | Yedekleme | Günlük `pg_dump` + Garage bucket aynalama (S3 senkronu). Yedekler ayrı bir depolamada ve şifreli tutulur. **Üç ayda bir geri dönüş testi** (runbook: `docs/runbooks/restore.md`) |
-| Barındırma | Veriler kurumun VPS'inde (Hostinger, Almanya; karar #174). Başka üçüncü taraf servis kullanılmaz (istisnalar: kurumun M365 kiracısı — e-posta; web push servisleri — şifreli bildirim kimliği). Yurt dışına aktarım KVKK md. 9'a göre güvenceye alınır |
+| Barındırma | Veriler kurumun VPS'inde (Hostinger, Almanya; karar #174). Başka üçüncü taraf servis kullanılmaz (istisnalar: Resend — e-posta, yedek kurumun M365 kiracısı; web push servisleri — şifreli bildirim kimliği). Yurt dışına aktarım KVKK md. 9'a göre güvenceye alınır |
 | Dağıtım | Docker image'ları CI'da üretilir (GHCR). Sunucuda `docker compose pull && up` (`docker/compose.prod.yml`, runbook: `docs/runbooks/deploy.md`). Migration'lar dağıtım adımında `migrate` servisiyle otomatik çalışır. Staging → production |
 | CI | GitHub Actions: bağımlılık taraması, lint, typecheck, unit + entegrasyon testleri (Postgres servisiyle), migration kontrolü, build, worker derlemesi, Playwright, imaj derleme |
 
@@ -739,7 +739,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | Sistem | Yön | Ne aktarılır | Faz |
 |---|---|---|---|
 | Excel | İK → Akademi | Personel, pozisyon, işe giriş tarihi | 1 |
-| Microsoft 365 (Graph) | Akademi → kullanıcı | E-posta bildirimleri (`Mail.Send`) | 1 |
+| Resend (yedek: Microsoft 365 Graph) | Akademi → kullanıcı | E-posta: bildirim, davet, şifre sıfırlama, ziyaretçi bağlantısı (karar #258) | 1 |
 | OSGB | Dışa aktarım | İSG eğitim kayıtları (xlsx/CSV) | 3 |
 | ~~SMS sağlayıcı~~ | — | **Kullanılmayacak** (maliyet). Ziyaretçi bağlantısı e-posta veya QR/kiosk ile; şifre sıfırlama İK'nın yeniden daveti veya e-posta ile | — |
 | ~~WhatsApp Business API~~ | — | **Kullanılmayacak** (ücret + kişisel veri Meta'ya gider). Davet için yalnızca İK'nın cihazında açılan `wa.me` paylaş bağlantısı (karar #188) | — |
@@ -794,6 +794,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | **3.4 Profil ve açık rıza** | Kapsam değişikliği (turnike, İK otomatik aktarım, M365 tek oturum çıkarıldı); açık rıza metni (ayrı tür, TR + EN), onay ekranında ayrı ve isteğe bağlı kutu, profilden verme/geri alma, `explicit_consents`; detaylı profil (birim, pozisyon, e-posta, telefonu kişi değiştirir, profil fotoğrafı), İK kişi ekranında fotoğraf, KVKK dışa aktarma ve anonimleştirme (FG-1.5, FG-1.6, kararlar #230–236) |
 | **3.5 Gelişmiş raporlar** | Raporlar → Yönetim özeti (`/reports/summary`): göstergeler, 12 aylık eğilim grafiği + tablo, Excel; İSG geçerliliğinde girilen son eğitim tarihleri (süresi dolacaklar raporunda da); İK ve üst yöneticiye aylık özet e-postası (kararlar #237–242) |
 | **3.6 Kompakt arayüz** | Fareyle kullanılan ekranlarda kompakt yoğunluk (kök yazı 14px, ~36px düğme ve alan); dokunmatikte 48px dokunma alanı korunarak daha küçük başlık, boşluk ve köşeler; profilde "Yazı boyutu: Normal / Büyük" (`personnel.text_size`; kararlar #243–244) |
+| **3.7 Şifre sıfırlama ve e-posta** | Kişi sayfasında hesap bölümü kişi bilgilerinin altında: "Şifreyi sıfırla" / "Davet gönder" (kanal seçimi + onay, mevcut yeniden davet akışı, "şifre yenileme" metni); üst yönetici ve sistem yöneticisi sıfırlama kuralı (toplu davette de); giriş ve "Şifremi unuttum" metinleri (e-posta kapalıyken İK'ya yönlendirme); Resend sürücüsü (Graph yedek), günlük sınır + bağlantı önceliği (`mail.daily_limit`, `mail.link_reserve`), Sistem → E-posta durumu (`/admin/email`) ve deneme e-postası, Resend kurulum rehberi (kararlar #258–263) |
 | **3.8 KVKK metinleri ve profil** | "Örnek metinle başla": personel aydınlatma, profil fotoğrafı açık rızası ve ziyaretçi aydınlatma metinleri TR + EN (KVKK md. 10–11, saklama süreleri parametrelerden); kurum bilgileri `[[...]]` alanı, doldurulmadan yayın yok (listede ve formda kalan alanlar); metinde başlık ve madde görünümü; onay düğmesi "Okudum, bilgilendirildim"; profilde fotoğraf ve açık rıza bir arada; yumuşak kırmızı "Çıkış yap" (profilin en altı + kenar çubuğu); bildirim bölümünde kayma yok (kararlar #245–250) |
 | **3.9 Çalışma programı** | Pozisyon ve vardiya başına günlük/haftalık çalışma akışı (`/manage/schedules`, İK), personelin vardiya seçimi, menüde "Programım" (`/schedule`) ve ana sayfada "Bugünün akışı" (gece vardiyası başladığı güne göre), kişinin kendi programı (İK farkı salt okunur görür), güncellemede "Yeni programa geç / Kendi programımı koru", KVKK dışa aktarma ve anonimleştirme (FG-1.7, kararlar #251–257) |
 
@@ -832,7 +833,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 19 | TC kimlik | Şifreli tam + maskeli gösterim. Tamını İK görür; her görüntüleme loglanır |
 | 20 | Ziyaretçi verisi saklama | 2 yıl sonra otomatik anonimleştirme (parametre) |
 | 21 | Ziyaretçi modülü | Faz 2 |
-| 22 | E-posta | Microsoft Graph API |
+| 22 | E-posta | Microsoft Graph API. 3.7'de Resend'e geçildi, Graph yedek kaldı (karar #258) |
 | 23 | JAPAR İK | Kendi geliştirdiğimiz uygulama. Otomatik bağlantı yapılmaz (karar #230); personel Excel ve ekrandan yönetilir |
 | 24 | Pilot | Bölüm henüz seçilmedi. Seed verisi "Üretim → Pres Hattı → Pres Operatörü" örneğiyle hazırlanır |
 | 25 | SMS | Hiçbir fazda kullanılmayacak (maliyet) |
@@ -897,7 +898,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 84 | Bildirim olayları | Kursiyer: eğitim açıldı, teorik sınav açıldı, sınav sonucu, belge hazır. Eğitmen: yeni kursiyer, pratik sınav başlatılabilir. Bölüm sorumlusu: onay bekleyen içerik/kart, pratik sınav 2. imza, işe başlama onayı. İK + kapsamdaki sorumlu (+ İSG modülünde İSG uzmanı): tüm haklarda başarısız. İSG uzmanı: onay bekleyen İSG içeriği/kartı/sorusu. Sistem yöneticisi: e-posta hatası |
 | 85 | Kanal | Uygulama içi bildirim her zaman yazılır; e-posta `notify.email_events` türlerinde ve kişinin e-postası varsa gider. Varsayılan: sınav sonucu ve sistem alarmı yalnızca uygulama içi |
 | 86 | E-posta içeriği | Puan, sonuç veya kişisel ayrıntı içermez; olay türüne göre genel başlık + uygulama bağlantısı |
-| 87 | Gönderim | Bildirim olayla aynı transaction'da yazılır; e-posta `email_outbox` üzerinden worker ile (dakikada bir) gönderilir, üstel beklemeyle `mail.max_attempts` kez denenir; kalıcı hatada sistem yöneticisine uygulama içi alarm. Geliştirme/testte `MAIL_TRANSPORT=log` (gönderilmez, konu loga yazılır); canlı ortamda `graph` |
+| 87 | Gönderim | Bildirim olayla aynı transaction'da yazılır; e-posta `email_outbox` üzerinden worker ile (dakikada bir) gönderilir, üstel beklemeyle `mail.max_attempts` kez denenir; kalıcı hatada sistem yöneticisine uygulama içi alarm. Geliştirme/testte `MAIL_TRANSPORT=log` (gönderilmez, konu loga yazılır); canlı ortamda `resend` (yedek `graph`; karar #258) |
 | 88 | E-postayla şifre sıfırlama | Girişte "Şifremi unuttum" → sicil no. E-postası kayıtlı aktif personele tek kullanımlık, `auth.reset_link_minutes` geçerli bağlantı; ekran mesajı her durumda aynı; sicil ve IP başına saatlik sınır; sıfırlanınca bütün oturumlar kapanır. E-postası olmayan İK'ya başvurur |
 | 89 | Bildirim görünürlüğü | Bildirimi yalnızca alıcısı görür ve açar; bağlantı uygulama içi yoldur, yetki gidilen ekranda yeniden kontrol edilir |
 | 90 | Tekrar ve saklama | Aynı kişiye aynı konu için okunmamış tek bildirim; yeni olay mevcut bildirimi tazeler (e-posta tekrar gitmez). Konu kapanınca (onay, ret, karar, 2. imza) bekleyen bildirimler herkes için okundu sayılır. Bildirimler `notify.retention_days` sonra silinir |
@@ -1001,7 +1002,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 188 | WhatsApp kanalı | Sunucu WhatsApp/Meta ile **bağlantı kurmaz** (Business API yok: ücret + kişisel veri üçüncü tarafa gider). Sistem `https://wa.me/<telefon>?text=<hazır mesaj>` bağlantısı üretir; İK düğmeye basınca kendi telefonundaki WhatsApp açılır, mesajı kendisi gönderir. Mesajda kişinin adı ve etkinleştirme bağlantısı bulunur. Telefon `+90…` biçiminde saklanır; telefonu olmayan kişide kanal seçilemez. Bağlantının İK'nın cihazı üzerinden WhatsApp'a gitmesi pilot listesinde KVKK açısından not edilir |
 | 189 | Yönetici e-postayla girişi | Giriş ekranı tek: girilen değerde `@` varsa ve kişi `sysadmin` ya da `hr` rolündeyse e-posta ile bulunur, sonra sicil no girişiyle aynı akış (kilit, IP sınırı, deneme kaydı) çalışır. Diğer roller yalnızca sicil no ile girer; onların e-postası girişte bilinmeyen sicil gibi davranır (genel hata mesajı). Bu rolleri almak için kişinin e-postası kayıtlı ve aktif personel arasında tekil (büyük/küçük harf duyarsız) olmalıdır; servis denetler |
 | 190 | Yönetici iki adımlı doğrulama | Şimdilik yok. (M365 tek oturum kapsamdan çıktı, karar #230; gerekirse ayrıca değerlendirilir) |
-| 191 | E-posta kanalı ve mevcut hesaplar | E-posta kanalı yalnızca `MAIL_TRANSPORT=graph` iken seçilebilir (aksi hâlde açıklamayla kapalı). İlk sistem yöneticisi seed ile açılır (değişmedi). Daha önce geçici şifreyle açılmış ve şifresini değiştirmemiş hesaplar çalışmaya devam eder; İK isterse yeniden davet eder |
+| 191 | E-posta kanalı ve mevcut hesaplar | E-posta kanalı yalnızca gerçek gönderim açıkken (`MAIL_TRANSPORT=resend` ya da `graph`) seçilebilir (aksi hâlde açıklamayla kapalı). İlk sistem yöneticisi seed ile açılır (değişmedi). Daha önce geçici şifreyle açılmış ve şifresini değiştirmemiş hesaplar çalışmaya devam eder; İK isterse yeniden davet eder |
 | 192 | Üst yönetici rolü (`owner`) | Geliştirici ve kurum yöneticisi (patron) için. `owner` bütün yetkilere sahiptir (`can()` her izin için doğru), kapsamı bütün org ağacıdır; İK, sysadmin ve diğer rollerin yapabildiği her şeyi yapar, tam TC görüntüleme dahil (her görüntüleme `data_access_log`'a yazılır). Onay/karar bildirimleri `owner`'a otomatik gitmez (bildirim yükü); kuyrukları ekranlardan görür |
 | 193 | `owner` rolünün verilmesi | Yalnızca bir `owner` başka bir kişiye `owner` rolü verebilir veya alabilir; sysadmin veremez. Son aktif `owner`'ın rolü alınamaz ve hesabı pasife alınamaz. İlk `owner` seed/sistem yöneticisi hesabına bir kez tanımlanır |
 | 194 | `owner` için de geçerli kurallar | Kimse kendi kaydını değerlendiremez/onaylayamaz; değiştirilemez kayıtlar `owner` için de değiştirilemez (yalnızca gerekçeli düzeltme kaydı); her işlem denetim kaydına yazılır, `audit_log`'u kimse silemez |
@@ -1068,6 +1069,12 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 255 | İK görünürlüğü | İK pozisyon sayfasında programını değiştirenleri (ad, sicil, değişiklik tarihi) ve pozisyon programına göre satır farkını salt okunur görür; güncellemeden sonra karar vermeyenler ayrıca işaretlenir. Personel düzenleme ekranında "Değişikliklerinizi İK görebilir" uyarısını görür |
 | 256 | Menü, ana sayfa ve bildirim | "Programım" herkese açık menü öğesidir (Eğitimlerim'den sonra). Ana sayfada "Bugünün akışı" kartı: vardiya seçimi gerekiyorsa seçim düğmeleri, değilse akış; pozisyonda program yoksa kart görünmez. `schedule_updated` ve `schedule_removed` uygulama içi + web push gider; varsayılan olarak e-postayla gitmez (Parametreler'den açılabilir). Bildirim konusu kişiye özeldir: birinin kararı başkasının bildirimini kapatmaz |
 | 257 | KVKK ve pozisyon değişikliği | Pozisyonu değişen kişinin eski pozisyona ait vardiya seçimi ve kendi programları silinir (kişi ekranında ve Excel aktarımında, aynı işlemde). KVKK dışa aktarmada "Çalışma programım" sayfası (program, seçilen vardiya, kişinin kendi satırları). Anonimleştirmede seçim ve kendi programlar silinir. Denetim kaydında kişinin kendi program satırları maskelidir |
+| 258 | E-posta servisi | Proje sahibi kararı (2026-11-04): e-posta Resend ücretsiz planıyla gönderilir (`MAIL_TRANSPORT=resend`; günde 100, ayda 3.000 e-posta). API anahtarı yalnızca gönderim izinli ve yalnızca sunucudaki `.env`'de durur. Microsoft Graph yedek sürücü olarak kalır. Gönderen alan adı Resend'de doğrulanır (`mail.japarakademi.io`, gönderen `bildirim@mail.japarakademi.io`, bölge İrlanda; DNS Hostinger'da; açılma/tıklama izleme kapalı; kurulum `docs/runbooks/email-resend.md`). Resend hesap verisi ve kayıtları bölge seçiminden bağımsız olarak ABD'de tutulur: "veriler kendi sunucumuzda" kuralına e-posta istisnası olarak eklendi; KVKK md. 9 dayanağı (Resend veri işleme sözleşmesi: AB standart sözleşme maddeleri + DPF) hukukça tamamlanır, örnek aydınlatma metinleri güncellendi |
+| 259 | İK'nın şifre sıfırlaması | Kişi sayfasında hesap bölümü kişi bilgilerinin hemen altındadır. Hesabı kullanılmış kişide büyük "Şifreyi sıfırla", hiç kullanılmamış kişide "Davet gönder" düğmesi; kanal (e-posta, WhatsApp, basılı) seçilir, sıfırlama ayrıca onaylatılır. Mevcut yeniden davet akışı kullanılır: mevcut şifre geçersiz olur, kilit kalkar, oturumlar kapanır; mesaj ve kağıt "şifre yenileme" metniyle gider. Üst yöneticiyi yalnızca üst yönetici, sistem yöneticisini sistem yöneticisi ya da üst yönetici sıfırlar; İK bu kişilerde düğme yerine açıklama görür. Toplu davet aynı kuralı uygular (listede görünmez, seçilse atlanır). Geçici şifre yoktur |
+| 260 | Günlük e-posta sınırı | `mail.daily_limit` (100; 0 = sınırsız) ve `mail.link_reserve` (20). Sayaç UTC günüdür (Resend günlük kotası UTC gece yarısı, Türkiye saatiyle 03:00 sıfırlanır). Öncelik: şifre sıfırlama → ziyaretçi bağlantısı → hesap daveti → bildirimler; bildirimler ayrılan payı kullanamaz. Sınır dolunca kalanlar bekler: hata değildir, alarm gitmez. Sağlayıcı kota ya da hız sınırı bildirirse kuyruk bekletilir (kota 1 saat, hız 1 dakika) ve deneme sayılmaz. Aynı deneme iki kez gönderilmesin diye her istekte `Idempotency-Key` (`outbox-<id>-<deneme>`) |
+| 261 | E-posta durumu ekranı | Sistem → E-posta durumu (`/admin/email`, yetki `mail.manage`: sistem yöneticisi, üst yönetici): servis ve açık/kapalı, gönderen, bugün gönderilen / sınır ve sıfırlanma saati, bekleyen, son 7 günde gönderilen ve gönderilemeyen, son 10 hata (tür, maskeli adres, sorun + sağlayıcıya özel ipucu). "Deneme e-postası gönder" kuyruğa girmeden gönderir, sonucu hemen gösterir; kayıt `mail_test` türüyle günlük sayaca girer. E-posta kapalıyken deneme yapılamaz. Kalıcı hata alarmı (`email_failed`) bu ekrana götürür |
+| 262 | Hata kaydı ve yeniden deneme | Sağlayıcının hata metni adres içerebildiği için saklanmaz; `last_error` yalnızca `[sorun] servis + durum kodu + hata adı` tutar (auth, permission, sender, request, quota, rate, unavailable, network, unknown). Kalıcı hatalar (anahtar/izin/gönderen sorunu, reddedilen e-posta) yeniden denenmez ve alarm verir; geçici hatalar (servis yanıt vermiyor, bağlantı yok) `mail.max_attempts` kez üstel beklemeyle denenir. Ekranda adres `a***@alanadi` biçiminde maskelenir |
+| 263 | Şifremi unuttum ve giriş metni | E-posta gönderimi kapalıyken (`MAIL_TRANSPORT=log`) "Şifremi unuttum" formu gösterilmez: "Şu anda e-posta gönderilemiyor; yeni şifre bağlantısı için İK ile görüşün"; istek de kaydedilmez. Giriş ekranında: "E-postanız kayıtlıysa Şifremi unuttum bağlantısını kullanın; değilse İK size yeni şifre bağlantısı verir." |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:
@@ -1102,4 +1109,5 @@ Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken 
 | Logonun vektörel (SVG) ve şeffaf arka planlı (PNG) hâli | Kurumsal iletişim | PWA ikonları, karanlık mod ve PDF'ler için. Şu an yalnızca JPG var (`public/brand/japar-academy-logo.jpg`) |
 | Pilot bölüm ve pozisyonların seçimi | Yönetim | Faz 1 pilotundan önce |
 | Yurt dışına aktarım için KVKK md. 9 dayanağı (ör. Hostinger ile standart sözleşme + Kurum'a bildirim) ve aydınlatma metinlerine eklenmesi (örnek metinlerde `[[Yurt dışına aktarım dayanağı]]` alanı) | Hukuk / KVKK sorumlusu | Gerçek veri girilmeden önce |
-| M365 uygulama kaydı (Graph `Mail.Send`) ve gönderen adres | BT | İş paketi 1.8'den önce |
+| Resend hesabı (kurumsal e-posta + iki adımlı doğrulama), gönderen alan adının DNS kayıtları ve yalnızca gönderim izinli API anahtarı (`docs/runbooks/email-resend.md`; yedek: M365 uygulama kaydı) | BT | Canlıya geçmeden önce |
+| Resend için yurt dışına aktarım dayanağı (KVKK md. 9; Resend veri işleme sözleşmesi) | Hukuk / KVKK sorumlusu | E-posta açılmadan önce |

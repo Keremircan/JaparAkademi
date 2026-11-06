@@ -14,7 +14,8 @@ Her satırda sorumlu ve durum doldurulur.
 | 1.2c | WhatsApp ile davet: bağlantı ve kişinin adı İK'nın cihazından WhatsApp (Meta) üzerinden gider (karar #188). Aydınlatma metninde belirtilmesi ya da bu kanalın kullanılmaması kararı | Hukuk / KVKK sorumlusu | ☐ |
 | 1.2d | İlk üst yönetici sunucuda tanımlandı (`grant-owner.ts`); kurum yöneticisine uygulamadan üst yönetici rolü verildi | BT | ☐ |
 | 1.3 | Alan adları: `APP_DOMAIN`, `FILES_DOMAIN` | BT | ☐ |
-| 1.4 | M365 uygulama kaydı (Graph `Mail.Send`, uygulama izni) ve gönderen posta kutusu | BT | ☐ |
+| 1.4 | Resend hesabı (kurumsal e-posta, iki adımlı doğrulama), gönderen alan adı `mail.japarakademi.io` (bölge İrlanda) için Hostinger DNS kayıtları, alan adı "Verified", açılma/tıklama izleme kapalı, yalnızca gönderim izinli API anahtarı (`docs/runbooks/email-resend.md`, karar #258). Yedek seçenek: M365 uygulama kaydı (Graph `Mail.Send`) | Proje sahibi (Hostinger hesabı) | ☐ |
+| 1.4a | Resend için KVKK md. 9 dayanağı: Resend veri işleme sözleşmesi (AB standart sözleşme maddeleri + DPF), hesap verisi ve kayıtların ABD'de tutulması; aydınlatma metinlerinde e-posta hizmeti bilgisi (örnek metinler Resend'i yazar) — e-posta açılmadan önce | Hukuk / KVKK sorumlusu | ☐ |
 | 1.5 | KVKK aydınlatma metni (personel, TR + EN; bağlayıcı metin Türkçe — karar #212) — hukuk onayı | Hukuk / KVKK sorumlusu | ☐ |
 | 1.6 | Saklama sürelerinin hukuk teyidi (SPEC 12.3, iş ilişkisi bitişi + 15 yıl varsayımı); onaylanan süreler Sistem → Parametreler'e gerekçesiyle girilir | Hukuk | ☐ |
 | 1.7 | Anonimleştirilen personelin sertifikalarındaki ad bilgisinin saklanması (karar #124) — hukuk teyidi | Hukuk / KVKK sorumlusu | ☐ |
@@ -28,7 +29,7 @@ Her satırda sorumlu ve durum doldurulur.
 | 2.2 | `docker/.env.production` dolduruldu; gizli değerlerin kopyası kasada (TC anahtarları, `BETTER_AUTH_SECRET`, `BACKUP_FILES_PASSWORD`, age gizli anahtarı) | BT | ☐ |
 | 2.3 | Stack ayakta, `/api/health` olumlu, HTTPS ve güvenlik başlıkları doğru | BT | ☐ |
 | 2.4 | İlk sistem yöneticisi açıldı, şifresi değiştirildi | BT | ☐ |
-| 2.5 | `MAIL_TRANSPORT=graph` ile deneme e-postası alındı (ör. şifremi unuttum) | BT | ☐ |
+| 2.5 | `MAIL_TRANSPORT=resend` ile Sistem → E-posta durumu'ndan "Deneme e-postası gönder" başarılı ve e-posta geldi; "Şifremi unuttum" bağlantısı da denendi. Günlük sınır (`mail.daily_limit`) Resend planıyla uyumlu | BT | ☐ |
 | 2.6 | Gece yedeği çalıştı; `BACKUP_REMOTE` uzak kopyası doğrulandı | BT | ☐ |
 | 2.7 | **Sunucuda geri dönüş testi** yapıldı, `restore.md` tablosuna yazıldı | BT | ☐ |
 | 2.8 | Ortak cihazlar (eğitim odası bilgisayarları) tanımlandı | Sistem yöneticisi | ☐ |

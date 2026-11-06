@@ -1,16 +1,18 @@
 import type { AppLocale } from "@/lib/locale";
 import { createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
-import { and, desc, eq, isNotNull, isNull, ne } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull, ne } from "drizzle-orm";
 import { createTranslator } from "next-intl";
 import { getAuth } from "@/server/auth/auth";
 import { checkPassword } from "@/server/auth/password-policy";
 import { systemActor, type Actor } from "@/server/authz/actor";
-import { assertCan, assertUser, isOwner } from "@/server/authz/policy";
+import { assertCan, assertUser } from "@/server/authz/policy";
+import type { Role } from "@/server/authz/roles";
 import { db, type DbOrTx, type Tx } from "@/server/db/client";
 import { accountInvitations, accounts, emailOutbox, personnel, positions, sessions, userRoles, users } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { NotFoundError, ValidationError } from "@/server/errors";
 import { env } from "@/server/env";
+import { mailEnabled } from "@/server/mail";
 import { encryptInviteLink } from "@/server/crypto/invite-link";
 import { emailHtml } from "@/server/state/notifications";
 import {
@@ -21,6 +23,7 @@ import {
   isInvitationOpen,
   normalizePhone,
   parseInviteCode,
+  resetBlock,
   whatsappShareUrl,
   type AccountState,
 } from "@/server/state/invitations";
@@ -52,9 +55,27 @@ function sameHash(a: string, b: string): boolean {
   return x.length === y.length && timingSafeEqual(x, y);
 }
 
-/** E-posta kanalı yalnızca gerçek e-posta gönderimi açıkken seçilebilir (karar #191). */
+/** E-posta kanalı yalnızca gerçek e-posta gönderimi açıkken seçilebilir (karar #191; Resend ya da Graph). */
 export function inviteMailEnabled(): boolean {
-  return env().MAIL_TRANSPORT === "graph";
+  return mailEnabled();
+}
+
+/** Sıfırlama kuralı için kişilerin üst yönetici / sistem yöneticisi rolleri (karar #259). */
+export async function privilegedRolesOf(conn: DbOrTx, userIds: readonly string[]): Promise<Map<string, Role[]>> {
+  const map = new Map<string, Role[]>();
+  if (userIds.length === 0) return map;
+  const rows = await conn
+    .select({ userId: userRoles.userId, role: userRoles.role })
+    .from(userRoles)
+    .where(and(inArray(userRoles.userId, [...userIds]), inArray(userRoles.role, ["owner", "sysadmin"])));
+  for (const r of rows) map.set(r.userId, [...(map.get(r.userId) ?? []), r.role]);
+  return map;
+}
+
+/** İşlemi yapanın bu kişiyi sıfırlamasına/davet etmesine engel var mı (ekran düğmesi ve servis aynı kuralı kullanır). */
+export async function resetBlockFor(actor: Actor, userId: string, conn: DbOrTx = db()) {
+  if (actor.kind !== "user") return null;
+  return resetBlock(actor.roles, (await privilegedRolesOf(conn, [userId])).get(userId) ?? []);
 }
 
 /** Kimsenin bilmediği şifrenin özeti (davetli hesap etkinleşene kadar giriş yapılamaz). */
@@ -63,9 +84,10 @@ export async function unusablePasswordHash(): Promise<string> {
 }
 
 /** İK'nın cihazında açılacak hazır mesajlı WhatsApp bağlantısı (karar #188). */
-export function inviteWhatsappUrl(input: { phone: string; fullName: string; url: string; hours: number }): string {
+export function inviteWhatsappUrl(input: { phone: string; fullName: string; url: string; hours: number; purpose?: InvitePurpose }): string {
   const t = createTranslator({ locale: "tr", messages, namespace: "invite.message" });
-  return whatsappShareUrl(normalizePhone(input.phone)!, t("whatsapp", { name: input.fullName, url: input.url, hours: input.hours }));
+  const key = input.purpose === "reset" ? "resetWhatsapp" : "whatsapp";
+  return whatsappShareUrl(normalizePhone(input.phone)!, t(key, { name: input.fullName, url: input.url, hours: input.hours }));
 }
 
 export type IssuedInvite = {
@@ -81,7 +103,11 @@ export type IssuedInvite = {
   expiresAt: Date;
   /** Yalnızca WhatsApp kanalında: İK'nın cihazında açılacak bağlantı */
   whatsappUrl: string | null;
+  /** Etkin hesabın şifresi sıfırlanıyorsa "reset" (mesaj ve kağıt metni buna göre; karar #259). */
+  purpose: InvitePurpose;
 };
+
+export type InvitePurpose = "invite" | "reset";
 
 /**
  * Kişiye yeni davet açar (verilen transaction içinde). Kişinin açık davetleri iptal edilir.
@@ -89,9 +115,10 @@ export type IssuedInvite = {
  */
 export async function issueInvitation(
   tx: Tx,
-  input: { userId: string; channel: InviteChannel; createdBy: string | null; batchId?: string | null },
+  input: { userId: string; channel: InviteChannel; createdBy: string | null; batchId?: string | null; purpose?: InvitePurpose },
   now = new Date(),
 ): Promise<IssuedInvite> {
+  const purpose = input.purpose ?? "invite";
   const [person] = await tx
     .select({
       sicilNo: personnel.sicilNo,
@@ -138,17 +165,20 @@ export async function issueInvitation(
   const t = createTranslator({ locale: "tr", messages, namespace: "invite.message" });
   let whatsappUrl: string | null = null;
   if (input.channel === "email") {
-    const subject = t("emailSubject");
-    const body = t("emailBody", { name: person.fullName, hours });
+    const reset = purpose === "reset";
+    const subject = t(reset ? "resetSubject" : "emailSubject");
+    const body = t(reset ? "resetBody" : "emailBody", { name: person.fullName, hours });
+    const linkLabel = t(reset ? "resetOpen" : "emailOpen");
+    const footer = t(reset ? "resetFooter" : "emailFooter");
     await tx.insert(emailOutbox).values({
       kind: "account_invite",
       toAddress: person.email!,
       subject,
-      bodyText: `${subject}\n\n${body}\n${url}\n\n${t("emailFooter")}`,
-      bodyHtml: emailHtml({ heading: subject, body, linkLabel: t("emailOpen"), url, footer: t("emailFooter") }),
+      bodyText: `${subject}\n\n${body}\n${url}\n\n${footer}`,
+      bodyHtml: emailHtml({ heading: subject, body, linkLabel, url, footer }),
     });
   } else if (input.channel === "whatsapp") {
-    whatsappUrl = inviteWhatsappUrl({ phone: person.phone!, fullName: person.fullName, url, hours });
+    whatsappUrl = inviteWhatsappUrl({ phone: person.phone!, fullName: person.fullName, url, hours, purpose });
   }
 
   return {
@@ -162,22 +192,31 @@ export async function issueInvitation(
     code: code ? formatInviteCode(code) : null,
     expiresAt,
     whatsappUrl,
+    purpose,
   };
 }
 
 /**
- * İK "yeniden davet" (şifre sıfırlamanın yerini alır, karar #185): yeni davet açılır, mevcut şifre geçersiz olur,
- * kilit kalkar, bütün oturumlar kapanır. Üst yöneticiyi yalnızca üst yönetici yeniden davet edebilir.
+ * İK "Şifreyi sıfırla" / "Davet gönder" (karar #185, iş paketi 3.7): yeni davet açılır, mevcut şifre geçersiz olur,
+ * kilit kalkar, bütün oturumlar kapanır. Etkin hesapta mesaj "şifre yenileme" metniyle gider. Üst yöneticiyi yalnızca
+ * üst yönetici, sistem yöneticisini sistem yöneticisi ya da üst yönetici sıfırlayabilir (karar #259).
  */
 export async function reinvite(actor: Actor, userId: string, channel: InviteChannel): Promise<IssuedInvite> {
   assertCan(actor, "people.manage");
   assertUser(actor);
   if (actor.userId === userId) throw new ValidationError("cannot_invite_self");
-  const targetRoles = await db().select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, userId));
-  if (targetRoles.some((r) => r.role === "owner") && !isOwner(actor)) throw new ValidationError("owner_only");
+  const block = await resetBlockFor(actor, userId);
+  if (block) throw new ValidationError(block);
   const hash = await unusablePasswordHash();
   return withActor(actor, async (tx) => {
-    const issued = await issueInvitation(tx, { userId, channel, createdBy: actor.userId });
+    // Hesabı daha önce kullanmış kişiye "şifre yenileme" metni gider (sıfırlamadan sonra yeniden gönderimde de)
+    const [target] = await tx
+      .select({ activatedAt: personnel.activatedAt, lastLoginAt: personnel.lastLoginAt })
+      .from(personnel)
+      .where(eq(personnel.userId, userId))
+      .limit(1);
+    const purpose: InvitePurpose = target?.activatedAt || target?.lastLoginAt ? "reset" : "invite";
+    const issued = await issueInvitation(tx, { userId, channel, createdBy: actor.userId, purpose });
     await tx
       .update(accounts)
       .set({ password: hash })

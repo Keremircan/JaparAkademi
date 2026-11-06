@@ -38,7 +38,7 @@ export async function registerJobs(boss: PgBoss) {
   if (env().MAIL_TRANSPORT === "log") logger.warn("MAIL_TRANSPORT=log: e-postalar gönderilmiyor, yalnızca loga yazılıyor");
   await boss.work(QUEUES.mailDispatch, { batchSize: 1 }, async () => {
     const r = await dispatchEmails();
-    if (r.sent || r.failed) logger.info(r, "E-posta kuyruğu işlendi");
+    if (r.sent || r.failed || r.deferred) logger.info(r, "E-posta kuyruğu işlendi");
   });
   await boss.schedule(QUEUES.mailDispatch, "* * * * *", null, { tz: "Europe/Istanbul" });
 

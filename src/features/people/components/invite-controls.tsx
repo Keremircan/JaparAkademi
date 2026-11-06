@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, Copy, Download, Mail, MessageCircle, Printer, Send } from "lucide-react";
+import { Clock, Copy, Download, KeyRound, Mail, MessageCircle, Printer, Send } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useActionState, useState, type ReactNode } from "react";
 import { FormError } from "@/components/forms/form-error";
@@ -114,26 +114,52 @@ export function InvitePanel({ title, invite, children }: { title: string; invite
   );
 }
 
-/** Kişi kaydında "Yeniden davet" (şifre sıfırlamanın yerini alır). */
-export function ReinviteControl({ userId, mailEnabled }: { userId: string; mailEnabled: boolean }) {
-  const t = useTranslations("invite");
+/**
+ * Kişi sayfasında "Şifreyi sıfırla" (etkin hesap) ya da "Davet gönder" (etkinleşmemiş hesap; iş paketi 3.7, karar #259).
+ * Düğme kanal seçimini açar; sıfırlamada mevcut şifrenin geçersiz olacağı ayrıca onaylatılır.
+ */
+export function ResetControl({ userId, mailEnabled, mode }: { userId: string; mailEnabled: boolean; mode: "reset" | "invite" }) {
+  const t = useTranslations("invite.reset");
+  const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState<ActionResult<InviteResult> | null, FormData>(reinviteAction.bind(null, userId), null);
-  if (state?.ok) return <InvitePanel title={t("panel.reinvitedTitle")} invite={state.data} />;
+  // Sonuç sayfa yenilendikten sonra da kalır (basılı kod yalnızca bir kez gösterilir)
+  if (state?.ok) return <InvitePanel title={t(state.data.purpose === "reset" ? "doneReset" : "doneInvite")} invite={state.data} />;
+  const Icon = mode === "reset" ? KeyRound : Send;
+  const label = t(mode === "reset" ? "button" : "inviteButton");
+  if (!open) {
+    return (
+      <div className="flex flex-col items-start gap-2">
+        <Button size="lg" onClick={() => setOpen(true)}>
+          <Icon aria-hidden="true" />
+          {label}
+        </Button>
+        <p className="text-sm text-muted-foreground">{t(mode === "reset" ? "hint" : "inviteHint")}</p>
+      </div>
+    );
+  }
   return (
     <form
       action={action}
       className="flex max-w-xl flex-col gap-4"
       onSubmit={(e) => {
-        if (!window.confirm(t("reinvite.confirm"))) e.preventDefault();
+        if (mode === "reset" && !window.confirm(t("confirm"))) e.preventDefault();
       }}
     >
-      <h3 className="text-base font-semibold">{t("reinvite.title")}</h3>
-      <p className="text-sm text-muted-foreground">{t("reinvite.hint")}</p>
+      <h3 className="flex items-center gap-2 text-base font-semibold">
+        <Icon aria-hidden="true" className="size-5" />
+        {label}
+      </h3>
+      <p className="text-sm text-muted-foreground">{t("channelIntro")}</p>
       <ChannelPicker mailEnabled={mailEnabled} />
       {state && !state.ok && <FormError error={state.error} details={state.details} />}
-      <Button type="submit" size="lg" disabled={pending} className="self-start">
-        {t("reinvite.submit")}
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button type="submit" size="lg" disabled={pending}>
+          {t("submit")}
+        </Button>
+        <Button type="button" variant="outline" size="lg" onClick={() => setOpen(false)}>
+          {t("cancel")}
+        </Button>
+      </div>
     </form>
   );
 }

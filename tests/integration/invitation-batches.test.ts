@@ -138,6 +138,26 @@ describe("İş paketi 2.6c: toplu davet", () => {
     await expect(createInvitationBatch(hr.actor, { userIds: [boss.userId], mode: "print" })).rejects.toMatchObject({ code: "invite_batch_empty" });
   });
 
+  it("FG-3.7 karar #259: İK etkinleşmemiş sistem yöneticisini ve üst yöneticiyi listede görmez, seçse de atlanır; sistem yöneticisi görür", async () => {
+    const hr = await createTestUser({ roles: ["hr"] });
+    const admin = await createTestUser({ roles: ["sysadmin"] });
+    const newAdmin = await createTestUser({ roles: ["sysadmin"], sicilNo: "9301" });
+    const boss = await createTestUser({ roles: ["owner"], sicilNo: "9302" });
+    const plain = await person(hr, "9303");
+
+    const forHr = (await listInvitees(hr.actor)).map((r) => r.userId);
+    expect(forHr).toContain(plain);
+    expect(forHr).not.toContain(newAdmin.userId);
+    expect(forHr).not.toContain(boss.userId);
+    const result = await createInvitationBatch(hr.actor, { userIds: [newAdmin.userId, boss.userId, plain], mode: "print" });
+    expect(result.counts).toEqual({ email: 0, whatsapp: 0, print: 1, skipped: 2 });
+    expect(result.printed.map((p) => p.userId)).toEqual([plain]);
+
+    const forAdmin = (await listInvitees(admin.actor)).map((r) => r.userId);
+    expect(forAdmin).toContain(newAdmin.userId);
+    expect(forAdmin).not.toContain(boss.userId);
+  });
+
   it("karar #191: geçici şifreli eski hesap toplu davet edilince eski şifre geçersiz olur", async () => {
     const hr = await createTestUser({ roles: ["hr"] });
     const legacy = await createTestUser({ mustChangePassword: true });

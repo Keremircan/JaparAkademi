@@ -45,6 +45,14 @@ describe("Yetki politikası (SPEC 2.3)", () => {
     expect(can(user("sysadmin"), "people.view_national_id")).toBe(false);
   });
 
+  it("FG-3.7 karar #261: e-posta durumu ekranı yalnızca sistem yöneticisi (ve üst yönetici)", () => {
+    expect(can(user("sysadmin"), "mail.manage")).toBe(true);
+    expect(can(user("owner"), "mail.manage")).toBe(true);
+    for (const role of ["hr", "ohs_specialist", "section_manager", "trainer", "security"] as const) {
+      expect(can(user(role), "mail.manage")).toBe(false);
+    }
+  });
+
   it("çoklu rolde yetkiler birleşir", () => {
     const multi = user("trainer", "section_manager");
     expect(can(multi, "practice.mark")).toBe(true);

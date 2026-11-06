@@ -1,6 +1,6 @@
 import { and, desc, eq, inArray, isNotNull, isNull, lt, type SQL } from "drizzle-orm";
 import type { Actor } from "@/server/authz/actor";
-import { assertCan, assertUser, isOwner } from "@/server/authz/policy";
+import { assertCan, assertUser } from "@/server/authz/policy";
 import { orgScopeFor } from "@/server/authz/scope";
 import { decryptInviteLink } from "@/server/crypto/invite-link";
 import { db } from "@/server/db/client";
@@ -13,7 +13,6 @@ import {
   personnel,
   positions,
   sessions,
-  userRoles,
   users,
 } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
@@ -25,8 +24,9 @@ import {
   type InviteChannel,
   isInvitationOpen,
   pickChannel,
+  resetBlock,
 } from "@/server/state/invitations";
-import { inviteMailEnabled, inviteWhatsappUrl, issueInvitation, type IssuedInvite, unusablePasswordHash } from "./invitations";
+import { inviteMailEnabled, inviteWhatsappUrl, issueInvitation, type IssuedInvite, privilegedRolesOf, unusablePasswordHash } from "./invitations";
 import { getSettings } from "./settings";
 
 /**
@@ -99,11 +99,16 @@ export async function listInvitees(actor: Actor, filter: InviteeFilter = {}): Pr
     .orderBy(personnel.fullName)
     .limit(LIST_LIMIT);
   if (people.length === 0) return [];
+  // Üst yöneticiyi yalnızca üst yönetici, sistem yöneticisini sistem yöneticisi davet eder (karar #259)
+  const privileged = await privilegedRolesOf(db(), people.map((p) => p.userId));
+  const actorRoles = actor.kind === "user" ? actor.roles : [];
+  const allowed = people.filter((p) => !resetBlock(actorRoles, privileged.get(p.userId) ?? []));
+  if (allowed.length === 0) return [];
 
   const invites = await db()
     .select()
     .from(accountInvitations)
-    .where(inArray(accountInvitations.userId, people.map((p) => p.userId)))
+    .where(inArray(accountInvitations.userId, allowed.map((p) => p.userId)))
     .orderBy(desc(accountInvitations.createdAt));
   const latest = new Map<string, (typeof invites)[number]>();
   for (const i of invites) if (!latest.has(i.userId)) latest.set(i.userId, i);
@@ -111,7 +116,7 @@ export async function listInvitees(actor: Actor, filter: InviteeFilter = {}): Pr
   const now = new Date();
   const q = filter.q?.trim().toLocaleLowerCase("tr");
 
-  return people
+  return allowed
     .map((p) => {
       const inv = latest.get(p.userId) ?? null;
       const state = accountState({ activatedAt: null, mustChangePassword: p.mustChangePassword, latestInvite: inv, now, maxAttempts });
@@ -140,8 +145,8 @@ export type BatchResult = {
 };
 
 /**
- * Seçilen kişilere tek işlemde davet (karar #200). Etkinleşmiş, aktif olmayan, kendisi olan ya da (owner değilken)
- * üst yönetici olan kişiler atlanır. Açık daveti olanın eski daveti iptal edilir.
+ * Seçilen kişilere tek işlemde davet (karar #200). Etkinleşmiş, aktif olmayan, kendisi olan ya da işlemi yapanın
+ * davet edemeyeceği (üst yönetici / sistem yöneticisi, karar #259) kişiler atlanır. Açık daveti olanın eski daveti iptal edilir.
  */
 export async function createInvitationBatch(
   actor: Actor,
@@ -168,17 +173,13 @@ export async function createInvitationBatch(
     .from(personnel)
     .leftJoin(positions, eq(positions.id, personnel.positionId))
     .where(inArray(personnel.userId, ids));
-  const owners = new Set(
-    (await db().select({ userId: userRoles.userId }).from(userRoles).where(and(inArray(userRoles.userId, ids), eq(userRoles.role, "owner")))).map(
-      (r) => r.userId,
-    ),
-  );
+  const privileged = await privilegedRolesOf(db(), ids);
   const eligible = rows.filter(
     (r) =>
       r.status === "active" &&
       !r.activatedAt &&
       r.userId !== actor.userId &&
-      (isOwner(actor) || !owners.has(r.userId)) &&
+      !resetBlock(actor.roles, privileged.get(r.userId) ?? []) &&
       (scope.all || (!!r.orgUnitId && scope.orgUnitIds.has(r.orgUnitId))),
   );
   if (eligible.length === 0) throw new ValidationError("invite_batch_empty");

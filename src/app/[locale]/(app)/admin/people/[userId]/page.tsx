@@ -7,9 +7,9 @@ import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 import { Button } from "@/components/ui/button";
 import { adminAccess, orNull } from "@/features/admin/guard";
-import { ReinviteControl } from "@/features/people/components/invite-controls";
+import { ResetControl } from "@/features/people/components/invite-controls";
 import { RevealNationalId, StatusControls } from "@/features/people/components/person-actions";
-import { inviteMailEnabled, inviteStatus } from "@/server/services/invitations";
+import { inviteMailEnabled, inviteStatus, resetBlockFor } from "@/server/services/invitations";
 import { Link } from "@/i18n/navigation";
 import { can } from "@/server/authz/policy";
 import { listPositionOptions, listUnitOptions } from "@/server/services/org";
@@ -66,7 +66,8 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
   const canSeeTc = can(access.actor, "people.view_national_id");
   const isSelf = access.actor.userId === person.userId;
   const canAssign = can(access.actor, "assignments.manage");
-  const [assignmentList, trainers, ta, tcert, certs, invite, tInvite, photo] = await Promise.all([
+  const showReset = canManage && !isSelf && person.status === "active";
+  const [assignmentList, trainers, ta, tcert, certs, invite, tInvite, photo, block] = await Promise.all([
     canAssign ? assignmentsForPerson(access.actor, person.userId) : Promise.resolve([]),
     canAssign ? trainerCandidates(access.actor) : Promise.resolve([]),
     getTranslations("assignments"),
@@ -75,6 +76,7 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
     inviteStatus(access.actor, person.userId),
     getTranslations("invite"),
     personPhoto(access.actor, person.userId),
+    showReset ? resetBlockFor(access.actor, person.userId) : Promise.resolve(null),
   ]);
   const open = assignmentList.find((a) => ["active", "awaiting_readiness", "awaiting_decision"].includes(a.status));
   const past = assignmentList.filter((a) => a !== open);
@@ -130,6 +132,37 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
         <Row label={t("detail.sourceLabel")}>{t(`detail.source.${person.source}`)}</Row>
         {person.endDate && <Row label={t("detail.endDate")}>{fmtDate(person.endDate)}</Row>}
       </dl>
+
+      {/* Hesap ve şifre sıfırlama kişi bilgilerinin hemen altında (iş paketi 3.7, karar #259) */}
+      <section aria-labelledby="account-heading" className="mb-6">
+        <h2 id="account-heading" className="mb-2 text-base font-semibold">
+          {t("detail.account")}
+        </h2>
+        <div className="flex flex-col gap-4 rounded-xl border px-4 py-3">
+          <p className="text-sm">
+            {tInvite("status.label")}:{" "}
+            <span className="font-medium" data-testid="account-state">
+              {tInvite(`status.${invite.state}`, {
+                channel: invite.channel ? tInvite(`channel.${invite.channel}`) : "",
+                date: invite.expiresAt ? format.dateTime(invite.expiresAt, { dateStyle: "medium", timeStyle: "short" }) : "",
+              })}
+            </span>
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {t("detail.lastLogin")}:{" "}
+            {person.lastLoginAt ? format.dateTime(person.lastLoginAt, { dateStyle: "medium", timeStyle: "short" }) : t("detail.never")}
+            {person.mustChangePassword && ` · ${t("mustChange")}`}
+          </p>
+          {showReset &&
+            (block ? (
+              <p className="text-sm text-muted-foreground" data-testid="reset-blocked">
+                {tInvite(`reset.blocked.${block}`)}
+              </p>
+            ) : (
+              <ResetControl userId={person.userId} mailEnabled={inviteMailEnabled()} mode={invite.state === "active" || person.lastLoginAt ? "reset" : "invite"} />
+            ))}
+        </div>
+      </section>
 
       {canAssign && (
         <section aria-labelledby="training-heading" className="mb-6">
@@ -206,25 +239,6 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
               : tc("none")}
           </p>
         )}
-      </div>
-
-      <h2 className="mb-2 text-base font-semibold">{t("detail.account")}</h2>
-      <div className="mb-6 flex flex-col gap-4 rounded-xl border px-4 py-3">
-        <p className="text-sm text-muted-foreground">
-          {t("detail.lastLogin")}:{" "}
-          {person.lastLoginAt ? format.dateTime(person.lastLoginAt, { dateStyle: "medium", timeStyle: "short" }) : t("detail.never")}
-          {person.mustChangePassword && ` · ${t("mustChange")}`}
-        </p>
-        <p className="text-sm">
-          {tInvite("status.label")}:{" "}
-          <span className="font-medium" data-testid="account-state">
-            {tInvite(`status.${invite.state}`, {
-              channel: invite.channel ? tInvite(`channel.${invite.channel}`) : "",
-              date: invite.expiresAt ? format.dateTime(invite.expiresAt, { dateStyle: "medium", timeStyle: "short" }) : "",
-            })}
-          </span>
-        </p>
-        {canManage && !isSelf && person.status === "active" && <ReinviteControl userId={person.userId} mailEnabled={inviteMailEnabled()} />}
       </div>
 
       {canManage && !isSelf && (

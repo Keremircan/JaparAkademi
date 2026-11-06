@@ -48,7 +48,7 @@
       "sharedDeviceHint": "The session ends automatically after a short period of inactivity.",
       "submit": "Sign in",
       "submitting": "Signing in…",
-      "help": "If you forgot your password, contact HR.",
+      "help": "If your email is registered, use \"I forgot my password\"; otherwise HR will give you a new password link.",
       "forgot": "I forgot my password",
       "adminHint": "Administrators can also sign in with their registered email address.",
       "activate": "Activate my account"
@@ -92,7 +92,8 @@
       "send": "Send link",
       "sending": "Sending…",
       "sent": "Your request has been received. If your email address is registered, a link will arrive within a few minutes.",
-      "noEmail": "If your email address is not registered, HR will reset your password.",
+      "noEmail": "If your email address is not registered, HR will give you a new password link (by WhatsApp or on a printed sheet).",
+      "mailOff": "Emails cannot be sent right now. Contact HR for a new password link; they will give it to you by WhatsApp or on a printed sheet.",
       "backToLogin": "Back to sign in",
       "resetTitle": "Set a new password",
       "submit": "Save password",
@@ -429,6 +430,9 @@
     "invite_phone_missing": "The person has no valid registered phone number. Choose another channel or add the phone.",
     "cannot_invite_self": "You cannot re-invite yourself; change your password from your profile.",
     "owner_only": "Only an owner can do this.",
+    "sysadmin_only": "Only a system administrator or an owner can do this.",
+    "invalid_email": "Enter a valid email address.",
+    "mail_disabled": "Email sending is turned off on this server.",
     "last_owner": "At least one active owner must remain in the system.",
     "login_email_required": "This role signs in with email, so the person's email address must be registered.",
     "login_email_taken": "This email address is registered to another active employee. Email must be unique for administrator roles.",
@@ -490,6 +494,10 @@
       "logins": {
         "title": "Sign-in log",
         "description": "Who signed in or tried to, when and from which IP; failed attempts."
+      },
+      "email": {
+        "title": "Email status",
+        "description": "Sending service, today's count, recent failures and a test email."
       }
     },
     "org": {
@@ -3025,6 +3033,16 @@
         "hint": "An email that cannot be sent is marked failed after this many attempts.",
         "unit": "{n} attempts"
       },
+      "mail_daily_limit": {
+        "label": "Daily email limit",
+        "hint": "At most this many emails are sent per day (UTC, resets at 03:00 Türkiye time); the rest wait for the next day. The Resend free plan allows 100 per day. 0 = no limit.",
+        "unit": "{n} emails"
+      },
+      "mail_link_reserve": {
+        "label": "Share reserved for link emails",
+        "hint": "This much of the daily limit is kept for password reset, account invitation and visitor links only; notification emails cannot use it.",
+        "unit": "{n} emails"
+      },
       "notify_push_events": {
         "label": "Events sent as push notifications",
         "hint": "For the selected events, a \"You have a new notification\" alert goes to the device of people who turned notifications on.",
@@ -3545,7 +3563,6 @@
     },
     "panel": {
       "createdTitle": "Employee created",
-      "reinvitedTitle": "New invitation ready",
       "expires": "The invitation is valid until {date} and can be used once.",
       "emailSent": "The activation link is being sent to the person's email.",
       "whatsappIntro": "When you press the button, WhatsApp opens with the message written; just press Send.",
@@ -3567,11 +3584,21 @@
       "not_activated": "Awaiting first sign-in",
       "not_invited": "Not invited"
     },
-    "reinvite": {
-      "title": "Invite again",
-      "hint": "For someone who forgot their password, lost their invitation or whose invitation expired. The current password and the old invitation become invalid and open sessions are closed.",
-      "submit": "Create invitation",
-      "confirm": "The person's current password will become invalid and their open sessions will be closed. Continue?"
+    "reset": {
+      "button": "Reset password",
+      "hint": "For someone who forgot their password. The person gets a link to set a new password; their current password becomes invalid and their open sessions are closed.",
+      "inviteButton": "Send invitation",
+      "inviteHint": "The person has not activated their account yet. A new activation link is created; any old invitation becomes invalid.",
+      "channelIntro": "Choose how to get the link to the person.",
+      "submit": "Create link",
+      "cancel": "Cancel",
+      "confirm": "The person's current password will become invalid and their open sessions will be closed. Continue?",
+      "doneReset": "Password reset, the new password link is ready",
+      "doneInvite": "New invitation ready",
+      "blocked": {
+        "owner_only": "Only another owner can reset an owner's password.",
+        "sysadmin_only": "Only a system administrator or an owner can reset a system administrator's password."
+      }
     },
     "batch": {
       "title": "Invitations",
@@ -3643,6 +3670,94 @@
   },
   "owner": {
     "actingNotice": "This action normally belongs to the {role} role. You are doing it as owner; it will be recorded that way."
+  },
+  "mailStatus": {
+    "title": "Email status",
+    "description": "Which service sends the emails, today's count and recent failures.",
+    "on": "Email sending is on",
+    "off": "Email sending is off",
+    "offHint": "This server does not send emails; only their subjects are written to the server log (MAIL_TRANSPORT=log). Meanwhile invitation and password reset links are given by WhatsApp or on a printed sheet, and the \"I forgot my password\" screen sends people to HR. To turn it on, see the setup guide: docs/runbooks/email-resend.md.",
+    "transport": "Service",
+    "transports": {
+      "resend": "Resend",
+      "graph": "Microsoft 365 (Graph)",
+      "log": "Off (server log only)"
+    },
+    "sender": "Sender",
+    "noSender": "Not set",
+    "today": "Sent today",
+    "todayOf": "{sent, number} / {limit, number}",
+    "todayUnlimited": "{sent, number} (no limit)",
+    "todayHint": "The counter resets every day at {time}. Password reset, invitation and visitor links go first; the last {reserve, number} emails of the limit are kept for them only. When the limit is reached, the rest wait for the next day.",
+    "unlimitedHint": "The daily limit is off (Settings → Daily email limit: 0).",
+    "week": {
+      "title": "Last 7 days",
+      "pending": "Waiting (now)",
+      "sent": "Sent",
+      "failed": "Failed"
+    },
+    "pendingProblem": "Latest problem of the waiting emails ({time}): {problem}.",
+    "failures": {
+      "title": "Recent failures",
+      "empty": "No failed emails in the last 7 days."
+    },
+    "kinds": {
+      "password_reset": "Password reset",
+      "visitor_link": "Visitor link",
+      "account_invite": "Account invitation",
+      "mail_test": "Test email",
+      "notification": "Notification"
+    },
+    "problems": {
+      "auth": "Authentication error",
+      "permission": "Not allowed to send",
+      "sender": "Invalid sender address",
+      "request": "Email rejected",
+      "quota": "Sending quota reached",
+      "rate": "Too many requests",
+      "unavailable": "Service not responding",
+      "network": "Could not connect",
+      "unknown": "Unexpected error"
+    },
+    "hints": {
+      "common": {
+        "auth": "The email service did not accept the credentials. Check the .env file on the server and restart the application.",
+        "permission": "The service does not allow sending from this address. Check the permission steps in the setup guide.",
+        "sender": "The service does not recognise the MAIL_FROM address. Check the address in the .env file on the server.",
+        "request": "The service did not accept this email; the most common cause is a wrong recipient address. Check the person's email address.",
+        "quota": "The sending quota is used up. Waiting emails go out on their own once the quota resets.",
+        "rate": "Too many requests were sent in a short time. Emails are retried in a minute.",
+        "unavailable": "The email service is temporarily not responding. Emails are retried later on their own.",
+        "network": "The server could not reach the email service (internet connection, DNS or firewall). Check the server's outgoing HTTPS (443) connection.",
+        "unknown": "See the server (worker) log for details."
+      },
+      "resend": {
+        "auth": "The Resend API key is invalid, deleted or suspended. Create a new key with \"Sending access\" under Resend → API Keys, put it in RESEND_API_KEY in the .env file on the server and restart the application.",
+        "permission": "The domain is not verified in Resend, MAIL_FROM is not on that domain, or the API key does not allow that domain. An unverified account can only send tests to the account owner's own address. Check that the domain shows \"Verified\" under Resend → Domains.",
+        "sender": "The MAIL_FROM address is invalid. Use an address on the domain verified in Resend (e.g. bildirim@mail.japarakademi.io).",
+        "quota": "The Resend free plan quota is used up (100 emails per day, 3,000 per month). The daily quota resets at 03:00 Türkiye time; waiting emails then go out on their own."
+      },
+      "graph": {
+        "auth": "The Microsoft 365 app registration details (GRAPH_TENANT_ID, GRAPH_CLIENT_ID, GRAPH_CLIENT_SECRET) were not accepted, or the client secret has expired.",
+        "permission": "The app does not have the Mail.Send permission, admin consent is missing, or the app is limited to another mailbox.",
+        "sender": "The MAIL_FROM mailbox was not found in Microsoft 365."
+      }
+    },
+    "test": {
+      "title": "Send a test email",
+      "intro": "Send a test email to an address to see that the settings work. The result appears here right away and is added to today's count.",
+      "to": "Recipient email address",
+      "submit": "Send test email",
+      "sending": "Sending…",
+      "ok": "The test email was handed to the service. Check the inbox (or the spam folder) in a few minutes.",
+      "disabled": "A test email cannot be sent while email sending is off."
+    },
+    "testEmail": {
+      "subject": "JAPAR Akademi test email",
+      "body": "This email was sent by {name} to test the JAPAR Akademi email settings. You do not need to do anything.",
+      "open": "Open JAPAR Akademi",
+      "footer": "This email was sent automatically by JAPAR Akademi."
+    }
   },
   "logins": {
     "title": "Sign-in log",

@@ -92,6 +92,8 @@ export default async function globalSetup() {
     });
     // Dil tercihi akışı kullanıcısı (karar #207)
     await createAccount(sys, { sicilNo: `E2E-${suffix}-EN${p}`, fullName: "Deneme English", password: E2E_PASSWORD, mustChangePassword: false });
+    // Sistem yöneticisi: e-posta durumu ekranı ve İK'nın sıfırlayamayacağı hesap (iş paketi 3.7, karar #259/#261)
+    await createAccount(sys, { sicilNo: `E2E-${suffix}-SA${p}`, fullName: `Deneme Sistem Yöneticisi ${p}`, password: E2E_PASSWORD, roles: ["sysadmin"], mustChangePassword: false });
     // İK akışı kullanıcısı
     await createAccount(sys, {
       sicilNo: `E2E-${suffix}-HR${p}`,

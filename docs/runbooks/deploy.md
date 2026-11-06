@@ -10,8 +10,8 @@ Dosyalar: `docker/compose.prod.yml`, `docker/Dockerfile`, `docker/caddy/Caddyfil
 - Docker Engine 27+ ve Docker Compose eklentisi
 - 80 ve 443 numaralı portlar internete açık (Let's Encrypt sertifikası için)
 - İki DNS kaydı sunucunun IP adresine:
-  - `APP_DOMAIN` — uygulama (ör. `akademi.japar.com.tr`)
-  - `FILES_DOMAIN` — dosya deposu (ör. `dosya.akademi.japar.com.tr`). Tarayıcı video, PDF ve görselleri imzalı adreslerle doğrudan buradan alır.
+  - `APP_DOMAIN` — uygulama (ör. `japarakademi.io`)
+  - `FILES_DOMAIN` — dosya deposu (ör. `dosya.japarakademi.io`). Tarayıcı video, PDF ve görselleri imzalı adreslerle doğrudan buradan alır.
 - Saat dilimi önemli değil (uygulama ve veritabanı `Europe/Istanbul` ile hesaplar), ama `timedatectl set-timezone Europe/Istanbul` loglarda kolaylık sağlar.
 
 ## 2. İlk kurulum
@@ -80,6 +80,10 @@ $C up -d                         # app ve worker yeni ayarla yeniden başlar
 Gizli anahtar (`VAPID_PRIVATE_KEY`) yalnızca sunucuda kalır; dosyanın kasadaki kopyasını güncelleyin. Anahtar değişirse kişilerin bildirimleri profilden yeniden açması gerekir.
 Worker loglarında `PUSH_TRANSPORT=log` uyarısı görünüyorsa push kapalıdır.
 
+### E-posta (Resend)
+
+Hesap, alan adı doğrulaması, API anahtarı ve deneme adımları: [`email-resend.md`](email-resend.md). Hazır değilse `MAIL_TRANSPORT=log` bırakın; sistem e-postasız çalışır (davet ve şifre sıfırlama WhatsApp ya da basılı kağıtla).
+
 ## 4. Güncelleme (yeni sürüm)
 
 Her değişiklik PR'da test edilir (lint, tip, birim, entegrasyon, build, e2e; imaj derlemesi aynı anda). `main`'e birleştirince testler tekrar çalışmaz; yalnızca imajlar derlenip `ghcr.io/<sahip>/japar-akademi-{app,worker}:latest` ve `:<commit>` etiketleriyle gönderilir (~5 dk). Her gece 04:00'te (İstanbul) `main`'de bütün testler çalışır; elle başlatmak için GitHub → Actions → CI → **Run workflow**.
@@ -126,7 +130,7 @@ Migration'lar geri alınmaz; şema değişikliği içeren bir sürümü geri alm
 | Worker canlı mı | Loglarda 5 dakikada bir heartbeat; `$C ps` durumları |
 | Yedek | Her gece 02:30 (`backup` servisi). Son yedek: `ls -lt docker/backups/db/daily | head` |
 | Elle yedek | `$C exec backup /usr/local/bin/backup.sh` |
-| E-posta hataları | Sistem yöneticisine uygulama içi bildirim ("Bazı e-postalar gönderilemedi") |
+| E-posta | Sistem → E-posta durumu: sayaç, bekleyen, son hatalar, deneme e-postası. Kalıcı hatada sistem yöneticisine bildirim ("Bazı e-postalar gönderilemedi"). Kurulum ve sorun giderme: `email-resend.md` |
 | Disk | `df -h`, `docker system df`. Video ve yedekler en çok yer kaplar. |
 | Sertifika (HTTPS) | Caddy otomatik yeniler; sorun olursa `$C logs caddy` |
 
@@ -136,4 +140,4 @@ Migration'lar geri alınmaz; şema değişikliği içeren bir sürümü geri alm
 - Veritabanı ve Garage portları dışarı açılmaz; yalnızca Caddy 80/443 dinler.
 - Caddy güvenlik başlıklarını ekler (HSTS, CSP, X-Frame-Options, Permissions-Policy, Referrer-Policy).
 - CI her değişiklikte bağımlılık güvenlik taraması yapar (`scripts/audit-check.mjs`); düzeltmesi olmayan ve incelenen istisnalar `audit-allowlist.json`'dadır ve gerekçeleri yazılıdır.
-- Kişisel veri sunucu dışındaki üçüncü taraf servislere gönderilmez. İmajlar GHCR'de durur ama yalnızca kod içerir. E-posta kurumun M365 kiracısından gider (Graph `Mail.Send`).
+- Kişisel veri sunucu dışındaki üçüncü taraf servislere gönderilmez. İmajlar GHCR'de durur ama yalnızca kod içerir. İstisna: e-postalar Resend (ABD) üzerinden gider (karar #258; kurulum `email-resend.md`, yedek M365 Graph).

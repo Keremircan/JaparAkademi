@@ -8,6 +8,7 @@ import {
   invitationForToken,
   inviteStatus,
   reinvite,
+  resetBlockFor,
   verifyInviteCode,
 } from "@/server/services/invitations";
 import { createPerson } from "@/server/services/people";
@@ -148,6 +149,51 @@ describe("İş paketi 2.6b: hesaba davet ve etkinleştirme", () => {
     expect((await activateWithToken({ token, newPassword: NEW_PASSWORD, sharedDevice: false }, meta())).ok).toBe(true);
 
     await expect(reinvite(hr.actor, hr.userId, "print")).rejects.toMatchObject({ code: "cannot_invite_self" });
+  });
+
+  it("FG-3.7 karar #259: sistem yöneticisini sistem yöneticisi ya da üst yönetici, üst yöneticiyi yalnızca üst yönetici sıfırlar", async () => {
+    const hr = await createTestUser({ roles: ["hr"] });
+    const admin = await createTestUser({ roles: ["sysadmin"] });
+    const otherAdmin = await createTestUser({ roles: ["sysadmin"] });
+    const boss = await createTestUser({ roles: ["owner"] });
+    const worker = await createTestUser();
+
+    // İK: sistem yöneticisini ve üst yöneticiyi sıfırlayamaz; ekran aynı kuralla düğme yerine açıklama gösterir
+    await expect(reinvite(hr.actor, admin.userId, "print")).rejects.toMatchObject({ code: "sysadmin_only" });
+    await expect(reinvite(hr.actor, boss.userId, "print")).rejects.toMatchObject({ code: "owner_only" });
+    expect(await resetBlockFor(hr.actor, admin.userId)).toBe("sysadmin_only");
+    expect(await resetBlockFor(hr.actor, boss.userId)).toBe("owner_only");
+    expect(await resetBlockFor(hr.actor, worker.userId)).toBeNull();
+
+    // Sistem yöneticisi: başka bir sistem yöneticisini sıfırlar, üst yöneticiyi sıfırlayamaz
+    expect((await reinvite(otherAdmin.actor, admin.userId, "print")).code).toMatch(/^\d{4} \d{4}$/);
+    await expect(reinvite(otherAdmin.actor, boss.userId, "print")).rejects.toMatchObject({ code: "owner_only" });
+
+    // Üst yönetici herkesi sıfırlar
+    expect((await reinvite(boss.actor, otherAdmin.userId, "print")).code).toMatch(/^\d{4} \d{4}$/);
+    expect(await resetBlockFor(boss.actor, admin.userId)).toBeNull();
+  });
+
+  it("FG-3.7 karar #259: hesabı kullanılmış kişiye \"şifre yenileme\" metni, hiç kullanılmamışa davet metni gider", async () => {
+    const hr = await createTestUser({ roles: ["hr"] });
+    const used = await createTestUser({ email: "kullanan@japar.test" });
+    await signIn({ sicilNo: used.sicilNo, password: TEST_PASSWORD, sharedDevice: false }, meta());
+    const fresh = await createTestUser({ email: "yeni@japar.test" });
+
+    const reset = await reinvite(hr.actor, used.userId, "email");
+    expect(reset.purpose).toBe("reset");
+    const [resetMail] = await db().select().from(emailOutbox).where(eq(emailOutbox.toAddress, "kullanan@japar.test"));
+    expect(resetMail).toMatchObject({ kind: "account_invite", subject: "JAPAR Akademi şifrenizi yenileyin" });
+    expect(resetMail?.bodyText).toContain(reset.url);
+    // Eski şifre geçersiz; sıfırlamadan sonra yeniden gönderimde de aynı metin
+    expect((await signIn({ sicilNo: used.sicilNo, password: TEST_PASSWORD, sharedDevice: false }, meta())).ok).toBe(false);
+    expect((await reinvite(hr.actor, used.userId, "whatsapp").catch((e: { code: string }) => e.code))).toBe("invite_phone_missing");
+    expect((await reinvite(hr.actor, used.userId, "print")).purpose).toBe("reset");
+
+    const invite = await reinvite(hr.actor, fresh.userId, "email");
+    expect(invite.purpose).toBe("invite");
+    const [inviteMail] = await db().select().from(emailOutbox).where(eq(emailOutbox.toAddress, "yeni@japar.test"));
+    expect(inviteMail?.subject).toBe("JAPAR Akademi hesabınızı etkinleştirin");
   });
 
   it("karar #193: üst yöneticiyi yalnızca üst yönetici yeniden davet eder", async () => {

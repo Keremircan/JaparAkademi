@@ -29,13 +29,23 @@ const serverEnvSchema = z.object({
     .string()
     .regex(/^\d+:[A-Za-z0-9+/=]+(,\d+:[A-Za-z0-9+/=]+)*$/, '"<sürüm>:<base64>" biçiminde olmalı'),
   NATIONAL_ID_HMAC_KEY: z.string().min(32),
-  /** E-posta: geliştirme/testte "log" (gönderilmez, loga yazılır); canlı ortamda "graph" (karar #87; worker uyarır). */
-  MAIL_TRANSPORT: z.enum(["log", "graph"]).default("log"),
+  /**
+   * E-posta: geliştirme/testte "log" (gönderilmez, loga yazılır); canlı ortamda "resend" (iş paketi 3.7, karar #258)
+   * ya da yedek olarak "graph" (kurumun M365 kiracısı). "log" iken worker uyarır.
+   */
+  MAIL_TRANSPORT: z.enum(["log", "graph", "resend"]).default("log"),
+  /** Resend API anahtarı (yalnızca gönderim izinli; bkz. docs/runbooks/email-resend.md). */
+  RESEND_API_KEY: z.preprocess((v) => (v === "" ? undefined : v), z.string().regex(/^re_\S{8,}$/, "re_ ile başlayan Resend API anahtarı olmalı").optional()),
   GRAPH_TENANT_ID: z.preprocess((v) => (v === "" ? undefined : v), z.string().optional()),
   GRAPH_CLIENT_ID: z.preprocess((v) => (v === "" ? undefined : v), z.string().optional()),
   GRAPH_CLIENT_SECRET: z.preprocess((v) => (v === "" ? undefined : v), z.string().optional()),
-  /** Gönderen posta kutusu (M365 kiracısında Mail.Send izni verilmiş adres). */
+  /** Gönderen adres: Resend'de doğrulanmış alan adında bir adres; Graph'ta Mail.Send izni verilmiş posta kutusu. */
   MAIL_FROM: z.preprocess((v) => (v === "" ? undefined : v), z.email().optional()),
+  /** Gönderen adı (Resend; boşsa "JAPAR Akademi"). Harf, rakam, boşluk, nokta, tire. */
+  MAIL_FROM_NAME: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.string().regex(/^[\p{L}\p{N} ._-]{1,80}$/u, "en çok 80 karakter; harf, rakam, boşluk, nokta, tire").optional(),
+  ),
   /** Web push: geliştirme/testte "log" (gönderilmez); canlı ortamda "webpush" (karar #175). */
   PUSH_TRANSPORT: z.enum(["log", "webpush"]).default("log"),
   /** VAPID anahtarları (`npm run push:keys`). Genel anahtar tarayıcıya verilir; boşsa push bölümü kapalı görünür. */
@@ -49,6 +59,9 @@ const serverEnvSchema = z.object({
 ).refine(
   (e) => e.MAIL_TRANSPORT !== "graph" || (!!e.GRAPH_TENANT_ID && !!e.GRAPH_CLIENT_ID && !!e.GRAPH_CLIENT_SECRET && !!e.MAIL_FROM),
   { message: "MAIL_TRANSPORT=graph için GRAPH_TENANT_ID, GRAPH_CLIENT_ID, GRAPH_CLIENT_SECRET ve MAIL_FROM zorunlu", path: ["MAIL_TRANSPORT"] },
+).refine(
+  (e) => e.MAIL_TRANSPORT !== "resend" || (!!e.RESEND_API_KEY && !!e.MAIL_FROM),
+  { message: "MAIL_TRANSPORT=resend için RESEND_API_KEY ve MAIL_FROM zorunlu", path: ["MAIL_TRANSPORT"] },
 );
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
