@@ -156,7 +156,7 @@ function personnelNotice(locale: SampleLocale, r: SampleRetention): Sample {
         ],
         [
           "7. Yurt dışına aktarım",
-          "Sistem, JAPAR adına kiralanan ve Hostinger'ın Almanya'daki (Avrupa Birliği) veri merkezinde bulunan bir sunucuda çalışır; verileriniz bu sunucuda saklanır. E-postalar JAPAR'ın Microsoft 365 hizmeti üzerinden gönderilir. Cihaz bildirimine izin verirseniz tarayıcınızın bildirim hizmeti (ör. Google, Apple, Mozilla) yalnızca şifreli bir bildirim kimliği taşır; bildirimin içeriği ve kişisel bilgileriniz bu hizmetlere gönderilmez.",
+          "Sistem, JAPAR adına kiralanan ve Hostinger'ın Almanya'daki (Avrupa Birliği) veri merkezinde bulunan bir sunucuda çalışır; verileriniz bu sunucuda saklanır. E-postalar Resend Inc. (ABD) e-posta gönderim hizmeti üzerinden gönderilir; bu hizmete yalnızca e-posta adresiniz ve e-postanın içeriği (ör. bildirim metni, şifre ya da hesap bağlantısı) iletilir. Cihaz bildirimine izin verirseniz tarayıcınızın bildirim hizmeti (ör. Google, Apple, Mozilla) yalnızca şifreli bir bildirim kimliği taşır; bildirimin içeriği ve kişisel bilgileriniz bu hizmetlere gönderilmez.",
           TRANSFER_BASIS.tr,
         ],
         [
@@ -223,7 +223,7 @@ function personnelNotice(locale: SampleLocale, r: SampleRetention): Sample {
       ],
       [
         "7. Transfer abroad",
-        "The System runs on a server rented on behalf of JAPAR in Hostinger's data centre in Germany (European Union); your data is stored on this server. E-mails are sent through JAPAR's Microsoft 365 service. If you allow device notifications, your browser's push service (for example Google, Apple or Mozilla) carries only an encrypted notification ID; the content of the notification and your personal data are not sent to these services.",
+        "The System runs on a server rented on behalf of JAPAR in Hostinger's data centre in Germany (European Union); your data is stored on this server. E-mails are sent through the e-mail delivery service of Resend Inc. (USA); only your e-mail address and the content of the e-mail (for example the notification text or a password or account link) are passed to this service. If you allow device notifications, your browser's push service (for example Google, Apple or Mozilla) carries only an encrypted notification ID; the content of the notification and your personal data are not sent to these services.",
         TRANSFER_BASIS.en,
       ],
       [
@@ -319,7 +319,7 @@ function visitorNotice(locale: SampleLocale, r: SampleRetention): Sample {
         ],
         [
           "7. Yurt dışına aktarım",
-          "Sistem, JAPAR adına kiralanan ve Hostinger'ın Almanya'daki (Avrupa Birliği) veri merkezinde bulunan bir sunucuda çalışır; verileriniz bu sunucuda saklanır. E-posta adresinizi verdiyseniz ziyaret bağlantınız JAPAR'ın Microsoft 365 hizmeti üzerinden gönderilir.",
+          "Sistem, JAPAR adına kiralanan ve Hostinger'ın Almanya'daki (Avrupa Birliği) veri merkezinde bulunan bir sunucuda çalışır; verileriniz bu sunucuda saklanır. E-posta adresinizi verdiyseniz ziyaret bağlantınız Resend Inc. (ABD) e-posta gönderim hizmeti üzerinden gönderilir; bu hizmete yalnızca e-posta adresiniz ve bağlantının bulunduğu e-posta iletilir.",
           TRANSFER_BASIS.tr,
         ],
         [
@@ -375,7 +375,7 @@ function visitorNotice(locale: SampleLocale, r: SampleRetention): Sample {
       ],
       [
         "7. Transfer abroad",
-        "The System runs on a server rented on behalf of JAPAR in Hostinger's data centre in Germany (European Union); your data is stored on this server. If you gave your e-mail address, your visit link is sent through JAPAR's Microsoft 365 service.",
+        "The System runs on a server rented on behalf of JAPAR in Hostinger's data centre in Germany (European Union); your data is stored on this server. If you gave your e-mail address, your visit link is sent through the e-mail delivery service of Resend Inc. (USA); only your e-mail address and the e-mail containing the link are passed to this service.",
         TRANSFER_BASIS.en,
       ],
       [

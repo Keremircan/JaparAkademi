@@ -6,7 +6,7 @@ import { z } from "zod";
 import { actionUser, formText, runAction, type ActionResult } from "@/features/shared/action-result";
 import { redirect } from "@/i18n/navigation";
 import { renderActivationSheets } from "@/server/pdf/activation";
-import { reinvite, type IssuedInvite } from "@/server/services/invitations";
+import { reinvite, type InvitePurpose, type IssuedInvite } from "@/server/services/invitations";
 import { INVITE_BATCH_MODES, INVITE_CHANNELS } from "@/server/state/invitations";
 import { createInvitationBatch, markInviteShared } from "@/server/services/invitation-batches";
 import { cancelImport, commitImport, validateImport } from "@/server/services/imports";
@@ -22,8 +22,8 @@ import { ROLES } from "@/server/authz/roles";
 const uuid = z.uuid();
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
-/** Etkinleştirme kağıtlarını (PDF) base64 olarak üretir; sunucuda saklanmaz. */
-async function sheetsPdfBase64(invites: IssuedInvite[]): Promise<string> {
+/** Etkinleştirme kağıtlarını (PDF) base64 olarak üretir; sunucuda saklanmaz. Şifre sıfırlamada başlık "Şifre yenileme". */
+async function sheetsPdfBase64(invites: IssuedInvite[], purpose: InvitePurpose = "invite"): Promise<string> {
   // Kağıt davet edilen kişiye verilir; dil tercihi henüz bilinmediği için Türkçe (karar #217)
   const t = await getTranslations({ locale: "tr", namespace: "invite.sheet" });
   const tApp = await getTranslations({ locale: "tr", namespace: "app" });
@@ -39,11 +39,11 @@ async function sheetsPdfBase64(invites: IssuedInvite[]): Promise<string> {
     })),
     {
       appName: tApp("name"),
-      title: t("title"),
+      title: t(purpose === "reset" ? "resetTitle" : "title"),
       sicil: t("sicil"),
       position: t("position"),
       code: t("code"),
-      steps: t("steps"),
+      steps: t(purpose === "reset" ? "resetSteps" : "steps"),
       note: t("note"),
     },
   );
@@ -60,6 +60,7 @@ export type InviteResult = {
   link: string | null;
   code: string | null;
   sheetPdf: string | null;
+  purpose: InvitePurpose;
 };
 
 async function toResult(invite: IssuedInvite): Promise<InviteResult> {
@@ -71,7 +72,8 @@ async function toResult(invite: IssuedInvite): Promise<InviteResult> {
     whatsappUrl: invite.whatsappUrl,
     link: invite.channel === "email" ? null : invite.url,
     code: invite.code,
-    sheetPdf: invite.channel === "print" ? await sheetsPdfBase64([invite]) : null,
+    sheetPdf: invite.channel === "print" ? await sheetsPdfBase64([invite], invite.purpose) : null,
+    purpose: invite.purpose,
   };
 }
 
@@ -168,7 +170,7 @@ export async function setPersonStatusAction(
   return result;
 }
 
-/** Yeniden davet (şifre sıfırlamanın yerini alır, karar #185). */
+/** "Şifreyi sıfırla" / "Davet gönder" (karar #185, iş paketi 3.7). */
 export async function reinviteAction(userId: string, _prev: ActionResult<InviteResult> | null, formData: FormData): Promise<ActionResult<InviteResult>> {
   const channel = channelSchema.safeParse(formText(formData, "channel"));
   if (!uuid.safeParse(userId).success || !channel.success) return { ok: false, error: "invalid_input" };

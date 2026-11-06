@@ -22,13 +22,16 @@ test("SPEC 10.2 zil okunmamış sayıyı gösterir; bildirime dokununca ilgili e
   await expect(page.getByRole("button", { name: new RegExp(`Deneme Pratik Kursiyeri ${p} size kursiyer olarak atandı`) }).getByLabel("Okunmamış")).toHaveCount(0);
 });
 
-test("SPEC 11.4 şifremi unuttum: sicil girilince aynı genel mesaj gösterilir", async ({ page }, testInfo) => {
+test("SPEC 11.4, FG-3.7 karar #263: e-posta kapalıyken şifremi unuttum ekranı İK'ya yönlendirir; giriş ekranı yolu anlatır", async ({ page }) => {
   await page.goto("/login");
+  await expect(page.getByText(/E-postanız kayıtlıysa "Şifremi unuttum" bağlantısını kullanın/)).toBeVisible();
   await page.getByRole("link", { name: "Şifremi unuttum" }).click();
   await page.waitForURL(/\/forgot-password$/);
-  await page.getByLabel("Sicil no").fill(sicil("HR", testInfo.project.name));
-  await page.getByRole("button", { name: "Bağlantı gönder" }).click();
-  await expect(page.getByText(/İsteğiniz alındı/)).toBeVisible();
+  // Testte e-posta gönderimi kapalı (MAIL_TRANSPORT=log): form yerine açıklama
+  await expect(page.getByRole("status").filter({ hasText: "Şu anda e-posta gönderilemiyor" })).toBeVisible();
+  // Önceki sayfa (giriş) gizli olarak DOM'da kalabilir; rol sorgusu yalnızca görünür öğeleri sayar
+  await expect(page.getByRole("button", { name: "Bağlantı gönder" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Girişe dön" })).toBeVisible();
 
   // Geçersiz bağlantı açık bir mesaj gösterir
   await page.goto(`/reset-password/${"x".repeat(43)}`);

@@ -7,6 +7,7 @@ import {
   normalizePhone,
   parseInviteCode,
   pickChannel,
+  resetBlock,
   whatsappShareUrl,
 } from "@/server/state/invitations";
 
@@ -80,5 +81,22 @@ describe("hesaba davet kuralları (iş paketi 2.6b)", () => {
     expect(pickChannel("whatsapp", none, true)).toBe("print");
     expect(pickChannel("email", phoneOnly, true)).toBe("print");
     expect(pickChannel("print", both, true)).toBe("print");
+  });
+
+  it("FG-3.7 karar #259: üst yöneticiyi yalnızca üst yönetici, sistem yöneticisini sistem yöneticisi ya da üst yönetici sıfırlar", () => {
+    const owner = ["personnel", "owner", "hr", "sysadmin"] as const;
+    const sysadmin = ["personnel", "sysadmin"] as const;
+    const hr = ["personnel", "hr"] as const;
+    // İK: sıradan personeli sıfırlar, sistem yöneticisini ve üst yöneticiyi sıfırlayamaz
+    expect(resetBlock(hr, ["personnel"])).toBeNull();
+    expect(resetBlock(hr, ["personnel", "sysadmin"])).toBe("sysadmin_only");
+    expect(resetBlock(hr, ["personnel", "owner"])).toBe("owner_only");
+    expect(resetBlock(hr, ["personnel", "owner", "sysadmin"])).toBe("owner_only");
+    // Sistem yöneticisi: sistem yöneticisini sıfırlar, üst yöneticiyi sıfırlayamaz
+    expect(resetBlock(sysadmin, ["personnel", "sysadmin"])).toBeNull();
+    expect(resetBlock(sysadmin, ["personnel", "owner"])).toBe("owner_only");
+    // Üst yönetici herkesi sıfırlar
+    expect(resetBlock(owner, ["personnel", "owner"])).toBeNull();
+    expect(resetBlock(owner, ["personnel", "sysadmin", "hr"])).toBeNull();
   });
 });

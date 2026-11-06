@@ -80,6 +80,8 @@ export const SETTINGS_CATALOG: Partial<Record<SettingKey, Entry>> = {
   "notify.push_events": { group: "notify", input: { kind: "events", channel: "push" } },
   "notify.retention_days": { group: "notify", input: int },
   "mail.max_attempts": { group: "notify", input: int },
+  "mail.daily_limit": { group: "notify", input: int },
+  "mail.link_reserve": { group: "notify", input: int },
   "push.max_attempts": { group: "notify", input: int },
   "push.ttl_hours": { group: "notify", input: int },
 

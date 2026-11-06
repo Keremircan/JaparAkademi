@@ -4,15 +4,19 @@ import { z } from "zod";
 import { getRequestMeta } from "@/server/auth/request";
 import { ValidationError } from "@/server/errors";
 import { logger } from "@/server/logger";
+import { mailEnabled } from "@/server/mail";
 import { requestPasswordReset, resetPasswordWithToken } from "@/server/services/password-reset";
 import type { PasswordIssueCode } from "./schemas";
 
 export type ForgotState = { sent?: boolean };
 
-/** Şifremi unuttum: sonuç her durumda aynıdır (sicilin varlığı sızdırılmaz; karar #88). */
+/**
+ * Şifremi unuttum: sonuç her durumda aynıdır (sicilin varlığı sızdırılmaz; karar #88). E-posta gönderimi kapalıyken
+ * istek kaydedilmez (bağlantı hiç gitmeyecek; ekran zaten İK'ya yönlendirir, iş paketi 3.7).
+ */
 export async function requestResetAction(_prev: ForgotState, formData: FormData): Promise<ForgotState> {
   const sicilNo = z.string().trim().min(1).max(50).safeParse(formData.get("sicilNo"));
-  if (sicilNo.success) {
+  if (sicilNo.success && mailEnabled()) {
     try {
       await requestPasswordReset({ sicilNo: sicilNo.data, ip: (await getRequestMeta()).ip });
     } catch (err) {

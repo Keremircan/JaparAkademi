@@ -1,3 +1,5 @@
+import type { Role } from "@/server/authz/roles";
+
 /**
  * Hesaba davet için saf kurallar (iş paketi 2.6b, kararlar #185–188).
  */
@@ -104,4 +106,17 @@ export function pickChannel(
     return "print";
   }
   return channelProblem(mode, person, mailEnabled) ? "print" : mode;
+}
+
+/**
+ * Şifre sıfırlama ve davet yetkisi (iş paketi 3.7, karar #259): üst yöneticiyi yalnızca üst yönetici, sistem
+ * yöneticisini sistem yöneticisi ya da üst yönetici sıfırlayabilir. İK diğer herkesi sıfırlar. Null: engel yok.
+ */
+export type ResetBlock = "owner_only" | "sysadmin_only";
+
+export function resetBlock(actorRoles: readonly Role[], targetRoles: readonly Role[]): ResetBlock | null {
+  const actorIsOwner = actorRoles.includes("owner");
+  if (targetRoles.includes("owner") && !actorIsOwner) return "owner_only";
+  if (targetRoles.includes("sysadmin") && !actorIsOwner && !actorRoles.includes("sysadmin")) return "sysadmin_only";
+  return null;
 }

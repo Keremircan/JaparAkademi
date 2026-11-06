@@ -48,7 +48,7 @@
       "sharedDeviceHint": "İşlem yapılmazsa oturum kısa süre sonra kendiliğinden kapanır.",
       "submit": "Giriş yap",
       "submitting": "Giriş yapılıyor…",
-      "help": "Şifrenizi unuttuysanız ve e-postanız kayıtlı değilse İK ile görüşün.",
+      "help": "E-postanız kayıtlıysa \"Şifremi unuttum\" bağlantısını kullanın; değilse İK size yeni şifre bağlantısı verir.",
       "forgot": "Şifremi unuttum",
       "adminHint": "Yöneticiler kayıtlı e-posta adresiyle de girebilir.",
       "activate": "Hesabımı etkinleştir"
@@ -92,7 +92,8 @@
       "send": "Bağlantı gönder",
       "sending": "Gönderiliyor…",
       "sent": "İsteğiniz alındı. E-posta adresiniz kayıtlıysa birkaç dakika içinde bir bağlantı gelecek.",
-      "noEmail": "E-posta adresiniz kayıtlı değilse şifrenizi İK yeniler.",
+      "noEmail": "E-posta adresiniz kayıtlı değilse İK size yeni şifre bağlantısı verir (WhatsApp ya da basılı kağıtla).",
+      "mailOff": "Şu anda e-posta gönderilemiyor. Yeni şifre bağlantısı için İK ile görüşün; bağlantıyı size WhatsApp ya da basılı kağıtla verirler.",
       "backToLogin": "Girişe dön",
       "resetTitle": "Yeni şifre belirleyin",
       "submit": "Şifreyi kaydet",
@@ -429,6 +430,9 @@
     "invite_phone_missing": "Kişinin geçerli bir telefon numarası kayıtlı değil. Başka bir kanal seçin ya da telefonu ekleyin.",
     "cannot_invite_self": "Kendinizi yeniden davet edemezsiniz; şifrenizi profilden değiştirin.",
     "owner_only": "Bu işlemi yalnızca üst yönetici yapabilir.",
+    "sysadmin_only": "Bu işlemi yalnızca sistem yöneticisi ya da üst yönetici yapabilir.",
+    "invalid_email": "Geçerli bir e-posta adresi yazın.",
+    "mail_disabled": "E-posta gönderimi bu sunucuda kapalı.",
     "last_owner": "Sistemde en az bir aktif üst yönetici kalmalı.",
     "login_email_required": "Bu rol e-postayla giriş yaptığı için kişinin e-posta adresi kayıtlı olmalı.",
     "login_email_taken": "Bu e-posta adresi başka bir aktif personelde kayıtlı. Yönetici rolleri için e-posta tekil olmalı.",
@@ -490,6 +494,10 @@
       "logins": {
         "title": "Giriş kayıtları",
         "description": "Kim, ne zaman, hangi IP'den giriş yaptı ya da denedi; başarısız denemeler."
+      },
+      "email": {
+        "title": "E-posta durumu",
+        "description": "Gönderim servisi, bugünkü sayaç, son hatalar ve deneme e-postası."
       }
     },
     "org": {
@@ -3060,6 +3068,16 @@
         "hint": "Gönderilemeyen e-posta bu kadar denemeden sonra başarısız sayılır.",
         "unit": "{n} deneme"
       },
+      "mail_daily_limit": {
+        "label": "Günlük e-posta sınırı",
+        "hint": "Bir günde (UTC, Türkiye saatiyle 03:00'te sıfırlanır) en çok bu kadar e-posta gönderilir; kalanlar ertesi güne bekler. Resend ücretsiz planı günde 100'dür. 0 = sınır yok.",
+        "unit": "{n} e-posta"
+      },
+      "mail_link_reserve": {
+        "label": "Bağlantı e-postalarına ayrılan pay",
+        "hint": "Günlük sınırın bu kadarı yalnızca şifre sıfırlama, hesap daveti ve ziyaretçi bağlantılarına ayrılır; bildirim e-postaları bu payı kullanamaz.",
+        "unit": "{n} e-posta"
+      },
       "notify_push_events": {
         "label": "Push bildirimi gönderilen olaylar",
         "hint": "Seçilen olaylarda, bildirimleri açmış kişinin cihazına \"Yeni bildiriminiz var\" uyarısı gider.",
@@ -3571,7 +3589,12 @@
       "emailBody": "Merhaba {name}, JAPAR Akademi hesabınız açıldı. Aşağıdaki bağlantıyla kendi şifrenizi belirleyerek hesabınızı etkinleştirin. Bağlantı {hours} saat geçerlidir ve bir kez kullanılabilir.",
       "emailOpen": "Hesabımı etkinleştir",
       "emailFooter": "Bu e-posta JAPAR Akademi tarafından otomatik gönderilmiştir. Bu hesabı beklemiyorsanız İK'ya bildirin.",
-      "whatsapp": "Merhaba {name}, JAPAR Akademi hesabınızı etkinleştirmek için bu bağlantıyı açıp kendi şifrenizi belirleyin: {url} (Bağlantı {hours} saat geçerlidir, bir kez kullanılır.)"
+      "whatsapp": "Merhaba {name}, JAPAR Akademi hesabınızı etkinleştirmek için bu bağlantıyı açıp kendi şifrenizi belirleyin: {url} (Bağlantı {hours} saat geçerlidir, bir kez kullanılır.)",
+      "resetSubject": "JAPAR Akademi şifrenizi yenileyin",
+      "resetBody": "Merhaba {name}, JAPAR Akademi şifreniz İK tarafından sıfırlandı. Aşağıdaki bağlantıyla yeni şifrenizi belirleyin. Bağlantı {hours} saat geçerlidir ve bir kez kullanılabilir.",
+      "resetOpen": "Yeni şifremi belirle",
+      "resetFooter": "Bu e-posta JAPAR Akademi tarafından otomatik gönderilmiştir. Şifre sıfırlama istemediyseniz hemen İK'ya bildirin.",
+      "resetWhatsapp": "Merhaba {name}, JAPAR Akademi şifreniz sıfırlandı. Yeni şifrenizi belirlemek için bu bağlantıyı açın: {url} (Bağlantı {hours} saat geçerlidir, bir kez kullanılır.)"
     },
     "channel": {
       "label": "Davet kanalı",
@@ -3587,7 +3610,6 @@
     },
     "panel": {
       "createdTitle": "Personel oluşturuldu",
-      "reinvitedTitle": "Yeni davet hazır",
       "expires": "Davet {date} tarihine kadar geçerli ve bir kez kullanılabilir.",
       "emailSent": "Etkinleştirme bağlantısı kişinin e-postasına gönderiliyor.",
       "whatsappIntro": "Düğmeye basınca WhatsApp mesaj yazılmış hâlde açılır; Gönder'e basmanız yeterli.",
@@ -3608,7 +3630,9 @@
       "code": "Etkinleştirme kodu",
       "steps": "Telefonla QR kodu okutun ya da giriş ekranında \"Hesabımı etkinleştir\"e dokunup sicil numaranızı ve bu kodu yazın. Sonra kendi şifrenizi belirleyin.",
       "expires": "Son geçerlilik: {date}",
-      "note": "Kod bir kez kullanılır. Bu kağıdı kimseyle paylaşmayın."
+      "note": "Kod bir kez kullanılır. Bu kağıdı kimseyle paylaşmayın.",
+      "resetTitle": "Şifre yenileme",
+      "resetSteps": "Telefonla QR kodu okutun ya da giriş ekranında \"Hesabımı etkinleştir\"e dokunup sicil numaranızı ve bu kodu yazın. Sonra yeni şifrenizi belirleyin."
     },
     "status": {
       "label": "Hesap durumu",
@@ -3618,11 +3642,21 @@
       "not_activated": "İlk giriş bekleniyor",
       "not_invited": "Davet edilmedi"
     },
-    "reinvite": {
-      "title": "Yeniden davet",
-      "hint": "Şifresini unutan, davetini kaybeden ya da süresi dolan kişi için. Mevcut şifre ve eski davet geçersiz olur, açık oturumlar kapanır.",
-      "submit": "Davet oluştur",
-      "confirm": "Kişinin mevcut şifresi geçersiz olacak ve açık oturumları kapanacak. Devam edilsin mi?"
+    "reset": {
+      "button": "Şifreyi sıfırla",
+      "hint": "Şifresini unutan kişi için. Kişiye yeni şifre belirleme bağlantısı verilir; mevcut şifresi geçersiz olur, açık oturumları kapanır.",
+      "inviteButton": "Davet gönder",
+      "inviteHint": "Kişi hesabını henüz etkinleştirmedi. Yeni etkinleştirme bağlantısı oluşturulur; varsa eski davet geçersiz olur.",
+      "channelIntro": "Bağlantıyı kişiye nasıl ulaştıracağınızı seçin.",
+      "submit": "Bağlantıyı oluştur",
+      "cancel": "Vazgeç",
+      "confirm": "Kişinin mevcut şifresi geçersiz olacak ve açık oturumları kapanacak. Devam edilsin mi?",
+      "doneReset": "Şifre sıfırlandı, yeni şifre bağlantısı hazır",
+      "doneInvite": "Yeni davet hazır",
+      "blocked": {
+        "owner_only": "Üst yöneticinin şifresini yalnızca başka bir üst yönetici sıfırlayabilir.",
+        "sysadmin_only": "Sistem yöneticisinin şifresini yalnızca sistem yöneticisi ya da üst yönetici sıfırlayabilir."
+      }
     },
     "batch": {
       "title": "Davetler",
@@ -3694,6 +3728,94 @@
   },
   "owner": {
     "actingNotice": "Bu işlem normalde {role} yetkisindedir. Üst yönetici olarak yapıyorsunuz; kayda böyle işlenecek."
+  },
+  "mailStatus": {
+    "title": "E-posta durumu",
+    "description": "E-postaların hangi servisle gönderildiği, bugünkü gönderim sayısı ve son hatalar.",
+    "on": "E-posta gönderimi açık",
+    "off": "E-posta gönderimi kapalı",
+    "offHint": "Bu sunucuda e-postalar gönderilmiyor, yalnızca konuları sunucu kaydına yazılıyor (MAIL_TRANSPORT=log). Bu sırada davet ve şifre sıfırlama bağlantıları WhatsApp ya da basılı kağıtla verilir; \"Şifremi unuttum\" ekranı kişiyi İK'ya yönlendirir. Açmak için kurulum rehberine bakın: docs/runbooks/email-resend.md.",
+    "transport": "Servis",
+    "transports": {
+      "resend": "Resend",
+      "graph": "Microsoft 365 (Graph)",
+      "log": "Kapalı (yalnızca sunucu kaydı)"
+    },
+    "sender": "Gönderen",
+    "noSender": "Tanımlı değil",
+    "today": "Bugün gönderilen",
+    "todayOf": "{sent, number} / {limit, number}",
+    "todayUnlimited": "{sent, number} (sınır yok)",
+    "todayHint": "Sayaç her gün saat {time} itibarıyla sıfırlanır. Önce şifre sıfırlama, davet ve ziyaretçi bağlantıları gider; son {reserve, number} e-postalık pay yalnızca onlara ayrılır. Sınır dolunca kalanlar ertesi güne bekler.",
+    "unlimitedHint": "Günlük sınır kapalı (Parametreler → Günlük e-posta sınırı: 0).",
+    "week": {
+      "title": "Son 7 gün",
+      "pending": "Bekleyen (şu an)",
+      "sent": "Gönderilen",
+      "failed": "Gönderilemeyen"
+    },
+    "pendingProblem": "Bekleyen e-postaların son sorunu ({time}): {problem}.",
+    "failures": {
+      "title": "Son hatalar",
+      "empty": "Son 7 günde gönderilemeyen e-posta yok."
+    },
+    "kinds": {
+      "password_reset": "Şifre sıfırlama",
+      "visitor_link": "Ziyaretçi bağlantısı",
+      "account_invite": "Hesap daveti",
+      "mail_test": "Deneme e-postası",
+      "notification": "Bildirim"
+    },
+    "problems": {
+      "auth": "Kimlik doğrulama hatası",
+      "permission": "Gönderim izni yok",
+      "sender": "Gönderen adresi geçersiz",
+      "request": "E-posta reddedildi",
+      "quota": "Gönderim kotası doldu",
+      "rate": "Çok sık istek",
+      "unavailable": "Servis şu an yanıt vermiyor",
+      "network": "Bağlantı kurulamadı",
+      "unknown": "Beklenmeyen hata"
+    },
+    "hints": {
+      "common": {
+        "auth": "E-posta servisi giriş bilgilerini kabul etmedi. Sunucudaki .env dosyasını kontrol edip uygulamayı yeniden başlatın.",
+        "permission": "Servis bu adresten gönderime izin vermiyor. Kurulum rehberindeki izin adımlarını kontrol edin.",
+        "sender": "MAIL_FROM adresi servis tarafından tanınmıyor. Sunucudaki .env dosyasında adresi kontrol edin.",
+        "request": "Servis bu e-postayı kabul etmedi; en sık neden alıcı adresinin hatalı olmasıdır. Kişinin e-posta adresini kontrol edin.",
+        "quota": "Gönderim kotası doldu. Kota sıfırlanınca bekleyen e-postalar kendiliğinden gider.",
+        "rate": "Kısa sürede çok fazla istek gönderildi. E-postalar bir dakika sonra yeniden denenir.",
+        "unavailable": "E-posta servisi geçici olarak yanıt vermiyor. E-postalar daha sonra kendiliğinden yeniden denenir.",
+        "network": "Sunucu e-posta servisine ulaşamadı (internet bağlantısı, DNS ya da güvenlik duvarı). Sunucunun dışarıya HTTPS (443) bağlantısını kontrol edin.",
+        "unknown": "Ayrıntı için sunucu kayıtlarına (worker) bakın."
+      },
+      "resend": {
+        "auth": "Resend API anahtarı geçersiz, silinmiş ya da askıya alınmış. Resend → API Keys'te \"Sending access\" izinli yeni bir anahtar oluşturup sunucudaki .env dosyasında RESEND_API_KEY'e yazın, sonra uygulamayı yeniden başlatın.",
+        "permission": "Alan adı Resend'de doğrulanmamış, MAIL_FROM bu alan adında değil ya da API anahtarı bu alan adına izin vermiyor. Doğrulanmamış hesap yalnızca hesap sahibinin kendi adresine deneme gönderebilir. Resend → Domains'de alan adının \"Verified\" olduğunu kontrol edin.",
+        "sender": "MAIL_FROM adresi geçersiz. Resend'de doğrulanmış alan adında bir adres yazın (ör. bildirim@mail.japarakademi.io).",
+        "quota": "Resend ücretsiz plan kotası doldu (günde 100, ayda 3.000 e-posta). Günlük kota Türkiye saatiyle 03:00'te sıfırlanır; bekleyen e-postalar sonra kendiliğinden gider."
+      },
+      "graph": {
+        "auth": "Microsoft 365 uygulama kaydının bilgileri (GRAPH_TENANT_ID, GRAPH_CLIENT_ID, GRAPH_CLIENT_SECRET) kabul edilmedi ya da istemci gizli anahtarının süresi doldu.",
+        "permission": "Uygulamaya Mail.Send izni verilmemiş, yönetici onayı yapılmamış ya da uygulama başka bir posta kutusuyla sınırlanmış.",
+        "sender": "MAIL_FROM posta kutusu Microsoft 365'te bulunamadı."
+      }
+    },
+    "test": {
+      "title": "Deneme e-postası gönder",
+      "intro": "Ayarların çalıştığını görmek için bir adrese deneme e-postası gönderin. Sonuç hemen burada görünür ve günlük sayaca eklenir.",
+      "to": "Alıcı e-posta adresi",
+      "submit": "Deneme e-postası gönder",
+      "sending": "Gönderiliyor…",
+      "ok": "Deneme e-postası servise teslim edildi. Birkaç dakika içinde gelen kutusuna (gelmezse istenmeyen e-posta klasörüne) bakın.",
+      "disabled": "E-posta gönderimi kapalıyken deneme e-postası gönderilemez."
+    },
+    "testEmail": {
+      "subject": "JAPAR Akademi deneme e-postası",
+      "body": "Bu e-posta, JAPAR Akademi e-posta ayarlarını denemek için {name} tarafından gönderildi. Bir işlem yapmanız gerekmez.",
+      "open": "JAPAR Akademi'yi aç",
+      "footer": "Bu e-posta JAPAR Akademi tarafından otomatik gönderilmiştir."
+    }
   },
   "logins": {
     "title": "Giriş kayıtları",
