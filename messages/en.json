@@ -180,6 +180,13 @@
       "normal": "Normal",
       "large": "Large"
     },
+    "theme": {
+      "title": "Appearance",
+      "hint": "System follows your device's light/dark setting. Your choice is saved to your account and applies on every device; the sign-in screen always follows the device setting.",
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
     "contact": {
       "email": "Email",
       "emailHint": "HR changes your email address.",

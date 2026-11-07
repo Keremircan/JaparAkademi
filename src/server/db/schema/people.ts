@@ -51,6 +51,8 @@ export const personnel = pgTable(
     locale: text().notNull().default("tr"),
     /** Yazı boyutu tercihi (iş paketi 3.6, karar #244): "large" arayüzü bir kademe büyütür. */
     textSize: text().notNull().default("normal"),
+    /** Koyu/açık mod tercihi (iş paketi 3.12, karar #272): "system" cihazın ayarına uyar. */
+    theme: text().notNull().default("system"),
     /** Saklama süresi dolunca anonimleştirildi (SPEC 12.3, iş paketi 2.1). */
     anonymizedAt: tstz("anonymized_at"),
     createdAt: createdAt(),
@@ -61,6 +63,7 @@ export const personnel = pgTable(
     index("personnel_status_idx").on(t.status),
     check("personnel_locale_check", sql`${t.locale} in ('tr','en')`),
     check("personnel_text_size_check", sql`${t.textSize} in ('normal','large')`),
+    check("personnel_theme_check", sql`${t.theme} in ('system','light','dark')`),
     check("personnel_terminated_end_date_check", sql`${t.status} <> 'terminated' or ${t.endDate} is not null`),
   ],
 );

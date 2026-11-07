@@ -16,6 +16,7 @@ import { pushPublicKey } from "@/server/services/push";
 import { PushToggle } from "@/features/push/components/push-toggle";
 import { LanguageSelect } from "@/features/profile/components/language-select";
 import { TextSizeSelect } from "@/features/profile/components/text-size-select";
+import { ThemeSelect } from "@/features/profile/components/theme-select";
 import { Suspense } from "react";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 
@@ -95,6 +96,7 @@ async function Content() {
 
       <LanguageSelect current={user.locale} />
       <TextSizeSelect current={user.textSize} />
+      <ThemeSelect current={user.theme} />
 
       {/* Yetkinliklerim (karar #221) */}
       {competencies.length > 0 && (

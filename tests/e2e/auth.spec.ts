@@ -56,9 +56,37 @@ test("ilk giriş → şifre değiştir → KVKK onayı → rol menüsü → çı
   await expect(page.getByRole("button", { name: "Büyük" })).toHaveAttribute("aria-pressed", "true");
   await expect.poll(rootFontSize).not.toBe(normalSize);
 
+  // Koyu/açık mod (iş paketi 3.12, kararlar #272–274): tercih hesapta; tam yüklemede sayfa betikleri gelmeden
+  // koyu çizilir; "Sistem" tercihi ve çerezi kaldırır; çıkıştan sonra giriş ekranı cihazın ayarına (açık) döner
+  const theme = () => page.evaluate(() => document.documentElement.getAttribute("data-theme"));
+  const background = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  const themeCookie = async () => (await page.context().cookies()).find((c) => c.name === "akademi_theme")?.value ?? null;
+  const lightBackground = await background();
+  await page.getByRole("button", { name: "Koyu" }).click();
+  await expect(page.getByRole("button", { name: "Koyu" })).toHaveAttribute("aria-pressed", "true");
+  await expect.poll(theme).toBe("dark");
+  await expect.poll(background).not.toBe(lightBackground);
+  expect(await themeCookie()).toBe("dark");
+
+  await page.route("**/_next/static/**", (route) => route.abort());
+  await page.reload();
+  expect(await theme()).toBe("dark");
+  await page.unroute("**/_next/static/**");
+  await page.reload();
+
+  await page.getByRole("button", { name: "Sistem" }).click();
+  await expect(page.getByRole("button", { name: "Sistem" })).toHaveAttribute("aria-pressed", "true");
+  await expect.poll(theme).toBeNull();
+  await expect.poll(themeCookie).toBeNull();
+  await expect.poll(background).toBe(lightBackground);
+  await page.getByRole("button", { name: "Koyu" }).click();
+  await expect.poll(theme).toBe("dark");
+
   await page.getByRole("main").getByRole("button", { name: "Çıkış yap" }).click();
   await expect(page).toHaveURL(/\/login$/);
   await expect.poll(rootFontSize).toBe(normalSize);
+  await expect.poll(theme).toBeNull();
+  await expect.poll(background).toBe(lightBackground);
 
   await page.goto("/");
   await expect(page).toHaveURL(/\/login$/);

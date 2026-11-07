@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 import { PwaProvider } from "@/components/pwa/pwa-provider";
 import { PwaUpdatePrompt } from "@/components/pwa/pwa-update-prompt";
 import { routing } from "@/i18n/routing";
+import { THEME_COLORS } from "@/lib/theme";
 import "../globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin", "latin-ext"] });
@@ -34,8 +35,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+    { media: "(prefers-color-scheme: light)", color: THEME_COLORS.light },
+    { media: "(prefers-color-scheme: dark)", color: THEME_COLORS.dark },
   ],
 };
 
@@ -45,7 +46,8 @@ export default async function LocaleLayout({ children }: { children: ReactNode }
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    // data-theme sunucuda yazılmaz; oturum açık sayfalarda tema betiği ilk çizimden önce ekler (karar #274)
+    <html lang={locale} className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="min-h-dvh bg-background text-foreground">
         <NextIntlClientProvider locale={locale} messages={messages} timeZone="Europe/Istanbul" formats={{}}>
           <PwaProvider>

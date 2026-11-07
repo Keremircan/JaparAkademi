@@ -180,6 +180,13 @@
       "normal": "Normal",
       "large": "Büyük"
     },
+    "theme": {
+      "title": "Görünüm",
+      "hint": "Sistem, cihazınızın açık/koyu ayarına uyar. Tercihiniz hesabınıza kaydedilir ve her cihazda geçerlidir; giriş ekranı her zaman cihazın ayarına uyar.",
+      "system": "Sistem",
+      "light": "Açık",
+      "dark": "Koyu"
+    },
     "contact": {
       "email": "E-posta",
       "emailHint": "E-posta adresinizi İK değiştirir.",

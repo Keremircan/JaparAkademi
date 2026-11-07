@@ -24,6 +24,8 @@ Açılan ekranda adınızı görürsünüz. Kendinize bir şifre belirleyip iki 
 
 **Yazı boyutu:** yazılar size küçük geliyorsa **Profil → Yazı boyutu**'ndan **Büyük**'ü seçin; bütün ekranlar bir kademe büyür. Tercihiniz hesabınıza kaydedilir ve giriş yaptığınız her cihazda geçerlidir.
 
+**Görünüm (koyu/açık mod):** **Profil → Görünüm**'den **Açık**, **Koyu** ya da **Sistem**'i seçin. **Sistem**, telefonunuzun ya da bilgisayarınızın açık/koyu ayarına uyar. Tercihiniz hesabınıza kaydedilir ve giriş yaptığınız her cihazda geçerlidir; giriş ekranı her zaman cihazınızın ayarıyla açılır.
+
 **Şifrenizi unuttuysanız:** girişte **Şifremi unuttum** → sicil numaranızı yazın. E-posta adresiniz kayıtlıysa şifre yenileme bağlantısı gelir (60 dakika geçerlidir, bir kez kullanılır). E-postanız kayıtlı değilse (ya da ekranda "Şu anda e-posta gönderilemiyor" yazıyorsa) İK ile görüşün: İK **Şifreyi sıfırla** ile size WhatsApp'tan ya da basılı kağıtla yeni şifre bağlantısı verir.
 
 ---
