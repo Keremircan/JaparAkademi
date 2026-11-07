@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useActionState, useState } from "react";
 import { Field } from "@/components/forms/field";
 import { FormError } from "@/components/forms/form-error";
+import { keepValues } from "@/components/forms/keep-values";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -26,8 +27,7 @@ export function CreateContentForm({
   const [owner, setOwner] = useState(owners.common && owners.units.length === 0 ? "common" : "");
 
   return (
-    <form action={action} className="flex max-w-3xl flex-col gap-6">
-      {state && !state.ok && <FormError error={state.error} />}
+    <form {...keepValues(action)} className="flex max-w-3xl flex-col gap-6">
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-2 text-base font-medium">{t("type")}</legend>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -84,6 +84,7 @@ export function CreateContentForm({
         </span>
       </label>
 
+      {state && !state.ok && <FormError error={state.error} />}
       <Button type="submit" size="lg" disabled={pending} className="self-start">
         {pending ? t("creating") : t("submit")}
       </Button>

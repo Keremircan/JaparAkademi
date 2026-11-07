@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useActionState, useState } from "react";
 import { Field } from "@/components/forms/field";
 import { FormError } from "@/components/forms/form-error";
+import { keepValues } from "@/components/forms/keep-values";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -82,8 +83,7 @@ export function PersonForm({
   }
 
   return (
-    <form action={action} className="flex max-w-xl flex-col gap-5">
-      {state && !state.ok && <FormError error={state.error} details={state.details} />}
+    <form {...keepValues(action)} className="flex max-w-xl flex-col gap-5">
       {isEdit ? (
         <p className="text-muted-foreground">
           {t("form.sicil")}: <span className="font-medium text-foreground">{person.sicilNo}</span>
@@ -162,6 +162,7 @@ export function PersonForm({
         </span>
       </Label>
       {!isEdit && <ChannelPicker mailEnabled={mailEnabled} allowNone />}
+      {state && !state.ok && <FormError error={state.error} details={state.details} />}
       <Button type="submit" size="lg" disabled={pending} className="self-start">
         {pending ? tc("saving") : tc("save")}
       </Button>

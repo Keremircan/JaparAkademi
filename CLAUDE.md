@@ -67,8 +67,8 @@ Yeni bir özelliğe, tabloya veya ekrana başlamadan önce SPEC.md'nin ilgili b�
 - Mutasyon sonrası aynı sayfada kalınıyorsa `refresh()` (`next/cache`), başka sayfaya gidiliyorsa next-intl `redirect`.
 
 ### Uygulama kalıpları
-- Server Action: Zod ile ayrıştır → `actionUser()` → `runAction(() => servis(...))` → `ActionResult` (`src/features/shared/action-result.ts`). Hata kodu arayüzde `errors.<kod>` ile gösterilir (`<FormError />`).
-- Tek tık eylemler `<ActionButton action={eylem.bind(null, id)} />`, formlar `useActionState`.
+- Server Action: Zod ile ayrıştır → `actionUser()` → `runAction(() => servis(...))` → `ActionResult` (`src/features/shared/action-result.ts`). Hata kodu arayüzde `errors.<kod>` ile gösterilir (`<FormError />`). Mesaj gönder düğmesinin hemen üstüne konur (sabit kaydet çubuklu düzenleyicide çubuğun içine; tek düğmelik eylemde düğmenin altına); `FormError`/`AlertMessage` ekranda değilse kendini görünür alana kaydırır (`src/lib/reveal.ts`, kararlar #269–270).
+- Tek tık eylemler `<ActionButton action={eylem.bind(null, id)} />`, formlar `useActionState`. Form `<form {...keepValues(formAction)}>` ile gönderilir (`components/forms/keep-values.ts`): React'in gönderim sonrası sıfırlaması olmaz, hata dönünce yazılanlar kalır (karar #271). Giriş/etkinleştirme/şifre formları bilinçli olarak `action` ile kalır.
 - Yönetim sayfaları: `adminAccess("<yetki>")` null ise `<NotFoundView />`; servis `NotFoundError`'u `orNull()` ile 404 görünümüne çevrilir.
 - Kapsam: `orgScopeFor(actor)` / `isPersonInScope()` (`src/server/authz/scope.ts`). İK ve sysadmin tüm ağacı görür.
 - TC kimlik no yalnızca `src/server/crypto/national-id.ts` ile işlenir (`protectNationalId`, `decryptNationalId`); tam TC görüntüleme `data_access_log`'a yazılır.

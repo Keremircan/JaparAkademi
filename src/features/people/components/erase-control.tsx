@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useActionState, useState } from "react";
 import { Field } from "@/components/forms/field";
 import { FormError } from "@/components/forms/form-error";
+import { keepValues } from "@/components/forms/keep-values";
 import {
   AlertDialog,
   AlertDialogClose,
@@ -71,7 +72,7 @@ export function EraseControl({ userId, fullName }: { userId: string; fullName: s
             <dd className="text-muted-foreground">{t("kept")}</dd>
           </div>
         </dl>
-        <form action={formAction} className="flex flex-col gap-4">
+        <form {...keepValues(formAction)} className="flex flex-col gap-4">
           <Field id="erase-reason" label={t("reason")} hint={t("reasonHint")}>
             <Textarea
               id="erase-reason"

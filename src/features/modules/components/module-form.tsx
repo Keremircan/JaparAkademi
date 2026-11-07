@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useActionState, useState } from "react";
 import { Field } from "@/components/forms/field";
 import { FormError } from "@/components/forms/form-error";
+import { keepValues } from "@/components/forms/keep-values";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -48,13 +49,7 @@ export function ModuleForm(
   const showTopic = isOhs && (!topicLocked || props.mode === "edit");
 
   return (
-    <form action={formAction} className="flex max-w-3xl flex-col gap-5">
-      {state && !state.ok && <FormError error={state.error} />}
-      {state?.ok && (
-        <p role="status" className="text-sm text-muted-foreground">
-          {tc("saved")}
-        </p>
-      )}
+    <form {...keepValues(formAction)} className="flex max-w-3xl flex-col gap-5">
       {props.mode === "create" && (
         <>
           <fieldset className="flex flex-col gap-2">
@@ -145,6 +140,12 @@ export function ModuleForm(
         </span>
       </label>
 
+      {state?.ok && (
+        <p role="status" className="text-sm text-muted-foreground">
+          {tc("saved")}
+        </p>
+      )}
+      {state && !state.ok && <FormError error={state.error} />}
       <Button type="submit" size="lg" disabled={pending} className="self-start">
         {pending ? tc("saving") : props.mode === "create" ? t("create") : tc("save")}
       </Button>

@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 import { Field } from "@/components/forms/field";
 import { FormError } from "@/components/forms/form-error";
+import { keepValues } from "@/components/forms/keep-values";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ActionResult } from "@/features/shared/action-result";
@@ -23,8 +24,7 @@ export function UnitForm({
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(saveOrgUnitAction, null);
 
   return (
-    <form action={action} className="flex max-w-xl flex-col gap-5">
-      {state && !state.ok && <FormError error={state.error} details={state.details} />}
+    <form {...keepValues(action)} className="flex max-w-xl flex-col gap-5">
       <input type="hidden" name="id" value={unit?.id ?? ""} />
       <input type="hidden" name="kind" value={kind} />
       <input type="hidden" name="parentId" value={parent?.id ?? ""} />
@@ -47,6 +47,7 @@ export function UnitForm({
           aria-describedby="code-hint"
         />
       </Field>
+      {state && !state.ok && <FormError error={state.error} details={state.details} />}
       <Button type="submit" size="lg" disabled={pending} className="self-start">
         {pending ? tc("saving") : tc("save")}
       </Button>

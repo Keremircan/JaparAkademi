@@ -71,6 +71,7 @@ function QuizQuestion({ assignmentModuleId, question, n }: { assignmentModuleId:
           );
         })}
       </fieldset>
+      <FormError error={error} />
       {answer ? (
         <div role="status" className={`rounded-xl p-3 ${answer.isCorrect ? "bg-emerald-500/10" : "bg-amber-500/10"}`}>
           <p className="font-medium">{answer.isCorrect ? t("correct") : t("wrong")}</p>
@@ -81,7 +82,6 @@ function QuizQuestion({ assignmentModuleId, question, n }: { assignmentModuleId:
           {t("answer")}
         </Button>
       )}
-      <FormError error={error} />
     </li>
   );
 }

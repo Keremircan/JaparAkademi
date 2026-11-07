@@ -77,7 +77,8 @@ export function CardEditor({
   const [diagramAsset, setDiagramAsset] = useState<AssetInfo | null>(diagram);
   const [dirty, setDirty] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<{ code: string; details?: unknown } | null>(null);
+  // Hata, onu üreten düğmenin yanında görünür: alt çubuktaki "Kaydet" ya da sayfa sonundaki "Onaya gönder" (karar #269)
+  const [error, setError] = useState<{ code: string; details?: unknown; at: "save" | "submit" } | null>(null);
   const [changeNote, setChangeNote] = useState("");
   const [pending, startTransition] = useTransition();
   const locked = mode === "ohs";
@@ -96,11 +97,11 @@ export function CardEditor({
   };
   const setOhs = (patch: Partial<CardSections["ohs"]>) => set("ohs", { ...s.ohs, ...patch });
 
-  async function save() {
+  async function save(at: "save" | "submit" = "save") {
     setError(null);
     const r = await saveCardSectionsAction(positionId, JSON.parse(JSON.stringify(s)));
     if (!r.ok) {
-      setError({ code: r.error, details: r.details });
+      setError({ code: r.error, details: r.details, at });
       return false;
     }
     setDirty(false);
@@ -402,14 +403,17 @@ export function CardEditor({
         />
       </Section>
 
-      <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+4rem)] z-10 flex flex-wrap items-center gap-3 rounded-xl border bg-background/95 p-3 shadow-sm backdrop-blur lg:bottom-4">
-        <Button type="button" size="lg" variant="outline" disabled={pending} onClick={() => startTransition(async () => void (await save()))}>
-          <Save aria-hidden="true" />
-          {pending ? tc("saving") : t("editor.save")}
-        </Button>
-        <span role="status" className="text-sm text-muted-foreground">
-          {saved ? tc("saved") : dirty ? t("editor.unsaved") : ""}
-        </span>
+      <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+4rem)] z-10 flex flex-col gap-3 rounded-xl border bg-background/95 p-3 shadow-sm backdrop-blur lg:bottom-4">
+        {error?.at === "save" && <FormError error={error.code} details={error.details} />}
+        <div className="flex flex-wrap items-center gap-3">
+          <Button type="button" size="lg" variant="outline" disabled={pending} onClick={() => startTransition(async () => void (await save()))}>
+            <Save aria-hidden="true" />
+            {pending ? tc("saving") : t("editor.save")}
+          </Button>
+          <span role="status" className="text-sm text-muted-foreground">
+            {saved ? tc("saved") : dirty ? t("editor.unsaved") : ""}
+          </span>
+        </div>
       </div>
 
       <section aria-labelledby="submit-heading" className="flex flex-col gap-4 rounded-xl border bg-muted/40 p-4">
@@ -423,7 +427,7 @@ export function CardEditor({
             <Textarea rows={3} maxLength={2000} value={changeNote} onChange={(e) => setChangeNote(e.target.value)} />
           </label>
         )}
-        <FormError error={error?.code} />
+        {error?.at === "submit" && <FormError error={error.code} details={error.details} />}
         {missing.length > 0 && (
           <ul className="flex flex-col gap-1">
             {missing.map((k) => (
@@ -442,9 +446,9 @@ export function CardEditor({
           className="self-start"
           onClick={() =>
             startTransition(async () => {
-              if (!(await save())) return;
+              if (!(await save("submit"))) return;
               const r = await submitCardAction(positionId, changeNote.trim() || null);
-              if (r && !r.ok) setError({ code: r.error, details: r.details });
+              if (r && !r.ok) setError({ code: r.error, details: r.details, at: "submit" });
             })
           }
         >

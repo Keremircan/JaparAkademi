@@ -4,6 +4,7 @@ import { Clock, Copy, Download, KeyRound, Mail, MessageCircle, Printer, Send } f
 import { useFormatter, useTranslations } from "next-intl";
 import { useActionState, useState, type ReactNode } from "react";
 import { FormError } from "@/components/forms/form-error";
+import { keepValues } from "@/components/forms/keep-values";
 import { Button } from "@/components/ui/button";
 import type { ActionResult } from "@/features/shared/action-result";
 import { downloadBase64 } from "@/lib/download";
@@ -137,12 +138,14 @@ export function ResetControl({ userId, mailEnabled, mode }: { userId: string; ma
       </div>
     );
   }
+  const submit = keepValues(action);
   return (
     <form
-      action={action}
+      action={submit.action}
       className="flex max-w-xl flex-col gap-4"
       onSubmit={(e) => {
-        if (mode === "reset" && !window.confirm(t("confirm"))) e.preventDefault();
+        if (mode === "reset" && !window.confirm(t("confirm"))) return e.preventDefault();
+        submit.onSubmit(e);
       }}
     >
       <h3 className="flex items-center gap-2 text-base font-semibold">

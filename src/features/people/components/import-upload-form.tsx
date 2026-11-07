@@ -4,6 +4,7 @@ import { Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 import { FormError } from "@/components/forms/form-error";
+import { keepValues } from "@/components/forms/keep-values";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import type { ActionResult } from "@/features/shared/action-result";
@@ -14,8 +15,7 @@ export function ImportUploadForm() {
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(uploadImportAction, null);
 
   return (
-    <form action={action} className="flex max-w-xl flex-col gap-6">
-      {state && !state.ok && <FormError error={state.error} details={state.details} />}
+    <form {...keepValues(action)} className="flex max-w-xl flex-col gap-6">
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-2 text-base font-medium">{t("mode")}</legend>
         {(["existing_staff", "new_hires"] as const).map((mode) => (
@@ -53,6 +53,7 @@ export function ImportUploadForm() {
           className="min-h-12 rounded-lg border border-input px-3 py-2 text-base file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1.5"
         />
       </div>
+      {state && !state.ok && <FormError error={state.error} details={state.details} />}
       <Button type="submit" size="lg" disabled={pending} className="self-start">
         <Upload aria-hidden="true" />
         {pending ? t("uploading") : t("upload")}

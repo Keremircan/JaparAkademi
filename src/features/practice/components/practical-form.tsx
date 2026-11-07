@@ -64,7 +64,7 @@ export function PracticalForm({
       setSaved("saving");
       const r = await savePracticalDraftAction(id, payload());
       setSaved(r.ok ? "saved" : "idle");
-      if (!r.ok) setError(r.error);
+      setError(r.ok ? null : r.error);
     }, 700);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -155,30 +155,33 @@ export function PracticalForm({
         <Textarea rows={3} maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} />
       </label>
       <PhotoList label={t("photos")} value={photos} onChange={setPhotos} />
-      <FormError error={error} />
       {!complete && <p className="text-sm text-muted-foreground">{t("completeFirst")}</p>}
-      <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+4rem)] z-10 flex items-center justify-between gap-2 rounded-xl border bg-background/95 p-3 backdrop-blur lg:bottom-4">
-        <Button
-          size="lg"
-          disabled={!complete}
-          onClick={() => {
-            setStep("sign");
-            window.scrollTo({ top: 0 });
-          }}
-        >
-          <PenLine aria-hidden="true" />
-          {t("toSign")}
-        </Button>
-        <Button
-          variant="ghost"
-          disabled={pending}
-          onClick={() => {
-            if (window.confirm(t("discardConfirm"))) startTransition(async () => void (await discardPracticalDraftAction(id)));
-          }}
-        >
-          <Trash2 aria-hidden="true" />
-          {t("discard")}
-        </Button>
+      {/* Taslak kaydı ya da silme hatası sabit çubukta, düğmelerin üstünde: yazarken sayfa kaymaz (karar #269) */}
+      <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+4rem)] z-10 flex flex-col gap-3 rounded-xl border bg-background/95 p-3 backdrop-blur lg:bottom-4">
+        <FormError error={error} />
+        <div className="flex items-center justify-between gap-2">
+          <Button
+            size="lg"
+            disabled={!complete}
+            onClick={() => {
+              setStep("sign");
+              window.scrollTo({ top: 0 });
+            }}
+          >
+            <PenLine aria-hidden="true" />
+            {t("toSign")}
+          </Button>
+          <Button
+            variant="ghost"
+            disabled={pending}
+            onClick={() => {
+              if (window.confirm(t("discardConfirm"))) startTransition(async () => void (await discardPracticalDraftAction(id)));
+            }}
+          >
+            <Trash2 aria-hidden="true" />
+            {t("discard")}
+          </Button>
+        </div>
       </div>
     </div>
   );

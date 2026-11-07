@@ -4,6 +4,7 @@ import { CheckCircle2, Download, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useActionState, useRef, useState, useTransition } from "react";
 import { FormError } from "@/components/forms/form-error";
+import { keepValues } from "@/components/forms/keep-values";
 import { Button } from "@/components/ui/button";
 import type { ActionResult } from "@/features/shared/action-result";
 import type { PriorPreviewRow } from "@/server/services/assignments/periodic";
@@ -29,7 +30,9 @@ export function PriorImport() {
         <Download aria-hidden="true" />
         {t("template")}
       </Button>
-      <form ref={form} action={action} className="flex flex-wrap items-end gap-3" onChange={() => setDone(null)}>
+      {state && !state.ok && <FormError error={state.error} details={state.details} />}
+      {preview && preview.missingColumns.length > 0 && <FormError error="missing_columns" details={{ columns: preview.missingColumns.join(", ") }} />}
+      <form ref={form} {...keepValues(action)} className="flex flex-wrap items-end gap-3" onChange={() => setDone(null)}>
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">{t("file")}</span>
           <input name="file" type="file" accept=".xlsx" required className="min-h-12 text-sm" />
@@ -39,8 +42,6 @@ export function PriorImport() {
           {pending ? t("checking") : t("preview")}
         </Button>
       </form>
-      {state && !state.ok && <FormError error={state.error} details={state.details} />}
-      {preview && preview.missingColumns.length > 0 && <FormError error="missing_columns" details={{ columns: preview.missingColumns.join(", ") }} />}
       {preview && preview.rows.length > 0 && !done && (
         <section className="flex flex-col gap-3">
           <h3 className="font-semibold">{t("previewHeading", { valid, invalid: preview.rows.length - valid })}</h3>

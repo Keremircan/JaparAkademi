@@ -241,15 +241,18 @@ export function PlanDesigner({
         </section>
       )}
 
-      <FormError error={error} />
-      <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+4rem)] z-10 flex flex-wrap items-center gap-3 rounded-xl border bg-background/95 p-3 shadow-sm backdrop-blur lg:bottom-4">
-        <Button type="button" size="lg" disabled={pending} onClick={save}>
-          <Save aria-hidden="true" />
-          {pending ? tc("saving") : t("save")}
-        </Button>
-        <span role="status" className="text-sm text-muted-foreground">
-          {saved ? tc("saved") : dirty ? t("unsaved") : ""}
-        </span>
+      {/* Hata sabit kaydet çubuğunun içinde, düğmenin üstünde (karar #269) */}
+      <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+4rem)] z-10 flex flex-col gap-3 rounded-xl border bg-background/95 p-3 shadow-sm backdrop-blur lg:bottom-4">
+        <FormError error={error} />
+        <div className="flex flex-wrap items-center gap-3">
+          <Button type="button" size="lg" disabled={pending} onClick={save}>
+            <Save aria-hidden="true" />
+            {pending ? tc("saving") : t("save")}
+          </Button>
+          <span role="status" className="text-sm text-muted-foreground">
+            {saved ? tc("saved") : dirty ? t("unsaved") : ""}
+          </span>
+        </div>
       </div>
     </div>
   );
