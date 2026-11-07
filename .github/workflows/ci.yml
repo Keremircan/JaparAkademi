@@ -35,16 +35,24 @@ jobs:
       - name: Bağımlılıklar
         run: npm ci
 
+      # Runner'ın kendi arka plan güncellemesi (unattended-upgrades) ya da yarım kalan bir kurulum dpkg kilidini
+      # tutunca apt-get hemen hata veriyordu (Playwright'ın sistem paketleri adımı). Kilit beklemesi apt'nin genel
+      # ayarına yazılır: bu işteki bütün apt-get çağrıları (Playwright'ınki dahil) kilidi 10 dk bekler.
+      - name: apt ayarı (kilit beklemesi, otomatik güncelleme kapalı)
+        run: |
+          printf 'DPkg::Lock::Timeout "600";\nAcquire::Retries "3";\n' | sudo tee /etc/apt/apt.conf.d/99-ci-lock-timeout >/dev/null
+          sudo systemctl stop apt-daily.timer apt-daily-upgrade.timer unattended-upgrades.service 2>/dev/null || true
+          echo 'set man-db/auto-update false' | sudo debconf-communicate >/dev/null
+          sudo rm -f /var/lib/man-db/auto-update
+
       # Yalnızca ffmpeg ve zorunlu bağımlılıkları (önerilen paketler — grafik sürücüleri, ses verileri — kurulmaz).
       # Kurulum takılırsa CI'ı durdurmaz: ffmpeg yoksa video testi atlanır.
       - name: ffmpeg (video HLS testleri)
         timeout-minutes: 8
         continue-on-error: true
         run: |
-          echo 'set man-db/auto-update false' | sudo debconf-communicate >/dev/null
-          sudo rm -f /var/lib/man-db/auto-update
-          sudo apt-get update -o Acquire::Retries=3 -o DPkg::Lock::Timeout=300
-          sudo apt-get install -y --no-install-recommends -o Acquire::Retries=3 -o DPkg::Lock::Timeout=300 ffmpeg
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg
           ffmpeg -version | head -1
 
       - name: Ortam dosyası (.env.example + CI gizli değerleri)
@@ -94,12 +102,10 @@ jobs:
       - name: Worker derlemesi
         run: npm run worker:build
 
-      # ffmpeg adımı süre sınırına takılırsa arka planda kalan apt-get dpkg kilidini tutabilir;
-      # Playwright'ın sistem paketlerini kurmadan önce kilit boşalana kadar beklenir (en çok 10 dk).
+      # Sistem paketleri apt ile kurulur; kilit doluysa apt kendisi bekler (yukarıdaki "apt ayarı" adımı)
       - name: Playwright tarayıcısı
-        run: |
-          timeout 600 bash -c 'while sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock >/dev/null 2>&1; do echo "apt kilidi bekleniyor..."; sleep 5; done' || echo "apt kilidi 10 dk içinde boşalmadı; kurulum yine de deneniyor"
-          npx playwright install --with-deps chromium
+        timeout-minutes: 15
+        run: npx playwright install --with-deps chromium
 
       - name: Uçtan uca testler
         run: npm run test:e2e
