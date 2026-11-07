@@ -43,7 +43,7 @@ export function OfflineEvacuation() {
                 {p.badge && ` · ${p.badge}`} · {p.checkedIn}
               </span>
             </span>
-            {p.safe && <span className="rounded-full bg-emerald-600/10 px-2 py-0.5 text-sm text-emerald-700">{t("safe")}</span>}
+            {p.safe && <span className="rounded-full bg-emerald-600/10 px-2 py-0.5 text-sm text-emerald-700 dark:text-emerald-400">{t("safe")}</span>}
           </li>
         ))}
       </ul>

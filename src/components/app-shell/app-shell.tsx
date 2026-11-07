@@ -156,7 +156,7 @@ function BellLink({ unread, active }: { unread: number; active: boolean }) {
     >
       <Bell aria-hidden="true" className="size-6 pointer-fine:size-5" />
       {unread > 0 && (
-        <span aria-hidden="true" className="absolute top-1 right-1 min-w-5 rounded-full pointer-fine:-top-0.5 pointer-fine:-right-0.5 bg-destructive px-1 text-center text-xs font-semibold leading-5 text-white">
+        <span aria-hidden="true" className="absolute top-1 right-1 min-w-5 rounded-full pointer-fine:-top-0.5 pointer-fine:-right-0.5 bg-destructive px-1 text-center text-xs font-semibold leading-5 text-white dark:bg-red-600">
           {unread > 99 ? "99+" : unread}
         </span>
       )}

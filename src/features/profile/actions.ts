@@ -5,9 +5,10 @@ import { z } from "zod";
 import { redirect } from "@/i18n/navigation";
 import { APP_LOCALES } from "@/lib/locale";
 import { TEXT_SIZES } from "@/lib/text-size";
+import { THEMES } from "@/lib/theme";
 import { actionUser, runAction, type ActionResult } from "@/features/shared/action-result";
 import { getRequestMeta, setLocaleCookie } from "@/server/auth/request";
-import { setPreferredLocale, setPreferredTextSize } from "@/server/services/auth";
+import { setPreferredLocale, setPreferredTextSize, setPreferredTheme } from "@/server/services/auth";
 import { decideExplicitConsent, removeProfilePhoto, setProfilePhoto, updateOwnPhone } from "@/server/services/profile";
 
 const localeSchema = z.enum(APP_LOCALES);
@@ -30,6 +31,17 @@ export async function setTextSizeAction(formData: FormData): Promise<void> {
   const { user } = await actionUser();
   if (!parsed.success) return;
   await setPreferredTextSize(user, parsed.data);
+  refresh();
+}
+
+const themeSchema = z.enum(THEMES);
+
+/** Profilde koyu/açık mod tercihi (karar #272): hesaba yazılır; kabuktaki `ThemeSync` sayfaya ve çereze uygular. */
+export async function setThemeAction(formData: FormData): Promise<void> {
+  const parsed = themeSchema.safeParse(formData.get("theme"));
+  const { user } = await actionUser();
+  if (!parsed.success) return;
+  await setPreferredTheme(user, parsed.data);
   refresh();
 }
 

@@ -3,19 +3,26 @@ import { Suspense, type ReactNode } from "react";
 import { AppShell } from "@/components/app-shell/app-shell";
 import { ShellSkeleton } from "@/components/app-shell/shell-skeleton";
 import { TextSizeStyle } from "@/components/app-shell/text-size-style";
+import { ThemeScript, ThemeSync } from "@/components/theme/theme-sync";
 import { bottomTabs, visibleNav } from "@/features/app-shell/navigation";
 import { requireUser } from "@/server/auth/current-user";
 import { toActor } from "@/server/services/auth";
 import { unreadCount } from "@/server/services/notifications";
 
-/** Oturum gerektiren tüm sayfaların kabuğu. Oturum okuması Suspense içinde yapılır (cacheComponents). */
+/**
+ * Oturum gerektiren tüm sayfaların kabuğu. Oturum okuması Suspense içinde yapılır (cacheComponents).
+ * Tema betiği Suspense dışındadır: sayfanın sabit ilk parçasında gelir, iskelet koyu/açık doğru çizilir (karar #274).
+ */
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const t = await getTranslations("common");
 
   return (
-    <Suspense fallback={<ShellSkeleton label={t("loading")} />}>
-      <AuthenticatedShell>{children}</AuthenticatedShell>
-    </Suspense>
+    <>
+      <ThemeScript />
+      <Suspense fallback={<ShellSkeleton label={t("loading")} />}>
+        <AuthenticatedShell>{children}</AuthenticatedShell>
+      </Suspense>
+    </>
   );
 }
 
@@ -28,6 +35,7 @@ async function AuthenticatedShell({ children }: { children: ReactNode }) {
   return (
     <>
       <TextSizeStyle size={user.textSize} />
+      <ThemeSync theme={user.theme} />
       <AppShell fullName={user.fullName} items={items} tabs={tabs} hasMore={hasMore} unread={unread}>
         {children}
       </AppShell>
