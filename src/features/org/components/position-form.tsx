@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 import { Field } from "@/components/forms/field";
 import { FormError } from "@/components/forms/form-error";
+import { keepValues } from "@/components/forms/keep-values";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -38,8 +39,7 @@ export function PositionForm({
   const others = positionOptions.filter((p) => p.id !== position?.id);
 
   return (
-    <form action={action} className="flex max-w-xl flex-col gap-5">
-      {state && !state.ok && <FormError error={state.error} details={state.details} />}
+    <form {...keepValues(action)} className="flex max-w-xl flex-col gap-5">
       <input type="hidden" name="id" value={position?.id ?? ""} />
       <Field id="orgUnitId" label={t("positionForm.orgUnit")}>
         <NativeSelect id="orgUnitId" name="orgUnitId" required defaultValue={position?.orgUnitId ?? defaultUnitId ?? ""}>
@@ -88,6 +88,7 @@ export function PositionForm({
           ))}
         </NativeSelect>
       </Field>
+      {state && !state.ok && <FormError error={state.error} details={state.details} />}
       <Button type="submit" size="lg" disabled={pending} className="self-start">
         {pending ? tc("saving") : tc("save")}
       </Button>

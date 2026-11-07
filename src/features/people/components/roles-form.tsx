@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 import { FormError } from "@/components/forms/form-error";
+import { keepValues } from "@/components/forms/keep-values";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -26,9 +27,7 @@ export function RolesForm({ userId, roles, canGrantOwner }: { userId: string; ro
   const t = useTranslations();
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(setRolesAction.bind(null, userId), null);
   return (
-    <form action={action} className="flex flex-col gap-2">
-      {state && !state.ok && <FormError error={state.error} />}
-      {state?.ok && <p role="status" className="text-sm">{t("common.saved")}</p>}
+    <form {...keepValues(action)} className="flex flex-col gap-2">
       <p className="flex min-h-12 items-center text-muted-foreground">{t("roles.personnel")} ✓</p>
       {ASSIGNABLE.map((role) => (
         <CheckRow key={role} name="roles" value={role} label={t(`roles.${role}`)} checked={roles.includes(role)} />
@@ -39,6 +38,8 @@ export function RolesForm({ userId, roles, canGrantOwner }: { userId: string; ro
       ) : (
         roles.includes("owner") && <p className="flex min-h-12 items-center text-muted-foreground">{t("roles.owner")} ✓</p>
       )}
+      {state?.ok && <p role="status" className="text-sm">{t("common.saved")}</p>}
+      {state && !state.ok && <FormError error={state.error} />}
       <Button type="submit" disabled={pending} className="mt-2 self-start">
         {t("admin.roles.saveRoles")}
       </Button>
@@ -58,13 +59,13 @@ export function ScopesForm({
   const t = useTranslations();
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(setScopesAction.bind(null, userId), null);
   return (
-    <form action={action} className="flex flex-col gap-2">
-      {state && !state.ok && <FormError error={state.error} />}
-      {state?.ok && <p role="status" className="text-sm">{t("common.saved")}</p>}
+    <form {...keepValues(action)} className="flex flex-col gap-2">
       <p className="text-sm text-muted-foreground">{t("admin.roles.scopesHint")}</p>
       {units.map((u) => (
         <CheckRow key={u.id} name="orgUnitIds" value={u.id} label={u.label} checked={selected.includes(u.id)} />
       ))}
+      {state?.ok && <p role="status" className="text-sm">{t("common.saved")}</p>}
+      {state && !state.ok && <FormError error={state.error} />}
       <Button type="submit" disabled={pending} className="mt-2 self-start">
         {t("admin.roles.saveScopes")}
       </Button>

@@ -4,6 +4,7 @@ import { CircleAlert, CircleCheck, Send } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 import { FormError } from "@/components/forms/form-error";
+import { keepValues } from "@/components/forms/keep-values";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ActionResult } from "@/features/shared/action-result";
@@ -26,15 +27,11 @@ export function TestMailForm({ defaultTo, transport }: { defaultTo: string; tran
   const hint = useMailHint();
   const [state, action, pending] = useActionState<ActionResult<TestMailResult> | null, FormData>(sendTestEmailAction, null);
   return (
-    <form action={action} className="flex max-w-xl flex-col gap-4">
+    <form {...keepValues(action)} className="flex max-w-xl flex-col gap-4">
       <label className="flex flex-col gap-1">
         <span className="text-sm font-medium">{t("test.to")}</span>
         <Input name="to" type="email" defaultValue={defaultTo} required maxLength={254} autoComplete="email" />
       </label>
-      <Button type="submit" size="lg" disabled={pending} className="self-start">
-        <Send aria-hidden="true" />
-        {pending ? t("test.sending") : t("test.submit")}
-      </Button>
       {state && !state.ok && <FormError error={state.error} details={state.details} />}
       {state?.ok && state.data.ok && (
         <p role="status" className="flex items-start gap-2 rounded-xl border p-4">
@@ -52,6 +49,10 @@ export function TestMailForm({ defaultTo, transport }: { defaultTo: string; tran
           </div>
         </div>
       )}
+      <Button type="submit" size="lg" disabled={pending} className="self-start">
+        <Send aria-hidden="true" />
+        {pending ? t("test.sending") : t("test.submit")}
+      </Button>
     </form>
   );
 }

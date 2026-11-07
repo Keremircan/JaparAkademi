@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useActionState } from "react";
+import { AlertMessage } from "@/components/forms/form-error";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { changePasswordAction } from "../actions";
@@ -17,17 +18,6 @@ export function ChangePasswordForm({ minLength }: { minLength: number }) {
 
   return (
     <form action={formAction} className="flex flex-col gap-5" noValidate>
-      {(issues.length > 0 || state.unexpected) && (
-        <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-destructive">
-          <ul className="list-disc pl-5">
-            {issues.map((issue) => (
-              <li key={issue}>{t(`auth.passwordIssues.${issue}`, { min: minLength })}</li>
-            ))}
-            {state.unexpected && <li>{t("errors.unexpected")}</li>}
-          </ul>
-        </div>
-      )}
-
       <div className="flex flex-col gap-2">
         <Label htmlFor="currentPassword" className="text-sm pointer-fine:text-base">
           {t("auth.changePassword.current")}
@@ -76,6 +66,16 @@ export function ChangePasswordForm({ minLength }: { minLength: number }) {
         </ul>
       </div>
 
+      {(issues.length > 0 || state.unexpected) && (
+        <AlertMessage revealKey={`${issues.join()}|${state.unexpected ? 1 : 0}`}>
+          <ul className="list-disc pl-5">
+            {issues.map((issue) => (
+              <li key={issue}>{t(`auth.passwordIssues.${issue}`, { min: minLength })}</li>
+            ))}
+            {state.unexpected && <li>{t("errors.unexpected")}</li>}
+          </ul>
+        </AlertMessage>
+      )}
       <Button type="submit" size="lg" disabled={pending} className="w-full">
         {pending ? t("auth.changePassword.submitting") : t("auth.changePassword.submit")}
       </Button>

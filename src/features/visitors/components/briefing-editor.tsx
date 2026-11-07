@@ -204,8 +204,9 @@ export function BriefingEditor({
         </Button>
       </section>
 
-      <div className="sticky bottom-0 flex flex-col gap-3 border-t bg-background py-4">
-        <FormError error={error?.code} />
+      {/* Telefonda alt menünün (4rem) üstünde durur; hata mesajı düğmelerin üstünde (karar #269) */}
+      <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+4rem)] z-10 flex flex-col gap-3 border-t bg-background py-4 lg:bottom-0">
+        <FormError error={error?.code} details={error?.details} />
         {saved && (
           <p role="status" className="text-emerald-700 dark:text-emerald-400">
             {t("saved")}

@@ -2,6 +2,7 @@
 
 import { useFormatter, useTranslations } from "next-intl";
 import { useActionState } from "react";
+import { AlertMessage } from "@/components/forms/form-error";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -24,12 +25,6 @@ export function LoginForm() {
 
   return (
     <form action={formAction} className="flex flex-col gap-5" noValidate>
-      {errorMessage && (
-        <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-destructive">
-          {errorMessage}
-        </p>
-      )}
-
       <div className="flex flex-col gap-2">
         <Label htmlFor="sicilNo" className="text-sm pointer-fine:text-base">
           {t("login.sicilLabel")}
@@ -77,6 +72,7 @@ export function LoginForm() {
         </span>
       </Label>
 
+      {errorMessage && <AlertMessage revealKey={errorMessage}>{errorMessage}</AlertMessage>}
       <Button type="submit" size="lg" disabled={pending} className="w-full">
         {pending ? t("login.submitting") : t("login.submit")}
       </Button>

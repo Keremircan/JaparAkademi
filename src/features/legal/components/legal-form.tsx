@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useActionState, useState } from "react";
 import { Field } from "@/components/forms/field";
 import { FormError } from "@/components/forms/form-error";
+import { keepValues } from "@/components/forms/keep-values";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,8 +25,7 @@ export function LegalForm({ kind, locale, text }: { kind: string; locale: string
   const [body, setBody] = useState(text?.body ?? "");
   const unfilled = placeholdersIn(title, body);
   return (
-    <form action={action} className="flex max-w-3xl flex-col gap-5">
-      {state && !state.ok && <FormError error={state.error} />}
+    <form {...keepValues(action)} className="flex max-w-3xl flex-col gap-5">
       <Field id="title" label={t("titleField")}>
         <Input id="title" name="title" required maxLength={200} defaultValue={text?.title} onChange={(e) => setTitle(e.target.value)} />
       </Field>
@@ -56,6 +56,7 @@ export function LegalForm({ kind, locale, text }: { kind: string; locale: string
           </div>
         </div>
       )}
+      {state && !state.ok && <FormError error={state.error} />}
       <Button type="submit" size="lg" disabled={pending} className="self-start">
         {pending ? tc("saving") : tc("save")}
       </Button>

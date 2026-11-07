@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useActionState } from "react";
+import { AlertMessage } from "@/components/forms/form-error";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -27,11 +28,6 @@ export function ActivationCodeForm() {
   return (
     <form action={formAction} className="flex flex-col gap-5" noValidate>
       <p>{t("auth.activate.codeIntro")}</p>
-      {error && (
-        <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-destructive">
-          {error}
-        </p>
-      )}
       <div className="flex flex-col gap-2">
         <Label htmlFor="sicilNo" className="text-sm pointer-fine:text-base">
           {t("auth.activate.sicil")}
@@ -65,6 +61,7 @@ export function ActivationCodeForm() {
           {t("auth.activate.codeHint")}
         </p>
       </div>
+      {error && <AlertMessage revealKey={error}>{error}</AlertMessage>}
       <Button type="submit" size="lg" disabled={pending} className="w-full">
         {pending ? t("auth.activate.checking") : t("auth.activate.continue")}
       </Button>
@@ -84,16 +81,6 @@ export function ActivatePasswordForm({ token, minLength }: { token: string; minL
   return (
     <form action={formAction} className="flex flex-col gap-5" noValidate>
       <input type="hidden" name="token" value={token} />
-      {(issues.length > 0 || state.unexpected) && (
-        <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-destructive">
-          <ul className="list-disc pl-5">
-            {issues.map((issue) => (
-              <li key={issue}>{issue === "invite_invalid" ? t("auth.activate.invalid") : t(`auth.passwordIssues.${issue}`, { min: minLength })}</li>
-            ))}
-            {state.unexpected && <li>{t("errors.unexpected")}</li>}
-          </ul>
-        </div>
-      )}
       <div className="flex flex-col gap-2">
         <Label htmlFor="newPassword" className="text-sm pointer-fine:text-base">
           {t("auth.changePassword.new")}
@@ -123,6 +110,16 @@ export function ActivatePasswordForm({ token, minLength }: { token: string; minL
           </span>
         </span>
       </Label>
+      {(issues.length > 0 || state.unexpected) && (
+        <AlertMessage revealKey={`${issues.join()}|${state.unexpected ? 1 : 0}`}>
+          <ul className="list-disc pl-5">
+            {issues.map((issue) => (
+              <li key={issue}>{issue === "invite_invalid" ? t("auth.activate.invalid") : t(`auth.passwordIssues.${issue}`, { min: minLength })}</li>
+            ))}
+            {state.unexpected && <li>{t("errors.unexpected")}</li>}
+          </ul>
+        </AlertMessage>
+      )}
       <Button type="submit" size="lg" disabled={pending} className="w-full">
         {pending ? t("auth.activate.submitting") : t("auth.activate.submit")}
       </Button>

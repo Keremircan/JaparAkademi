@@ -188,6 +188,7 @@ export function StepTracker({
           </p>
         ) : (
           <>
+            <FormError error={error} />
             <Button size="lg" disabled={!reached || pending} onClick={acknowledge}>
               {pending ? <Loader2 aria-hidden="true" className="animate-spin" /> : <CheckCircle2 aria-hidden="true" />}
               {t("acknowledge")}
@@ -197,7 +198,6 @@ export function StepTracker({
                 {t(`hint.${mode.kind}`)}
               </p>
             )}
-            <FormError error={error} />
           </>
         )}
       </div>

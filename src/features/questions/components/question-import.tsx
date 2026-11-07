@@ -4,6 +4,7 @@ import { CheckCircle2, Download, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useActionState, useRef, useState, useTransition } from "react";
 import { FormError } from "@/components/forms/form-error";
+import { keepValues } from "@/components/forms/keep-values";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
 import type { ActionResult } from "@/features/shared/action-result";
@@ -25,7 +26,7 @@ export function QuestionImport({ owners }: { owners: { common: boolean; ohsOnly:
 
   return (
     <div className="flex max-w-5xl flex-col gap-6">
-      <form ref={form} action={action} className="flex max-w-xl flex-col gap-4" onChange={() => setDone(null)}>
+      <form ref={form} {...keepValues(action)} className="flex max-w-xl flex-col gap-4" onChange={() => setDone(null)}>
         <label className="flex flex-col gap-2">
           <span className="font-medium">{t("owner")}</span>
           <NativeSelect name="owner" required value={owner} onChange={(e) => setOwner(e.target.value)}>

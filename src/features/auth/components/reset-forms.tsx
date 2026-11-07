@@ -3,6 +3,7 @@
 import { MailCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useActionState } from "react";
+import { AlertMessage } from "@/components/forms/form-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,11 +31,6 @@ export function ForgotPasswordForm() {
   }
   return (
     <form action={formAction} className="flex flex-col gap-5" noValidate>
-      {state.missing && (
-        <p id="sicilNo-error" role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-destructive">
-          {t("missingSicil")}
-        </p>
-      )}
       <div className="flex flex-col gap-2">
         <Label htmlFor="sicilNo" className="text-sm pointer-fine:text-base">
           {t("sicil")}
@@ -50,6 +46,11 @@ export function ForgotPasswordForm() {
         />
       </div>
       <p className="text-sm text-muted-foreground">{t("noEmail")}</p>
+      {state.missing && (
+        <AlertMessage id="sicilNo-error" revealKey="missing">
+          {t("missingSicil")}
+        </AlertMessage>
+      )}
       <Button type="submit" size="lg" disabled={pending} className="w-full">
         {pending ? t("sending") : t("send")}
       </Button>
@@ -78,16 +79,6 @@ export function ResetPasswordForm({ token, minLength }: { token: string; minLeng
   return (
     <form action={formAction} className="flex flex-col gap-5" noValidate>
       <input type="hidden" name="token" value={token} />
-      {(issues.length > 0 || state.unexpected) && (
-        <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-destructive">
-          <ul className="list-disc pl-5">
-            {issues.map((issue) => (
-              <li key={issue}>{issue === "reset_link_invalid" ? t("auth.reset.invalid") : t(`auth.passwordIssues.${issue}`, { min: minLength })}</li>
-            ))}
-            {state.unexpected && <li>{t("errors.unexpected")}</li>}
-          </ul>
-        </div>
-      )}
       <div className="flex flex-col gap-2">
         <Label htmlFor="newPassword" className="text-sm pointer-fine:text-base">
           {t("auth.changePassword.new")}
@@ -108,6 +99,16 @@ export function ResetPasswordForm({ token, minLength }: { token: string; minLeng
           <li>{t("auth.changePassword.ruleNotCommon")}</li>
         </ul>
       </div>
+      {(issues.length > 0 || state.unexpected) && (
+        <AlertMessage revealKey={`${issues.join()}|${state.unexpected ? 1 : 0}`}>
+          <ul className="list-disc pl-5">
+            {issues.map((issue) => (
+              <li key={issue}>{issue === "reset_link_invalid" ? t("auth.reset.invalid") : t(`auth.passwordIssues.${issue}`, { min: minLength })}</li>
+            ))}
+            {state.unexpected && <li>{t("errors.unexpected")}</li>}
+          </ul>
+        </AlertMessage>
+      )}
       <Button type="submit" size="lg" disabled={pending} className="w-full">
         {pending ? t("auth.changePassword.submitting") : t("auth.reset.submit")}
       </Button>
