@@ -138,6 +138,7 @@ Kurulum ayrıntıları: `docs/runbooks/local-dev.md`.
 - `npm run db:generate` — şemadan yeni migration üretir
 - `npm run dev` / `npm run build` / `npm run start` / `npm run worker` (`worker:dev` izlemeli, `worker:build` yalnızca derler)
 - `npm run lint` / `npm run typecheck` / `npm test` (birim) / `npm run test:integration` (gerçek test DB) / `npm run test:e2e` (Playwright, mobil + masaüstü)
+- Testler geliştirme verisine yazmaz (`src/server/test-targets.ts`): entegrasyon `akademi_test` + `akademi-private-test`, e2e `akademi_e2e` + `akademi-private-e2e`; ikisi de her çalıştırmada boşaltılır (yalnızca adı `_test`/`_e2e`, `-test`/`-e2e` ile bitene dokunulur). E2E kendi sunucusunu açar: `npm run e2e:reset` → `.next-e2e`'ye üretim derlemesi → `next start` 3100 portunda (e-posta/push `log`); geliştirme sunucusu (3000) gerekmez ve etkilenmez. Eski Docker volume'unda e2e veritabanı bir kez oluşturulur (`docs/runbooks/local-dev.md`).
 - `npm run icons` — PWA ikonlarını üretir
 - `npm run push:keys` — web push VAPID anahtarları üretir
 - `npm run owner:grant -- <sicil>` — sistemde üst yönetici yoksa ilkini tanımlar

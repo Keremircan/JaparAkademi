@@ -666,6 +666,7 @@ Tablo ve sütun adları İngilizce `snake_case`. Tüm zaman alanları `timestamp
   - Kimse kendi kaydını değerlendiremez veya onaylayamaz
 - **Değiştirilemezlik testleri:** teslim edilmiş deneme, imza, onay, işaretleme ve sertifika satırlarında UPDATE/DELETE reddedilir. `audit_log` uygulama kullanıcısıyla güncellenemez.
 - **Birim testleri:** soru çekimi (konu dengesi), puanlama (İSG kritik kuralı), hak/bekleme hesabı, ön koşul kilidi, FG-3.3 modül farkı, video izleme oranı hesabı, Excel doğrulama.
+- **Test verisi (karar #289):** testler geliştirme verisine yazmaz; entegrasyon ve uçtan uca testlerin ayrı veritabanı ve dosya deposu her çalıştırmada boşaltılır.
 - **Playwright (mobil + masaüstü):** İK Excel aktarır → plan atanır → kursiyer teorik içerikleri tamamlar → gözetmen koduyla sınava girer, kalır, 24 saat sonra (saat simülasyonu) geçer → eğitmen pratik görevleri işaretler → pratik sınav iki imza → bölüm sorumlusu onay → sertifika PDF → QR doğrulama sayfası.
 - Kabul: her rol için en az bir gerçek kullanıcıyla kullanılabilirlik testi, yedekten geri dönüş testi, kullanıcı ve yönetici kılavuzu teslimi.
 
@@ -1105,6 +1106,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 286 | Değişmez kural: silme | "Silme yerine arşivleme yapılır" kuralı "Bağı olmayan kayıt silinir; geçmişi olan kayıt arşivlenir" olarak değişti (proje sahibi kararı, 2026-11-08). Değiştirilemez kayıtlar hiç silinmez |
 | 287 | Arşivli ve pasif kayıtlar gizli | Organizasyon ağacında pasif birim ve pozisyonlar, yüklenici firmalarda arşivdekiler, ortak cihazlarda iptal edilenler varsayılan olarak gizlidir; "Pasifleri göster (n)", "Arşivdekileri göster (n)", "İptal edilenleri göster (n)" ile görünür. Modül, içerik, soru ve yetkinlik listeleri zaten arşivi ayrı süzgeçte gösteriyordu |
 | 288 | Silinmeyenler | Kara liste kaydı, sistem dışı son eğitim tarihi, sertifika, sınav denemesi, imza, onay ve yayınlanmış sürümler silinmez; mevcut kaldırma, düzeltme, geçersiz kılma ve iptal işlemleri geçerlidir. Yayınlanmamış taslaklar (içerik, kart, ziyaretçi paketi) mevcut "Taslağı sil" ile, hukuki metin taslağı bütün dilleriyle **Taslağı sil** ile silinir. İlk sürüm kart taslağı pozisyonla birlikte silinir |
+| 289 | Testlerin ayrı verisi | Testler geliştirme veritabanına ve dosya deposuna yazmaz. Entegrasyon testleri `akademi_test` + `<depo>-test`, uçtan uca testler `akademi_e2e` + `<depo>-e2e` kullanır; ikisi de her çalıştırmanın başında boşaltılır (yalnızca adı test sonekiyle biten hedefe dokunulur). Uçtan uca testler kendi üretim derlemesiyle ayrı portta çalışır; bu sunucuda e-posta ve push yalnızca kayda yazılır |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

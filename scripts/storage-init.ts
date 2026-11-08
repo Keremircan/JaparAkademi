@@ -4,12 +4,17 @@
  *  2. Uygulamanın S3 erişim anahtarını içe aktarır
  *  3. Private bucket'ı oluşturur ve anahtara okuma/yazma/sahip yetkisi verir
  *  4. Tarayıcıdan doğrudan yükleme için bucket CORS kuralını ayarlar (APP_URL kaynağı)
+ *  5. `--test-buckets` ile (yerel geliştirme ve CI): testlerin ayrı depolarını da oluşturur (`-test`, `-e2e`;
+ *     `src/server/test-targets.ts`). Sunucudaki kurulum (compose.prod.yml) bu bayrağı vermez.
  *
- * Kullanım: npm run storage:init
+ * Kullanım: npm run storage:init   (npm betiği --test-buckets verir)
  */
 import { PutBucketCorsCommand, S3Client } from "@aws-sdk/client-s3";
 import { z } from "zod";
 import { parseEnv } from "../src/server/env";
+import { e2eTarget, testBucket } from "../src/server/test-targets";
+
+const withTestBuckets = process.argv.includes("--test-buckets") && process.env.NODE_ENV !== "production";
 
 const cfg = parseEnv(
   z.object({
@@ -81,8 +86,7 @@ async function ensureKey() {
   console.log("✓ Erişim anahtarı içe aktarıldı");
 }
 
-async function ensureBucket() {
-  const alias = cfg.S3_BUCKET_PRIVATE;
+async function ensureBucket(alias: string) {
   let bucket = await admin<{ id: string }>("GetBucketInfo?globalAlias=" + encodeURIComponent(alias));
   if (bucket.status !== 200) {
     bucket = await admin<{ id: string }>("CreateBucket", { globalAlias: alias });
@@ -102,17 +106,17 @@ async function ensureBucket() {
 }
 
 /** Tarayıcının imzalı URL ile doğrudan yükleyebilmesi için CORS (ETag parçalı yüklemede gerekir). */
-async function ensureCors() {
+async function ensureCors(bucket: string, appUrl: string) {
   const client = new S3Client({
     endpoint: cfg.S3_ENDPOINT,
     region: cfg.S3_REGION,
     forcePathStyle: true,
     credentials: { accessKeyId: cfg.S3_ACCESS_KEY_ID, secretAccessKey: cfg.S3_SECRET_ACCESS_KEY },
   });
-  const origin = new URL(cfg.APP_URL).origin;
+  const origin = new URL(appUrl).origin;
   await client.send(
     new PutBucketCorsCommand({
-      Bucket: cfg.S3_BUCKET_PRIVATE,
+      Bucket: bucket,
       CORSConfiguration: {
         CORSRules: [
           {
@@ -126,14 +130,21 @@ async function ensureCors() {
       },
     }),
   );
-  console.log(`✓ CORS: ${origin}`);
+  console.log(`✓ CORS (${bucket}): ${origin}`);
 }
 
 async function main() {
   await ensureLayout();
   await ensureKey();
-  await ensureBucket();
-  await ensureCors();
+  await ensureBucket(cfg.S3_BUCKET_PRIVATE);
+  await ensureCors(cfg.S3_BUCKET_PRIVATE, cfg.APP_URL);
+  if (withTestBuckets) {
+    // Testlerin ayrı depoları: her test çalıştırmasında boşaltılır, geliştirme dosyalarına dokunulmaz
+    const e2e = e2eTarget(process.env);
+    await ensureBucket(testBucket(process.env));
+    await ensureBucket(e2e.bucket);
+    await ensureCors(e2e.bucket, e2e.appUrl);
+  }
 }
 
 main().catch((err) => {

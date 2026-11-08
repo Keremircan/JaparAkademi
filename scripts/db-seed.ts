@@ -189,10 +189,29 @@ Verileriniz yalnızca yetkili personel tarafından, görevleriyle sınırlı ola
 
 Kanun'un 11. maddesi kapsamındaki haklarınız için İnsan Kaynakları birimine başvurabilirsiniz.`;
 
+const DRAFT_KVKK_EN = `[DRAFT — This text is a placeholder. It must be replaced with the text approved by the legal/KVKK officer.]
+
+As data controller under Law No. 6698 on the Protection of Personal Data, JAPAR processes your identity, contact and training data to run your training, exam and competency processes on the JAPAR Akademi platform.
+
+Your data is viewed only by authorised staff, limited to their duties, and is anonymised at the end of the legal retention periods.
+
+For your rights under Article 11 of the Law, you can apply to the Human Resources department.`;
+
+const SEED_KVKK_TITLE = { tr: "Çalışan Aydınlatma Metni (TASLAK)", en: "Employee Privacy Notice (DRAFT)" };
+
 async function seedLegal() {
-  const [any] = await db().select({ id: legalTexts.id }).from(legalTexts).limit(1);
-  if (any) return;
-  const { id } = await createDraft(actor, { title: "Çalışan Aydınlatma Metni (TASLAK)", body: DRAFT_KVKK });
+  const rows = await db()
+    .select({ id: legalTexts.id, kind: legalTexts.kind, locale: legalTexts.locale, title: legalTexts.title, publishedAt: legalTexts.publishedAt })
+    .from(legalTexts);
+  const isSeedDraft = (r: (typeof rows)[number]) =>
+    r.kind === "kvkk_personnel" && !r.publishedAt && r.title === (r.locale === "en" ? SEED_KVKK_TITLE.en : SEED_KVKK_TITLE.tr);
+  // Yayınlanmış ya da kurumun yazdığı bir metin varsa dokunulmaz; yarım kalmış önceki çalıştırmanın taslakları tamamlanır
+  if (rows.some((r) => !isSeedDraft(r))) return;
+  // Personel aydınlatma metni Türkçe ve İngilizce birlikte yayınlanır (karar #207)
+  const id = rows.find((r) => r.locale === "tr")?.id ?? (await createDraft(actor, { title: SEED_KVKK_TITLE.tr, body: DRAFT_KVKK })).id;
+  if (!rows.some((r) => r.locale === "en")) {
+    await createDraft(actor, { title: SEED_KVKK_TITLE.en, body: DRAFT_KVKK_EN }, "kvkk_personnel", "en");
+  }
   await publishText(actor, id);
   console.log("✓ KVKK aydınlatma metni (TASLAK) yayınlandı");
 }
