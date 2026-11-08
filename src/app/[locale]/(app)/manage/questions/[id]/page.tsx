@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 import { ActionButton } from "@/components/forms/action-button";
 import { orNull } from "@/features/admin/guard";
+import { DeleteControl } from "@/features/deletion/components/delete-control";
 import { ApprovalPanel } from "@/features/content/components/approval-panel";
 import { approveQuestionAction, archiveQuestionAction, rejectQuestionAction } from "@/features/questions/actions";
 import { QuestionForm } from "@/features/questions/components/question-form";
@@ -35,7 +36,7 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
   if (!/^[0-9a-f-]{36}$/.test(id)) return <NotFoundView />;
   const q = await orNull(getQuestion(access.actor, id));
   if (!q) return <NotFoundView />;
-  const [t, format, topics, modules] = await Promise.all([getTranslations("questions"), getFormatter(), listTopics(access.actor), questionModuleOptions(access.actor)]);
+  const [t, tDel, format, topics, modules] = await Promise.all([getTranslations("questions"), getTranslations("deletion"), getFormatter(), listTopics(access.actor), questionModuleOptions(access.actor)]);
   const v = q.editable;
   const image = v?.mediaAssetId ? ((await assetsInfo([v.mediaAssetId])).get(v.mediaAssetId) ?? null) : null;
   const dt = (d: Date) => format.dateTime(d, { dateStyle: "medium", timeStyle: "short" });
@@ -49,12 +50,25 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
         description={`${q.ownerName ?? t("form.common")}${q.isOhs ? ` · ${t("ohs")}` : ""}`}
         back={{ href: "/manage/questions", label: t("title") }}
         actions={
-          q.can.archive && (
-            <ActionButton variant="destructive" confirmText={t("archiveConfirm")} action={archiveQuestionAction.bind(null, q.id)}>
-              <Archive aria-hidden="true" />
-              {t("archiveButton")}
-            </ActionButton>
-          )
+          <>
+            {q.can.archive && (
+              <ActionButton variant="destructive" confirmText={t("archiveConfirm")} action={archiveQuestionAction.bind(null, q.id)}>
+                <Archive aria-hidden="true" />
+                {t("archiveButton")}
+              </ActionButton>
+            )}
+            {q.can.delete && (
+              <DeleteControl
+                kind="question"
+                id={q.id}
+                subject="question"
+                label={tDel("buttons.question")}
+                variant="outline"
+                after="/manage/questions"
+                archive={q.can.archive ? { action: archiveQuestionAction.bind(null, q.id), label: t("archiveButton") } : undefined}
+              />
+            )}
+          </>
         }
       />
       {q.archived && <p className="mb-6 rounded-xl border bg-muted p-4">{t("archivedNote")}</p>}

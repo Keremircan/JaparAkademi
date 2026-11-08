@@ -5,6 +5,7 @@ import { db } from "@/server/db/client";
 import { contractorCompanies, visitors } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { NotFoundError, ValidationError } from "@/server/errors";
+import type { Deletable } from "../deletion/core";
 import { cleanContact } from "./identity";
 
 /** Taşeron firma kartı (FG-8.3): İSG uzmanı ve güvenlik yönetir (karar #128). */
@@ -89,7 +90,7 @@ export async function updateCompany(actor: Actor, id: string, input: CompanyInpu
   await withActor(actor, (tx) => tx.update(contractorCompanies).set(values).where(eq(contractorCompanies.id, id)));
 }
 
-/** Silme yok; arşivlenen firma yeni ön kayıtta seçilemez. */
+/** Arşivlenen firma yeni ön kayıtta seçilemez; ziyaret kaydı olmayan firma silinebilir (`companyDeletion`, iş paketi 3.14). */
 export async function setCompanyArchived(actor: Actor, id: string, archived: boolean): Promise<void> {
   assertCan(actor, "contractors.manage");
   await getCompany(actor, id);
@@ -100,6 +101,19 @@ export async function setCompanyArchived(actor: Actor, id: string, archived: boo
       .where(eq(contractorCompanies.id, id)),
   );
 }
+
+/** Firma silme (iş paketi 3.14): ziyaretçi kaydı olan firma silinmez, arşivlenir. */
+export const companyDeletion: Deletable<typeof contractorCompanies.$inferSelect> = {
+  async load(tx, actor, id) {
+    assertCan(actor, "contractors.manage");
+    const [row] = await tx.select().from(contractorCompanies).where(eq(contractorCompanies.id, id)).limit(1).for("update");
+    if (!row) throw new NotFoundError("company");
+    return row;
+  },
+  async remove(tx, row) {
+    await tx.delete(contractorCompanies).where(eq(contractorCompanies.id, row.id));
+  },
+};
 
 /** Ziyaretçinin kendi kaydı formu (hesapsız): etkin firmaların yalnızca adı (karar #139). */
 export async function publicCompanyOptions(): Promise<{ id: string; name: string }[]> {

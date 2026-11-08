@@ -1,13 +1,28 @@
-import { and, asc, count, eq, ilike, inArray, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
+import { and, arrayOverlaps, asc, count, eq, ilike, inArray, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
 import type { Actor } from "@/server/authz/actor";
 import { assertUser, hasRole } from "@/server/authz/policy";
 import { db, type DbOrTx } from "@/server/db/client";
-import { competencies, contents, moduleContents, modules, orgUnits, planModules, practiceTasks } from "@/server/db/schema";
+import {
+  assignmentModules,
+  competencies,
+  contents,
+  moduleContents,
+  modules,
+  orgUnits,
+  planModules,
+  positionCardVersions,
+  practiceTasks,
+  questionModules,
+  questions,
+  quizQuestions,
+  trainingPlans,
+} from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/server/errors";
 import type { OhsTopic } from "@/lib/ohs";
 import { canDraftContent, canUseLibrary, canViewContent, contentAccessFor, type ContentAccess } from "./content/access";
 import { assertCompetenciesLinkable, competencyOptionsForUnit } from "./competencies";
+import { countRows, tryRemove, type Deletable } from "./deletion/core";
 
 /**
  * Modül kütüphanesi (SPEC 4.3, FG-3.1). Modüller birden fazla planda kullanılır; sürümsüzdür
@@ -130,7 +145,8 @@ export type ModuleDetail = ModuleListItem & {
   /** Görevlere bağlanabilecek yetkinlikler (pratik modülde; karar #219). */
   competencyOptions: { id: string; name: string; kind: "machine" | "task" }[];
   usedInPlans: number;
-  can: { edit: boolean; editRemote: boolean; archive: boolean };
+  /** `delete`: silme düğmesi gösterilir; silinip silinemeyeceğini pencere söyler (iş paketi 3.14). */
+  can: { edit: boolean; editRemote: boolean; archive: boolean; delete: boolean };
 };
 
 export async function getModule(actor: Actor, moduleId: string): Promise<ModuleDetail> {
@@ -184,6 +200,7 @@ export async function getModule(actor: Actor, moduleId: string): Promise<ModuleD
       edit,
       editRemote: edit && (!m.isOhs || hasRole(actor, "ohs_specialist") || actor.kind === "system"),
       archive: edit && m.cardPositionId === null,
+      delete: canEdit(access, m) && m.cardPositionId === null,
     },
   };
 }
@@ -310,7 +327,10 @@ export async function setModuleContents(actor: Actor, moduleId: string, contentI
 /** `competencyId`: görev bu yetkinliğe bağlıdır (karar #219); boş = bağsız. */
 export type TaskInput = { id?: string; title: string; description: string | null; isCritical: boolean; competencyId?: string | null };
 
-/** Pratik görevler: listeden çıkarılan görev arşivlenir (geçmiş işaretlemeler korunur). */
+/**
+ * Pratik görevler: listeden çıkarılan görev hiçbir atamaya girmediyse silinir; atamaya girdiyse (plan sabitlenir) ya da
+ * işaretlendiyse arşivlenir.
+ */
 export async function saveTasks(actor: Actor, moduleId: string, tasks: TaskInput[]): Promise<void> {
   assertUser(actor);
   if (tasks.length > 100) throw new ValidationError("too_many_items");
@@ -329,8 +349,19 @@ export async function saveTasks(actor: Actor, moduleId: string, tasks: TaskInput
     const keep = new Set(clean.filter((t) => t.id).map((t) => t.id!));
     if ([...keep].some((id) => !currentIds.has(id))) throw new ValidationError("task_invalid");
 
+    // Listeden çıkarılan görev hiçbir atamaya girmediyse silinir (iş paketi 3.14). Atamalar görevleri kimlik dizisi olarak
+    // sabitler (`pinned_task_ids`, yabancı anahtar yok): böyle bir görev silinirse süren atamada işaretlenemez ve modül
+    // tamamlanamaz, bu yüzden arşivlenir. İşaretlenmiş görevi yabancı anahtar korur (`tryRemove`).
     const removed = [...currentIds].filter((id) => !keep.has(id));
-    if (removed.length) await tx.update(practiceTasks).set({ archivedAt: new Date() }).where(inArray(practiceTasks.id, removed));
+    const pinnedRows = removed.length
+      ? await tx.select({ ids: assignmentModules.pinnedTaskIds }).from(assignmentModules).where(arrayOverlaps(assignmentModules.pinnedTaskIds, removed))
+      : [];
+    const pinned = new Set(pinnedRows.flatMap((r) => r.ids));
+    const archive: string[] = [];
+    for (const id of removed) {
+      if (pinned.has(id) || !(await tryRemove(tx, (sp) => sp.delete(practiceTasks).where(eq(practiceTasks.id, id)).then(() => undefined)))) archive.push(id);
+    }
+    if (archive.length) await tx.update(practiceTasks).set({ archivedAt: new Date() }).where(inArray(practiceTasks.id, archive));
     for (const [i, t] of clean.entries()) {
       if (t.id) {
         await tx
@@ -355,6 +386,41 @@ export async function archiveModule(actor: Actor, moduleId: string): Promise<voi
     await tx.update(modules).set({ archivedAt: new Date() }).where(eq(modules.id, m.id));
   });
 }
+
+/**
+ * Modül silme (iş paketi 3.14, karar #284). Pozisyon planı taslaklarından ve bağlı (arşivlenmemiş) sorulardan önce
+ * çıkarılır. Modülün kendi içerik listesi, pratik görevleri ve ara değerlendirme soruları modülle birlikte silinir.
+ * Yayınlanmış planda, atamada, sınavda ya da sınıf eğitiminde geçen modül silinmez, arşivlenir. Kart modülü
+ * pozisyonla birlikte silinir.
+ */
+export const moduleDeletion: Deletable<ModuleRow> = {
+  async load(tx, actor, id) {
+    const { module: m, access } = await loadModule(actor, id, tx);
+    if (!canEdit(access, m) || m.cardPositionId) throw new ForbiddenError("modules.delete");
+    await tx.select({ id: modules.id }).from(modules).where(eq(modules.id, m.id)).for("update");
+    return m;
+  },
+  async blockers(tx, m) {
+    const draftPlans = tx
+      .select({ id: trainingPlans.id })
+      .from(trainingPlans)
+      .innerJoin(positionCardVersions, eq(positionCardVersions.id, trainingPlans.cardVersionId))
+      .where(isNull(positionCardVersions.publishedAt));
+    const liveQuestions = tx.select({ id: questions.id }).from(questions).where(isNull(questions.archivedAt));
+    return [
+      { kind: "module_plans", count: await countRows(tx, planModules, and(eq(planModules.moduleId, m.id), inArray(planModules.planId, draftPlans))) },
+      {
+        kind: "module_questions",
+        count: await countRows(tx, questionModules, and(eq(questionModules.moduleId, m.id), inArray(questionModules.questionId, liveQuestions))),
+      },
+    ];
+  },
+  async remove(tx, m) {
+    await tx.delete(practiceTasks).where(eq(practiceTasks.moduleId, m.id));
+    await tx.delete(quizQuestions).where(eq(quizQuestions.moduleId, m.id));
+    await tx.delete(modules).where(eq(modules.id, m.id));
+  },
+};
 
 /** Modüle eklenebilecek içerikler: görülebilen, yayında, arşivsiz. */
 export async function pickableContents(actor: Actor, q: string): Promise<{ id: string; title: string; type: string; ownerName: string | null }[]> {

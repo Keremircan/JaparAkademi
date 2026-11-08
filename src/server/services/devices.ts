@@ -6,6 +6,7 @@ import { db } from "@/server/db/client";
 import { devices, users } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { NotFoundError, ValidationError } from "@/server/errors";
+import type { Deletable } from "./deletion/core";
 
 /**
  * Ortak cihazlar (FG-4.1): sistem yöneticisinin kaydettiği tarayıcıda giriş her zaman "ortak cihaz" modundadır
@@ -44,6 +45,19 @@ export async function revokeDevice(actor: Actor, id: string): Promise<void> {
     if (rows.length === 0) throw new NotFoundError("device");
   });
 }
+
+/** Ortak cihaz silme (iş paketi 3.14): cihaz tanınmaz olur (kaldırmayla aynı), listeden de silinir. */
+export const deviceDeletion: Deletable<{ id: string }> = {
+  async load(tx, actor, id) {
+    assertCan(actor, "devices.manage");
+    const [row] = await tx.select({ id: devices.id }).from(devices).where(eq(devices.id, id)).limit(1).for("update");
+    if (!row) throw new NotFoundError("device");
+    return row;
+  },
+  async remove(tx, row) {
+    await tx.delete(devices).where(eq(devices.id, row.id));
+  },
+};
 
 export async function listDevices(actor: Actor) {
   assertCan(actor, "devices.manage");

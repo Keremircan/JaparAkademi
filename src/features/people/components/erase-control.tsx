@@ -32,10 +32,8 @@ export function EraseControl({ userId, fullName }: { userId: string; fullName: s
   const [reason, setReason] = useState("");
   const [typed, setTyped] = useState("");
   const [state, formAction, pending] = useActionState<ActionResult | null, FormData>(async (prev, formData) => {
-    const result = await erasePersonAction(userId, prev, formData);
-    // Sayfa kişide kalır; "verileri silindi" bilgisi sayfanın başında görünsün (telefonda pencere en alttaydı)
-    if (result.ok) window.scrollTo({ top: 0 });
-    return result;
+    // Başarılı silmede eylem kişi listesine yönlendirir ve sonuç döndürmez
+    return (await erasePersonAction(userId, prev, formData)) ?? null;
   }, null);
   const phrase = t("phrase", { name: fullName });
   const ready = cleanEraseReason(reason) !== null && confirmationMatches(typed, phrase);

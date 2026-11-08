@@ -1,4 +1,4 @@
-import { and, asc, count, eq, ilike, inArray, ne, or, type SQL } from "drizzle-orm";
+import { and, asc, count, eq, ilike, inArray, isNull, ne, or, type SQL } from "drizzle-orm";
 import type { Actor } from "@/server/authz/actor";
 import { assertCan, assertUser, hasRole, isOwner } from "@/server/authz/policy";
 import type { Role } from "@/server/authz/roles";
@@ -27,8 +27,10 @@ import { assertNotErased } from "@/server/services/people-guard";
 
 /**
  * Personel yönetimi (SPEC 4.1, ekran 15). İK ve sistem yöneticisi.
- * Sicil no değiştirilemez (giriş kimliğidir). Satır silme yoktur; pasife alma / işten çıkış vardır. Üst yöneticinin
- * "kalıcı silmesi" kişiyi anonimleştirir (`services/erasure.ts`, karar #264); sonra kişi değiştirilemez.
+ * Sicil no değiştirilemez (giriş kimliğidir). Sistemi hiç kullanmamış kişi silinir (`services/person-deletion.ts`,
+ * iş paketi 3.14); geçmişi olan kişi işten çıkarılır ve üst yöneticinin "kalıcı silmesi" onu anonimleştirir
+ * (`services/erasure.ts`, karar #264). Anonimleştirilen kişi hiçbir listede ve kişi sayfasında görünmez (karar #285);
+ * satırı geçmiş kayıtlar için veritabanında kalır.
  */
 
 export type PersonStatus = "active" | "passive" | "terminated";
@@ -58,7 +60,7 @@ export async function listPeople(
   const page = Math.max(1, opts.page ?? 1);
   const parent = orgUnits;
 
-  const filters: SQL[] = [];
+  const filters: SQL[] = [isNull(personnel.anonymizedAt)];
   if (opts.status && opts.status !== "all") filters.push(eq(personnel.status, opts.status));
   else if (!opts.status) filters.push(ne(personnel.status, "terminated"));
   const q = opts.q?.trim();
@@ -74,7 +76,7 @@ export async function listPeople(
     if (scope.orgUnitIds.size === 0) throw new ForbiddenError("people.view");
     filters.push(inArray(positions.orgUnitId, [...scope.orgUnitIds]));
   }
-  const where = filters.length ? and(...filters) : undefined;
+  const where = and(...filters);
 
   const base = db()
     .select({
@@ -144,8 +146,6 @@ export type PersonDetail = {
   mustChangePassword: boolean;
   lockedUntil: Date | null;
   lastLoginAt: Date | null;
-  /** Kişisel verisi silindiyse (saklama işi ya da üst yöneticinin kalıcı silmesi, karar #266) */
-  anonymizedAt: Date | null;
   roles: Role[];
   scopeOrgUnitIds: string[];
 };
@@ -158,7 +158,8 @@ export async function getPerson(actor: Actor, userId: string): Promise<PersonDet
     .leftJoin(positions, eq(positions.id, personnel.positionId))
     .where(eq(personnel.userId, userId))
     .limit(1);
-  if (!row) throw new NotFoundError("person");
+  // Kişisel verisi silinen kişi (saklama işi ya da kalıcı silme) silinmiş sayılır (karar #285)
+  if (!row || row.p.anonymizedAt) throw new NotFoundError("person");
   const scope = await orgScopeFor(actor);
   if (!scope.all && !inOrgScope(scope, row.orgUnitId)) throw new NotFoundError("person");
 
@@ -185,7 +186,6 @@ export async function getPerson(actor: Actor, userId: string): Promise<PersonDet
     mustChangePassword: p.mustChangePassword,
     lockedUntil: p.lockedUntil,
     lastLoginAt: p.lastLoginAt,
-    anonymizedAt: p.anonymizedAt,
     roles: roleRows.map((r) => r.role),
     scopeOrgUnitIds: scopeRows.map((s) => s.orgUnitId),
   };

@@ -35,6 +35,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
   const q = typeof sp.q === "string" ? sp.q : "";
   const status = STATUSES.find((s) => s === sp.status);
   const page = Number(typeof sp.page === "string" ? sp.page : "1") || 1;
+  const deleted = sp.deleted === "1";
 
   const [t, tc, tNav, result] = await Promise.all([
     getTranslations("admin.people"),
@@ -82,6 +83,12 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
           )
         }
       />
+
+      {deleted && (
+        <p role="status" className="mb-6 rounded-xl border px-4 py-3 font-medium" data-testid="person-deleted">
+          {t("deleted")}
+        </p>
+      )}
 
       <form method="get" className="mb-6 flex flex-wrap items-end gap-3" role="search">
         <div className="flex min-w-60 flex-1 flex-col gap-2">

@@ -21,6 +21,7 @@ import { withActor } from "@/server/db/with-actor";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/server/errors";
 import { competencyState, grantValidUntil, type CompetencyState } from "@/server/state/competencies";
 import { notify, sectionManagersForPerson } from "./notifications";
+import { countRows, type Deletable } from "./deletion/core";
 import { recordOwnerAction } from "./owner-actions";
 import { getSettings } from "./settings";
 
@@ -84,6 +85,8 @@ export type CompetencyRow = {
   archived: boolean;
   holders: number;
   canEdit: boolean;
+  /** Silme düğmesi (iş paketi 3.14); arşivdeki yetkinlik de silinebilir. */
+  canDelete: boolean;
 };
 
 export async function listCompetencies(actor: Actor, opts: { archived?: boolean } = {}): Promise<CompetencyRow[]> {
@@ -109,6 +112,7 @@ export async function listCompetencies(actor: Actor, opts: { archived?: boolean 
     archived: c.archivedAt !== null,
     holders: holders.get(c.id) ?? 0,
     canEdit: c.archivedAt === null && canManageDefinition(actor, scope, c.orgUnitId),
+    canDelete: canManageDefinition(actor, scope, c.orgUnitId),
   }));
 }
 
@@ -158,7 +162,7 @@ export async function updateCompetency(actor: Actor, id: string, input: Omit<Com
   });
 }
 
-/** Arşivleme (silme yok): yeni verme ve görev bağlama yapılamaz; mevcut kayıtlar matriste kalır. */
+/** Arşivleme: yeni verme ve görev bağlama yapılamaz; mevcut kayıtlar matriste kalır. Hiç verilmemiş yetkinlik silinebilir (`competencyDeletion`). */
 export async function archiveCompetency(actor: Actor, id: string): Promise<void> {
   assertUser(actor);
   await withActor(actor, async (tx) => {
@@ -169,6 +173,28 @@ export async function archiveCompetency(actor: Actor, id: string): Promise<void>
     await tx.update(competencies).set({ archivedAt: new Date() }).where(eq(competencies.id, id));
   });
 }
+
+/**
+ * Yetkinlik silme (iş paketi 3.14, karar #284): önce bağlı (arşivlenmemiş) pratik görevlerden çıkarılır. Kişiye
+ * verilmiş (ya da arşivlenmiş görevde geçen) yetkinlik silinmez, arşivlenir.
+ */
+export const competencyDeletion: Deletable<typeof competencies.$inferSelect> = {
+  async load(tx, actor, id) {
+    const c = await loadCompetency(tx, id);
+    const scope = await competencyScope(actor, tx);
+    if (!canManageDefinition(actor, scope, c.orgUnitId)) throw new ForbiddenError("competencies.manage");
+    await tx.select({ id: competencies.id }).from(competencies).where(eq(competencies.id, id)).for("update");
+    return c;
+  },
+  async blockers(tx, c) {
+    return [
+      { kind: "competency_tasks", count: await countRows(tx, practiceTasks, and(eq(practiceTasks.competencyId, c.id), isNull(practiceTasks.archivedAt))) },
+    ];
+  },
+  async remove(tx, c) {
+    await tx.delete(competencies).where(eq(competencies.id, c.id));
+  },
+};
 
 async function loadCompetency(conn: DbOrTx, id: string) {
   const [c] = await conn.select().from(competencies).where(eq(competencies.id, id)).limit(1);

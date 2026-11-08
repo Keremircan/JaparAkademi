@@ -8,6 +8,7 @@ import { placeholdersIn } from "@/lib/legal";
 import { NotFoundError, uniqueViolation, ValidationError } from "@/server/errors";
 import type { RequestMeta } from "@/server/services/auth";
 import { getSettings } from "@/server/services/settings";
+import type { Deletable } from "./deletion/core";
 import { hasSample, legalSample, type SampleRetention } from "./legal-samples";
 
 /**
@@ -347,6 +348,24 @@ export async function createSampleDrafts(actor: Actor, kind: LegalKind, opts: { 
  * `asSample`: doldurulmamış `[[...]]` alanı kalan metin "örnek olarak" yayınlanır (karar #275); metin her
  * gösterildiği yerde "Örnek metin" uyarısıyla ve işaretli alanlarla görünür.
  */
+/** Yayınlanmamış taslağı (bütün dilleriyle) silme (iş paketi 3.14). Yayınlanmış metin değiştirilemez. */
+export const legalDraftDeletion: Deletable<LegalText> = {
+  async load(tx, actor, id) {
+    const [row] = await tx.select().from(legalTexts).where(eq(legalTexts.id, id)).limit(1).for("update");
+    if (!row) throw new NotFoundError("legal_text");
+    assertKind(actor, row.kind);
+    return row;
+  },
+  async inHistory(_tx, row) {
+    return row.publishedAt !== null;
+  },
+  async remove(tx, row) {
+    await tx
+      .delete(legalTexts)
+      .where(and(eq(legalTexts.kind, row.kind), eq(legalTexts.version, row.version), isNull(legalTexts.publishedAt)));
+  },
+};
+
 export async function publishText(actor: Actor, id: string, opts: { asSample?: boolean } = {}): Promise<void> {
   const existing = await getLegalText(actor, id);
   if (existing.publishedAt) throw new ValidationError("already_published");

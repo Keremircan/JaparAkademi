@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 import { ActionButton } from "@/components/forms/action-button";
 import { orNull } from "@/features/admin/guard";
+import { DeleteControl } from "@/features/deletion/components/delete-control";
 import { setCompanyArchivedAction } from "@/features/visitors/actions";
 import { CompanyForm } from "@/features/visitors/components/company-form";
 import { securityAccess } from "@/features/visitors/guard";
@@ -32,7 +33,7 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const company = UUID.test(id) ? await orNull(getCompany(access.actor, id)) : null;
   if (!company) return <NotFoundView />;
-  const t = await getTranslations("visitors");
+  const [t, tDel] = await Promise.all([getTranslations("visitors"), getTranslations("deletion")]);
   return (
     <section className="flex max-w-3xl flex-col gap-8">
       <PageHeader
@@ -40,12 +41,24 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
         description={company.archivedAt ? t("companies.archived") : undefined}
         back={{ href: "/security/contractors", label: t("cards.contractors.title") }}
         actions={
-          <ActionButton
-            confirmText={company.archivedAt ? undefined : t("companies.archiveConfirm")}
-            action={setCompanyArchivedAction.bind(null, company.id, !company.archivedAt)}
-          >
-            {company.archivedAt ? t("companies.unarchive") : t("companies.archive")}
-          </ActionButton>
+          <>
+            <ActionButton
+              confirmText={company.archivedAt ? undefined : t("companies.archiveConfirm")}
+              action={setCompanyArchivedAction.bind(null, company.id, !company.archivedAt)}
+            >
+              {company.archivedAt ? t("companies.unarchive") : t("companies.archive")}
+            </ActionButton>
+            <DeleteControl
+              kind="company"
+              id={company.id}
+              subject="company"
+              name={company.name}
+              label={tDel("buttons.company")}
+              variant="outline"
+              after="/security/contractors"
+              archive={company.archivedAt ? undefined : { action: setCompanyArchivedAction.bind(null, company.id, true), label: t("companies.archive") }}
+            />
+          </>
         }
       />
       <CompanyForm

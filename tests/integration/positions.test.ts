@@ -250,7 +250,7 @@ describe("FG-3.1 eğitim planı", () => {
 });
 
 describe("FG-3.1 modül kütüphanesi", () => {
-  it("görevler sıralı kaydedilir; listeden çıkan görev arşivlenir; yalnızca yayındaki içerik eklenir", async () => {
+  it("görevler sıralı kaydedilir; listeden çıkan işaretlenmemiş görev silinir; yalnızca yayındaki içerik eklenir", async () => {
     const p = await seedContentPeople();
     const m = await presModules(p);
     const before = await getModule(p.smUretim.actor, m.practice);
@@ -260,8 +260,10 @@ describe("FG-3.1 modül kütüphanesi", () => {
     ]);
     expect((await getModule(p.smUretim.actor, m.practice)).tasks.map((t) => t.title)).toEqual(["Yeni görev", "Kalıp bağlama"]);
     await saveTasks(p.smUretim.actor, m.practice, [{ title: "Yalnız bu", description: null, isCritical: false }]);
-    const rows = await owner()`select title, archived_at from practice_tasks order by sort_order`;
-    expect(rows.filter((r) => r.archived_at).length).toBe(2);
+    // İş paketi 3.14: hiç işaretlenmemiş görev arşivlenmez, silinir (işaretlenen görev arşivlenir: deletion.test.ts)
+    const rows = await owner()`select title, archived_at from practice_tasks where module_id = ${m.practice} order by sort_order`;
+    expect(rows.map((r) => r.title)).toEqual(["Yalnız bu"]);
+    expect(rows.filter((r) => r.archived_at).length).toBe(0);
 
     const { id: draft } = await createContent(p.smUretim.actor, { type: "text", title: "Taslak içerik", ownerOrgUnitId: p.org.units.pres, commonTarget: null, isOhs: false });
     await expect(setModuleContents(p.smUretim.actor, m.theory, [m.contentId, draft])).rejects.toMatchObject({ code: "content_invalid" });

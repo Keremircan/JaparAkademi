@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 import { ActionButton } from "@/components/forms/action-button";
 import { orNull } from "@/features/admin/guard";
+import { DeleteControl } from "@/features/deletion/components/delete-control";
 import { libraryAccess } from "@/features/content/guard";
 import { archiveModuleAction } from "@/features/modules/actions";
 import { ModuleForm } from "@/features/modules/components/module-form";
@@ -36,8 +37,9 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
   if (!/^[0-9a-f-]{36}$/.test(id)) return <NotFoundView />;
   const m = await orNull(getModule(access.actor, id));
   if (!m) return <NotFoundView />;
-  const [t, tt, quiz] = await Promise.all([
+  const [t, tDel, tt, quiz] = await Promise.all([
     getTranslations("modules"),
+    getTranslations("deletion"),
     getTranslations("content.types"),
     m.kind === "theory" ? listQuizQuestions(access.actor, m.id) : Promise.resolve([]),
   ]);
@@ -49,12 +51,26 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
         description={[t(`kinds.${m.kind}.label`), m.ownerName ?? t("commonFor", { target: t(`targets.${m.commonTarget ?? "all"}`) }), t("usedInPlans", { n: m.usedInPlans })].join(" · ")}
         back={{ href: "/manage/modules", label: t("title") }}
         actions={
-          m.can.archive && (
-            <ActionButton variant="destructive" confirmText={t("archiveConfirm")} action={archiveModuleAction.bind(null, m.id)}>
-              <Archive aria-hidden="true" />
-              {t("archive")}
-            </ActionButton>
-          )
+          <>
+            {m.can.archive && (
+              <ActionButton variant="destructive" confirmText={t("archiveConfirm")} action={archiveModuleAction.bind(null, m.id)}>
+                <Archive aria-hidden="true" />
+                {t("archive")}
+              </ActionButton>
+            )}
+            {m.can.delete && (
+              <DeleteControl
+                kind="module"
+                id={m.id}
+                subject="module"
+                name={m.title}
+                label={tDel("buttons.module")}
+                variant="outline"
+                after="/manage/modules"
+                archive={m.can.archive ? { action: archiveModuleAction.bind(null, m.id), label: t("archive") } : undefined}
+              />
+            )}
+          </>
         }
       />
       {m.archived && (

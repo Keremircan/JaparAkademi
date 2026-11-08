@@ -9,6 +9,7 @@ import { approvals, assignmentModules, assignments, examAttemptItems, examAttemp
 import { withActor } from "@/server/db/with-actor";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/server/errors";
 import { notifyApprovalPending, resolveNotifications } from "../notifications";
+import { countRows, type Deletable } from "../deletion/core";
 import { HOTSPOT_MAX_REGIONS, MATCHING_MAX_PAIRS, MATCHING_MIN_PAIRS, type HotspotRegion, type MatchingPair, type QuestionTranslation, type QuestionType } from "@/lib/questions";
 
 /**
@@ -338,6 +339,29 @@ export async function archiveQuestion(actor: Actor, questionId: string): Promise
   });
 }
 
+/**
+ * Soru silme (iş paketi 3.14, karar #284): sınavda hiç çekilmemiş ve İSG onay kararı verilmemiş soru silinir
+ * (sürümleri ve modül bağları birlikte). Sınavda kullanılmış ya da onay kaydı olan soru arşivlenir.
+ */
+export const questionDeletion: Deletable<QuestionRow> = {
+  async load(tx, actor, id) {
+    assertCan(actor, "questions.edit");
+    const { q, a } = await loadQuestion(tx, actor, id);
+    if (!canEdit(a, q)) throw new ForbiddenError("questions.edit");
+    await tx.select({ id: questions.id }).from(questions).where(eq(questions.id, q.id)).for("update");
+    return q;
+  },
+  async inHistory(tx, q) {
+    const versions = tx.select({ id: questionVersions.id }).from(questionVersions).where(eq(questionVersions.questionId, q.id));
+    return (await countRows(tx, approvals, and(eq(approvals.subjectType, "question_version"), inArray(approvals.subjectId, versions)))) > 0;
+  },
+  async remove(tx, q) {
+    await tx.update(questions).set({ currentVersionId: null }).where(eq(questions.id, q.id));
+    await tx.delete(questionVersions).where(eq(questionVersions.questionId, q.id));
+    await tx.delete(questions).where(eq(questions.id, q.id));
+  },
+};
+
 // ---------------------------------------------------------------------------
 // Görünümler
 // ---------------------------------------------------------------------------
@@ -453,7 +477,8 @@ export type QuestionDetail = {
   editable: (Omit<VersionRow, "createdBy" | "updatedAt"> & { createdByName: string }) | null;
   versions: { id: string; version: number; status: VersionRow["status"]; createdByName: string; createdAt: Date; used: boolean }[];
   decisions: { versionId: string; decision: "approved" | "rejected" | "auto_self"; comment: string | null; decidedByName: string; decidedAt: Date }[];
-  can: { edit: boolean; approve: boolean; archive: boolean };
+  /** `delete`: silme düğmesi (iş paketi 3.14); arşivdeki soru da silinebilir. */
+  can: { edit: boolean; approve: boolean; archive: boolean; delete: boolean };
 };
 
 export async function getQuestion(actor: Actor, questionId: string): Promise<QuestionDetail> {
@@ -527,6 +552,7 @@ export async function getQuestion(actor: Actor, questionId: string): Promise<Que
       edit,
       approve: !!pending && actor.kind === "user" && hasRole(actor, "ohs_specialist") && pending.createdBy !== actor.userId,
       archive: edit,
+      delete: can(actor, "questions.edit") && canEdit(a, q),
     },
   };
 }

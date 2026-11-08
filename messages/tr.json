@@ -467,7 +467,10 @@
     "schedule_weekday_required": "Haftalık programda her satırın günü seçilmeli.",
     "schedule_name_taken": "Bu pozisyonda aynı adla bir program var.",
     "schedule_item_incomplete": "Her satırda saat ve başlık olmalı.",
-    "schedule_name_required": "Program adını yazın."
+    "schedule_name_required": "Program adını yazın.",
+    "self_delete": "Kendi hesabınızı silemezsiniz.",
+    "delete_blocked": "Bu kayda bağlı kayıtlar var. Önce onları silin.",
+    "delete_in_history": "Bu kayıt geçmiş kayıtlarda kullanıldığı için silinemez."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -515,7 +518,7 @@
     },
     "org": {
       "title": "Organizasyon yapısı",
-      "intro": "Departman → bölüm → pozisyon. Silme yoktur; kullanılmayan birimler pasife alınır.",
+      "intro": "Departman → bölüm → pozisyon. Bağlı kaydı olmayan birim ve pozisyon silinebilir; geçmişi olan pasife alınır.",
       "addDepartment": "Departman ekle",
       "addSection": "Bölüm ekle",
       "addPosition": "Pozisyon ekle",
@@ -710,7 +713,7 @@
         "deletedTitle": "Silinecekler",
         "deleted": "Ad soyad, sicil no, TC kimlik no, telefon, e-posta, şifre ve oturumlar, bildirimler, profil fotoğrafı, imza görselleri, çalışma programı.",
         "keptTitle": "İsimsiz kalacaklar",
-        "kept": "Eğitim, sınav ve sertifika kayıtları \"Anonim #…\" adıyla kalır; raporlar ve diğer personelin kayıtları bozulmaz. Veriler yedeklerden en geç 12 ay içinde silinir.",
+        "kept": "Eğitim, sınav ve sertifika kayıtları isimsiz olarak saklanır; kişi hiçbir listede ve raporda görünmez, diğer personelin kayıtları bozulmaz. Veriler yedeklerden en geç 12 ay içinde silinir.",
         "reason": "Silme gerekçesi",
         "reasonHint": "Ör. \"KVKK silme talebi, başvuru 06.11.2026\". Gerekçeye kişinin adını ya da başka kişisel bilgi yazmayın.",
         "phrase": "{name} silmeyi onaylıyorum",
@@ -718,12 +721,16 @@
         "cancel": "Vazgeç",
         "submit": "Kalıcı olarak sil",
         "submitting": "Siliniyor…",
-        "onlyTerminated": "Kalıcı silme yalnızca işten ayrılmış kişide yapılabilir. Önce kişiyi işten ayrıldı olarak işaretleyin.",
-        "erased": "Bu kişinin kişisel verileri {date} tarihinde silindi.",
-        "erasedBy": "Silen: {name} · Gerekçe: {reason}"
+        "onlyTerminated": "Kalıcı silme yalnızca işten ayrılmış kişide yapılabilir. Önce kişiyi işten ayrıldı olarak işaretleyin."
       },
       "waitingButton": "Eğitimi bekleyenler",
-      "invitesButton": "Davetler"
+      "invitesButton": "Davetler",
+      "deleted": "Kişi silindi.",
+      "delete": {
+        "title": "Kişiyi sil",
+        "intro": "Sistemi hiç kullanmamış kişiyi (yanlış ya da yinelenen kayıt) silebilirsiniz. Eğitim, sınav, giriş ya da onay kaydı olan kişi silinemez; işten ayrıldıysa “İşten ayrıldı” olarak işaretleyin.",
+        "button": "Kişiyi sil"
+      }
     },
     "roles": {
       "title": "Roller ve kapsam",
@@ -958,7 +965,9 @@
       },
       "newPlaceholder": "Yeni etiket",
       "newFor": "Yeni {type} etiketi",
-      "add": "Etiket ekle"
+      "add": "Etiket ekle",
+      "manage": "Etiketleri düzenle",
+      "doneManaging": "Düzenlemeyi bitir"
     },
     "library": {
       "title": "İçerik kütüphanesi",
@@ -1277,7 +1286,7 @@
       "contentsEmpty": "Henüz içerik eklenmedi. Yalnızca yayındaki içerikler eklenebilir.",
       "contentUnavailable": "Arşivlenmiş veya yayında değil",
       "tasksHeading": "Pratik görevler",
-      "tasksHint": "Önerilen: pozisyon başına 10–30 görev. Kritik görev pratik sınavda \"yapamadı\" ise sınav kalır. Listeden çıkarılan görev arşivlenir.",
+      "tasksHint": "Önerilen: pozisyon başına 10–30 görev. Kritik görev pratik sınavda \"yapamadı\" ise sınav kalır. Listeden çıkarılan görev hiçbir atamada kullanılmadıysa silinir, kullanıldıysa arşivlenir.",
       "taskN": "{n}. görev",
       "taskTitle": "Görev adı",
       "taskDescription": "Açıklama",
@@ -1779,7 +1788,9 @@
     "kinds": {
       "shared_pc": "Ortak bilgisayar (eğitim odası)",
       "kiosk": "Kapı tableti (ziyaretçi kiosku)"
-    }
+    },
+    "showRevoked": "İptal edilenleri göster ({count})",
+    "hideRevoked": "İptal edilenleri gizle"
   },
   "questions": {
     "title": "Soru bankası",
@@ -4206,5 +4217,101 @@
     "nextDay": "ertesi gün",
     "positionLabel": "Pozisyonunuz: {name}",
     "programHeading": "Programın tamamı"
+  },
+  "deletion": {
+    "delete": "Sil",
+    "confirmTitle": "Silmek istediğinize emin misiniz?",
+    "confirm": "Bu kayıt kalıcı olarak silinecek. Bu işlem geri alınamaz.",
+    "confirmNamed": "“{name}” kalıcı olarak silinecek. Bu işlem geri alınamaz.",
+    "confirmButton": "Evet, sil",
+    "deleting": "Siliniyor…",
+    "cancel": "Vazgeç",
+    "ok": "Tamam",
+    "blockedTitle": "Önce bağlı kayıtları silin",
+    "historyTitle": "Bu kayıt silinemez",
+    "history": "Bu kayıt geçmiş eğitim, sınav, onay ya da sertifika kayıtlarında kullanıldı. Bu kayıtlar yasal saklama süresi boyunca korunduğu için silinemez.",
+    "archiveHint": "Bunun yerine “{action}” seçebilirsiniz: kayıt listelerde görünmez, geçmiş kayıtlar korunur.",
+    "errorTitle": "İşlem yapılamadı",
+    "showArchived": "Arşivdekileri göster",
+    "hideArchived": "Arşivdekileri gizle",
+    "showPassive": "Pasifleri göster",
+    "hidePassive": "Pasifleri gizle",
+    "subjects": {
+      "department": {
+        "blocked": "Silmek istediğiniz departmana bağlı kayıtlar var. Önce onları silin:"
+      },
+      "section": {
+        "blocked": "Silmek istediğiniz bölüme bağlı kayıtlar var. Önce onları silin:"
+      },
+      "position": {
+        "blocked": "Silmek istediğiniz pozisyona bağlı kayıtlar var. Önce onları silin ya da başka bir pozisyona aktarın:",
+        "note": "Pozisyonun yayınlanmamış kart taslağı da silinir."
+      },
+      "person": {
+        "blocked": "Silmek istediğiniz kişiye bağlı kayıtlar var. Önce onları silin:",
+        "history": "Bu kişinin sistemde geçmiş kaydı var (eğitim, sınav, onay, KVKK onayı, giriş ya da görüntüleme kaydı); bu yüzden silinemez. Kişi işten ayrıldıysa önce “İşten ayrıldı” olarak işaretleyin; üst yönetici kişisel verilerini “Kişiyi kalıcı olarak sil” ile siler ve kişi listelerden kaybolur."
+      },
+      "module": {
+        "blocked": "Silmek istediğiniz modüle bağlı kayıtlar var. Önce onları silin ya da modülden çıkarın:"
+      },
+      "content": {
+        "blocked": "Silmek istediğiniz içerik modüllerde kullanılıyor. Önce modüllerden çıkarın:"
+      },
+      "question": {
+        "blocked": "Silmek istediğiniz soruya bağlı kayıtlar var. Önce onları silin:"
+      },
+      "tag": {
+        "blocked": "Silmek istediğiniz etiket içeriklerde kullanılıyor. Önce içeriklerden çıkarın:"
+      },
+      "competency": {
+        "blocked": "Silmek istediğiniz yetkinlik pratik görevlerde kullanılıyor. Önce görevlerden çıkarın:"
+      },
+      "classroom_session": {
+        "blocked": "Silmek istediğiniz sınıf eğitimi kaydına bağlı kayıtlar var. Önce onları silin:",
+        "history": "Bu sınıf eğitimi kaydı onaya gönderilip karar verildiği için silinemez."
+      },
+      "company": {
+        "blocked": "Silmek istediğiniz firmaya bağlı kayıtlar var. Önce onları silin:"
+      },
+      "visit": {
+        "blocked": "Silmek istediğiniz ziyarete bağlı kayıtlar var. Önce onları silin:",
+        "history": "Bu ziyaretin bilgilendirme, onay ya da giriş kaydı var; silinemez. Ziyaret gerçekleşmeyecekse iptal edin."
+      },
+      "device": {
+        "blocked": "Silmek istediğiniz cihaza bağlı kayıtlar var. Önce onları silin:"
+      },
+      "legal_draft": {
+        "blocked": "Silmek istediğiniz taslağa bağlı kayıtlar var. Önce onları silin:",
+        "history": "Yayınlanmış metin değiştirilemez ve silinemez."
+      }
+    },
+    "blockers": {
+      "sections": "{count} bölüm",
+      "positions": "{count} pozisyon",
+      "personnel": "{count} personel (işten ayrılanlar dahil)",
+      "unit_scopes": "{count} bölüm sorumlusu yetkisi (Kişiler → Roller)",
+      "unit_modules": "Birime ait {count} modül",
+      "unit_contents": "Birime ait {count} içerik",
+      "unit_questions": "Birime ait {count} soru",
+      "unit_competencies": "Birime ait {count} yetkinlik",
+      "schedules": "{count} çalışma programı",
+      "linked_positions": "Bu pozisyonu amir ya da vekil seçen {count} pozisyon",
+      "module_plans": "{count} pozisyon eğitim planı taslağı",
+      "module_questions": "Modüle bağlı {count} soru",
+      "content_modules": "{count} modül",
+      "tagged_contents": "{count} içerik",
+      "competency_tasks": "{count} pratik görev"
+    },
+    "buttons": {
+      "module": "Modülü sil",
+      "content": "İçeriği sil",
+      "question": "Soruyu sil",
+      "competency": "Yetkinliği sil",
+      "classroom_session": "Kaydı sil",
+      "company": "Firmayı sil",
+      "visit": "Ön kaydı sil",
+      "device": "Cihazı sil",
+      "legal_draft": "Taslağı sil"
+    }
   }
 }
