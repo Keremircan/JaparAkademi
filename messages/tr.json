@@ -44,14 +44,15 @@
       "passwordLabel": "Şifre",
       "showPassword": "Şifreyi göster",
       "hidePassword": "Şifreyi gizle",
-      "sharedDevice": "Ortak cihaz (eğitim odası, şirket tableti)",
-      "sharedDeviceHint": "İşlem yapılmazsa oturum kısa süre sonra kendiliğinden kapanır.",
+      "remember": "Bu cihazda oturumum açık kalsın (çerez kullanır)",
+      "rememberHint": "Yalnızca size ait telefon ya da bilgisayarda işaretleyin. İşaretlemezseniz tarayıcı kapanınca ya da kısa süre işlem yapılmayınca oturumunuz kapanır.",
       "submit": "Giriş yap",
       "submitting": "Giriş yapılıyor…",
       "help": "E-postanız kayıtlıysa \"Şifremi unuttum\" bağlantısını kullanın; değilse İK size yeni şifre bağlantısı verir.",
       "forgot": "Şifremi unuttum",
       "adminHint": "Yöneticiler kayıtlı e-posta adresiyle de girebilir.",
-      "activate": "Hesabımı etkinleştir"
+      "activate": "Hesabımı etkinleştir",
+      "privacy": "Gizlilik ve çerezler"
     },
     "errors": {
       "invalid_input": "Sicil no ve şifrenizi girin.",
@@ -124,8 +125,7 @@
       "submitting": "Etkinleştiriliyor…",
       "invalid": "Bu bağlantı ya da kod geçersiz, süresi dolmuş veya daha önce kullanılmış. Yeni davet için İK'ya başvurun.",
       "toLogin": "Giriş ekranına dön",
-      "missing": "Sicil numaranızı ve kağıttaki kodu yazın.",
-      "sharedDevice": "Ortak cihaz (eğitim odası, şirket tableti)"
+      "missing": "Sicil numaranızı ve kağıttaki kodu yazın."
     }
   },
   "home": {
@@ -166,7 +166,7 @@
     "sicil": "Sicil no",
     "roles": "Rolleriniz",
     "changePassword": "Şifre değiştir",
-    "sharedDevice": "Bu oturum ortak cihaz modunda açıldı.",
+    "sharedDevice": "Bu oturum \"Bu cihazda oturumum açık kalsın\" seçilmeden ya da ortak cihazda açıldı: kısa süre işlem yapılmayınca kapanır ve cihaz bildirimleri kullanılamaz.",
     "position": "Pozisyon",
     "department": "Departman / bölüm",
     "noPosition": "Pozisyon atanmamış",
@@ -432,7 +432,8 @@
     "visit_not_inside": "Ziyaretçi içeride değil.",
     "rollcall_open": "Açık bir yoklama var; önce onu bitirin.",
     "rollcall_ended": "Bu yoklama bitti; değiştirilemez.",
-    "shared_device": "Ortak cihazda bu işlem yapılamaz.",
+    "shared_device": "Bu işlem için girişte \"Bu cihazda oturumum açık kalsın\" seçeneğini işaretleyin. Ortak cihazda yapılamaz.",
+    "explicit_choice_required": "Açık rıza için \"veriyorum\" ya da \"vermiyorum\" seçeneklerinden birini seçin.",
     "push_unavailable": "Bildirimler bu sunucuda henüz açılmadı.",
     "push_endpoint": "Bu tarayıcının bildirim servisi desteklenmiyor.",
     "push_failed": "Bildirimler açılamadı. Sayfayı yenileyip tekrar deneyin.",
@@ -485,7 +486,7 @@
       },
       "legal": {
         "title": "Aydınlatma metinleri ve kurallar",
-        "description": "Personel ve ziyaretçi KVKK metinleri, ziyaretçi kuralları"
+        "description": "Personel aydınlatma ve açık rıza metinleri, ziyaretçi KVKK metni ve kuralları"
       },
       "devices": {
         "title": "Ortak cihazlar",
@@ -741,7 +742,7 @@
         "kvkk_personnel": "Yayınlanan metin değiştirilemez. Yeni sürüm yayınlanınca tüm personel bir sonraki girişte yeniden onaylar.",
         "kvkk_visitor": "Ziyaretçinin bilgilendirmede onayladığı KVKK metni. Türkçe ve İngilizce birlikte yayınlanır; yayınlanan metin değiştirilemez.",
         "visitor_rules": "Ziyaretçinin girişten önce onayladığı tesis kuralları. Türkçe ve İngilizce birlikte yayınlanır; yayınlanan metin değiştirilemez.",
-        "explicit_consent_personnel": "Personelden aydınlatma metninden ayrı bir kutuyla, isteğe bağlı alınan açık rıza. Türkçe ve İngilizce birlikte yayınlanır; yayınlanan metin değiştirilemez. Yeni sürüm yayınlanınca karar bir sonraki girişte yeniden sorulur. Rıza vermeyen personel sistemi kullanır, yalnızca profil fotoğrafı ekleyemez."
+        "explicit_consent_personnel": "Personelden aydınlatma metninden ayrı bir bölümde, \"veriyorum / vermiyorum\" seçimiyle isteğe bağlı alınan açık rıza. Türkçe ve İngilizce birlikte yayınlanır; yayınlanan metin değiştirilemez. Yeni sürüm yayınlanınca karar bir sonraki girişte yeniden sorulur. Rıza vermeyen personel sistemi kullanır, yalnızca profil fotoğrafı ekleyemez."
       },
       "newDraft": "Yeni sürüm hazırla",
       "version": "Sürüm {version}",
@@ -770,9 +771,14 @@
       "sample": {
         "start": "Örnek metinle başla",
         "emptyHint": "İsterseniz örnek metinle başlayabilirsiniz: Türkçe ve İngilizce taslak birlikte açılır.",
-        "unfilledTitle": "Yayınlamadan önce doldurulması gereken alanlar",
-        "unfilledHint": "Metni düzenleyip [[...]] ile işaretli alanları kurum bilgileriyle değiştirin. Bu alanlar kaldıkça metin yayınlanamaz. Yayınlamadan önce metni hukuk/KVKK sorumlusuna onaylatın.",
-        "formHint": "Taslağı bu hâliyle kaydedebilirsiniz; bu alanlar doldurulmadan metin yayınlanamaz."
+        "unfilledTitle": "Gerçek kullanımdan önce doldurulması gereken alanlar",
+        "unfilledHint": "Metni düzenleyip [[...]] ile işaretli alanları kurum bilgileriyle değiştirin. Bu alanlar kaldıkça metin yalnızca \"örnek olarak\" yayınlanabilir; bu, geliştirme ve deneme içindir. Gerçek kullanımdan önce alanları doldurup metni hukuk/KVKK sorumlusuna onaylatın ve yeni sürüm yayınlayın.",
+        "formHint": "Taslağı bu hâliyle kaydedebilirsiniz; bu alanlar doldurulmadan metin yalnızca örnek olarak yayınlanabilir.",
+        "publish": "Örnek olarak yayınla",
+        "publishConfirm": "Metin doldurulmamış alanlarıyla, üstünde \"Örnek metin\" uyarısıyla yayınlanır ve personel girişte bu metni onaylar. Gerçek kullanımdan önce alanları doldurup yeni sürüm yayınlamanız gerekir. Devam edilsin mi?",
+        "restart": "Örnek metinle yeniden başla",
+        "restartConfirm": "Bu taslaktaki değişiklikler silinir ve Türkçe ile İngilizce taslağa güncel örnek metin yazılır. Devam edilsin mi?",
+        "badge": "Örnek metin"
       }
     }
   },
@@ -787,9 +793,60 @@
     "explicit": {
       "heading": "Açık rıza (isteğe bağlı)",
       "intro": "Açık rıza vermek isteğe bağlıdır. Vermeseniz de sistemi kullanabilirsiniz; yalnızca rızaya bağlı işlemler (ör. profil fotoğrafı) kapalı kalır. Kararınızı Profil sayfasından istediğiniz zaman değiştirebilirsiniz.",
-      "checkbox": "Açık rıza metnini okudum, açık rıza veriyorum.",
-      "checkboxHint": "İşaretlemezseniz açık rıza vermemiş sayılırsınız."
+      "choiceLabel": "Açık rıza kararınız",
+      "give": "Açık rıza veriyorum",
+      "giveHint": "Açık rıza metnini okudum; profil fotoğrafımın bu metne göre işlenmesine izin veriyorum.",
+      "refuse": "Açık rıza vermiyorum",
+      "refuseHint": "Sistemi aynı şekilde kullanırım; yalnızca profil fotoğrafı ekleyemem."
     }
+  },
+  "legalText": {
+    "sampleNotice": "Örnek metin: [[...]] ile işaretli kurum bilgileri henüz doldurulmadı. Bu metin geliştirme ve deneme içindir."
+  },
+  "privacy": {
+    "title": "Gizlilik ve çerezler",
+    "intro": "JAPAR Akademi'de kişisel verilerinizin nasıl işlendiğini ve cihazınızda hangi bilgilerin tutulduğunu bu sayfadan okuyabilirsiniz. Sayfayı görmek için giriş yapmanız gerekmez.",
+    "contents": "Bu sayfada",
+    "kinds": {
+      "kvkk_personnel": "Çalışan aydınlatma metni",
+      "explicit_consent_personnel": "Profil fotoğrafı için açık rıza metni",
+      "kvkk_visitor": "Ziyaretçi aydınlatma metni"
+    },
+    "published": "Sürüm {version} · {date}",
+    "notPublished": "Bu metin henüz yayınlanmadı. İnsan Kaynakları'ndan isteyebilirsiniz.",
+    "cookies": {
+      "heading": "Çerezler ve cihazınızda tutulan bilgiler",
+      "intro": "Yalnızca sistemin çalışması için gerekli çerezler kullanılır; reklam, analiz ya da başka bir şirkete ait (üçüncü taraf) çerez yoktur. Bu çerezler için onay istenmez.",
+      "caption": "Kullanılan çerezler",
+      "name": "Çerez",
+      "purpose": "Ne işe yarar",
+      "duration": "Ne kadar kalır",
+      "session": {
+        "purpose": "Girişinizi sürdürür.",
+        "duration": "\"Oturumum açık kalsın\" seçilmediyse tarayıcı kapanınca silinir. Seçildiyse çıkışta silinir; oturum {days} gün işlem yapılmayınca kapanır, çerez en geç bir yıl sonra silinir."
+      },
+      "dontRemember": {
+        "purpose": "\"Oturumum açık kalsın\" seçilmediğini hatırlar.",
+        "duration": "Tarayıcı kapanınca silinir."
+      },
+      "locale": {
+        "purpose": "Seçtiğiniz dili hatırlar.",
+        "duration": "1 yıl"
+      },
+      "theme": {
+        "purpose": "Açık ya da koyu görünümü seçtiyseniz bunu hatırlar; sayfa ilk açılırken renk değişip yanıp sönmez.",
+        "duration": "1 yıl ya da Profil'de görünüm \"Sistem\" seçilene kadar"
+      },
+      "device": {
+        "purpose": "Yalnızca yöneticinin eğitim odası bilgisayarı ya da kapı tableti olarak kaydettiği cihazlarda bulunur; o cihazı tanır.",
+        "duration": "400 gün ya da kayıt kaldırılana kadar"
+      },
+      "storageHeading": "Cihazınızda tutulan diğer bilgiler",
+      "storageApp": "Uygulama daha hızlı açılmak için yalnızca tasarım dosyalarını (kod, yazı tipi, simge) cihazınıza kaydeder; sayfalar ve kişisel verileriniz kaydedilmez.",
+      "storageEvacuation": "Güvenlik görevlilerinin cihazında, bağlantı kesilirse kullanılmak üzere tesis içindekilerin son listesi tutulur; en fazla 24 saat kullanılır ve görevli çıkış yapınca silinir.",
+      "storageVisitor": "Ziyaretçi bilgilendirme ekranları çerez kullanmaz."
+    },
+    "back": "Girişe dön"
   },
   "manage": {
     "cards": {
@@ -1705,7 +1762,7 @@
   },
   "devices": {
     "title": "Ortak cihazlar",
-    "description": "Kayıtlı cihazda giriş her zaman ortak cihaz modundadır: kısa işlemsizlik süresi, \"beni hatırla\" kapalı.",
+    "description": "Kayıtlı cihazda giriş her zaman ortak cihaz modundadır: \"oturumum açık kalsın\" seçilse de uygulanmaz, kısa işlemsizlik süresi geçerlidir.",
     "registerTitle": "Bu tarayıcıyı kaydet",
     "registerHint": "Bu sayfayı eğitim odasındaki bilgisayarda açıp kaydedin. Kayıt yalnızca bu tarayıcı için geçerlidir.",
     "name": "Cihaz adı",
@@ -1942,7 +1999,7 @@
       "retry": "Kalan hakkınız: {left}. Tekrar gereken modülleri tamamladıktan sonra yeniden sınava girebilirsiniz.",
       "noAttempts": "Sınav hakkınız kalmadı. Kararı yöneticiniz verecek; size bilgi verilecek.",
       "back": "Eğitimime dön",
-      "sharedLogout": "Ortak cihaz: {seconds} saniye sonra oturumunuz kapanacak.",
+      "sharedLogout": "Oturumunuz {seconds} saniye sonra kapanacak.",
       "logoutNow": "Şimdi çıkış yap"
     },
     "proctor": {
@@ -3041,13 +3098,13 @@
         "unit": "{n} ay"
       },
       "session_shared_idle_min": {
-        "label": "Ortak cihazda işlemsizlik süresi",
-        "hint": "Ortak cihazda bu süre işlem yapılmazsa oturum kapanır.",
+        "label": "Kısa oturumda işlemsizlik süresi",
+        "hint": "Girişte \"oturumum açık kalsın\" seçilmediyse ya da ortak cihazda bu süre işlem yapılmazsa oturum kapanır.",
         "unit": "{n} dakika"
       },
       "session_personal_days": {
-        "label": "Kişisel cihazda oturum süresi",
-        "hint": "\"Beni hatırla\" seçiliyken oturumun açık kalacağı süre.",
+        "label": "\"Oturumum açık kalsın\" seçilince oturum süresi",
+        "hint": "Girişte \"Bu cihazda oturumum açık kalsın\" seçildiyse bu kadar gün işlem yapılmazsa oturum kapanır. Gizlilik metinlerinde de bu süre yazar.",
         "unit": "{n} gün"
       },
       "auth_password_min_length": {
@@ -3390,7 +3447,7 @@
     },
     "blacklist": {
       "reason": "Gerekçe",
-      "reasonHint": "En az 10 karakter. Kayıt değiştirilemez.",
+      "reasonHint": "En az 10 karakter. Suç, ceza ya da sağlık bilgisi yazmayın. Kayıt değiştirilemez.",
       "endsAt": "Bitiş tarihi",
       "endsAtHint": "Boş bırakılırsa süresizdir.",
       "add": "Kara listeye ekle",
@@ -3663,6 +3720,7 @@
       "steps": "Telefonla QR kodu okutun ya da giriş ekranında \"Hesabımı etkinleştir\"e dokunup sicil numaranızı ve bu kodu yazın. Sonra kendi şifrenizi belirleyin.",
       "expires": "Son geçerlilik: {date}",
       "note": "Kod bir kez kullanılır. Bu kağıdı kimseyle paylaşmayın.",
+      "privacy": "Kişisel verilerinizin nasıl işlendiğini şuradan okuyabilirsiniz: {url}",
       "resetTitle": "Şifre yenileme",
       "resetSteps": "Telefonla QR kodu okutun ya da giriş ekranında \"Hesabımı etkinleştir\"e dokunup sicil numaranızı ve bu kodu yazın. Sonra yeni şifrenizi belirleyin."
     },

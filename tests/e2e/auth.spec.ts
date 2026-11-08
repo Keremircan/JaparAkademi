@@ -40,9 +40,12 @@ test("ilk giriş → şifre değiştir → KVKK onayı → rol menüsü → çı
   await page.goto("/security");
   await expect(page.getByRole("heading", { name: "Sayfa bulunamadı" })).toBeVisible();
 
-  // Profil: ortak cihaz modu ve çıkış
+  // Profil: kısa oturum ("oturumum açık kalsın" seçilmedi) ve çıkış
   await page.goto("/profile");
-  await expect(page.getByText("ortak cihaz modunda")).toBeVisible();
+  await expect(page.getByText(/seçilmeden ya da ortak cihazda açıldı/)).toBeVisible();
+  // Oturum çerezi kalıcı değil: tarayıcı kapanınca silinir (KVKK Çerez Rehberi, karar #280)
+  const sessionCookie = (await page.context().cookies()).find((c) => c.name.endsWith("akademi.session_token"));
+  expect(sessionCookie?.expires).toBe(-1);
   // Ortak cihazda push bölümü yok (karar #178)
   await expect(page.getByRole("heading", { name: "Bu cihazda bildirimler" })).toHaveCount(0);
   // Fotoğraf alanında açık rıza bölümü her zaman görünür (iş paketi 3.8, karar #248)

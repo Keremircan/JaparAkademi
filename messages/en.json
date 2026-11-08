@@ -44,14 +44,15 @@
       "passwordLabel": "Password",
       "showPassword": "Show password",
       "hidePassword": "Hide password",
-      "sharedDevice": "Shared device (training room, company tablet)",
-      "sharedDeviceHint": "The session ends automatically after a short period of inactivity.",
+      "remember": "Keep me signed in on this device (uses a cookie)",
+      "rememberHint": "Tick this only on your own phone or computer. If you leave it unticked, you are signed out when the browser closes or after a short period of inactivity.",
       "submit": "Sign in",
       "submitting": "Signing in…",
       "help": "If your email is registered, use \"I forgot my password\"; otherwise HR will give you a new password link.",
       "forgot": "I forgot my password",
       "adminHint": "Administrators can also sign in with their registered email address.",
-      "activate": "Activate my account"
+      "activate": "Activate my account",
+      "privacy": "Privacy and cookies"
     },
     "errors": {
       "invalid_input": "Enter your employee number and password.",
@@ -124,8 +125,7 @@
       "submitting": "Activating…",
       "invalid": "This link or code is invalid, has expired or has already been used. Contact HR for a new invitation.",
       "toLogin": "Back to sign in",
-      "missing": "Enter your employee number and the code on the sheet.",
-      "sharedDevice": "Shared device (training room, company tablet)"
+      "missing": "Enter your employee number and the code on the sheet."
     }
   },
   "home": {
@@ -166,7 +166,7 @@
     "sicil": "Employee number",
     "roles": "Your roles",
     "changePassword": "Change password",
-    "sharedDevice": "This session was opened in shared device mode.",
+    "sharedDevice": "This session was opened without \"Keep me signed in on this device\" or on a shared device: it ends after a short period of inactivity and device notifications are not available.",
     "position": "Position",
     "department": "Department / section",
     "noPosition": "No position assigned",
@@ -432,7 +432,8 @@
     "visit_not_inside": "The visitor is not inside.",
     "rollcall_open": "A roll call is open; finish it first.",
     "rollcall_ended": "This roll call has ended and cannot be changed.",
-    "shared_device": "This action is not available on a shared device.",
+    "shared_device": "For this, tick \"Keep me signed in on this device\" when you sign in. It is not available on a shared device.",
+    "explicit_choice_required": "Choose whether you give explicit consent or not.",
     "push_unavailable": "Notifications are not enabled on this server yet.",
     "push_endpoint": "This browser's notification service is not supported.",
     "push_failed": "Notifications could not be turned on. Refresh the page and try again.",
@@ -485,7 +486,7 @@
       },
       "legal": {
         "title": "Privacy notices and rules",
-        "description": "Employee and visitor privacy notices, visitor rules"
+        "description": "Employee privacy notice and explicit consent, visitor privacy notice and rules"
       },
       "devices": {
         "title": "Shared devices",
@@ -741,7 +742,7 @@
         "kvkk_personnel": "A published text cannot be changed. When a new version is published, all employees accept it again at their next sign-in. Turkish and English are published together.",
         "kvkk_visitor": "The privacy notice the visitor accepts during the briefing. Turkish and English are published together; a published text cannot be changed.",
         "visitor_rules": "The site rules the visitor accepts before entry. Turkish and English are published together; a published text cannot be changed.",
-        "explicit_consent_personnel": "Optional explicit consent, asked from employees with a separate tick box apart from the privacy notice. Turkish and English are published together; a published text cannot be changed. When a new version is published, the decision is asked again at the next sign-in. Employees who do not consent can use the system; they only cannot add a profile photo."
+        "explicit_consent_personnel": "Optional explicit consent, asked from employees in a separate section with a \"give / do not give\" choice, apart from the privacy notice. Turkish and English are published together; a published text cannot be changed. When a new version is published, the decision is asked again at the next sign-in. Employees who do not consent can use the system; they only cannot add a profile photo."
       },
       "newDraft": "Prepare a new version",
       "version": "Version {version}",
@@ -770,9 +771,14 @@
       "sample": {
         "start": "Start from a sample",
         "emptyHint": "You can start from a sample text: Turkish and English drafts are created together.",
-        "unfilledTitle": "Fields to fill in before publishing",
-        "unfilledHint": "Edit the text and replace the fields marked [[...]] with the organisation's details. The text cannot be published while these fields remain. Have the text approved by the legal/KVKK officer before publishing.",
-        "formHint": "You can save the draft as it is; the text cannot be published until these fields are filled in."
+        "unfilledTitle": "Fields to fill in before real use",
+        "unfilledHint": "Edit the text and replace the fields marked [[...]] with the organisation's details. While these fields remain, the text can only be published \"as a sample\", which is meant for development and testing. Before real use, fill in the fields, have the text approved by the legal/KVKK officer and publish a new version.",
+        "formHint": "You can save the draft as it is; until these fields are filled in, the text can only be published as a sample.",
+        "publish": "Publish as sample",
+        "publishConfirm": "The text is published with its unfilled fields and a \"Sample text\" warning at the top, and employees accept it when they sign in. Before real use you must fill in the fields and publish a new version. Continue?",
+        "restart": "Restart from the sample",
+        "restartConfirm": "The changes in this draft are discarded and the current sample text is written into the Turkish and English drafts. Continue?",
+        "badge": "Sample text"
       }
     }
   },
@@ -787,9 +793,60 @@
     "explicit": {
       "heading": "Explicit consent (optional)",
       "intro": "Giving explicit consent is optional. You can use the system without it; only features that depend on consent (such as a profile photo) stay off. You can change your decision at any time on the Profile page.",
-      "checkbox": "I have read the explicit consent text and I give my explicit consent.",
-      "checkboxHint": "If you leave this unticked, you have not given explicit consent."
+      "choiceLabel": "Your explicit consent decision",
+      "give": "I give explicit consent",
+      "giveHint": "I have read the explicit consent text and I allow my profile photo to be processed as described in it.",
+      "refuse": "I do not give explicit consent",
+      "refuseHint": "I use the system in the same way; I just cannot add a profile photo."
     }
+  },
+  "legalText": {
+    "sampleNotice": "Sample text: the organisation details marked [[...]] have not been filled in yet. This text is for development and testing."
+  },
+  "privacy": {
+    "title": "Privacy and cookies",
+    "intro": "This page explains how your personal data is processed in JAPAR Akademi and what information is kept on your device. You do not need to sign in to read it.",
+    "contents": "On this page",
+    "kinds": {
+      "kvkk_personnel": "Employee privacy notice",
+      "explicit_consent_personnel": "Explicit consent for profile photo",
+      "kvkk_visitor": "Visitor privacy notice"
+    },
+    "published": "Version {version} · {date}",
+    "notPublished": "This text has not been published yet. You can ask Human Resources for it.",
+    "cookies": {
+      "heading": "Cookies and information kept on your device",
+      "intro": "Only the cookies the system needs to work are used; there are no advertising, analytics or third-party cookies. No consent is asked for these cookies.",
+      "caption": "Cookies in use",
+      "name": "Cookie",
+      "purpose": "What it does",
+      "duration": "How long it stays",
+      "session": {
+        "purpose": "Keeps you signed in.",
+        "duration": "Without \"Keep me signed in\", deleted when the browser closes. With it, deleted when you sign out; the session closes after {days} days of inactivity and the cookie is deleted after one year at the latest."
+      },
+      "dontRemember": {
+        "purpose": "Remembers that \"Keep me signed in\" was not ticked.",
+        "duration": "Deleted when the browser closes."
+      },
+      "locale": {
+        "purpose": "Remembers the language you chose.",
+        "duration": "1 year"
+      },
+      "theme": {
+        "purpose": "Remembers the light or dark appearance if you chose one, so the page does not flash a different colour when it first opens.",
+        "duration": "1 year, or until appearance \"System\" is chosen in the Profile"
+      },
+      "device": {
+        "purpose": "Exists only on devices an administrator has registered as a training room computer or a gate tablet; recognises that device.",
+        "duration": "400 days, or until the registration is removed"
+      },
+      "storageHeading": "Other information kept on your device",
+      "storageApp": "To open faster, the app stores only design files (code, fonts, icons) on your device; pages and your personal data are not stored.",
+      "storageEvacuation": "On security staff devices, the latest list of people on site is kept for use if the connection drops; it is used for at most 24 hours and is deleted when the staff member signs out.",
+      "storageVisitor": "The visitor briefing screens do not use cookies."
+    },
+    "back": "Back to sign in"
   },
   "manage": {
     "cards": {
@@ -1705,7 +1762,7 @@
   },
   "devices": {
     "title": "Shared devices",
-    "description": "On a registered device, sign-in is always in shared device mode: short inactivity timeout, \"remember me\" off.",
+    "description": "On a registered device, sign-in is always in shared device mode: \"Keep me signed in\" is ignored and the short inactivity timeout applies.",
     "registerTitle": "Register this browser",
     "registerHint": "Open this page on the training room computer and register it. The registration applies only to this browser.",
     "name": "Device name",
@@ -1942,7 +1999,7 @@
       "retry": "Attempts left: {left}. You can retake the exam after completing the modules that need review.",
       "noAttempts": "You have no exam attempts left. Your manager will decide and inform you.",
       "back": "Back to my training",
-      "sharedLogout": "Shared device: you will be signed out in {seconds} seconds.",
+      "sharedLogout": "You will be signed out in {seconds} seconds.",
       "logoutNow": "Sign out now"
     },
     "proctor": {
@@ -3006,13 +3063,13 @@
         "unit": "{n} months"
       },
       "session_shared_idle_min": {
-        "label": "Inactivity timeout on shared devices",
-        "hint": "On a shared device the session closes after this much inactivity.",
+        "label": "Inactivity timeout for short sessions",
+        "hint": "If \"Keep me signed in\" was not ticked at sign-in, or on a shared device, the session closes after this much inactivity.",
         "unit": "{n} minutes"
       },
       "session_personal_days": {
-        "label": "Session length on personal devices",
-        "hint": "How long the session stays open when \"remember me\" is selected.",
+        "label": "Session length with \"Keep me signed in\"",
+        "hint": "If \"Keep me signed in on this device\" was ticked at sign-in, the session closes after this many days of inactivity. The privacy texts state this period too.",
         "unit": "{n} days"
       },
       "auth_password_min_length": {
@@ -3355,7 +3412,7 @@
     },
     "blacklist": {
       "reason": "Reason",
-      "reasonHint": "At least 10 characters. The record cannot be changed.",
+      "reasonHint": "At least 10 characters. Do not write criminal, penalty or health information. The record cannot be changed.",
       "endsAt": "End date",
       "endsAtHint": "Leave empty for no end date.",
       "add": "Add to blacklist",

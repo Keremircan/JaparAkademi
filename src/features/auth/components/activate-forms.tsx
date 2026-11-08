@@ -101,12 +101,12 @@ export function ActivatePasswordForm({ token, minLength }: { token: string; minL
           <li>{t("auth.changePassword.ruleNotCommon")}</li>
         </ul>
       </div>
-      <Label htmlFor="sharedDevice" className="flex min-h-12 cursor-pointer items-start gap-3 py-2 text-base font-normal">
-        <Checkbox id="sharedDevice" name="sharedDevice" className="mt-0.5 size-6" aria-labelledby="sharedDevice-label" aria-describedby="sharedDevice-hint" />
+      <Label htmlFor="remember" className="flex min-h-12 cursor-pointer items-start gap-3 py-2 text-base font-normal">
+        <Checkbox id="remember" name="remember" className="mt-0.5 size-6" aria-labelledby="remember-label" aria-describedby="remember-hint" />
         <span className="flex flex-col gap-1">
-          <span id="sharedDevice-label">{t("auth.activate.sharedDevice")}</span>
-          <span id="sharedDevice-hint" className="text-sm text-muted-foreground">
-            {t("auth.login.sharedDeviceHint")}
+          <span id="remember-label">{t("auth.login.remember")}</span>
+          <span id="remember-hint" className="text-sm text-muted-foreground">
+            {t("auth.login.rememberHint")}
           </span>
         </span>
       </Label>

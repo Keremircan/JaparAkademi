@@ -8,15 +8,16 @@ Her satırda sorumlu ve durum doldurulur.
 | # | İş | Sorumlu | Durum |
 |---|---|---|---|
 | 1.1 | Pilot bölüm ve pozisyonların seçimi | Yönetim | ☐ |
-| 1.2 | Sunucu: Hostinger VPS, Almanya (karar #174) ✓; yedek için ikinci depolama seçimi | BT | ☐ |
+| 1.2 | Sunucu: Hostinger VPS, Almanya (karar #174) ✓; yedek için ikinci depolama seçimi (yeri ve ülkesi aydınlatma metinlerindeki `[[Yedeklerin ikinci kopyasının yeri ve ülkesi]]` alanına yazılır; sürüm/çöp kutusu saklaması 30 günü geçmemeli — karar #279) | BT | ☐ |
 | 1.2a | Yurt dışına aktarım için KVKK md. 9 dayanağı (ör. Hostinger ile standart sözleşme + Kurum'a bildirim) ve aydınlatma metinlerinde yurt dışı aktarım bilgisi — gerçek veri girilmeden önce | Hukuk / KVKK sorumlusu | ☐ |
 | 1.2b | `owner` (üst yönetici) hesabı olan geliştirici için kurumla gizlilik / veri işleme taahhüdü (tüm personel verisine erişim; karar #192) | Hukuk / KVKK sorumlusu | ☐ |
-| 1.2c | WhatsApp ile davet: bağlantı ve kişinin adı İK'nın cihazından WhatsApp (Meta) üzerinden gider (karar #188). Aydınlatma metninde belirtilmesi ya da bu kanalın kullanılmaması kararı | Hukuk / KVKK sorumlusu | ☐ |
+| 1.2c | WhatsApp ile davet: bağlantı ve kişinin adı İK'nın cihazından WhatsApp (Meta) üzerinden gider (karar #188). Kanal kullanılmaya devam ediyor; örnek aydınlatma metni bunu yazar (karar #277) — md. 9 dayanağının hukuk değerlendirmesi | Hukuk / KVKK sorumlusu | ☐ |
 | 1.2d | İlk üst yönetici sunucuda tanımlandı (`grant-owner.ts`); kurum yöneticisine uygulamadan üst yönetici rolü verildi | BT | ☐ |
 | 1.3 | Alan adları: `APP_DOMAIN`, `FILES_DOMAIN` | BT | ☐ |
 | 1.4 | Resend hesabı (kurumsal e-posta, iki adımlı doğrulama), gönderen alan adı `mail.japarakademi.io` (bölge İrlanda) için Hostinger DNS kayıtları, alan adı "Verified", açılma/tıklama izleme kapalı, yalnızca gönderim izinli API anahtarı (`docs/runbooks/email-resend.md`, karar #258). Yedek seçenek: M365 uygulama kaydı (Graph `Mail.Send`) | Proje sahibi (Hostinger hesabı) | ☐ |
-| 1.4a | Resend için KVKK md. 9 dayanağı: Resend veri işleme sözleşmesi (AB standart sözleşme maddeleri + DPF), hesap verisi ve kayıtların ABD'de tutulması; aydınlatma metinlerinde e-posta hizmeti bilgisi (örnek metinler Resend'i yazar) — e-posta açılmadan önce | Hukuk / KVKK sorumlusu | ☐ |
+| 1.4a | Resend için KVKK md. 9 dayanağı: Resend veri işleme sözleşmesi (AB standart sözleşme maddeleri + DPF), hesap verisi ve kayıtların ABD'de tutulması; aydınlatma metinlerinde e-posta hizmeti bilgisi (örnek metinler Resend'i yazar) — e-posta açılmadan önce. Not (2026-11): Resend KVKK standart sözleşmesini imzalamıyor; proje sahibi Resend'le devam etme kararı verdi, dayanağı hukuk değerlendirir (yedek seçenek M365 Graph) | Hukuk / KVKK sorumlusu | ☐ |
 | 1.5 | KVKK aydınlatma metni (personel, TR + EN; bağlayıcı metin Türkçe — karar #212) — hukuk onayı | Hukuk / KVKK sorumlusu | ☐ |
+| 1.5a | Gerçek kullanımdan önce: "örnek olarak" yayınlanmış bütün metinlerde (personel aydınlatma, açık rıza, ziyaretçi aydınlatma) `[[...]]` alanları kurum bilgileriyle dolduruldu ve yeni sürüm normal **Yayınla** ile yayınlandı; "Gizlilik ve çerezler" sayfasında "Örnek metin" uyarısı kalmadı (kararlar #275–278) | İK + Hukuk / KVKK sorumlusu | ☐ |
 | 1.6 | Saklama sürelerinin hukuk teyidi (SPEC 12.3, iş ilişkisi bitişi + 15 yıl varsayımı); onaylanan süreler Sistem → Parametreler'e gerekçesiyle girilir | Hukuk | ☐ |
 | 1.7 | Anonimleştirilen personelin sertifikalarındaki ad bilgisinin saklanması (karar #124) — hukuk teyidi | Hukuk / KVKK sorumlusu | ☐ |
 | 1.8 | Ziyaretçi KVKK metni ve ziyaretçi kuralları (TR + EN) — hukuk onayı, Faz 2 öncesi | Hukuk / İSG | ☐ |

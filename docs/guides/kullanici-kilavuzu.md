@@ -9,10 +9,11 @@ Uygulama telefonda, tablette ve bilgisayarda çalışır. Telefonunuzun ana ekra
 
 1. Tarayıcıda JAPAR Akademi adresini açın.
 2. **Sicil no** ve **şifrenizi** yazın, **Giriş yap**'a dokunun.
-3. Eğitim odasındaki ortak bilgisayarda **"Ortak cihaz"** kutusunu işaretleyin; işiniz bitince oturum kendiliğinden kapanır.
+3. Yalnızca kendi telefonunuzda ya da bilgisayarınızda **"Bu cihazda oturumum açık kalsın"** kutusunu işaretleyin; her açışta yeniden giriş yapmazsınız ve telefon bildirimlerini açabilirsiniz. Eğitim odasındaki ortak bilgisayarda ya da başkasının cihazında kutuyu **boş** bırakın: tarayıcı kapanınca ya da kısa süre işlem yapılmayınca oturum kendiliğinden kapanır.
 4. Yöneticiler sicil no yerine kayıtlı e-posta adreslerini de yazabilir.
 5. Kişisel verilerin korunması (KVKK) aydınlatma metnini okuyup **Okudum, bilgilendirildim**'e dokunun. Metni okuduğunuzu belirtmeden devam edilemez.
-6. Aynı ekranda bir **açık rıza** metni de varsa ayrı bir kutusu vardır. Kutuyu işaretlemek isteğe bağlıdır: işaretlemezseniz de sistemi kullanırsınız, yalnızca profil fotoğrafı ekleyemezsiniz. Kararınızı sonra **Profil** sayfasındaki fotoğraf alanından değiştirebilirsiniz.
+6. Aynı ekranda bir **açık rıza** metni de varsa **Açık rıza veriyorum** ya da **Açık rıza vermiyorum** seçeneklerinden birini seçin; seçmeden devam edilmez. Rıza vermek isteğe bağlıdır: vermezseniz de sistemi kullanırsınız, yalnızca profil fotoğrafı ekleyemezsiniz. Kararınızı sonra **Profil** sayfasındaki fotoğraf alanından değiştirebilirsiniz.
+7. Giriş ekranının altındaki **Gizlilik ve çerezler** bağlantısından KVKK metinlerini ve kullanılan çerezleri giriş yapmadan da okuyabilirsiniz. Metnin üstünde "Örnek metin" yazıyorsa kurum bilgileri henüz eklenmemiştir.
 
 **İlk kez giriş (hesabı etkinleştirme):** İK hesabınızı açınca size bir davet verir: e-posta, WhatsApp mesajı ya da QR kodlu bir kağıt.
 - **E-posta veya WhatsApp:** mesajdaki bağlantıya dokunun.
@@ -88,7 +89,7 @@ Menüdeki **Programım** pozisyonunuzun çalışma programını gösterir: gün 
 ### Bildirimler
 Üst çubuktaki **zil** okunmamış bildirim sayısını gösterir. Bildirime dokununca ilgili ekran açılır. E-posta adresiniz kayıtlıysa bazı bildirimler e-postayla da gelir (e-postada ayrıntı yer almaz).
 
-**Telefona bildirim (push):** **Profil → Bu cihazda bildirimler → Bildirimleri aç**. Tarayıcı izin isterse **İzin ver** deyin. Bundan sonra yeni bir bildiriminiz olduğunda telefonunuzda "Yeni bildiriminiz var" uyarısı çıkar; dokununca ilgili ekran açılır. Uyarıda kişisel bilgi yer almaz. Ayar cihaz başınadır: her telefon ya da bilgisayarda ayrı açılır, çıkış yapınca o cihazda kapanır. iPhone'da önce Safari'de **Paylaş → Ana Ekrana Ekle** ile uygulamayı ekleyip simgeden açmanız gerekir. Ortak cihazlarda bu ayar yoktur.
+**Telefona bildirim (push):** girişte **Bu cihazda oturumum açık kalsın** kutusunu işaretlediyseniz **Profil → Bu cihazda bildirimler → Bildirimleri aç**. Tarayıcı izin isterse **İzin ver** deyin. Bundan sonra yeni bir bildiriminiz olduğunda telefonunuzda "Yeni bildiriminiz var" uyarısı çıkar; dokununca ilgili ekran açılır. Uyarıda kişisel bilgi yer almaz. Ayar cihaz başınadır: her telefon ya da bilgisayarda ayrı açılır, çıkış yapınca o cihazda kapanır. iPhone'da önce Safari'de **Paylaş → Ana Ekrana Ekle** ile uygulamayı ekleyip simgeden açmanız gerekir. Ortak cihazlarda bu ayar yoktur.
 
 ---
 

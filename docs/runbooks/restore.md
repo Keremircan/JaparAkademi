@@ -7,8 +7,11 @@ Yedekler `backup` servisinde alınır (`docker/backup/backup.sh`, her gece 02:30
 |---|---|---|---|
 | Veritabanı | `docker/backups/db/daily/akademi-<tarih>.dump.age` | `pg_dump` (custom) → `age` ile şifreli | 30 gün |
 | Veritabanı (aylık) | `docker/backups/db/monthly/` | ayın 1'indeki günlük yedeğin kopyası | 12 ay |
-| Dosya deposu | `docker/backups/files/` | rclone crypt (içerik ve dosya adları şifreli), artımlı | depodan silinen dosya yedekte kalır |
-| Uzak kopya | `BACKUP_REMOTE` (tanımlıysa) | `docker/backups` dizininin eşi | uzak depolamanın kuralı |
+| Dosya deposu | `docker/backups/files/` | rclone crypt (içerik ve dosya adları şifreli), artımlı ayna | depodaki dosyalar; depodan silinen ya da değişen dosya `.deleted/<yedek zamanı>/` altında en geç 30 gün (karar #279) |
+| Uzak kopya | `BACKUP_REMOTE` (tanımlıysa) | `docker/backups` dizininin eşi (aynı saklama; silinen yedek orada da silinir) | uzak depolamanın sürüm/çöp kutusu kuralı da 30 günü geçmemeli |
+
+Saklama süreleri KVKK aydınlatma metinlerinde yazar (`src/server/services/legal-samples.ts` `BACKUPS`); değişirse metinler de yeni sürümle yayınlanır.
+Uzak kopyanın yeri ve ülkesi aydınlatma metnindeki `[[Yedeklerin ikinci kopyasının yeri ve ülkesi]]` alanına yazılır.
 
 Açmak için gereken gizli bilgiler **sunucuda değil kasada** durur: age gizli anahtarı ve `BACKUP_FILES_PASSWORD`.
 Ayrıca geri dönen ortamın `docker/.env.production` dosyasında eski ortamdaki `BETTER_AUTH_SECRET`, `NATIONAL_ID_ENC_KEYS`, `NATIONAL_ID_HMAC_KEY` ve `S3_*` değerleri aynı olmalıdır (aksi halde oturum, TC ve dosya erişimi bozulur).
@@ -39,6 +42,16 @@ $C up -d
 ```
 
 > Git Bash (Windows) kullanıyorsanız konteyner yolları değişmesin diye önce `export MSYS_NO_PATHCONV=1`.
+
+`restore.sh` depodan silinmiş dosyaları (`.deleted/`) geri yüklemez. Yanlışlıkla silinen tek bir dosya gerekiyorsa
+(30 gün içinde) `backup` konteynerinde `backup.sh`'deki gibi `filescrypt` yapılandırmasıyla:
+
+```bash
+rclone lsf -R filescrypt:.deleted | grep <dosya-yolu>
+rclone copy filescrypt:.deleted/<yedek-zamanı>/<dosya-yolu> "garage:$S3_BUCKET_PRIVATE/<klasör>"
+```
+
+KVKK gereği silinmiş bir dosyayı (fotoğraf, imza görseli) geri yüklemeyin.
 
 ## Doğrulama
 

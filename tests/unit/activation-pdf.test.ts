@@ -9,6 +9,8 @@ const labels = {
   code: "Etkinleştirme kodu",
   steps: "QR kodu okutun ya da kodu girin.",
   note: "Kod bir kez kullanılır.",
+  // Gizlilik sayfasının adresi (karar #278): uzun adres de kağıda sığar, sayfa sayısı değişmez
+  privacy: "Kişisel verilerinizin nasıl işlendiğini şuradan okuyabilirsiniz: https://akademi.example.com.tr/privacy",
 };
 
 describe("karar #185: hesap etkinleştirme kağıtları (PDF)", () => {

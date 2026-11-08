@@ -57,23 +57,27 @@ export async function saveLegalDraftAction(
   return redirect({ href: `/admin/legal?kind=${kind}`, locale: await getLocale() });
 }
 
-export async function publishLegalTextAction(id: string): Promise<ActionResult> {
-  if (!uuid.safeParse(id).success) return { ok: false, error: "invalid_input" };
+/** Yayınla; `asSample` doldurulmamış alanı kalan metni "örnek olarak" yayınlar (karar #275). */
+export async function publishLegalTextAction(id: string, asSample: boolean = false): Promise<ActionResult> {
+  if (!uuid.safeParse(id).success || typeof asSample !== "boolean") return { ok: false, error: "invalid_input" };
   const { actor } = await actionUser();
-  const result = await runAction(() => publishText(actor, id));
+  const result = await runAction(() => publishText(actor, id, { asSample }));
   if (result.ok) refresh();
   return result;
 }
 
 const sampleKindSchema = z.enum(SAMPLE_KINDS);
 
-/** "Örnek metinle başla" (iş paketi 3.8): türün TR + EN taslağını örnek metinle açar. */
-export async function createLegalSampleAction(kind: string): Promise<ActionResult> {
+/**
+ * "Örnek metinle başla" (iş paketi 3.8): türün TR + EN taslağını örnek metinle açar. `replace`: "Örnek metinle
+ * yeniden başla" (karar #276) — var olan taslak güncel örnek metinle değiştirilir.
+ */
+export async function createLegalSampleAction(kind: string, replace: boolean = false): Promise<ActionResult> {
   const parsed = sampleKindSchema.safeParse(kind);
-  if (!parsed.success) return { ok: false, error: "invalid_input" };
+  if (!parsed.success || typeof replace !== "boolean") return { ok: false, error: "invalid_input" };
   const { actor } = await actionUser();
   const result = await runAction(async () => {
-    await createSampleDrafts(actor, parsed.data);
+    await createSampleDrafts(actor, parsed.data, { replace });
   });
   if (result.ok) refresh();
   return result;

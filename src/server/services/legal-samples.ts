@@ -3,8 +3,10 @@ import type { LegalKind } from "./legal";
 /**
  * Örnek hukuki metinler (iş paketi 3.8, karar #245). KVKK md. 10 ve Aydınlatma Tebliği'ne göre hazırlanmış
  * başlangıç taslaklarıdır; İK ve hukuk/KVKK sorumlusu gözden geçirmeden yayınlanmaz. Kurum bilgileri
- * `[[...]]` alanı olarak kalır ve doldurulmadan yayın engellenir (karar #246). Saklama süreleri güncel
- * parametrelerden yazılır. Türkçe metin bağlayıcıdır; İngilizce metin bunu belirtir.
+ * `[[...]]` alanı olarak kalır; doldurulmadan yalnızca "örnek olarak" yayınlanır (kararlar #246, #275). Saklama
+ * süreleri ve oturum süresi güncel parametrelerden yazılır. Türkçe metin bağlayıcıdır; İngilizce metin bunu belirtir.
+ * 3.13 (karar #277): metinler sistemin bugünkü veri işlemesini anlatır (çalışma programı, pratik fotoğrafları,
+ * WhatsApp daveti, Resend, bildirim servisleri, yedekler, geliştirici erişimi, çerezler).
  */
 export const SAMPLE_KINDS = ["kvkk_personnel", "explicit_consent_personnel", "kvkk_visitor"] as const satisfies readonly LegalKind[];
 export type SampleKind = (typeof SAMPLE_KINDS)[number];
@@ -21,6 +23,8 @@ export type SampleRetention = {
   visitorYears: number;
   contractorYears: number;
   blacklistYears: number;
+  /** `session.personal_days`: "Bu cihazda oturumum açık kalsın" seçilince işlemsizlikle kapanma süresi. */
+  sessionDays: number;
 };
 
 type SampleLocale = "tr" | "en";
@@ -58,9 +62,45 @@ const TRANSFER_BASIS: Record<SampleLocale, string> = {
 };
 
 const BACKUPS: Record<SampleLocale, string> = {
-  tr: "Yedekler şifreli tutulur; günlük yedekler 30 gün, aylık yedekler 12 ay sonra silinir.",
-  en: "Backups are encrypted; daily backups are deleted after 30 days and monthly backups after 12 months.",
+  tr: "Yedekler şifreli tutulur: veritabanının günlük yedekleri 30 gün, aylık yedekleri 12 ay sonra silinir; Sistem'den silinen dosyalar (ör. fotoğraf, imza görseli) dosya yedeğinden en geç 30 gün sonra silinir.",
+  en: "Backups are encrypted: daily database backups are deleted after 30 days and monthly ones after 12 months; files deleted from the System (for example a photo or a signature image) are deleted from the file backup within 30 days at the latest.",
 };
+
+/** Yedeğin ikinci kopyasının yeri (karar #277): kurum seçince doldurulur. */
+const BACKUP_COPY: Record<SampleLocale, string> = {
+  tr: "Şifreli yedeklerin ikinci kopyası şurada tutulur: [[Yedeklerin ikinci kopyasının yeri ve ülkesi]]",
+  en: "A second copy of the encrypted backups is kept at: [[Location and country of the second backup copy]]",
+};
+
+/** E-posta gönderimi (kararlar #258, #277): proje sahibi Resend'i kullanmaya devam eder. */
+const EMAIL_SERVICE: Record<SampleLocale, string> = {
+  tr: "E-postalar Resend Inc. (ABD) e-posta gönderim hizmeti üzerinden gönderilir; bu hizmete yalnızca e-posta adresiniz ve e-postanın içeriği (ör. bildirim metni, şifre ya da hesap bağlantısı) iletilir.",
+  en: "E-mails are sent through the e-mail delivery service of Resend Inc. (USA); only your e-mail address and the content of the e-mail (for example the notification text or a password or account link) are passed to this service.",
+};
+
+/**
+ * Çerezler ve cihazda tutulan bilgiler (karar #278, KVKK Çerez Uygulamaları Rehberi): yalnızca zorunlu çerezler
+ * kullanılır; açık rıza gerekmez, aydınlatma yapılır. "Gizlilik ve çerezler" sayfasındaki tabloyla aynı içerik.
+ */
+function cookies(locale: SampleLocale, n: number, sessionDays: number): string[] {
+  return locale === "tr"
+    ? [
+        `${n}. Çerezler ve cihazınızda tutulan bilgiler`,
+        "Sistem yalnızca çalışması için gerekli çerezleri kullanır; reklam, analiz ya da başka bir şirkete ait (üçüncü taraf) çerez kullanılmaz. Bu çerezler için açık rıza gerekmez:",
+        `• Oturum çerezleri: girişinizi sürdürür. Girişte "Bu cihazda oturumum açık kalsın" seçeneğini işaretlemezseniz tarayıcı kapanınca silinir ve oturumunuz kısa bir süre işlem yapmadığınızda kapanır. İşaretlerseniz oturumunuz siz çıkış yapana ya da ${sessionDays} gün işlem yapmayana kadar açık kalır; çerez çıkışta, yapmazsanız en geç bir yıl sonra silinir.`,
+        "• Dil ve görünüm çerezleri: seçtiğiniz dili ve açık/koyu görünümü bu cihazda bir yıl hatırlar; yalnızca seçiminizi taşır.",
+        "• Ortak cihaz çerezi: yalnızca Sistem yöneticisinin eğitim odası bilgisayarı ya da kapı tableti olarak kaydettiği cihazlarda bulunur ve o cihazı tanır.",
+        "Uygulama daha hızlı açılmak için yalnızca tasarım dosyalarını (kod, yazı tipi, simge) cihazınıza kaydeder; kişisel verileriniz cihazınızda saklanmaz.",
+      ]
+    : [
+        `${n}. Cookies and information kept on your device`,
+        "The System uses only the cookies it needs to work; no advertising, analytics or third-party cookies are used. These cookies do not require explicit consent:",
+        `• Session cookies: keep you signed in. If you do not tick "Keep me signed in on this device" when signing in, they are deleted when the browser closes and your session ends after a short time without activity. If you tick it, your session stays open until you sign out or for ${sessionDays} days without activity; the cookie is deleted when you sign out, or otherwise after one year at the latest.`,
+        "• Language and appearance cookies: remember the language and the light/dark appearance you chose on this device for one year; they carry only your choice.",
+        "• Shared device cookie: exists only on devices that a System administrator has registered as a training room computer or a gate tablet, and recognises that device.",
+        "To open faster, the app stores only design files (code, fonts, icons) on your device; your personal data is not stored on your device.",
+      ];
+}
 
 function rights(locale: SampleLocale, n: number): string[] {
   return locale === "tr"
@@ -112,18 +152,21 @@ function personnelNotice(locale: SampleLocale, r: SampleRetention): Sample {
     return {
       title: "JAPAR Akademi Çalışan Aydınlatma Metni",
       body: doc(
-        'Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") 10. maddesi ve Aydınlatma Yükümlülüğünün Yerine Getirilmesinde Uyulacak Usul ve Esaslar Hakkında Tebliğ uyarınca, JAPAR Akademi eğitim sistemini ("Sistem") kullanan çalışanlarımızı kişisel verilerinin nasıl işlendiği konusunda bilgilendirmek için hazırlanmıştır.',
+        `Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") 10. maddesi ve Aydınlatma Yükümlülüğünün Yerine Getirilmesinde Uyulacak Usul ve Esaslar Hakkında Tebliğ uyarınca, JAPAR Akademi eğitim sistemini ("Sistem") kullanan çalışanlarımızı kişisel verilerinin nasıl işlendiği konusunda bilgilendirmek için hazırlanmıştır. Metni Sistem'e ilk girişinizden önce de İnsan Kaynakları'ndan isteyebilir ya da giriş ekranındaki "Gizlilik ve çerezler" bağlantısından okuyabilirsiniz.`,
         CONTROLLER.tr,
         [
           "2. Hangi kişisel verileriniz işlenir",
-          "Sistem'de yalnızca eğitim sürecinin ve Sistem güvenliğinin gerektirdiği veriler işlenir:",
+          "Sistem'de yalnızca eğitim sürecinin, çalışma düzeninin ve Sistem güvenliğinin gerektirdiği veriler işlenir:",
           "• Kimlik: ad soyad, sicil no, T.C. kimlik numarası. T.C. kimlik numaranız şifrelenerek saklanır ve ekranda maskeli gösterilir; tamamını yalnızca İnsan Kaynakları görebilir ve her görüntüleme kayıt altına alınır.",
           "• İletişim: cep telefonu numarası ve e-posta adresi.",
           "• Özlük ve organizasyon: pozisyonunuz, bağlı olduğunuz birim, çalışma türünüz (personel veya stajyer), işe giriş ve ayrılış tarihleriniz, Sistem'deki rolleriniz.",
-          "• Mesleki eğitim: eğitim atamalarınız, içerik okuma ve video izleme ilerlemeniz, sınav cevaplarınız ve puanlarınız, pratik eğitim ve pratik sınav kayıtlarınız, ekranda parmakla attığınız imzalar, işe başlama onayı, sertifikalarınız, yetkinlik kayıtlarınız ve Sistem dışında aldığınız eğitimlerin tarihleri.",
+          "• Çalışma programı: seçtiğiniz vardiya programı ve programı kendinize göre düzenlediyseniz bu kopya.",
+          "• Mesleki eğitim: eğitim atamalarınız, içerik okuma ve video izleme ilerlemeniz, sınıf eğitimlerine katılımınız, ara değerlendirme ve sınav cevaplarınız ve puanlarınız, pratik eğitim ve pratik sınav kayıtlarınız (eğitmeninizin görev sırasında çektiği fotoğraflar dahil), ekranda parmakla attığınız imzalar, işe başlama onayı, sertifikalarınız, yetkinlik kayıtlarınız ve Sistem dışında aldığınız eğitimlerin tarihleri.",
+          "• Hesap: hesap etkinleştirme ve şifre yenileme davetleri (gönderildiği kanal ve zaman) ve size gönderilen bildirimler.",
           "• İşlem güvenliği: giriş kayıtları (tarih, IP adresi, tarayıcı bilgisi), sınav sırasında IP ve cihaz bilgisi, onay kayıtları ve Sistem'de yapılan işlemlerin denetim kayıtları.",
-          "• Tercihler: dil ve yazı boyutu tercihiniz, bildirim tercihleriniz ve izin verdiyseniz cihazınızın bildirim aboneliği.",
+          "• Tercihler: dil, yazı boyutu ve görünüm (açık/koyu) tercihiniz, bildirim tercihleriniz ve izin verdiyseniz cihazınızın bildirim aboneliği.",
           "• Görsel kayıt: profil fotoğrafı — yalnızca ayrıca açık rıza verirseniz.",
+          "Sistem'de özel nitelikli kişisel veri (ör. sağlık veya biyometrik veri) işlenmez. Ekrana attığınız imza yalnızca görüntü olarak saklanır; imzanın hızı, basıncı gibi biyometrik özellikleri kaydedilmez.",
         ],
         [
           "3. Verileriniz hangi amaçlarla işlenir",
@@ -131,6 +174,8 @@ function personnelNotice(locale: SampleLocale, r: SampleRetention): Sample {
           "• İş sağlığı ve güvenliği eğitimlerinin mevzuata uygun verilmesi, kayıt altına alınması, süresi dolanların yenilenmesi ve denetimlerde gösterilmesi.",
           "• İşe başlama yetkinliğinizin değerlendirilmesi ve yetkinlik kayıtlarının tutulması.",
           "• Sertifikaların düzenlenmesi ve doğrulanabilmesi.",
+          "• Vardiyanıza göre günlük ve haftalık çalışma akışınızın size gösterilmesi.",
+          "• Hesabınızın etkinleştirilmesi ve şifre yenileme bağlantısının size ulaştırılması.",
           "• Size uygulama içinde, e-postayla ve izin verirseniz cihaz bildirimiyle bilgi verilmesi.",
           "• Hesabınızın ve Sistem'in güvenliğinin sağlanması, yetkisiz erişimin önlenmesi ve yapılan işlemlerin denetlenebilmesi.",
           "• Yöneticilerin ve iş sağlığı ve güvenliği uzmanının eğitim durumunu raporlayabilmesi.",
@@ -139,39 +184,46 @@ function personnelNotice(locale: SampleLocale, r: SampleRetention): Sample {
           "4. Hukuki sebepler",
           "Kişisel verileriniz KVKK'nın 5. maddesinin 2. fıkrasındaki şu sebeplere dayanılarak işlenir:",
           "• (a) Kanunlarda açıkça öngörülmesi ve (ç) hukuki yükümlülüğümüzü yerine getirmemiz: başta 6331 sayılı İş Sağlığı ve Güvenliği Kanunu ve Çalışanların İş Sağlığı ve Güvenliği Eğitimlerinin Usul ve Esasları Hakkında Yönetmelik olmak üzere iş mevzuatından doğan eğitim, belgelendirme ve kayıt yükümlülükleri.",
-          "• (c) İş sözleşmenizin kurulması ve ifası: pozisyonunuzun gerektirdiği eğitimlerin verilmesi ve işe başlama sürecinin yürütülmesi.",
+          "• (c) İş sözleşmenizin kurulması ve ifası: pozisyonunuzun gerektirdiği eğitimlerin verilmesi, işe başlama sürecinin yürütülmesi, çalışma programınızın gösterilmesi ve hesabınızın açılması.",
           "• (e) Bir hakkın tesisi, kullanılması veya korunması: eğitim ve onay kayıtlarının olası uyuşmazlıklarda delil olarak saklanması.",
           "• (f) Temel hak ve özgürlüklerinize zarar vermemek kaydıyla meşru menfaatimiz: Sistem güvenliği, giriş ve denetim kayıtları ile raporlama.",
           "Profil fotoğrafınız yalnızca açık rızanıza dayanılarak işlenir (KVKK md. 5/1). Açık rıza vermek isteğe bağlıdır; vermemeniz Sistem'i kullanmanızı etkilemez.",
         ],
         [
           "5. Verileriniz nasıl toplanır",
-          "Kimlik, iletişim ve özlük bilgileriniz İnsan Kaynakları tarafından Sistem'e tek tek ya da Excel dosyasıyla girilir. Eğitim, sınav, imza ve onay kayıtları siz ve eğitmenleriniz Sistem'i kullandıkça elektronik ortamda oluşur. Giriş ve işlem kayıtları Sistem tarafından otomatik olarak tutulur.",
+          "Kimlik, iletişim ve özlük bilgileriniz İnsan Kaynakları tarafından Sistem'e tek tek ya da Excel dosyasıyla girilir. Eğitim, sınav, imza ve onay kayıtları siz ve eğitmenleriniz Sistem'i kullandıkça elektronik ortamda oluşur. Giriş ve işlem kayıtları Sistem tarafından otomatik olarak tutulur. Oturumunuzu sürdürmek ve tercihlerinizi hatırlamak için yalnızca zorunlu çerezler kullanılır (10. bölüm).",
         ],
         [
           "6. Verileriniz kimlerle paylaşılır",
           "Verilerinizi yalnızca görevi gereği ihtiyaç duyan JAPAR çalışanları ve yalnızca gerektiği kadar görür: İnsan Kaynakları, eğitmeniniz, bağlı olduğunuz bölümün sorumlusu, iş sağlığı ve güvenliği uzmanı ve Sistem yöneticileri. Güvenlik görevlileri eğitim verilerinizi göremez.",
+          "Sistem'in teknik bakımını ve geliştirmesini yapan yetkili kişiler (JAPAR çalışanı ya da JAPAR adına hizmet veren yazılım geliştirici) gizlilik taahhüdüyle ve yalnızca bakım için gerektiği kadar verilerinize erişebilir.",
           "İş sağlığı ve güvenliği eğitim kayıtlarınız (ad soyad, T.C. kimlik numarası, eğitim konuları, tarihleri ve süreleri) hizmet aldığımız ortak sağlık ve güvenlik birimine (OSGB) iletilebilir. Kanunen yetkili kamu kurum ve kuruluşları (ör. iş müfettişleri, yargı mercileri) talep ettiğinde bu kurumlara bilgi verilebilir.",
           "Sertifikanızdaki karekodla açılan doğrulama sayfasında yalnızca maskelenmiş adınız, sertifikanın kapsamı, tarihleri ve geçerlilik durumu görünür; T.C. kimlik ve sicil numaranız gösterilmez.",
         ],
         [
           "7. Yurt dışına aktarım",
-          "Sistem, JAPAR adına kiralanan ve Hostinger'ın Almanya'daki (Avrupa Birliği) veri merkezinde bulunan bir sunucuda çalışır; verileriniz bu sunucuda saklanır. E-postalar Resend Inc. (ABD) e-posta gönderim hizmeti üzerinden gönderilir; bu hizmete yalnızca e-posta adresiniz ve e-postanın içeriği (ör. bildirim metni, şifre ya da hesap bağlantısı) iletilir. Cihaz bildirimine izin verirseniz tarayıcınızın bildirim hizmeti (ör. Google, Apple, Mozilla) yalnızca şifreli bir bildirim kimliği taşır; bildirimin içeriği ve kişisel bilgileriniz bu hizmetlere gönderilmez.",
+          "• Sunucu: Sistem, JAPAR adına kiralanan ve Hostinger'ın Almanya'daki (Avrupa Birliği) veri merkezinde bulunan bir sunucuda çalışır; verileriniz bu sunucuda saklanır.",
+          `• Yedek: ${BACKUP_COPY.tr}`,
+          `• E-posta: ${EMAIL_SERVICE.tr}`,
+          "• WhatsApp: İnsan Kaynakları hesap etkinleştirme ya da şifre yenileme bağlantınızı WhatsApp ile gönderirse, adınız ve bağlantı İnsan Kaynakları'nın cihazından WhatsApp (Meta; sunucuları yurt dışında) üzerinden telefon numaranıza iletilir. Sistem WhatsApp'a bağlanmaz ve WhatsApp'a başka veri göndermez.",
+          "• Cihaz bildirimi: izin verirseniz tarayıcınızın bildirim hizmeti (Google, Apple, Mozilla ya da Microsoft) yalnızca şifreli bir bildirim kimliği taşır; bildirimin içeriği ve kişisel bilgileriniz bu hizmetlere gönderilmez.",
           TRANSFER_BASIS.tr,
         ],
         [
           "8. Saklama süreleri",
           `• Eğitim, sınav, imza, onay ve sertifika kayıtlarınız iş ilişkinizin sona ermesinden itibaren ${r.personnelYears} yıl saklanır. Süre dolunca adınız, T.C. kimlik numaranız, telefonunuz, e-postanız ve fotoğrafınız silinir; kayıtlar anonim hale getirilir.`,
           `• Giriş kayıtları ${r.loginDays} gün, denetim kayıtları ${r.auditYears} yıl saklanır ve ardından silinir.`,
-          "• Profil fotoğrafınız, açık rızanızı geri aldığınızda ya da fotoğrafı kaldırdığınızda hemen silinir.",
+          "• Profil fotoğrafınız, açık rızanızı geri aldığınızda ya da fotoğrafı kaldırdığınızda Sistem'den hemen silinir.",
+          "• Çalışma programı seçiminiz ve kendi programınız, pozisyonunuz değişince ya da kayıtlarınız anonim hale getirilince silinir.",
           `• ${BACKUPS.tr}`,
         ],
         [
           "9. Otomatik değerlendirme",
           "Sınav puanlarınızı Sistem hesaplar. İşe başlama onayı, eğitim sürecinin sonlandırılması ve yetkinlik gibi sizi etkileyen kararları her zaman yetkili bir kişi verir; Sistem sizi otomatik olarak reddetmez.",
         ],
-        rights("tr", 10),
-        application("tr", 11, "Sistem'de tutulan verilerinizin dökümünü İnsan Kaynakları'ndan isteyebilirsiniz."),
+        cookies("tr", 10, r.sessionDays),
+        rights("tr", 11),
+        application("tr", 12, "Sistem'de tutulan verilerinizin dökümünü İnsan Kaynakları'ndan isteyebilirsiniz."),
       ),
     };
   }
@@ -179,18 +231,21 @@ function personnelNotice(locale: SampleLocale, r: SampleRetention): Sample {
     title: "JAPAR Akademi Employee Privacy Notice",
     body: doc(
       EN_NOTE,
-      'This notice is prepared under Article 10 of Personal Data Protection Law No. 6698 ("KVKK") and the Communiqué on the Procedures and Principles for the Obligation to Inform, to explain how the personal data of employees who use the JAPAR Akademi training system (the "System") is processed.',
+      'This notice is prepared under Article 10 of Personal Data Protection Law No. 6698 ("KVKK") and the Communiqué on the Procedures and Principles for the Obligation to Inform, to explain how the personal data of employees who use the JAPAR Akademi training system (the "System") is processed. You can also ask Human Resources for it before you first sign in, or read it through the "Privacy and cookies" link on the sign-in screen.',
       CONTROLLER.en,
       [
         "2. What personal data is processed",
-        "Only the data needed for the training process and for the security of the System is processed:",
+        "Only the data needed for the training process, working arrangements and the security of the System is processed:",
         "• Identity: full name, employee number, Turkish ID number. Your ID number is stored encrypted and shown masked; only Human Resources can see it in full, and every viewing is logged.",
         "• Contact: mobile phone number and e-mail address.",
         "• Employment and organisation: your position, unit, employment type (employee or intern), start and end dates, and your roles in the System.",
-        "• Professional training: your training assignments, reading and video progress, exam answers and scores, practical training and practical exam records, signatures you draw on the screen, readiness approval, certificates, competency records, and the dates of trainings you completed outside the System.",
+        "• Work schedule: the shift schedule you chose and, if you adjusted it for yourself, your copy.",
+        "• Professional training: your training assignments, reading and video progress, classroom training attendance, quiz and exam answers and scores, practical training and practical exam records (including photos your trainer takes during tasks), signatures you draw on the screen, readiness approval, certificates, competency records, and the dates of trainings you completed outside the System.",
+        "• Account: account activation and password renewal invitations (the channel and time they were sent) and the notifications sent to you.",
         "• Transaction security: sign-in records (date, IP address, browser), IP and device information during exams, acknowledgement records, and audit records of actions in the System.",
-        "• Preferences: language and text size, notification preferences and, if you allow it, your device's notification subscription.",
+        "• Preferences: language, text size and appearance (light/dark), notification preferences and, if you allow it, your device's notification subscription.",
         "• Image: profile photo — only if you give separate explicit consent.",
+        "No special categories of personal data (for example health or biometric data) are processed in the System. The signature you draw on the screen is stored only as an image; biometric features such as its speed or pressure are not recorded.",
       ],
       [
         "3. Purposes",
@@ -198,6 +253,8 @@ function personnelNotice(locale: SampleLocale, r: SampleRetention): Sample {
         "• Providing occupational health and safety (OHS) training as required by law, recording it, renewing expired training and presenting the records in inspections.",
         "• Assessing your readiness to start work and keeping competency records.",
         "• Issuing certificates and making them verifiable.",
+        "• Showing you your daily and weekly work schedule for your shift.",
+        "• Activating your account and delivering password renewal links to you.",
         "• Informing you in the app, by e-mail and, if you allow it, by device notifications.",
         "• Keeping your account and the System secure, preventing unauthorised access and making actions auditable.",
         "• Allowing managers and the OHS specialist to report on training status.",
@@ -206,39 +263,46 @@ function personnelNotice(locale: SampleLocale, r: SampleRetention): Sample {
         "4. Legal grounds",
         "Your personal data is processed on the following grounds in Article 5(2) of the KVKK:",
         "• (a) Explicitly provided for by law and (ç) compliance with our legal obligations: training, certification and record-keeping obligations under employment law, in particular Occupational Health and Safety Law No. 6331 and the Regulation on the Procedures and Principles of Employees' Occupational Health and Safety Training.",
-        "• (c) The establishment and performance of your employment contract: delivering the training your position requires and running the start-of-work process.",
+        "• (c) The establishment and performance of your employment contract: delivering the training your position requires, running the start-of-work process, showing your work schedule and opening your account.",
         "• (e) The establishment, exercise or protection of a right: keeping training and approval records as evidence in possible disputes.",
         "• (f) Our legitimate interest, provided that it does not harm your fundamental rights and freedoms: System security, sign-in and audit records, and reporting.",
         "Your profile photo is processed only with your explicit consent (KVKK Article 5(1)). Giving explicit consent is optional; if you do not give it, you can still use the System.",
       ],
       [
         "5. How your data is collected",
-        "Your identity, contact and employment details are entered into the System by Human Resources, one by one or from an Excel file. Training, exam, signature and acknowledgement records are created electronically as you and your trainers use the System. Sign-in and action records are kept automatically by the System.",
+        "Your identity, contact and employment details are entered into the System by Human Resources, one by one or from an Excel file. Training, exam, signature and acknowledgement records are created electronically as you and your trainers use the System. Sign-in and action records are kept automatically by the System. Only strictly necessary cookies are used to keep you signed in and remember your preferences (section 10).",
       ],
       [
         "6. Who your data is shared with",
         "Your data is seen only by JAPAR staff who need it for their work, and only as far as needed: Human Resources, your trainer, the manager of your section, the OHS specialist and System administrators. Security staff cannot see your training data.",
+        "Authorised people who maintain and develop the System (a JAPAR employee or a software developer working on behalf of JAPAR) may access your data under a confidentiality undertaking, and only as far as maintenance requires.",
         "Your OHS training records (full name, Turkish ID number, training topics, dates and durations) may be sent to the joint health and safety unit (OSGB) we work with. Authorities with legal power (for example labour inspectors and courts) may receive information when they request it.",
         "The verification page opened by the QR code on your certificate shows only your masked name, the scope of the certificate, its dates and validity; your ID number and employee number are not shown.",
       ],
       [
         "7. Transfer abroad",
-        "The System runs on a server rented on behalf of JAPAR in Hostinger's data centre in Germany (European Union); your data is stored on this server. E-mails are sent through the e-mail delivery service of Resend Inc. (USA); only your e-mail address and the content of the e-mail (for example the notification text or a password or account link) are passed to this service. If you allow device notifications, your browser's push service (for example Google, Apple or Mozilla) carries only an encrypted notification ID; the content of the notification and your personal data are not sent to these services.",
+        "• Server: the System runs on a server rented on behalf of JAPAR in Hostinger's data centre in Germany (European Union); your data is stored on this server.",
+        `• Backup: ${BACKUP_COPY.en}`,
+        `• E-mail: ${EMAIL_SERVICE.en}`,
+        "• WhatsApp: if Human Resources sends your account activation or password renewal link by WhatsApp, your name and the link are sent from the Human Resources device through WhatsApp (Meta; servers abroad) to your phone number. The System does not connect to WhatsApp and sends no other data to it.",
+        "• Device notifications: if you allow them, your browser's push service (Google, Apple, Mozilla or Microsoft) carries only an encrypted notification ID; the content of the notification and your personal data are not sent to these services.",
         TRANSFER_BASIS.en,
       ],
       [
         "8. Retention periods",
         `• Training, exam, signature, approval and certificate records are kept for ${r.personnelYears} years after your employment ends. After that, your name, ID number, phone number, e-mail address and photo are deleted and the records are anonymised.`,
         `• Sign-in records are kept for ${r.loginDays} days and audit records for ${r.auditYears} years; then they are deleted.`,
-        "• Your profile photo is deleted immediately when you withdraw your explicit consent or remove the photo.",
+        "• Your profile photo is deleted from the System immediately when you withdraw your explicit consent or remove the photo.",
+        "• Your work schedule choice and your own schedule are deleted when your position changes or your records are anonymised.",
         `• ${BACKUPS.en}`,
       ],
       [
         "9. Automated assessment",
         "The System calculates your exam scores. Decisions that affect you, such as readiness approval, ending a training process or competency, are always made by an authorised person; the System never rejects you automatically.",
       ],
-      rights("en", 10),
-      application("en", 11, "You can ask Human Resources for a copy of the data held about you in the System."),
+      cookies("en", 10, r.sessionDays),
+      rights("en", 11),
+      application("en", 12, "You can ask Human Resources for a copy of the data held about you in the System."),
     ),
   };
 }
@@ -256,7 +320,8 @@ function explicitConsent(locale: SampleLocale): Sample {
           "• Fotoğrafınız başka bir amaçla kullanılmaz, yüz tanıma gibi biyometrik işlemlerde kullanılmaz ve üçüncü kişilerle paylaşılmaz.",
         ],
         "Açık rıza vermek tamamen isteğe bağlıdır. Rıza vermezseniz Sistem'i aynı şekilde kullanırsınız; yalnızca profil fotoğrafı ekleyemezsiniz.",
-        "Rızanızı istediğiniz zaman Profil sayfasından geri alabilirsiniz. Geri aldığınızda fotoğrafınız hemen ve kalıcı olarak silinir. Rızanızı geri almanız, o zamana kadar yapılan işlemlerin hukuka uygunluğunu etkilemez.",
+        "Rızanızı istediğiniz zaman Profil sayfasından geri alabilirsiniz. Geri aldığınızda fotoğrafınız Sistem'den hemen, şifreli yedeklerden en geç 30 gün içinde silinir. Rızanızı geri almanız, o zamana kadar yapılan işlemlerin hukuka uygunluğunu etkilemez.",
+        'Kararınızı onay ekranında "Açık rıza veriyorum" ya da "Açık rıza vermiyorum" seçeneğiyle, daha sonra Profil sayfasından bildirirsiniz. Her karar tarih, IP adresi ve tarayıcı bilgisiyle kaydedilir.',
       ),
     };
   }
@@ -272,7 +337,8 @@ function explicitConsent(locale: SampleLocale): Sample {
         "• Your photo is not used for any other purpose, is not used for biometric processing such as face recognition, and is not shared with third parties.",
       ],
       "Giving explicit consent is entirely optional. If you do not give it, you use the System in the same way; you just cannot add a profile photo.",
-      "You can withdraw your consent at any time on the Profile page. When you withdraw it, your photo is deleted immediately and permanently. Withdrawing consent does not affect the lawfulness of processing carried out before the withdrawal.",
+      "You can withdraw your consent at any time on the Profile page. When you withdraw it, your photo is deleted from the System immediately and from the encrypted backups within 30 days at the latest. Withdrawing consent does not affect the lawfulness of processing carried out before the withdrawal.",
+      'You give your decision on the consent screen with "I give explicit consent" or "I do not give explicit consent", and later on the Profile page. Every decision is recorded with the date, IP address and browser.',
     ),
   };
 }
@@ -292,6 +358,7 @@ function visitorNotice(locale: SampleLocale, r: SampleRetention): Sample {
           "• Bilgilendirme kayıtları: izlediğiniz güvenlik bilgilendirmesinin sürümü ve dili, kısa testteki cevaplarınız ve puanınız, kural ve aydınlatma metni onaylarınız (zaman, IP adresi, tarayıcı bilgisi) ve ekranda parmakla attığınız imza.",
           "• Güvenlik kayıtları: tesise girişinizin kısıtlanması ya da reddedilmesi hâlinde buna ilişkin kayıt ve acil durum tahliye yoklaması kayıtları.",
           "• Taşeron çalışanları için: bilgilendirmenin geçerlilik süresi.",
+          "Ziyaretçilerden özel nitelikli kişisel veri (ör. sağlık veya biyometrik veri) istenmez; giriş kısıtlamasının gerekçesine suç, ceza ya da sağlık bilgisi yazılmaz. Ekrana attığınız imza yalnızca görüntü olarak saklanır.",
         ],
         [
           "3. Verileriniz hangi amaçlarla işlenir",
@@ -310,16 +377,18 @@ function visitorNotice(locale: SampleLocale, r: SampleRetention): Sample {
         ],
         [
           "5. Verileriniz nasıl toplanır",
-          "Verileriniz; sizi davet eden çalışanın yaptığı ön kayıtla, telefonunuzdan ya da tesis girişindeki ekrandan girdiğiniz bilgilerle ve güvenlik görevlisinin girişte yaptığı kayıtla elektronik ortamda toplanır.",
+          "Verileriniz; sizi davet eden çalışanın yaptığı ön kayıtla, telefonunuzdan ya da tesis girişindeki ekrandan girdiğiniz bilgilerle ve güvenlik görevlisinin girişte yaptığı kayıtla elektronik ortamda toplanır. Bilgilendirme ekranları çerez kullanmaz; tesis girişindeki ekranda yalnızca o cihazı tanıyan zorunlu bir çerez bulunur.",
         ],
         [
           "6. Verileriniz kimlerle paylaşılır",
-          "Verilerinizi yalnızca görevi gereği ihtiyaç duyan JAPAR çalışanları görür: güvenlik görevlileri, iş sağlığı ve güvenliği uzmanı ve sizi davet eden çalışan. Sizi davet eden çalışan kimlik numaranızı ve güvenlik kayıtlarınızı göremez. Acil bir durumda bağlantı kesilse de kullanılabilmesi için tesis içindekilerin son listesi güvenlik görevlilerinin cihazında geçici olarak tutulur.",
+          "Verilerinizi yalnızca görevi gereği ihtiyaç duyan JAPAR çalışanları görür: güvenlik görevlileri, iş sağlığı ve güvenliği uzmanı ve sizi davet eden çalışan. Sizi davet eden çalışan kimlik numaranızı ve güvenlik kayıtlarınızı göremez. Acil bir durumda bağlantı kesilse de kullanılabilmesi için tesis içindekilerin son listesi (ad, firma, ziyaret türü, sizi davet eden çalışan, kart numarası, giriş saati ve yoklama durumu) güvenlik görevlilerinin cihazında tutulur; liste en fazla 24 saat kullanılır ve görevli çıkış yapınca silinir.",
+          "Sistem'in teknik bakımını yapan yetkili kişiler (JAPAR çalışanı ya da JAPAR adına hizmet veren yazılım geliştirici) gizlilik taahhüdüyle ve yalnızca bakım için gerektiği kadar verilerinize erişebilir.",
           "Kanunen yetkili kamu kurum ve kuruluşları talep ettiğinde bu kurumlara bilgi verilebilir.",
         ],
         [
           "7. Yurt dışına aktarım",
           "Sistem, JAPAR adına kiralanan ve Hostinger'ın Almanya'daki (Avrupa Birliği) veri merkezinde bulunan bir sunucuda çalışır; verileriniz bu sunucuda saklanır. E-posta adresinizi verdiyseniz ziyaret bağlantınız Resend Inc. (ABD) e-posta gönderim hizmeti üzerinden gönderilir; bu hizmete yalnızca e-posta adresiniz ve bağlantının bulunduğu e-posta iletilir.",
+          BACKUP_COPY.tr,
           TRANSFER_BASIS.tr,
         ],
         [
@@ -348,6 +417,7 @@ function visitorNotice(locale: SampleLocale, r: SampleRetention): Sample {
         "• Briefing records: the version and language of the safety briefing you watched, your answers and score in the short test, your acceptance of the rules and of this notice (time, IP address, browser) and the signature you draw on the screen.",
         "• Security records: a record if your entry to the site is restricted or refused, and emergency evacuation roll-call records.",
         "• For contractor staff: how long your briefing remains valid.",
+        "No special categories of personal data (for example health or biometric data) are requested from visitors; the reason for an entry restriction never contains criminal, penalty or health information. The signature you draw on the screen is stored only as an image.",
       ],
       [
         "3. Purposes",
@@ -366,16 +436,18 @@ function visitorNotice(locale: SampleLocale, r: SampleRetention): Sample {
       ],
       [
         "5. How your data is collected",
-        "Your data is collected electronically through the pre-registration made by the employee who invited you, the details you enter on your phone or on the screen at the site entrance, and the record made by security staff at the gate.",
+        "Your data is collected electronically through the pre-registration made by the employee who invited you, the details you enter on your phone or on the screen at the site entrance, and the record made by security staff at the gate. The briefing screens do not use cookies; the screen at the site entrance has only a strictly necessary cookie that recognises that device.",
       ],
       [
         "6. Who your data is shared with",
-        "Your data is seen only by JAPAR staff who need it for their work: security staff, the OHS specialist and the employee who invited you. The employee who invited you cannot see your ID number or security records. So that it can be used in an emergency even without a connection, the latest list of people on site is kept temporarily on security staff devices.",
+        "Your data is seen only by JAPAR staff who need it for their work: security staff, the OHS specialist and the employee who invited you. The employee who invited you cannot see your ID number or security records. So that it can be used in an emergency even without a connection, the latest list of people on site (name, company, visit type, the employee who invited you, badge number, entry time and roll-call status) is kept on security staff devices; the list is used for at most 24 hours and is deleted when the staff member signs out.",
+        "Authorised people who maintain the System (a JAPAR employee or a software developer working on behalf of JAPAR) may access your data under a confidentiality undertaking, and only as far as maintenance requires.",
         "Authorities with legal power may receive information when they request it.",
       ],
       [
         "7. Transfer abroad",
         "The System runs on a server rented on behalf of JAPAR in Hostinger's data centre in Germany (European Union); your data is stored on this server. If you gave your e-mail address, your visit link is sent through the e-mail delivery service of Resend Inc. (USA); only your e-mail address and the e-mail containing the link are passed to this service.",
+        BACKUP_COPY.en,
         TRANSFER_BASIS.en,
       ],
       [

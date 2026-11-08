@@ -60,6 +60,28 @@ export async function currentPersonnelText(locale = "tr"): Promise<LegalText | n
   return currentText(PERSONNEL_KIND, locale);
 }
 
+/** "Gizlilik ve çerezler" sayfasındaki metinler (karar #278). */
+export const PRIVACY_KINDS = ["kvkk_personnel", "explicit_consent_personnel", "kvkk_visitor"] as const satisfies readonly LegalKind[];
+export type PrivacyKind = (typeof PRIVACY_KINDS)[number];
+
+/**
+ * Giriş gerektirmeyen "Gizlilik ve çerezler" sayfası (karar #278): yayındaki aydınlatma ve açık rıza metinleri
+ * sayfanın dilinde (yoksa Türkçesi) ve çerez tablosundaki oturum süresi. Yayınlanmış metinler herkese açıktır
+ * (ziyaretçi ve personel girişten önce okuyabilmeli); taslak ya da kişiye ait veri dönmez.
+ */
+export async function privacyPage(locale: string): Promise<{ texts: { kind: PrivacyKind; text: LegalText | null }[]; sessionDays: number }> {
+  const [texts, settings] = await Promise.all([
+    Promise.all(
+      PRIVACY_KINDS.map(async (kind) => {
+        const current = await currentText(kind, "tr");
+        return { kind, text: current ? await personnelTextIn(current, locale) : null };
+      }),
+    ),
+    getSettings(["session.personal_days"]),
+  ]);
+  return { texts, sessionDays: settings["session.personal_days"] };
+}
+
 /** Güncel sürümün kişinin dilindeki metni; o dilde yoksa Türkçesi (karar #207). */
 async function personnelTextIn(current: LegalText, locale: string): Promise<LegalText> {
   if (locale === current.locale) return current;
@@ -256,6 +278,7 @@ async function sampleRetention(): Promise<SampleRetention> {
     "retention.visitor_years",
     "retention.contractor_years",
     "retention.blacklist_years_after_lift",
+    "session.personal_days",
   ]);
   return {
     personnelYears: s["retention.personnel_years_after_exit"],
@@ -264,26 +287,46 @@ async function sampleRetention(): Promise<SampleRetention> {
     visitorYears: s["retention.visitor_years"],
     contractorYears: s["retention.contractor_years"],
     blacklistYears: s["retention.blacklist_years_after_lift"],
+    sessionDays: s["session.personal_days"],
   };
 }
 
 /**
  * Örnek metinle yeni sürüm (iş paketi 3.8, karar #245): türün bütün dillerinde taslak birlikte açılır.
- * Kurum bilgileri `[[...]]` alanı olarak kalır; İK düzenleyip doldurmadan yayınlanmaz (karar #246).
+ * Kurum bilgileri `[[...]]` alanı olarak kalır; doldurulmadan ancak "örnek olarak" yayınlanır (kararlar #246, #275).
+ * `replace`: "Örnek metinle yeniden başla" (karar #276) — yayınlanmamış taslağın bütün dilleri güncel örnek
+ * metinle değiştirilir (sürüm numarası aynı kalır; taslaktaki düzenlemeler silinir, eski hâli denetim kaydındadır).
  */
-export async function createSampleDrafts(actor: Actor, kind: LegalKind): Promise<{ version: number }> {
+export async function createSampleDrafts(actor: Actor, kind: LegalKind, opts: { replace?: boolean } = {}): Promise<{ version: number }> {
   assertKind(actor, kind);
   if (!hasSample(kind)) throw new ValidationError("invalid_input");
-  const [draft] = await db()
-    .select({ id: legalTexts.id })
+  const drafts = await db()
+    .select({ id: legalTexts.id, locale: legalTexts.locale, version: legalTexts.version })
     .from(legalTexts)
-    .where(and(eq(legalTexts.kind, kind), isNull(legalTexts.publishedAt)))
-    .limit(1);
-  if (draft) throw new ValidationError("draft_exists");
+    .where(and(eq(legalTexts.kind, kind), isNull(legalTexts.publishedAt)));
+  if (drafts.length > 0 && !opts.replace) throw new ValidationError("draft_exists");
   const retention = await sampleRetention();
+  const createdBy = actor.kind === "user" ? actor.userId : null;
+  if (drafts.length > 0) {
+    const version = drafts[0]!.version;
+    await withActor(actor, async (tx) => {
+      for (const locale of LEGAL_KINDS[kind].locales) {
+        const sample = legalSample(kind, locale, retention);
+        const row = drafts.find((d) => d.locale === locale);
+        if (row) {
+          await tx
+            .update(legalTexts)
+            .set(sample)
+            .where(and(eq(legalTexts.id, row.id), isNull(legalTexts.publishedAt)));
+        } else {
+          await tx.insert(legalTexts).values({ kind, locale, version, createdBy, ...sample });
+        }
+      }
+    });
+    return { version };
+  }
   const [{ v } = { v: 0 }] = await db().select({ v: max(legalTexts.version) }).from(legalTexts).where(eq(legalTexts.kind, kind));
   const version = (v ?? 0) + 1;
-  const createdBy = actor.kind === "user" ? actor.userId : null;
   try {
     await withActor(actor, (tx) =>
       tx
@@ -301,8 +344,10 @@ export async function createSampleDrafts(actor: Actor, kind: LegalKind): Promise
 /**
  * Yayınlar; bu andan sonra metin değiştirilemez ve herkes bir sonraki girişte yeniden onaylar.
  * Çok dilli türde aynı sürümün bütün dilleri birlikte yayınlanır; eksik dil varsa yayınlanmaz.
+ * `asSample`: doldurulmamış `[[...]]` alanı kalan metin "örnek olarak" yayınlanır (karar #275); metin her
+ * gösterildiği yerde "Örnek metin" uyarısıyla ve işaretli alanlarla görünür.
  */
-export async function publishText(actor: Actor, id: string): Promise<void> {
+export async function publishText(actor: Actor, id: string, opts: { asSample?: boolean } = {}): Promise<void> {
   const existing = await getLegalText(actor, id);
   if (existing.publishedAt) throw new ValidationError("already_published");
   const siblings = await db()
@@ -311,8 +356,8 @@ export async function publishText(actor: Actor, id: string): Promise<void> {
     .where(and(eq(legalTexts.kind, existing.kind), eq(legalTexts.version, existing.version), isNull(legalTexts.publishedAt)));
   const locales = new Set(siblings.map((s) => s.locale));
   if (LEGAL_KINDS[existing.kind].locales.some((l) => !locales.has(l))) throw new ValidationError("legal_locale_missing");
-  // Örnek metindeki `[[...]]` alanları doldurulmadan yayınlanmaz (karar #246)
-  if (siblings.some((s) => placeholdersIn(s.title, s.body).length > 0)) throw new ValidationError("legal_placeholders");
+  // Örnek metindeki `[[...]]` alanları doldurulmadan yalnızca "örnek olarak" yayınlanır (kararlar #246, #275)
+  if (!opts.asSample && siblings.some((s) => placeholdersIn(s.title, s.body).length > 0)) throw new ValidationError("legal_placeholders");
   const now = new Date();
   await withActor(actor, async (tx) => {
     for (const s of siblings) await tx.update(legalTexts).set({ publishedAt: now }).where(eq(legalTexts.id, s.id));

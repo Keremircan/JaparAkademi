@@ -1,4 +1,4 @@
-import { FileText, Pencil, Plus, TriangleAlert } from "lucide-react";
+import { FileText, Pencil, Plus, RotateCcw, Send, TriangleAlert } from "lucide-react";
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -64,7 +64,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
               </Button>
               {/* Örnek metin (iş paketi 3.8, karar #245): TR + EN taslak birlikte açılır */}
               {hasSample(kind) && (
-                <ActionButton action={createLegalSampleAction.bind(null, kind)}>
+                <ActionButton action={createLegalSampleAction.bind(null, kind, false)}>
                   <FileText aria-hidden="true" />
                   {t("sample.start")}
                 </ActionButton>
@@ -99,9 +99,10 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
             const published = rows[0]?.publishedAt ?? null;
             const missing = locales.filter((l) => !rows.some((r) => r.locale === l));
             // Doldurulmamış `[[...]]` alanları (karar #246): kalan varsa yayınla düğmesi yerine liste gösterilir
-            const unfilled = published
-              ? []
-              : rows.map((r) => ({ locale: r.locale, names: placeholdersIn(r.title, r.body) })).filter((x) => x.names.length > 0);
+            const withFields = rows.map((r) => ({ locale: r.locale, names: placeholdersIn(r.title, r.body) })).filter((x) => x.names.length > 0);
+            const unfilled = published ? [] : withFields;
+            // Örnek olarak yayınlanmış sürüm (karar #275)
+            const publishedSample = !!published && withFields.length > 0;
             return (
               <li key={version} className="rounded-xl border">
                 <div className="flex flex-wrap items-center gap-3 border-b px-4 py-3">
@@ -110,6 +111,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
                     <p className="text-sm text-muted-foreground">
                       {published ? t("published", { date: format.dateTime(published, { dateStyle: "medium", timeStyle: "short" }) }) : t("draft")}
                       {version === currentVersion && ` · ${t("current")}`}
+                      {publishedSample && ` · ${t("sample.badge")}`}
                     </p>
                   </div>
                   {!published && (
@@ -121,8 +123,22 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
                         </Button>
                       ))}
                       {missing.length === 0 && unfilled.length === 0 && (
-                        <ActionButton confirmText={t("publishConfirm")} action={publishLegalTextAction.bind(null, rows[0]!.id)}>
+                        <ActionButton confirmText={t("publishConfirm")} action={publishLegalTextAction.bind(null, rows[0]!.id, false)}>
                           {t("publish")}
+                        </ActionButton>
+                      )}
+                      {/* Kurum bilgileri gelmeden denemek için (karar #275): metin "Örnek metin" uyarısıyla görünür */}
+                      {missing.length === 0 && unfilled.length > 0 && (
+                        <ActionButton confirmText={t("sample.publishConfirm")} action={publishLegalTextAction.bind(null, rows[0]!.id, true)}>
+                          <Send aria-hidden="true" />
+                          {t("sample.publish")}
+                        </ActionButton>
+                      )}
+                      {/* Taslağı güncel örnek metinle değiştirir (karar #276) */}
+                      {hasSample(kind) && (
+                        <ActionButton confirmText={t("sample.restartConfirm")} action={createLegalSampleAction.bind(null, kind, true)}>
+                          <RotateCcw aria-hidden="true" />
+                          {t("sample.restart")}
                         </ActionButton>
                       )}
                     </div>
@@ -154,7 +170,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
                       {text.title}
                     </summary>
                     <div className="flex flex-col gap-3 pt-2">
-                      <LegalTextBody body={text.body} />
+                      <LegalTextBody body={text.body} sampleNotice={!!published} />
                       {!published && (
                         <Button variant="outline" className="self-start" nativeButton={false} render={<Link href={`/admin/legal/${text.id}`} />}>
                           <Pencil aria-hidden="true" />
