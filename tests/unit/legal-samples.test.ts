@@ -1,5 +1,5 @@
 import { NextIntlClientProvider } from "next-intl";
-import { createElement } from "react";
+import { createElement, type ComponentProps, type FunctionComponent, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import en from "../../messages/en.json";
@@ -132,8 +132,12 @@ describe("FG-1.6 örnek hukuki metinler (iş paketi 3.8, karar #245)", () => {
 });
 
 describe("hukuki metin görünümü (iş paketi 3.8)", () => {
+  // Çocuk createElement'in üçüncü bağımsız değişkeniyle verilir (react/no-children-prop)
+  const Provider = NextIntlClientProvider as FunctionComponent<
+    Omit<ComponentProps<typeof NextIntlClientProvider>, "children"> & { children?: ReactNode }
+  >;
   const render = (body: string, sampleNotice?: boolean) =>
-    renderToStaticMarkup(createElement(NextIntlClientProvider, { locale: "tr", messages: tr, children: createElement(LegalTextBody, { body, sampleNotice }) }));
+    renderToStaticMarkup(createElement(Provider, { locale: "tr", messages: tr }, createElement(LegalTextBody, { body, sampleNotice })));
 
   it("doldurulmamış alan işaretlenir, üstte örnek metin uyarısı çıkar (karar #275)", () => {
     const html = render("Unvan: [[Şirket unvanı]]");
