@@ -109,6 +109,10 @@ $C up -d                               # migrate önce çalışır, sonra app ve
 $C logs --since 10m migrate app worker
 ```
 
+`docker/backup/` değiştiyse yedek imajı sunucuda derlendiği için ayrıca `$C up -d --build backup` çalıştırın.
+İş paketi 3.13'ten sonraki ilk gece yedeğinde (karar #279), eskiden dosya yedeğinde kalan silinmiş dosyalar
+`.deleted/` altına taşınır ve 30 gün sonra yedekten de silinir; bu beklenen davranıştır.
+
 ### İlk üst yönetici (owner) — iş paketi 2.6b'den sonra bir kez
 
 Üst yönetici rolünü yalnızca bir üst yönetici verebilir. Sistemde hiç yoksa ilkini sunucuda tanımlayın (sicil no, uygulamada giriş yaptığınız sicil):

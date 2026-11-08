@@ -22,13 +22,15 @@ export async function signInAction(_prev: SignInState, formData: FormData): Prom
   const parsed = signInSchema.safeParse({
     sicilNo: rawSicil,
     password: formData.get("password"),
-    sharedDevice: formData.get("sharedDevice") === "on",
+    remember: formData.get("remember") === "on",
   });
   if (!parsed.success) return { error: "invalid_input", sicilNo: rawSicil };
 
-  // Kayıtlı ortak cihazda giriş her zaman ortak modda (FG-4.1)
+  // Kalıcı oturum çerezi yalnızca "Bu cihazda oturumum açık kalsın" seçilince (KVKK Çerez Rehberi, karar #280);
+  // seçilmediyse ya da kayıtlı ortak cihazda giriş kısa (ortak) modda (FG-4.1)
   const device = await recognizeDevice((await cookies()).get(DEVICE_COOKIE)?.value);
-  const result = await signIn({ ...parsed.data, sharedDevice: parsed.data.sharedDevice || !!device }, await getRequestMeta());
+  const { remember, ...credentials } = parsed.data;
+  const result = await signIn({ ...credentials, sharedDevice: !remember || !!device }, await getRequestMeta());
   if (!result.ok) {
     return { error: result.reason, lockedUntil: result.lockedUntil?.toISOString(), sicilNo: parsed.data.sicilNo };
   }

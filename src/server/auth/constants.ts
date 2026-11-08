@@ -6,4 +6,16 @@ export const AUTH_COOKIE_PREFIX = "akademi";
 
 /** Oturum gerektirmeyen yollar (dil öneki olmadan). */
 /** Ziyaretçi ekranları da hesapsızdır (iş paketi 2.3a): /v (bağlantı), /kiosk (kapı tableti), /visit (QR ile kendi kaydı). */
-export const PUBLIC_PATHS = ["/login", "/activate", "/verify", "/forgot-password", "/reset-password", "/~offline", "/v", "/kiosk", "/visit"] as const;
+/** /privacy: "Gizlilik ve çerezler" (karar #278), girişten önce okunabilir. */
+export const PUBLIC_PATHS = [
+  "/login",
+  "/activate",
+  "/verify",
+  "/forgot-password",
+  "/reset-password",
+  "/~offline",
+  "/v",
+  "/kiosk",
+  "/visit",
+  "/privacy",
+] as const;

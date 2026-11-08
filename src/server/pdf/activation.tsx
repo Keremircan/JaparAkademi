@@ -25,6 +25,8 @@ export type ActivationLabels = {
   code: string;
   steps: string;
   note: string;
+  /** "Gizlilik ve çerezler" sayfasının adresi (karar #278): aydınlatma metni girişten önce okunabilir. */
+  privacy: string;
 };
 
 const PER_PAGE = 4;
@@ -72,6 +74,7 @@ function SheetsDocument({ sheets, labels }: { sheets: Rendered[]; labels: Activa
               <Text style={styles.steps}>{labels.steps}</Text>
               <Text style={styles.note}>{s.expires}</Text>
               <Text style={styles.note}>{labels.note}</Text>
+              <Text style={styles.note}>{labels.privacy}</Text>
             </View>
           ))}
         </Page>

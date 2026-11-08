@@ -42,7 +42,7 @@ const activateSchema = z.object({
   token: z.string().max(100),
   newPassword: z.string().min(1).max(200),
   confirmPassword: z.string().max(200),
-  sharedDevice: z.boolean(),
+  remember: z.boolean(),
 });
 
 /** 2. adım: kişi şifresini belirler; hesap etkinleşir ve oturum açılır. */
@@ -51,11 +51,11 @@ export async function activateAction(_prev: ActivateState, formData: FormData): 
     token: formData.get("token"),
     newPassword: formData.get("newPassword"),
     confirmPassword: formData.get("confirmPassword"),
-    sharedDevice: formData.get("sharedDevice") === "on",
+    remember: formData.get("remember") === "on",
   });
   if (!parsed.success) return { issues: ["too_short"] };
   if (parsed.data.newPassword !== parsed.data.confirmPassword) return { issues: ["mismatch"] };
-  // Kayıtlı ortak cihazda oturum her zaman ortak modda (FG-4.1)
+  // "Oturumum açık kalsın" seçilmediyse ya da kayıtlı ortak cihazda oturum kısa (ortak) modda (FG-4.1, karar #280)
   const device = await recognizeDevice((await cookies()).get(DEVICE_COOKIE)?.value);
   // Etkinleştirmenin yapıldığı dil hesabın dil tercihi olur (karar #207)
   const pageLocale = toAppLocale(await getLocale());
@@ -65,7 +65,7 @@ export async function activateAction(_prev: ActivateState, formData: FormData): 
       {
         token: parsed.data.token,
         newPassword: parsed.data.newPassword,
-        sharedDevice: parsed.data.sharedDevice || !!device,
+        sharedDevice: !parsed.data.remember || !!device,
         locale: pageLocale,
       },
       await getRequestMeta(),

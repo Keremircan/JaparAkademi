@@ -48,7 +48,8 @@ export default async function globalSetup() {
     if (!drafts.some((d) => d.locale === "en")) {
       await createDraft(sys, { title: "E2E Privacy Notice", body: "Privacy notice for end-to-end tests. ".repeat(3) }, "kvkk_personnel", "en");
     }
-    await publishText(sys, id);
+    // Geliştirme veritabanındaki taslak örnek metin olabilir: örnek olarak yayınlanır (karar #275)
+    await publishText(sys, id, { asSample: true });
   }
 
   // Ziyaretçi bilgilendirmesi (iş paketi 2.3a): yayında ofis paketi ve TR/EN ziyaretçi metinleri yoksa hazırlanır
@@ -61,15 +62,16 @@ export default async function globalSetup() {
     await saveBriefingDraft(ohsSetupActor, id, { cards: [card], questions: [] });
     await publishBriefing(ohsSetupActor, id);
   }
-  for (const kind of ["visitor_rules", "kvkk_visitor"] as const) {
+  // Açık rıza metni de yayında olur (iş paketi 3.13): onay ekranında "veriyorum / vermiyorum" seçimi zorunludur (karar #281)
+  for (const kind of ["visitor_rules", "kvkk_visitor", "explicit_consent_personnel"] as const) {
     if (await currentText(kind, "tr")) continue;
     const drafts = await db().select({ id: legalTexts.id }).from(legalTexts).where(and(eq(legalTexts.kind, kind), isNull(legalTexts.publishedAt)));
     let id = drafts[0]?.id;
     for (const locale of ["tr", "en"] as const) {
       const exists = await db().select({ id: legalTexts.id }).from(legalTexts).where(and(eq(legalTexts.kind, kind), eq(legalTexts.locale, locale), isNull(legalTexts.publishedAt)));
-      if (!exists[0]) id = (await createDraft(sys, { title: `E2E ${kind} ${locale}`, body: "Uçtan uca test için ziyaretçi metni. ".repeat(3) }, kind, locale)).id;
+      if (!exists[0]) id = (await createDraft(sys, { title: `E2E ${kind} ${locale}`, body: "Uçtan uca test için hukuki metin. ".repeat(3) }, kind, locale)).id;
     }
-    await publishText(sys, id!);
+    await publishText(sys, id!, { asSample: true });
   }
 
   const dept = await createOrgUnit(sys, { kind: "department", name: `E2E Departman ${suffix}`, code: `E2E-${suffix}` });
@@ -92,6 +94,8 @@ export default async function globalSetup() {
     });
     // Dil tercihi akışı kullanıcısı (karar #207)
     await createAccount(sys, { sicilNo: `E2E-${suffix}-EN${p}`, fullName: "Deneme English", password: E2E_PASSWORD, mustChangePassword: false });
+    // Gizlilik akışı kullanıcısı: kalıcı oturum çerezi ve açık rıza kararı (iş paketi 3.13, kararlar #280–281)
+    await createAccount(sys, { sicilNo: `E2E-${suffix}-PRV${p}`, fullName: "Deneme Gizlilik", password: E2E_PASSWORD, mustChangePassword: false });
     // Sistem yöneticisi: e-posta durumu ekranı ve İK'nın sıfırlayamayacağı hesap (iş paketi 3.7, karar #259/#261)
     await createAccount(sys, { sicilNo: `E2E-${suffix}-SA${p}`, fullName: `Deneme Sistem Yöneticisi ${p}`, password: E2E_PASSWORD, roles: ["sysadmin"], mustChangePassword: false });
     // İK akışı kullanıcısı

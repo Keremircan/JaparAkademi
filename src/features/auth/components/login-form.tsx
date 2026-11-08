@@ -56,18 +56,13 @@ export function LoginForm() {
         />
       </div>
 
-      <Label htmlFor="sharedDevice" className="flex min-h-12 cursor-pointer items-start gap-3 py-2 text-base font-normal">
-        <Checkbox
-          id="sharedDevice"
-          name="sharedDevice"
-          className="mt-0.5 size-6"
-          aria-labelledby="sharedDevice-label"
-          aria-describedby="sharedDevice-hint"
-        />
+      {/* Kalıcı oturum çerezi kişinin seçimiyle (KVKK Çerez Rehberi 5.2, karar #280); varsayılan kapalı */}
+      <Label htmlFor="remember" className="flex min-h-12 cursor-pointer items-start gap-3 py-2 text-base font-normal">
+        <Checkbox id="remember" name="remember" className="mt-0.5 size-6" aria-labelledby="remember-label" aria-describedby="remember-hint" />
         <span className="flex flex-col gap-1">
-          <span id="sharedDevice-label">{t("login.sharedDevice")}</span>
-          <span id="sharedDevice-hint" className="text-sm text-muted-foreground">
-            {t("login.sharedDeviceHint")}
+          <span id="remember-label">{t("login.remember")}</span>
+          <span id="remember-hint" className="text-sm text-muted-foreground">
+            {t("login.rememberHint")}
           </span>
         </span>
       </Label>

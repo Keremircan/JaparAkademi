@@ -30,6 +30,7 @@ export RCLONE_CONFIG_FILESCRYPT_REMOTE="$root/files"
 RCLONE_CONFIG_FILESCRYPT_PASSWORD=$(rclone obscure "$BACKUP_FILES_PASSWORD")
 export RCLONE_CONFIG_FILESCRYPT_PASSWORD
 log "Dosyalar geri yükleniyor"
-rclone copy filescrypt: "garage:$S3_BUCKET_PRIVATE" --transfers 4 --stats-one-line --stats 0
+# .deleted: depodan silinmiş dosyalar (karar #279) geri yüklenmez
+rclone copy filescrypt: "garage:$S3_BUCKET_PRIVATE" --filter "- /.deleted/**" --transfers 4 --stats-one-line --stats 0
 
 log "Tamamlandı. Uygulamayı başlatıp doğrulama adımlarını uygulayın (restore.md)."

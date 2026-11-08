@@ -13,6 +13,19 @@ export function placeholdersIn(...texts: string[]): string[] {
   return [...found];
 }
 
+/** Metni düz parçalar ve `[[...]]` alanları olarak böler (görünümde alanlar işaretlenir — karar #275). */
+export function splitPlaceholders(text: string): { text: string; placeholder: boolean }[] {
+  const parts: { text: string; placeholder: boolean }[] = [];
+  let last = 0;
+  for (const match of text.matchAll(PLACEHOLDER)) {
+    if (match.index > last) parts.push({ text: text.slice(last, match.index), placeholder: false });
+    parts.push({ text: match[0], placeholder: true });
+    last = match.index + match[0].length;
+  }
+  if (last < text.length) parts.push({ text: text.slice(last), placeholder: false });
+  return parts;
+}
+
 /** Alan adını metinde yazıldığı biçimde gösterir. */
 export function placeholderLabel(name: string): string {
   return name.startsWith("[[") ? name : `[[${name}]]`;

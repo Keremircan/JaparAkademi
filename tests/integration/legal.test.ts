@@ -5,7 +5,16 @@ import { db } from "@/server/db/client";
 import { withActor } from "@/server/db/with-actor";
 import { placeholdersIn } from "@/lib/legal";
 import { ForbiddenError, isImmutableViolation } from "@/server/errors";
-import { acceptConsent, createDraft, createSampleDrafts, listTexts, pendingConsent, publishText, updateDraft } from "@/server/services/legal";
+import {
+  acceptConsent,
+  createDraft,
+  createSampleDrafts,
+  listTexts,
+  pendingConsent,
+  privacyPage,
+  publishText,
+  updateDraft,
+} from "@/server/services/legal";
 import { SAMPLE_KINDS } from "@/server/services/legal-samples";
 import { setSetting } from "@/server/services/settings";
 import { createTestUser } from "../support/factories";
@@ -156,5 +165,84 @@ describe("Örnek metinler ve doldurulacak alanlar (iş paketi 3.8)", () => {
     const ohs = await createTestUser({ roles: ["ohs_specialist"] });
     await expect(createSampleDrafts(ohs.actor, "visitor_rules")).rejects.toMatchObject({ code: "invalid_input" });
     expect(await listTexts(ohs.actor, "visitor_rules")).toHaveLength(0);
+  });
+
+  it("FG-1.6 örnek olarak yayınla: alanı kalan metin yalnızca bu seçenekle ve yalnızca yetkiliyle yayınlanır, onay istenir (karar #275)", async () => {
+    const hr = await createTestUser({ roles: ["hr"] });
+    const admin = await createTestUser({ roles: ["sysadmin"] });
+    const worker = await createTestUser();
+    await createSampleDrafts(hr.actor, "kvkk_personnel");
+    const tr = (await listTexts(hr.actor, "kvkk_personnel")).find((r) => r.locale === "tr")!;
+
+    await expect(publishText(hr.actor, tr.id)).rejects.toMatchObject({ code: "legal_placeholders" });
+    await expect(publishText(admin.actor, tr.id, { asSample: true })).rejects.toBeInstanceOf(ForbiddenError);
+    expect(await pendingConsent(worker.userId)).toBeNull();
+
+    await publishText(hr.actor, tr.id, { asSample: true });
+    const pending = await pendingConsent(worker.userId);
+    expect(pending?.id).toBe(tr.id);
+    // Kişi örnek metni görür (alanlar ekranda işaretli); yayınlanan örnek de değiştirilemez
+    expect(placeholdersIn(pending!.title, pending!.body).length).toBeGreaterThan(0);
+    await expect(updateDraft(hr.actor, tr.id, text)).rejects.toMatchObject({ code: "already_published" });
+    // Gerçek bilgilerle yeni sürüm: alanlar doldurulmadan yine yalnızca örnek olarak yayınlanır
+    const { version } = await createSampleDrafts(hr.actor, "kvkk_personnel");
+    expect(version).toBe(2);
+    const v2 = (await listTexts(hr.actor, "kvkk_personnel")).filter((r) => !r.publishedAt);
+    for (const r of v2) await updateDraft(hr.actor, r.id, { title: r.title, body: fill(r.body) });
+    await publishText(hr.actor, v2.find((r) => r.locale === "tr")!.id);
+    expect((await pendingConsent(worker.userId))?.version).toBe(2);
+  });
+
+  it("örnek metinle yeniden başla: taslak güncel örnekle değişir, sürüm aynı kalır, eksik dil eklenir; yayınlanmış metne dokunulmaz (karar #276)", async () => {
+    const admin = await createTestUser({ roles: ["sysadmin"] });
+    const hr = await createTestUser({ roles: ["hr"] });
+    const published = await publishBoth(hr.actor);
+    // Elle yazılmış, yalnızca Türkçe taslak (sürüm 2)
+    const draft = await createDraft(hr.actor, { title: "Elle taslak", body: "Elle yazılmış taslak metin. ".repeat(3) });
+    await setSetting(admin.actor, "session.personal_days", 45);
+
+    const { version } = await createSampleDrafts(hr.actor, "kvkk_personnel", { replace: true });
+    expect(version).toBe(2);
+    const rows = await listTexts(hr.actor, "kvkk_personnel");
+    const drafts = rows.filter((r) => !r.publishedAt);
+    expect(drafts.map((r) => r.locale).sort()).toEqual(["en", "tr"]);
+    expect(drafts.every((r) => r.version === 2)).toBe(true);
+    const trDraft = drafts.find((r) => r.locale === "tr")!;
+    expect(trDraft.id).toBe(draft.id);
+    expect(trDraft.title).not.toBe("Elle taslak");
+    // Oturum süresi parametreden (çerez bölümü, karar #277)
+    expect(trDraft.body).toContain("45 gün işlem yapmayana kadar");
+    expect(rows.find((r) => r.id === published.id)?.body).toBe(text.body.trim());
+
+    // "Yeniden başla" seçilmeden taslak varken örnek açılmaz; ziyaretçi kurallarının örneği yoktur
+    await expect(createSampleDrafts(hr.actor, "kvkk_personnel")).rejects.toMatchObject({ code: "draft_exists" });
+    const ohs = await createTestUser({ roles: ["ohs_specialist"] });
+    await expect(createSampleDrafts(ohs.actor, "visitor_rules", { replace: true })).rejects.toMatchObject({ code: "invalid_input" });
+  });
+});
+
+describe("Gizlilik ve çerezler sayfası (iş paketi 3.13, karar #278)", () => {
+  it("yayındaki metinler sayfanın dilinde (yoksa Türkçe) döner; taslak dönmez; oturum süresi parametreden gelir", async () => {
+    const admin = await createTestUser({ roles: ["sysadmin"] });
+    const hr = await createTestUser({ roles: ["hr"] });
+    await setSetting(admin.actor, "session.personal_days", 14);
+
+    let page = await privacyPage("tr");
+    expect(page.texts.map((x) => x.kind)).toEqual(["kvkk_personnel", "explicit_consent_personnel", "kvkk_visitor"]);
+    expect(page.texts.every((x) => x.text === null)).toBe(true);
+    expect(page.sessionDays).toBe(14);
+
+    const tr = await publishBoth(hr.actor);
+    await createDraft(hr.actor, { title: "Taslak", body: "Yayınlanmamış taslak metin. ".repeat(3) });
+
+    page = await privacyPage("en");
+    const personnel = page.texts.find((x) => x.kind === "kvkk_personnel")?.text;
+    expect(personnel?.locale).toBe("en");
+    expect(personnel?.title).toBe(english.title);
+    expect(personnel?.version).toBe(1);
+    // Sayfanın dilinde metin yoksa Türkçesi
+    expect((await privacyPage("de")).texts[0]?.text?.id).toBe(tr.id);
+    expect((await privacyPage("tr")).texts[0]?.text?.id).toBe(tr.id);
+    expect(page.texts.find((x) => x.kind === "kvkk_visitor")?.text).toBeNull();
   });
 });

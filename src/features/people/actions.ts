@@ -46,6 +46,8 @@ async function sheetsPdfBase64(invites: IssuedInvite[], purpose: InvitePurpose =
       code: t("code"),
       steps: t(purpose === "reset" ? "resetSteps" : "steps"),
       note: t("note"),
+      // Türkçe sayfa önek almaz (localePrefix: as-needed); adresin kökü davet bağlantısıyla aynı
+      privacy: invites[0] ? t("privacy", { url: new URL("/privacy", invites[0].url).toString() }) : "",
     },
   );
   return pdf.toString("base64");
