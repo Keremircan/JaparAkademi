@@ -6,6 +6,8 @@ import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 import { ActionButton } from "@/components/forms/action-button";
 import { adminAccess } from "@/features/admin/guard";
+import { DeleteControl } from "@/features/deletion/components/delete-control";
+import { Link } from "@/i18n/navigation";
 import { revokeDeviceAction } from "@/features/devices/actions";
 import { RegisterDevice } from "@/features/devices/components/register-device";
 import { listDevices } from "@/server/services/devices";
@@ -16,23 +18,32 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /** Ortak cihazlar (FG-4.1): kayıtlı tarayıcıda giriş her zaman ortak modda olur. */
-export default function Page() {
+export default function Page({ searchParams }: PageProps<"/[locale]/admin/devices">) {
   return (
     <Suspense fallback={<PageSkeleton />}>
-      <Content />
+      <Content searchParams={searchParams} />
     </Suspense>
   );
 }
 
-async function Content() {
+async function Content({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const access = await adminAccess("devices.manage");
   if (!access) return <NotFoundView />;
-  const [t, tNav, format, rows] = await Promise.all([getTranslations("devices"), getTranslations("sections.admin"), getFormatter(), listDevices(access.actor)]);
+  // İptal edilen cihazlar istenmedikçe gizlenir (iş paketi 3.14)
+  const showRevoked = (await searchParams).revoked === "1";
+  const [t, tNav, format, all] = await Promise.all([getTranslations("devices"), getTranslations("sections.admin"), getFormatter(), listDevices(access.actor)]);
+  const revokedCount = all.filter((d) => d.revokedAt).length;
+  const rows = showRevoked ? all : all.filter((d) => !d.revokedAt);
   const dt = (d: Date) => format.dateTime(d, { dateStyle: "medium", timeStyle: "short" });
   return (
     <section className="flex max-w-4xl flex-col gap-6">
       <PageHeader title={t("title")} description={t("description")} back={{ href: "/admin", label: tNav("title") }} />
       <RegisterDevice />
+      {revokedCount > 0 && (
+        <Link href={showRevoked ? "/admin/devices" : "/admin/devices?revoked=1"} className="inline-flex min-h-12 items-center self-end underline underline-offset-4">
+          {showRevoked ? t("hideRevoked") : t("showRevoked", { count: revokedCount })}
+        </Link>
+      )}
       {rows.length === 0 ? (
         <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("empty")}</p>
       ) : (
@@ -53,6 +64,13 @@ async function Content() {
                   {t("revoke")}
                 </ActionButton>
               )}
+              <DeleteControl
+                kind="device"
+                id={d.id}
+                subject="device"
+                name={d.name}
+                archive={d.revokedAt ? undefined : { action: revokeDeviceAction.bind(null, d.id), label: t("revoke") }}
+              />
             </li>
           ))}
         </ul>

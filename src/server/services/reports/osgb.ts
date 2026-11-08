@@ -1,5 +1,5 @@
 import ExcelJS from "exceljs";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { createTranslator } from "next-intl";
 import type { Actor } from "@/server/authz/actor";
 import { assertCan, assertUser, can } from "@/server/authz/policy";
@@ -17,7 +17,7 @@ import { toAppLocale, type AppLocale } from "@/lib/locale";
 import type { OhsTopic } from "@/lib/ohs";
 import { getSettings } from "../settings";
 import { formatDate } from "./format";
-import { range, unitCondition, type ReportFilters } from "./index";
+import { notErased, range, unitCondition, type ReportFilters } from "./index";
 
 /**
  * OSGB dışa aktarımı (iş paketi 3.3, kararlar #226–229). Dönemdeki İSG eğitim kayıtları kişi × eğitim satırı olarak:
@@ -98,6 +98,7 @@ export async function osgbRecords(actor: Actor, f: ReportFilters): Promise<{ rec
     .where(
       and(
         unit,
+        notErased(users.id),
         eq(assignmentModules.isOhs, true),
         eq(assignmentModules.status, "completed"),
         // Devreden modül ilk tamamlandığı kayıtla zaten dosyadadır (karar #94)
@@ -132,7 +133,7 @@ export async function osgbRecords(actor: Actor, f: ReportFilters): Promise<{ rec
     .innerJoin(personnel, eq(personnel.userId, users.id))
     .innerJoin(positions, eq(positions.id, personnel.positionId))
     .innerJoin(orgUnits, eq(orgUnits.id, positions.orgUnitId))
-    .where(and(unit, eq(modules.isOhs, true), latest, sql`${priorTrainings.completedOn} between ${f.from}::date and ${f.to}::date`))
+    .where(and(unit, isNull(personnel.anonymizedAt), eq(modules.isOhs, true), latest, sql`${priorTrainings.completedOn} between ${f.from}::date and ${f.to}::date`))
     .limit(max + 1);
 
   if (system.length + prior.length > max) throw new ValidationError("report_too_large");

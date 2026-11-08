@@ -467,7 +467,10 @@
     "schedule_weekday_required": "In a weekly schedule every row needs a day.",
     "schedule_name_taken": "This position already has a schedule with this name.",
     "schedule_item_incomplete": "Every row needs a time and a title.",
-    "schedule_name_required": "Enter a schedule name."
+    "schedule_name_required": "Enter a schedule name.",
+    "self_delete": "You cannot delete your own account.",
+    "delete_blocked": "This record has linked records. Delete them first.",
+    "delete_in_history": "This record was used in past records, so it cannot be deleted."
   },
   "notFound": {
     "title": "Page not found",
@@ -515,7 +518,7 @@
     },
     "org": {
       "title": "Organisation structure",
-      "intro": "Department → section → position. Nothing is deleted; unused units are deactivated.",
+      "intro": "Department → section → position. A unit or position with no linked records can be deleted; one with history is deactivated.",
       "addDepartment": "Add department",
       "addSection": "Add section",
       "addPosition": "Add position",
@@ -710,7 +713,7 @@
         "deletedTitle": "Deleted",
         "deleted": "Full name, employee number, national ID number, phone, email, password and sessions, notifications, profile photo, signature images, work schedule.",
         "keptTitle": "Kept without a name",
-        "kept": "Training, exam and certificate records stay under the label \"Anonim #…\"; reports and other employees' records are not affected. Data is removed from backups within 12 months at the latest.",
+        "kept": "Training, exam and certificate records are kept without a name; the person no longer appears in any list or report, and other employees' records are not affected. Data is removed from backups within 12 months at the latest.",
         "reason": "Reason for deletion",
         "reasonHint": "E.g. \"KVKK deletion request, application 06.11.2026\". Do not write the person's name or other personal data in the reason.",
         "phrase": "I confirm deleting {name}",
@@ -718,12 +721,16 @@
         "cancel": "Cancel",
         "submit": "Delete permanently",
         "submitting": "Deleting…",
-        "onlyTerminated": "Permanent deletion is only possible for people who have left the company. First mark the person as left the company.",
-        "erased": "This person's personal data was deleted on {date}.",
-        "erasedBy": "Deleted by: {name} · Reason: {reason}"
+        "onlyTerminated": "Permanent deletion is only possible for people who have left the company. First mark the person as left the company."
       },
       "waitingButton": "Waiting for training",
-      "invitesButton": "Invitations"
+      "invitesButton": "Invitations",
+      "deleted": "The person was deleted.",
+      "delete": {
+        "title": "Delete person",
+        "intro": "You can delete a person who never used the system (a wrong or duplicate record). A person with training, exam, sign-in or approval records cannot be deleted; if they have left, mark them as “Left the company”.",
+        "button": "Delete person"
+      }
     },
     "roles": {
       "title": "Roles and scope",
@@ -958,7 +965,9 @@
       },
       "newPlaceholder": "New tag",
       "newFor": "New {type} tag",
-      "add": "Add tag"
+      "add": "Add tag",
+      "manage": "Edit tags",
+      "doneManaging": "Done editing"
     },
     "library": {
       "title": "Content library",
@@ -1277,7 +1286,7 @@
       "contentsEmpty": "No content added yet. Only published content can be added.",
       "contentUnavailable": "Archived or not published",
       "tasksHeading": "Practical tasks",
-      "tasksHint": "Recommended: 10–30 tasks per position. If a critical task is \"could not do it\" in the practical exam, the exam is failed. A task removed from the list is archived.",
+      "tasksHint": "Recommended: 10–30 tasks per position. If a critical task is \"could not do it\" in the practical exam, the exam is failed. A task removed from the list is deleted if no assignment used it, otherwise it is archived.",
       "taskN": "Task {n}",
       "taskTitle": "Task name",
       "taskDescription": "Description",
@@ -1779,7 +1788,9 @@
     "kinds": {
       "shared_pc": "Shared computer (training room)",
       "kiosk": "Gate tablet (visitor kiosk)"
-    }
+    },
+    "showRevoked": "Show revoked ({count})",
+    "hideRevoked": "Hide revoked"
   },
   "questions": {
     "title": "Question bank",
@@ -4147,5 +4158,101 @@
     "nextDay": "next day",
     "positionLabel": "Your position: {name}",
     "programHeading": "Full schedule"
+  },
+  "deletion": {
+    "delete": "Delete",
+    "confirmTitle": "Are you sure you want to delete this?",
+    "confirm": "This record will be permanently deleted. This cannot be undone.",
+    "confirmNamed": "“{name}” will be permanently deleted. This cannot be undone.",
+    "confirmButton": "Yes, delete",
+    "deleting": "Deleting…",
+    "cancel": "Cancel",
+    "ok": "OK",
+    "blockedTitle": "Delete the linked records first",
+    "historyTitle": "This record cannot be deleted",
+    "history": "This record was used in past training, exam, approval or certificate records. Those records are kept for the legal retention period, so it cannot be deleted.",
+    "archiveHint": "You can choose “{action}” instead: the record is hidden from lists and past records are kept.",
+    "errorTitle": "The action could not be completed",
+    "showArchived": "Show archived",
+    "hideArchived": "Hide archived",
+    "showPassive": "Show inactive",
+    "hidePassive": "Hide inactive",
+    "subjects": {
+      "department": {
+        "blocked": "The department you want to delete has linked records. Delete them first:"
+      },
+      "section": {
+        "blocked": "The section you want to delete has linked records. Delete them first:"
+      },
+      "position": {
+        "blocked": "The position you want to delete has linked records. Delete them or move them to another position first:",
+        "note": "The position's unpublished card draft is deleted as well."
+      },
+      "person": {
+        "blocked": "The person you want to delete has linked records. Delete them first:",
+        "history": "This person has past records in the system (training, exam, approval, privacy notice consent, sign-in or viewing record), so they cannot be deleted. If they have left, first mark them as “Left the company”; the owner can then delete their personal data with “Delete person permanently” and they disappear from all lists."
+      },
+      "module": {
+        "blocked": "The module you want to delete has linked records. Delete them or remove them from the module first:"
+      },
+      "content": {
+        "blocked": "The content you want to delete is used in modules. Remove it from the modules first:"
+      },
+      "question": {
+        "blocked": "The question you want to delete has linked records. Delete them first:"
+      },
+      "tag": {
+        "blocked": "The tag you want to delete is used in content items. Remove it from them first:"
+      },
+      "competency": {
+        "blocked": "The competency you want to delete is used in practical tasks. Remove it from the tasks first:"
+      },
+      "classroom_session": {
+        "blocked": "The classroom training record you want to delete has linked records. Delete them first:",
+        "history": "This classroom training record was submitted and decided on, so it cannot be deleted."
+      },
+      "company": {
+        "blocked": "The company you want to delete has linked records. Delete them first:"
+      },
+      "visit": {
+        "blocked": "The visit you want to delete has linked records. Delete them first:",
+        "history": "This visit has a briefing, consent or entry record, so it cannot be deleted. Cancel it if it will not take place."
+      },
+      "device": {
+        "blocked": "The device you want to delete has linked records. Delete them first:"
+      },
+      "legal_draft": {
+        "blocked": "The draft you want to delete has linked records. Delete them first:",
+        "history": "A published text cannot be changed or deleted."
+      }
+    },
+    "blockers": {
+      "sections": "{count, plural, one {# section} other {# sections}}",
+      "positions": "{count, plural, one {# position} other {# positions}}",
+      "personnel": "{count, plural, one {# employee} other {# employees}} (including those who left)",
+      "unit_scopes": "{count, plural, one {# section manager scope} other {# section manager scopes}} (People → Roles)",
+      "unit_modules": "{count, plural, one {# module} other {# modules}} owned by the unit",
+      "unit_contents": "{count, plural, one {# content item} other {# content items}} owned by the unit",
+      "unit_questions": "{count, plural, one {# question} other {# questions}} owned by the unit",
+      "unit_competencies": "{count, plural, one {# competency} other {# competencies}} owned by the unit",
+      "schedules": "{count, plural, one {# work schedule} other {# work schedules}}",
+      "linked_positions": "{count, plural, one {# position} other {# positions}} that use this position as supervisor or deputy",
+      "module_plans": "{count, plural, one {# draft position training plan} other {# draft position training plans}}",
+      "module_questions": "{count, plural, one {# question} other {# questions}} linked to the module",
+      "content_modules": "{count, plural, one {# module} other {# modules}}",
+      "tagged_contents": "{count, plural, one {# content item} other {# content items}}",
+      "competency_tasks": "{count, plural, one {# practical task} other {# practical tasks}}"
+    },
+    "buttons": {
+      "module": "Delete module",
+      "content": "Delete content",
+      "question": "Delete question",
+      "competency": "Delete competency",
+      "classroom_session": "Delete record",
+      "company": "Delete company",
+      "visit": "Delete pre-registration",
+      "device": "Delete device",
+      "legal_draft": "Delete draft"
+    }
   }
 }

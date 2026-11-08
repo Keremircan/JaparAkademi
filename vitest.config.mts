@@ -1,8 +1,9 @@
 import path from "node:path";
 import { loadEnv } from "vite";
 import { defineConfig } from "vitest/config";
+import { testBucket } from "./src/server/test-targets";
 
-// .env değerleri testlere aktarılır; entegrasyon testleri test veritabanını kullanır.
+// .env değerleri testlere aktarılır; entegrasyon testleri test veritabanını ve test dosya deposunu kullanır.
 const fileEnv = loadEnv("test", process.cwd(), "");
 const merged = { ...fileEnv, ...process.env };
 
@@ -41,6 +42,7 @@ export default defineConfig({
             LOG_LEVEL: "silent",
             DATABASE_URL: merged.TEST_DATABASE_URL ?? "",
             DATABASE_OWNER_URL: merged.TEST_DATABASE_OWNER_URL ?? "",
+            S3_BUCKET_PRIVATE: merged.S3_BUCKET_PRIVATE ? testBucket(merged) : "",
           },
         },
       },

@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray, isNotNull, lte, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNotNull, isNull, lte, or, sql, type AnyColumn, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { Actor } from "@/server/authz/actor";
 import { assertCan, assertUser, can, hasRole } from "@/server/authz/policy";
@@ -115,6 +115,14 @@ async function limits() {
   return getSettings(["reports.max_rows", "org.timezone"]);
 }
 
+/**
+ * Kişi bazlı rapor satırlarında kişisel verisi silinmiş (anonim) kişiler gösterilmez (iş paketi 3.14, karar #285).
+ * Kayıtlar veritabanında kalır; yönetim özetindeki toplam sayılara katılmaya devam eder.
+ */
+export function notErased(userId: SQL | AnyColumn): SQL {
+  return sql`not exists (select 1 from ${personnel} ep where ep.user_id = ${userId} and ep.anonymized_at is not null)`;
+}
+
 function guard(actor: Actor, kind: ReportKind) {
   assertUser(actor);
   assertCan(actor, PERMISSION[kind]);
@@ -148,6 +156,7 @@ async function trainingReport(actor: Actor, f: ReportFilters): Promise<ReportRes
     .where(
       and(
         unit,
+        notErased(assignments.userId),
         // Dönemde açık olan ya da dönemde başlayan atamalar
         or(inArray(assignments.status, ["active", "awaiting_readiness", "awaiting_decision"]), and(gte(assignments.startDate, f.from), sql`${assignments.startDate} <= ${f.to}`)),
       ),
@@ -191,7 +200,7 @@ async function examsReport(actor: Actor, f: ReportFilters): Promise<ReportResult
     .innerJoin(assignments, eq(assignments.id, assignmentModules.assignmentId))
     .innerJoin(users, eq(users.id, assignments.userId))
     .innerJoin(positions, eq(positions.id, assignments.positionId))
-    .where(and(unit, isNotNull(examAttempts.submittedAt), range(examAttempts.submittedAt, f, tz)))
+    .where(and(unit, notErased(assignments.userId), isNotNull(examAttempts.submittedAt), range(examAttempts.submittedAt, f, tz)))
     .orderBy(desc(examAttempts.submittedAt))
     .limit(max + 1);
   const practical = await db()
@@ -211,7 +220,7 @@ async function examsReport(actor: Actor, f: ReportFilters): Promise<ReportResult
     .innerJoin(assignments, eq(assignments.id, assignmentModules.assignmentId))
     .innerJoin(users, eq(users.id, assignments.userId))
     .innerJoin(positions, eq(positions.id, assignments.positionId))
-    .where(and(unit, eq(practicalExamResults.status, "final"), range(practicalExamResults.finalizedAt, f, tz)))
+    .where(and(unit, notErased(assignments.userId), eq(practicalExamResults.status, "final"), range(practicalExamResults.finalizedAt, f, tz)))
     .orderBy(desc(practicalExamResults.finalizedAt))
     .limit(max + 1);
   const attempts = [
@@ -301,6 +310,7 @@ async function ohsReport(actor: Actor, f: ReportFilters): Promise<ReportResult> 
     .where(
       and(
         unit,
+        notErased(assignments.userId),
         eq(assignmentModules.isOhs, true),
         eq(assignmentModules.status, "completed"),
         // Devreden modül ilk tamamlandığı yılda sayılır (karar #94): aynı kaydı iki kez yazmamak için hariç
@@ -360,7 +370,7 @@ async function onboardingReport(actor: Actor, f: ReportFilters): Promise<ReportR
     .innerJoin(users, eq(users.id, assignments.userId))
     .innerJoin(personnel, eq(personnel.userId, assignments.userId))
     .innerJoin(positions, eq(positions.id, assignments.positionId))
-    .where(and(unit, eq(readinessDecisions.decision, "approved"), eq(assignments.reason, "new_hire"), range(readinessDecisions.decidedAt, f, tz)))
+    .where(and(unit, isNull(personnel.anonymizedAt), eq(readinessDecisions.decision, "approved"), eq(assignments.reason, "new_hire"), range(readinessDecisions.decidedAt, f, tz)))
     .orderBy(asc(positions.name), asc(readinessDecisions.decidedAt))
     .limit(max + 1);
   const people = rows.slice(0, max).map((r) => ({ ...r, days: daysBetween(r.hireDate ?? r.startDate, r.approvedDay) }));

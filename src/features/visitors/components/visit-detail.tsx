@@ -6,16 +6,18 @@ import { companyOptions, getVisit, visitorHistory } from "@/server/services/visi
 import { getSettings } from "@/server/services/settings";
 import { todayIn } from "@/lib/dates";
 import { ActionButton } from "@/components/forms/action-button";
+import { DeleteControl } from "@/features/deletion/components/delete-control";
 import { cancelVisitAction, resendVisitLinkAction } from "../actions";
 import { ReasonAction } from "./reason-action";
 import { VisitForm } from "./visit-form";
 
 type Visit = Awaited<ReturnType<typeof getVisit>>;
 
-/** Ziyaret ayrıntısı: bilgiler, düzenleme (girişten önce), iptal ve (güvenlik/İSG için) geçmiş ziyaretler. */
-export async function VisitDetail({ actor, visit, base }: { actor: UserActor; visit: Visit; base: string }) {
-  const [t, format, s, companies] = await Promise.all([
+/** Ziyaret ayrıntısı: bilgiler, düzenleme (girişten önce), iptal, silme ve (güvenlik/İSG için) geçmiş ziyaretler. */
+export async function VisitDetail({ actor, visit, base }: { actor: UserActor; visit: Visit; base: `/${string}` }) {
+  const [t, tDel, format, s, companies] = await Promise.all([
     getTranslations("visitors"),
+    getTranslations("deletion"),
     getFormatter(),
     getSettings(["org.timezone", "visitor.types"]),
     companyOptions(actor),
@@ -130,6 +132,12 @@ export async function VisitDetail({ actor, visit, base }: { actor: UserActor; vi
           confirmLabel={t("detail.cancelConfirm")}
           action={cancelVisitAction.bind(null, visit.id)}
         />
+      )}
+
+      {visit.canDelete && (
+        <div>
+          <DeleteControl kind="visit" id={visit.id} subject="visit" name={visit.fullName} label={tDel("buttons.visit")} variant="outline" after={base} />
+        </div>
       )}
 
       {history.length > 0 && (

@@ -23,7 +23,7 @@ cp .env.example .env
 Ardından:
 ```bash
 npm run docker:up        # PostgreSQL :5433 + Garage :3900/:3903
-npm run storage:init     # Garage düğüm düzeni, anahtar ve bucket
+npm run storage:init     # Garage düğüm düzeni, anahtar, bucket ve testlerin ayrı depoları
 npm run db:migrate       # geliştirme veritabanı
 npm run db:migrate -- --test
 npm run db:seed          # sistem yöneticisi + demo kullanıcılar
@@ -52,10 +52,25 @@ Sistem yöneticisi: `SEED_ADMIN_SICIL` / `SEED_ADMIN_PASSWORD` (ilk girişte şi
 ## Testler
 ```bash
 npm test                  # birim
-npm run test:integration  # akademi_test veritabanını her çalıştırmada sıfırlar
+npm run test:integration  # akademi_test veritabanını ve akademi-private-test deposunu her çalıştırmada sıfırlar
 npx playwright install chromium   # bir kez
-npm run test:e2e          # çalışan dev sunucusunu kullanır, yoksa başlatır
+npm run test:e2e          # kendi sunucusunu açar (http://localhost:3100); akademi_e2e ve akademi-private-e2e her çalıştırmada sıfırlanır
 ```
+Testler geliştirme veritabanına (`akademi`) ve deposuna (`akademi-private`) hiç yazmaz; kendi hedeflerini her
+çalıştırmanın başında boşaltır (`src/server/test-targets.ts`). Uçtan uca testler:
+- Önce `npm run e2e:reset` (e2e veritabanı boşaltılır, migration'lar uygulanır, e2e deposu boşaltılır), sonra
+  üretim derlemesi `.next-e2e` klasörüne yapılır (~1–2 dk) ve 3100 portunda başlatılır. Geliştirme sunucusu
+  (3000) açık kalabilir; `.next` önbelleğine dokunulmaz. Derleme bittikten sonra dosya düzenlemek testleri etkilemez.
+- Bu sunucuda e-posta ve web push her zaman yalnızca kayda yazılır (`MAIL_TRANSPORT=log`, `PUSH_TRANSPORT=log`).
+- CI'da aynı düzen çalışır (derleme önceki adımda yapılır).
+
+Bu düzenden önce oluşturulmuş Docker volume'unda e2e veritabanını ve test depolarını **bir kez** oluşturun
+(yeni kurulumda `npm run docker:up` + `npm run storage:init` bunları kendiliğinden yapar):
+```bash
+docker compose -f docker/compose.yml exec -T postgres psql -U postgres -f /docker-entrypoint-initdb.d/02-e2e-database.sql
+npm run storage:init
+```
+Git Bash'te ilk komutun başına `MSYS_NO_PATHCONV=1 ` ekleyin (yol dönüştürmesini kapatır).
 
 ## Veritabanına bağlanmak
 ```bash
@@ -80,7 +95,7 @@ Terminali ve editörü yeniden açın.
 npm 11 paket kurulum betiklerini onay olmadan çalıştırmaz. `@swc/core` onaylıdır (`package.json` → `allowScripts`). Diğerleri (esbuild, unrs-resolver vb.) betiksiz çalışıyor; sorun çıkarsa `npm install-scripts approve <paket>` ile onaylanır.
 
 ### `npm run dev`: "Unexpected non-whitespace character after JSON"
-Production derlemesinden (`npm run build`) sonra geliştirme sunucusu `.next` önbelleğini okuyamayabilir. `.next` klasörünü silip `npm run dev`'i yeniden başlatın.
+Production derlemesinden (`npm run build`) sonra geliştirme sunucusu `.next` önbelleğini okuyamayabilir. `.next` klasörünü silip `npm run dev`'i yeniden başlatın. (Uçtan uca testlerin derlemesi ayrı `.next-e2e` klasörüne yazılır; bu soruna yol açmaz.)
 
 ### Garage'ı sıfırlamak
 ```bash

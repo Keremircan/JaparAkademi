@@ -215,15 +215,14 @@ test("kararlar #264–267: üst yönetici işten ayrılan kişiyi onay penceresi
   await expect(submit).toBeEnabled();
   await submit.click();
 
-  // Sayfa kişide kalır: ad "Anonim #…", silme bilgisi görünür, yönetim düğmeleri kalkar
-  await expect(dialog).toBeHidden();
-  await expect(main.getByTestId("person-erased")).toContainText("kişisel verileri");
-  await expect(main.getByTestId("person-erased")).toBeInViewport();
-  await expect(main.getByTestId("person-erased")).toContainText("Gerekçe: KVKK silme talebi, e2e");
-  await expect(main.getByRole("heading", { level: 1 })).toHaveText(/^Anonim #[0-9A-F]{8}$/);
-  await expect(main.getByText(name).filter({ visible: true })).toHaveCount(0);
-  await expect(main.getByRole("button", { name: "Kişiyi kalıcı olarak sil" })).toHaveCount(0);
-  await expect(main.getByRole("button", { name: "Aktifleştir" })).toHaveCount(0);
+  // Kişi listesine dönülür (iş paketi 3.14, karar #285): anonim kişi hiçbir listede görünmez
+  await expect(page).toHaveURL(/\/admin\/people\?deleted=1$/);
+  const list = page.getByRole("main").filter({ visible: true });
+  await expect(list.getByTestId("person-deleted")).toHaveText("Kişi silindi.");
+  await page.goto(`/admin/people?status=all&q=${encodeURIComponent(sicil)}`);
+  await expect(page.getByRole("main").filter({ visible: true }).getByText("0 kişi", { exact: true })).toBeVisible();
+  await page.goto(`/admin/people?status=all&q=${encodeURIComponent("Anonim")}`);
+  await expect(page.getByRole("main").filter({ visible: true }).getByText("0 kişi", { exact: true })).toBeVisible();
 
   // Silinen kişi giriş yapamaz
   await page.goto("/profile");

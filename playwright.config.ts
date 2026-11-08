@@ -1,15 +1,23 @@
 import { defineConfig, devices } from "@playwright/test";
 import { config as loadDotenv } from "dotenv";
+import { e2eEnv, e2eTarget } from "./src/server/test-targets";
 
 loadDotenv({ quiet: true });
 
-const PORT = Number(process.env.E2E_PORT ?? 3000);
-const baseURL = `http://localhost:${PORT}`;
+// Testler ve test sunucusu ayrı veritabanını ve dosya deposunu kullanır; geliştirme verisine dokunulmaz
+const target = e2eTarget(process.env);
+const serverEnv = e2eEnv(target);
+Object.assign(process.env, serverEnv);
+
+const PORT = target.port;
+const baseURL = target.appUrl;
 const isCI = !!process.env.CI;
 
 /**
  * Uçtan uca testler (SPEC 13.2): mobil (Pixel 7) ve masaüstü.
- * Yerelde çalışan geliştirme sunucusu yeniden kullanılır; CI'da production build başlatılır.
+ * Her çalıştırmada kendi sunucusu açılır (varsayılan 3100 portu; geliştirme sunucusu kullanılmaz): önce e2e
+ * veritabanı ve deposu sıfırlanır (`npm run e2e:reset`), sonra üretim derlemesi başlatılır. CI'da derleme önceki
+ * adımda yapılır. Derleme bittikten sonra kaynak dosya düzenlemek testleri etkilemez.
  */
 export default defineConfig({
   testDir: "tests/e2e",
@@ -29,9 +37,12 @@ export default defineConfig({
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
   ],
   webServer: {
-    command: isCI ? `npm run start -- --port ${PORT}` : "npm run dev",
+    command: `npm run e2e:reset && ${isCI ? "" : "npm run build && "}npm run start -- --port ${PORT}`,
     url: `${baseURL}/api/health`,
-    reuseExistingServer: !isCI,
-    timeout: 120_000,
+    // Sunucu her seferinde sıfırlanmış veritabanıyla yeniden açılır (port doluysa hata verir)
+    reuseExistingServer: false,
+    timeout: 300_000,
+    // Yerelde derleme ayrı klasöre yazılır; geliştirme sunucusunun `.next` önbelleği bozulmaz (CI önceki adımın `.next`'ini kullanır)
+    env: isCI ? serverEnv : { ...serverEnv, NEXT_DIST_DIR: ".next-e2e" },
   },
 });

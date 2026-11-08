@@ -56,7 +56,7 @@ async function setup(p: People) {
   const practiceAm = cur.modules.find((m) => m.moduleId === practice)!.id;
   const examAm = cur.modules.find((m) => m.moduleId === exam)!.id;
   const view = await practiceModule(p.trainerPres.actor, practiceAm);
-  return { u, assignmentId: cur.id, practiceAm, examAm, tasks: view.tasks.map((t) => t.taskId) };
+  return { u, practice, assignmentId: cur.id, practiceAm, examAm, tasks: view.tasks.map((t) => t.taskId) };
 }
 
 async function markAll(actor: Actor, practiceAm: string, tasks: string[], to: PracticeLevel = "independent") {
@@ -99,6 +99,26 @@ describe("FG-5 pratik eğitim", () => {
 
     const err = await db().update(practiceMarks).set({ note: "değişti" }).where(eq(practiceMarks.practiceTaskId, t1!)).then(() => null, (e: unknown) => e);
     expect(isImmutableViolation(err)).toBe(true);
+  });
+
+  it("iş paketi 3.14: atamaya girmiş görev listeden çıkarılınca silinmez, arşivlenir; süren atama aynı görevlerle devam eder", async () => {
+    const p = await seedContentPeople();
+    const s = await setup(p);
+    const tr = p.trainerPres.actor;
+    const [t1, t2] = s.tasks;
+    await markTask(tr, s.practiceAm, t1!, { level: "demonstrated", note: null, photoAssetIds: [] });
+    await saveTasks(p.smUretim.actor, s.practice, [{ title: "Yeni görev", description: null, isCritical: false }]);
+    await saveTasks(p.smUretim.actor, s.practice, [{ title: "Son görev", description: null, isCritical: false }]);
+
+    const rows = await owner()`select id, title, archived_at from practice_tasks where module_id = ${s.practice} order by sort_order, title`;
+    // İşaretlenen ve atamaya girmiş görevler arşivde; hiçbir atamaya girmemiş "Yeni görev" silindi
+    expect(rows.filter((r) => r.archived_at).map((r) => r.id).sort()).toEqual([...s.tasks].sort());
+    expect(rows.filter((r) => !r.archived_at).map((r) => r.title)).toEqual(["Son görev"]);
+    expect(rows.some((r) => r.title === "Yeni görev")).toBe(false);
+
+    const view = await practiceModule(tr, s.practiceAm);
+    expect(view.tasks.map((t) => t.taskId)).toEqual(s.tasks);
+    await markTask(tr, s.practiceAm, t2!, { level: "demonstrated", note: null, photoAssetIds: [] });
   });
 
   it("karar #66: atanmış eğitmen ve kapsamdaki bölüm sorumlusu işaretler; başka eğitmen, kapsam dışı sorumlu, İK ve kursiyer işaretleyemez", async () => {

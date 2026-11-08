@@ -12,6 +12,8 @@ import {
   contentVersionLocales,
   contentVersions,
   mediaAssets,
+  moduleContents,
+  modules,
   orgUnits,
   tags,
   tagTypes,
@@ -34,6 +36,7 @@ import {
 } from "./access";
 import { ASSET_KIND_FOR_TYPE, bodyAssetIds, bodyText, parseBody, type ContentBody, type ContentType } from "./body";
 import { notifyApprovalPending, resolveNotifications } from "../notifications";
+import { countRows, type Deletable } from "../deletion/core";
 
 /**
  * İçerik kütüphanesi (SPEC 4.2, FG-2.1–2.5).
@@ -310,6 +313,8 @@ export type ContentDetail = {
     discard: boolean;
     approve: boolean;
     archive: boolean;
+    /** Silme düğmesi (iş paketi 3.14); arşivdeki içerik de silinebilir. */
+    delete: boolean;
   };
 };
 
@@ -401,6 +406,7 @@ export async function getContent(actor: Actor, contentId: string): Promise<Conte
       discard: drafter && isEditable(latest.status) && latest.version > 1,
       approve,
       archive: active && canArchiveContent(access, content),
+      delete: canArchiveContent(access, content),
     },
   };
 }
@@ -838,7 +844,7 @@ export async function discardDraft(actor: Actor, contentId: string): Promise<voi
   });
 }
 
-/** Arşivleme (silme yok, geri alma yok — karar #40). */
+/** Arşivleme (geri alma yok — karar #40). Hiç yayınlanmamış ve modülde kullanılmayan içerik silinebilir (`contentDeletion`, iş paketi 3.14). */
 export async function archiveContent(actor: Actor, contentId: string): Promise<void> {
   assertUser(actor);
   await withActor(actor, async (tx) => {
@@ -848,6 +854,40 @@ export async function archiveContent(actor: Actor, contentId: string): Promise<v
     await tx.update(contents).set({ archivedAt: new Date(), archivedBy: actor.userId }).where(eq(contents.id, contentId));
   });
 }
+
+/**
+ * İçerik silme (iş paketi 3.14, karar #284): yalnızca hiç yayınlanmamış ve onaya gönderilip karar verilmemiş içerik.
+ * Önce kullanıldığı (arşivlenmemiş) modüllerden çıkarılır. Yayınlanmış ya da okunmuş içerik arşivlenir (karar #40).
+ * Yüklenen medya dosyaları depoda kalır (taslak silmedeki gibi).
+ */
+export const contentDeletion: Deletable<typeof contents.$inferSelect> = {
+  async load(tx, actor, id) {
+    const { content, access } = await loadContent(actor, id, tx);
+    if (!canArchiveContent(access, content)) throw new ForbiddenError("content.delete");
+    await tx.select({ id: contents.id }).from(contents).where(eq(contents.id, id)).for("update");
+    return content;
+  },
+  async blockers(tx, content) {
+    const liveModules = tx.select({ id: modules.id }).from(modules).where(isNull(modules.archivedAt));
+    return [
+      {
+        kind: "content_modules",
+        count: await countRows(tx, moduleContents, and(eq(moduleContents.contentId, content.id), inArray(moduleContents.moduleId, liveModules))),
+      },
+    ];
+  },
+  async inHistory(tx, content) {
+    if (content.currentPublishedVersionId) return true;
+    const versions = tx.select({ id: contentVersions.id }).from(contentVersions).where(eq(contentVersions.contentId, content.id));
+    return (await countRows(tx, approvals, and(eq(approvals.subjectType, "content_version"), inArray(approvals.subjectId, versions)))) > 0;
+  },
+  async remove(tx, content) {
+    // Dil satırları, medya bağlantıları ve etiketler sürüm/içerikle birlikte silinir
+    await tx.delete(contentVersions).where(eq(contentVersions.contentId, content.id));
+    await tx.delete(moduleContents).where(eq(moduleContents.contentId, content.id));
+    await tx.delete(contents).where(eq(contents.id, content.id));
+  },
+};
 
 // ---------------------------------------------------------------------------
 // Onay kuyruğu
@@ -956,6 +996,22 @@ export async function createTag(actor: Actor, input: { tagTypeId: string; name: 
     return created!;
   });
 }
+
+/** Etiket silme (iş paketi 3.14): taslak hazırlayan, hiçbir içerikte kullanılmayan etiketi siler. */
+export const tagDeletion: Deletable<typeof tags.$inferSelect> = {
+  async load(tx, actor, id) {
+    if (!can(actor, "content.draft")) throw new ForbiddenError("content.draft");
+    const [tag] = await tx.select().from(tags).where(eq(tags.id, id)).limit(1).for("update");
+    if (!tag) throw new NotFoundError("tag");
+    return tag;
+  },
+  async blockers(tx, tag) {
+    return [{ kind: "tagged_contents", count: await countRows(tx, contentTags, eq(contentTags.tagId, tag.id)) }];
+  },
+  async remove(tx, tag) {
+    await tx.delete(tags).where(eq(tags.id, tag.id));
+  },
+};
 
 /** İçerik oluştururken seçilebilecek birimler (taslak yetkisine göre). */
 export async function draftableOwners(actor: Actor): Promise<{ common: boolean; units: { id: string; name: string; parentName: string | null }[] }> {

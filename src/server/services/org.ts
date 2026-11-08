@@ -1,15 +1,29 @@
-import { and, asc, count, eq, ne } from "drizzle-orm";
+import { and, asc, count, eq, inArray, isNull, ne, or } from "drizzle-orm";
 import type { Actor } from "@/server/authz/actor";
 import { assertCan, can } from "@/server/authz/policy";
 import { inOrgScope, orgScopeFor } from "@/server/authz/scope";
 import { db, type DbOrTx } from "@/server/db/client";
-import { orgUnits, personnel, positions } from "@/server/db/schema";
+import {
+  approvals,
+  competencies,
+  contents,
+  modules,
+  orgUnits,
+  personnel,
+  positionCardVersions,
+  positions,
+  questions,
+  roleScopes,
+  workSchedules,
+} from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { ForbiddenError, NotFoundError, uniqueViolation, ValidationError } from "@/server/errors";
+import { countRows, type Deletable } from "./deletion/core";
 
 /**
  * Organizasyon ağacı ve pozisyonlar (SPEC 4.1, FG-1.1).
- * Ağaç iki seviyelidir: departman → bölüm. Silme yoktur; pasife alma (arşiv) vardır.
+ * Ağaç iki seviyelidir: departman → bölüm. Bağı olmayan birim/pozisyon silinir; geçmiş kayıtlarda kullanılan
+ * pasife alınır (iş paketi 3.14, karar #284).
  */
 
 export const CODE_PATTERN = /^[A-Z0-9][A-Z0-9-]{1,23}$/;
@@ -320,6 +334,81 @@ export async function getPosition(actor: Actor, id: string) {
   if (!pos) throw new NotFoundError("position");
   return pos;
 }
+
+// ---------------------------------------------------------------------------
+// Silme (iş paketi 3.14, karar #284)
+// ---------------------------------------------------------------------------
+
+type OrgUnitRow = typeof orgUnits.$inferSelect;
+type PositionRow = typeof positions.$inferSelect;
+
+/**
+ * Departman/bölüm silme: altındaki bölümler, pozisyonlar, bölüm sorumlusu kapsamları ve birime ait (arşivlenmemiş)
+ * modül, içerik, soru ve yetkinlikler önce silinir. Sertifika gibi geçmiş kayıtlarda geçen birim pasife alınır.
+ */
+export const orgUnitDeletion: Deletable<OrgUnitRow> = {
+  async load(tx, actor, id) {
+    assertCan(actor, "org.manage");
+    const [unit] = await tx.select().from(orgUnits).where(eq(orgUnits.id, id)).limit(1).for("update");
+    if (!unit) throw new NotFoundError("org_unit");
+    return unit;
+  },
+  async blockers(tx, unit) {
+    return [
+      { kind: "sections", count: await countRows(tx, orgUnits, eq(orgUnits.parentId, unit.id)) },
+      { kind: "positions", count: await countRows(tx, positions, eq(positions.orgUnitId, unit.id)) },
+      { kind: "unit_scopes", count: await countRows(tx, roleScopes, eq(roleScopes.orgUnitId, unit.id)) },
+      { kind: "unit_modules", count: await countRows(tx, modules, and(eq(modules.ownerOrgUnitId, unit.id), isNull(modules.archivedAt))) },
+      { kind: "unit_contents", count: await countRows(tx, contents, and(eq(contents.ownerOrgUnitId, unit.id), isNull(contents.archivedAt))) },
+      { kind: "unit_questions", count: await countRows(tx, questions, and(eq(questions.ownerOrgUnitId, unit.id), isNull(questions.archivedAt))) },
+      {
+        kind: "unit_competencies",
+        count: await countRows(tx, competencies, and(eq(competencies.orgUnitId, unit.id), isNull(competencies.archivedAt))),
+      },
+    ];
+  },
+  async remove(tx, unit) {
+    await tx.delete(orgUnits).where(eq(orgUnits.id, unit.id));
+  },
+};
+
+/**
+ * Pozisyon silme: pozisyondaki personel (anonimleştirilmişler hariç), çalışma programları ve bu pozisyonu amir/vekil
+ * seçen pozisyonlar önce değiştirilir. Yayınlanmamış kart taslağı ve kart modülü pozisyonla birlikte silinir;
+ * yayınlanmış ya da onaya gönderilmiş kart, atama ve sertifika geçmiş kaydıdır.
+ */
+export const positionDeletion: Deletable<PositionRow> = {
+  async load(tx, actor, id) {
+    assertCan(actor, "org.manage");
+    const [pos] = await tx.select().from(positions).where(eq(positions.id, id)).limit(1).for("update");
+    if (!pos) throw new NotFoundError("position");
+    return pos;
+  },
+  async blockers(tx, pos) {
+    return [
+      { kind: "personnel", count: await countRows(tx, personnel, and(eq(personnel.positionId, pos.id), isNull(personnel.anonymizedAt))) },
+      { kind: "schedules", count: await countRows(tx, workSchedules, eq(workSchedules.positionId, pos.id)) },
+      {
+        kind: "linked_positions",
+        count: await countRows(
+          tx,
+          positions,
+          and(ne(positions.id, pos.id), or(eq(positions.supervisorPositionId, pos.id), eq(positions.deputyPositionId, pos.id))),
+        ),
+      },
+    ];
+  },
+  async inHistory(tx, pos) {
+    const cards = tx.select({ id: positionCardVersions.id }).from(positionCardVersions).where(eq(positionCardVersions.positionId, pos.id));
+    return (await countRows(tx, approvals, and(eq(approvals.subjectType, "position_card_version"), inArray(approvals.subjectId, cards)))) > 0;
+  },
+  async remove(tx, pos) {
+    // Kart taslağı (plan ve plan modülleri kartla birlikte silinir), kart modülü, sonra pozisyon
+    await tx.delete(positionCardVersions).where(eq(positionCardVersions.positionId, pos.id));
+    await tx.delete(modules).where(eq(modules.cardPositionId, pos.id));
+    await tx.delete(positions).where(eq(positions.id, pos.id));
+  },
+};
 
 /** Departmanlar (aktarım ve formlar için). */
 export async function listDepartments(conn: DbOrTx = db()) {

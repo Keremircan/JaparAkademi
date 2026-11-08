@@ -13,6 +13,7 @@ import { activeBlacklistHmacs } from "./blacklist";
 import { cleanContact, protectVisitorId, type VisitorIdInput } from "./identity";
 import { newVisitCode, sendVisitLink } from "./session";
 import type { VisitorType } from "./briefings";
+import { tryRemove, type Deletable } from "../deletion/core";
 
 /**
  * Ziyaret ön kaydı (SPEC 8.2/1, iş paketi 2.2, kararlar #129–133).
@@ -241,6 +242,8 @@ export async function getVisit(actor: Actor, id: string) {
     blacklisted,
     canEdit: isVisitEditable(row.status) && (row.hostUserId === actor.userId || can(actor, "visits.manage_all")),
     canCancel: isVisitCancellable(row.status) && (row.hostUserId === actor.userId || can(actor, "visits.manage_all")),
+    // Bilgilendirme başlamamış (planlı ya da iptal edilmiş) ziyaret silinebilir (iş paketi 3.14)
+    canDelete: (row.status === "planned" || row.status === "cancelled") && (row.hostUserId === actor.userId || can(actor, "visits.manage_all")),
     canSetId: can(actor, "visits.manage_all"),
   };
 }
@@ -306,6 +309,25 @@ export async function cancelVisit(actor: Actor, id: string, reason: string): Pro
       .where(eq(visits.id, id)),
   );
 }
+
+/**
+ * Ziyaret silme (iş paketi 3.14): bilgilendirme onayı, girişi ya da başka geçmiş kaydı olmayan ziyaret silinir
+ * (ev sahibi ya da güvenlik). Başka ziyareti olmayan ziyaretçinin kişi kaydı da silinir. Geçmişi olan ziyaret
+ * iptal edilir.
+ */
+export const visitDeletion: Deletable<{ id: string; visitorId: string }> = {
+  async load(tx, actor, id) {
+    const row = await assertMayChange(actor, id);
+    await tx.select({ id: visits.id }).from(visits).where(eq(visits.id, id)).for("update");
+    return { id: row.id, visitorId: row.visitorId };
+  },
+  async remove(tx, row) {
+    await tx.delete(visits).where(eq(visits.id, row.id));
+    await tryRemove(tx, async (sp) => {
+      await sp.delete(visitors).where(eq(visitors.id, row.visitorId));
+    });
+  },
+};
 
 /** Ziyaretçinin geçmiş ziyaretleri (güvenlik / İSG), ayrıntı ekranında. */
 export async function visitorHistory(actor: Actor, visitorId: string) {

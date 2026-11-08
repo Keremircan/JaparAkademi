@@ -283,6 +283,35 @@ export default async function globalSetup() {
     await createAccount(sys, { sicilNo: `E2E-${suffix}-DEL${p}`, fullName: `Işıl Silinecek ${p.toUpperCase()}`, password: E2E_PASSWORD, email: `e2e-del-${suffix}-${p}@japar.test`.toLowerCase(), mustChangePassword: false });
   }
 
+  // Kayıt silme (iş paketi 3.14): bölümü ve yayınlanmış kartlı (geçmişi olan) pozisyonu olan departman
+  for (const project of ["mobile", "desktop"]) {
+    const p = project[0];
+    const delDept = await createOrgUnit(sys, { kind: "department", name: `E2E Silme ${suffix} ${p}`, code: `E2E-SIL-${suffix}-${p}`.toUpperCase() });
+    await createOrgUnit(sys, { kind: "section", parentId: delDept.id, name: `E2E Boş Bölüm ${suffix} ${p}`, code: `E2E-BOS-${suffix}-${p}`.toUpperCase() });
+    const histPos = await createPosition(sys, { orgUnitId: delDept.id, name: `E2E Geçmişli Pozisyon ${suffix} ${p}`, code: `E2E-GEC-${suffix}-${p}`.toUpperCase(), collarType: "blue" });
+    const smd = await createAccount(sys, { sicilNo: `E2E-${suffix}-SMD${p}`, fullName: "Deneme Silme Sorumlusu", password: E2E_PASSWORD, roles: ["section_manager"], mustChangePassword: false });
+    await setSectionManagerScopes(sys, smd.userId, [delDept.id]);
+    const smdActor = { kind: "user" as const, userId: smd.userId, roles: ["personnel" as const, "section_manager" as const] };
+    await createCard(smdActor, histPos.id);
+    await saveCardSections(smdActor, histPos.id, fullCardSections());
+    const histPractice = await createModule(smdActor, {
+      kind: "practice", title: `E2E Silme pratiği ${p}`, description: null, durationMin: 30, isOhs: false, remoteAllowed: true,
+      validityMonths: null, ownerOrgUnitId: delDept.id, commonTarget: null, commonSortOrder: null,
+    });
+    await saveTasks(smdActor, histPractice.id, [{ title: "Görev bir", description: null, isCritical: false }]);
+    const histCardModule = (await getEditableCard(smdActor, histPos.id)).plan.items.find((i) => i.isCardModule)!.moduleId;
+    await savePlan(smdActor, histPos.id, {
+      overrides: {},
+      items: [
+        { moduleId: histCardModule, isRequired: true, prerequisiteModuleIds: [], settings: {} },
+        { moduleId: histPractice.id, isRequired: true, prerequisiteModuleIds: [histCardModule], settings: {} },
+      ],
+    });
+    await submitCard(smdActor, histPos.id, { changeNote: null });
+    const pendingHist = (await cardApprovalQueue(ohsSetupActor)).find((q) => q.positionId === histPos.id);
+    if (pendingHist) await approveCard(ohsSetupActor, pendingHist.versionId);
+  }
+
   await mkdir(path.dirname(E2E_IMPORT_FILE), { recursive: true });
   await writeFile(
     E2E_IMPORT_FILE,

@@ -183,8 +183,9 @@ export async function erasePersonAction(userId: string, _prev: ActionResult | nu
   const result = await runAction(async () => {
     await erasePerson(actor, parsed.data.userId, parsed.data);
   });
-  if (result.ok) refresh();
-  return result;
+  if (!result.ok) return result;
+  // Anonimleştirilen kişi hiçbir yerde gösterilmez (iş paketi 3.14, karar #285): listeye dönülür
+  return redirect({ href: "/admin/people?deleted=1", locale: await getLocale() });
 }
 
 /** "Şifreyi sıfırla" / "Davet gönder" (karar #185, iş paketi 3.7). */

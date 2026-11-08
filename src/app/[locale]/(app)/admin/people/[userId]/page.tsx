@@ -10,7 +10,7 @@ import { adminAccess, orNull } from "@/features/admin/guard";
 import { ResetControl } from "@/features/people/components/invite-controls";
 import { RevealNationalId, StatusControls } from "@/features/people/components/person-actions";
 import { EraseControl } from "@/features/people/components/erase-control";
-import { erasureInfo } from "@/server/services/erasure";
+import { DeleteControl } from "@/features/deletion/components/delete-control";
 import { inviteMailEnabled, inviteStatus, resetBlockFor } from "@/server/services/invitations";
 import { Link } from "@/i18n/navigation";
 import { can } from "@/server/authz/policy";
@@ -63,16 +63,15 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
     listUnitOptions(access.actor),
   ]);
   const position = positions.find((p) => p.id === person.positionId);
-  // Kişisel verisi silinmiş kişide hiçbir değişiklik yapılmaz; kayıtlar yalnızca görüntülenir (karar #266)
-  const erased = person.anonymizedAt !== null;
-  const canManage = can(access.actor, "people.manage") && !erased;
-  const canRoles = can(access.actor, "roles.manage") && !erased;
+  // Kişisel verisi silinmiş kişi gösterilmez (`getPerson`, karar #285)
+  const canManage = can(access.actor, "people.manage");
+  const canRoles = can(access.actor, "roles.manage");
   const canSeeTc = can(access.actor, "people.view_national_id");
   const isSelf = access.actor.userId === person.userId;
   const canAssign = can(access.actor, "assignments.manage");
   const canErase = can(access.actor, "people.erase") && !isSelf;
   const showReset = canManage && !isSelf && person.status === "active";
-  const [assignmentList, trainers, ta, tcert, certs, invite, tInvite, photo, block, erasure] = await Promise.all([
+  const [assignmentList, trainers, ta, tcert, certs, invite, tInvite, photo, block] = await Promise.all([
     canAssign ? assignmentsForPerson(access.actor, person.userId) : Promise.resolve([]),
     canAssign ? trainerCandidates(access.actor) : Promise.resolve([]),
     getTranslations("assignments"),
@@ -82,7 +81,6 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
     getTranslations("invite"),
     personPhoto(access.actor, person.userId),
     showReset ? resetBlockFor(access.actor, person.userId) : Promise.resolve(null),
-    canErase && erased ? erasureInfo(access.actor, person.userId) : Promise.resolve(null),
   ]);
   const open = assignmentList.find((a) => ["active", "awaiting_readiness", "awaiting_decision"].includes(a.status));
   const past = assignmentList.filter((a) => a !== open);
@@ -111,15 +109,6 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
           </>
         }
       />
-
-      {erased && (
-        <div role="status" className="mb-6 rounded-xl border px-4 py-3" data-testid="person-erased">
-          <p className="font-medium">
-            {t("erase.erased", { date: format.dateTime(person.anonymizedAt!, { dateStyle: "medium", timeStyle: "short" }) })}
-          </p>
-          {erasure && <p className="text-sm text-muted-foreground">{t("erase.erasedBy", { name: erasure.erasedByName, reason: erasure.reason })}</p>}
-        </div>
-      )}
 
       <h2 className="mb-2 text-base font-semibold">{t("detail.info")}</h2>
       {/* Profil fotoğrafı (iş paketi 3.4): kişinin açık rızası varken İK yükleyebilir */}
@@ -188,17 +177,15 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
             {open ? (
               <>
                 <AssignmentSummaryView a={open} viewer={access.actor} />
-                {!erased && (
-                  <AssignmentControls
-                    mode="edit"
-                    assignmentId={open.id}
-                    trainers={trainers}
-                    trainerUserId={open.trainerUserId}
-                    targetDate={open.targetDate}
-                    needsTrainer={open.modules.some((m) => m.kind === "practice" || m.kind === "practice_exam")}
-                  />
-                )}
-                {open.status !== "active" && !isSelf && !erased && (
+                <AssignmentControls
+                  mode="edit"
+                  assignmentId={open.id}
+                  trainers={trainers}
+                  trainerUserId={open.trainerUserId}
+                  targetDate={open.targetDate}
+                  needsTrainer={open.modules.some((m) => m.kind === "practice" || m.kind === "practice_exam")}
+                />
+                {open.status !== "active" && !isSelf && (
                   <Button className="self-start" nativeButton={false} render={<Link href={`/manage/readiness/${open.id}`} />}>
                     {tcert("openReview")}
                   </Button>
@@ -207,7 +194,7 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
             ) : (
               <>
                 <p className="text-muted-foreground">{person.positionId ? ta("none") : ta("noPosition")}</p>
-                {person.status === "active" && person.positionId && !isSelf && !erased && <AssignmentControls mode="start" userId={person.userId} trainers={trainers} />}
+                {person.status === "active" && person.positionId && !isSelf && <AssignmentControls mode="start" userId={person.userId} trainers={trainers} />}
               </>
             )}
             {past.length > 0 && (
@@ -229,11 +216,11 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
           <h2 id="certificates-heading" className="mb-2 text-base font-semibold">
             {tcert("title")}
           </h2>
-          <CertificateList items={certs} canRevoke={can(access.actor, "certificates.revoke") && !isSelf && !erased} />
+          <CertificateList items={certs} canRevoke={can(access.actor, "certificates.revoke") && !isSelf} />
         </section>
       )}
 
-      {can(access.actor, "people.export_personal") && !isSelf && !erased && (
+      {can(access.actor, "people.export_personal") && !isSelf && (
         <div className="mb-6">
           <PersonalExportButton userId={person.userId} />
         </div>
@@ -242,7 +229,6 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
       <h2 className="mb-2 text-base font-semibold">{t("detail.roles")}</h2>
       <div className="mb-6 rounded-xl border px-4 py-3">
         <div className="flex flex-wrap gap-2">
-          {/* Silinen kişinin rolleri kaldırılır */}
           {person.roles.length === 0 && <span className="text-sm text-muted-foreground">{tc("none")}</span>}
           {person.roles.map((r) => (
             <span key={r} className="rounded-full bg-muted px-3 py-1 text-sm">
@@ -269,8 +255,29 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
         </>
       )}
 
+      {/* Sistemi hiç kullanmamış kişi (yanlış ya da yinelenen kayıt) silinir; geçmişi olan silinemez (iş paketi 3.14) */}
+      {canManage && !isSelf && (
+        <section aria-labelledby="delete-heading" className="mb-6">
+          <h2 id="delete-heading" className="mb-2 text-base font-semibold">
+            {t("delete.title")}
+          </h2>
+          <div className="flex flex-col items-start gap-3 rounded-xl border px-4 py-3">
+            <p className="text-sm text-muted-foreground">{t("delete.intro")}</p>
+            <DeleteControl
+              kind="person"
+              id={person.userId}
+              subject="person"
+              name={person.fullName}
+              label={t("delete.button")}
+              variant="outline"
+              after="/admin/people?deleted=1"
+            />
+          </div>
+        </section>
+      )}
+
       {/* Kişiyi kalıcı silme: yalnızca üst yönetici, yalnızca işten ayrılmış kişi (kararlar #264–267) */}
-      {canErase && !erased && (
+      {canErase && (
         <section aria-labelledby="erase-heading" className="mb-6">
           <h2 id="erase-heading" className="mb-2 text-base font-semibold">
             {t("erase.title")}

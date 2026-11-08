@@ -4,7 +4,9 @@ import { Suspense } from "react";
 import { NotFoundView } from "@/components/app-shell/not-found-view";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
+import { archiveCompetencyAction } from "@/features/competencies/actions";
 import { CompetencyForm } from "@/features/competencies/components/competency-form";
+import { DeleteControl } from "@/features/deletion/components/delete-control";
 import { Link } from "@/i18n/navigation";
 import { can } from "@/server/authz/policy";
 import { getSectionUser } from "@/server/auth/current-user";
@@ -31,9 +33,10 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
   const actor = toActor(user);
   if (!can(actor, "competencies.manage")) return <NotFoundView />;
   const archived = (await searchParams).archived === "1";
-  const [t, tNav, rows, options] = await Promise.all([
+  const [t, tNav, tDel, rows, options] = await Promise.all([
     getTranslations("competencies"),
     getTranslations("sections.manage"),
+    getTranslations("deletion"),
     listCompetencies(actor, { archived }),
     competencyUnitOptions(actor),
   ]);
@@ -87,6 +90,19 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
                     />
                   ) : (
                     <p className="text-sm text-muted-foreground">{c.archived ? t("archivedNote") : t("readOnly")}</p>
+                  )}
+                  {c.canDelete && (
+                    <div className="mt-4 border-t pt-4">
+                      <DeleteControl
+                        kind="competency"
+                        id={c.id}
+                        subject="competency"
+                        name={c.name}
+                        label={tDel("buttons.competency")}
+                        variant="outline"
+                        archive={c.canEdit ? { action: archiveCompetencyAction.bind(null, c.id), label: t("form.archive") } : undefined}
+                      />
+                    </div>
                   )}
                 </div>
               </details>

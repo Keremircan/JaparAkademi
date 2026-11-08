@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 import { ActionButton } from "@/components/forms/action-button";
 import { orNull } from "@/features/admin/guard";
+import { DeleteControl } from "@/features/deletion/components/delete-control";
 import { approveClassroomAction, rejectClassroomAction, submitClassroomAction } from "@/features/classroom/actions";
 import { ClassroomForm } from "@/features/classroom/components/classroom-form";
 import { ApprovalPanel } from "@/features/content/components/approval-panel";
@@ -34,7 +35,7 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
   if (!/^[0-9a-f-]{36}$/.test(id)) return <NotFoundView />;
   const s = await orNull(getClassroomSession(access.actor, id));
   if (!s) return <NotFoundView />;
-  const [t, format] = await Promise.all([getTranslations("classroom"), getFormatter()]);
+  const [t, tDel, format] = await Promise.all([getTranslations("classroom"), getTranslations("deletion"), getFormatter()]);
   const form = s.scannedFormAssetId ? ((await assetsInfo([s.scannedFormAssetId])).get(s.scannedFormAssetId) ?? null) : null;
   const lastRejection = [...s.decisions].reverse().find((d) => d.decision === "rejected");
 
@@ -45,12 +46,24 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
         description={`${t(`status.${s.status}`)} · ${t("recordedBy", { name: s.recordedByName })}`}
         back={{ href: "/manage/classroom", label: t("title") }}
         actions={
-          s.can.submit && (
-            <ActionButton variant="default" confirmText={t("submitConfirm")} action={submitClassroomAction.bind(null, s.id)}>
-              <Send aria-hidden="true" />
-              {t("submit")}
-            </ActionButton>
-          )
+          <>
+            {s.can.submit && (
+              <ActionButton variant="default" confirmText={t("submitConfirm")} action={submitClassroomAction.bind(null, s.id)}>
+                <Send aria-hidden="true" />
+                {t("submit")}
+              </ActionButton>
+            )}
+            {s.can.delete && (
+              <DeleteControl
+                kind="classroom_session"
+                id={s.id}
+                subject="classroom_session"
+                label={tDel("buttons.classroom_session")}
+                variant="outline"
+                after="/manage/classroom"
+              />
+            )}
+          </>
         }
       />
       {lastRejection && s.status !== "approved" && (

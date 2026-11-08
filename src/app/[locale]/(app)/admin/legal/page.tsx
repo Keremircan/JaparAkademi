@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 import { ActionButton } from "@/components/forms/action-button";
 import { Button } from "@/components/ui/button";
+import { DeleteControl } from "@/features/deletion/components/delete-control";
 import { legalAccess } from "@/features/legal/access";
 import { createLegalSampleAction, publishLegalTextAction } from "@/features/legal/actions";
 import { LegalTextBody } from "@/features/legal/components/legal-text-body";
@@ -35,10 +36,11 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
   const access = await legalAccess(typeof sp.kind === "string" ? sp.kind : undefined);
   if (!access) return <NotFoundView />;
   const { actor, kind, kinds } = access;
-  const [t, tc, tNav, format, texts] = await Promise.all([
+  const [t, tc, tNav, tDel, format, texts] = await Promise.all([
     getTranslations("admin.legal"),
     getTranslations("common"),
     getTranslations("sections.admin"),
+    getTranslations("deletion"),
     getFormatter(),
     listTexts(actor, kind),
   ]);
@@ -140,6 +142,17 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
                           <RotateCcw aria-hidden="true" />
                           {t("sample.restart")}
                         </ActionButton>
+                      )}
+                      {/* Yayınlanmamış taslak bütün dilleriyle silinir (iş paketi 3.14) */}
+                      {rows[0] && (
+                        <DeleteControl
+                          kind="legal_draft"
+                          id={rows[0].id}
+                          subject="legal_draft"
+                          name={t("version", { version })}
+                          label={tDel("buttons.legal_draft")}
+                          variant="outline"
+                        />
                       )}
                     </div>
                   )}

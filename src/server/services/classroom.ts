@@ -19,6 +19,7 @@ import { ForbiddenError, NotFoundError, ValidationError } from "@/server/errors"
 import { isDone } from "@/server/state/assignment";
 import { completeModule, OPEN_STATUSES } from "./assignments/engine";
 import { canApproveOhs, canApproveSection, canViewContent, contentAccessFor, type ContentAccess } from "./content/access";
+import { countRows, type Deletable } from "./deletion/core";
 
 /**
  * Sınıf eğitimi kaydı (FG-4.4, karar #55). Kayıt: eğitmen, bölüm sorumlusu, İSG uzmanı, İK.
@@ -59,6 +60,27 @@ async function loadSession(conn: DbOrTx, actor: Actor & { kind: "user" }, id: st
   if (!involved && !canApprove(access, row.m) && !hasRole(actor, "hr")) throw new NotFoundError("classroom_session");
   return { ...row, access };
 }
+
+/**
+ * Sınıf eğitimi kaydını silme (iş paketi 3.14): yalnızca kaydı giren, onaya hiç gönderilmemiş (onay/ret kaydı yok)
+ * taslağı siler. Onaylanmış ya da onay kararı verilmiş oturum geçmiş kaydıdır.
+ */
+export const classroomSessionDeletion: Deletable<typeof classroomSessions.$inferSelect> = {
+  async load(tx, actor, id) {
+    const { s } = await loadSession(tx, actor, id);
+    if (s.recordedBy !== actor.userId) throw new ForbiddenError("classroom.edit");
+    if (s.status === "submitted") throw new ValidationError("classroom_not_editable");
+    await tx.select({ id: classroomSessions.id }).from(classroomSessions).where(eq(classroomSessions.id, s.id)).for("update");
+    return s;
+  },
+  async inHistory(tx, s) {
+    if (s.status === "approved") return true;
+    return (await countRows(tx, approvals, and(eq(approvals.subjectType, "classroom_session"), eq(approvals.subjectId, s.id)))) > 0;
+  },
+  async remove(tx, s) {
+    await tx.delete(classroomSessions).where(eq(classroomSessions.id, s.id));
+  },
+};
 
 async function validate(tx: Tx, actor: Actor & { kind: "user" }, input: ClassroomInput) {
   const location = input.location.trim();
@@ -271,7 +293,8 @@ export type ClassroomDetail = {
   recordedByName: string;
   attendees: { userId: string; name: string; sicilNo: string; hasModule: boolean }[];
   decisions: { decision: "approved" | "rejected" | "auto_self"; comment: string | null; decidedByName: string; decidedAt: Date }[];
-  can: { edit: boolean; submit: boolean; approve: boolean };
+  /** `delete`: hiç onaya gönderilmemiş taslak kayıt silinebilir (iş paketi 3.14). */
+  can: { edit: boolean; submit: boolean; approve: boolean; delete: boolean };
 };
 
 export async function getClassroomSession(actor: Actor, id: string): Promise<ClassroomDetail> {
@@ -323,6 +346,7 @@ export async function getClassroomSession(actor: Actor, id: string): Promise<Cla
       edit: editable,
       submit: s.recordedBy === actor.userId && s.status === "draft",
       approve: s.status === "submitted" && canApprove(access, m) && s.recordedBy !== actor.userId && s.trainerUserId !== actor.userId,
+      delete: s.recordedBy === actor.userId && s.status === "draft" && decisions.length === 0,
     },
   };
 }

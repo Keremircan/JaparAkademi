@@ -119,7 +119,7 @@ Kritik görevlerden biri "Yapamadı" ise puan ne olursa olsun sınav başarısı
 ---
 
 ## 4. Ziyaretçi kaydı (herkes)
-Ziyaretçi bekliyorsanız **Profil → Ziyaretçilerim → Ziyaretçi kaydet**: tip, tarih, ad soyad, firma; varsa telefon ve e-posta. Kimlik bilgisini güvenlik kapıda alır. Ziyaret başlamadan bilgileri düzeltebilir ya da gerekçeyle iptal edebilirsiniz. Yalnızca kendi ziyaretçilerinizi görürsünüz.
+Ziyaretçi bekliyorsanız **Profil → Ziyaretçilerim → Ziyaretçi kaydet**: tip, tarih, ad soyad, firma; varsa telefon ve e-posta. Kimlik bilgisini güvenlik kapıda alır. Ziyaret başlamadan bilgileri düzeltebilir, gerekçeyle iptal edebilir ya da yanlış açtığınız kaydı **Ön kaydı sil** ile silebilirsiniz. Yalnızca kendi ziyaretçilerinizi görürsünüz.
 
 ---
 

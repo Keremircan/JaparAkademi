@@ -8,6 +8,7 @@ import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 import { ActionButton } from "@/components/forms/action-button";
 import { Button } from "@/components/ui/button";
 import { orNull } from "@/features/admin/guard";
+import { DeleteControl } from "@/features/deletion/components/delete-control";
 import { approveVersionAction, archiveContentAction, discardDraftAction, newVersionAction, rejectVersionAction } from "@/features/content/actions";
 import { ApprovalPanel } from "@/features/content/components/approval-panel";
 import { ContentRenderer } from "@/features/content/components/content-renderer";
@@ -51,10 +52,11 @@ async function Content({
   const latest = content.versions[0]!;
   const shown = content.versions.find((v) => v.id === sp.v) ?? latest;
   const version = await getVersion(access.actor, shown.id);
-  const [t, tt, tl, format, assets] = await Promise.all([
+  const [t, tt, tl, tDel, format, assets] = await Promise.all([
     getTranslations("content.detail"),
     getTranslations("content"),
     getTranslations("content.library"),
+    getTranslations("deletion"),
     getFormatter(),
     assetsInfo([...bodyAssetIds(version.type, version.body), ...(version.en ? bodyAssetIds(version.type, version.en.body) : [])]),
   ]);
@@ -100,6 +102,18 @@ async function Content({
                 <Archive aria-hidden="true" />
                 {t("archive")}
               </ActionButton>
+            )}
+            {content.can.delete && (
+              <DeleteControl
+                kind="content"
+                id={id}
+                subject="content"
+                name={content.title}
+                label={tDel("buttons.content")}
+                variant="outline"
+                after="/manage/library"
+                archive={content.can.archive ? { action: archiveContentAction.bind(null, id), label: t("archive") } : undefined}
+              />
             )}
           </>
         }

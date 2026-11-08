@@ -14,27 +14,40 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title") };
 }
 
-/** Taşeron firmalar (FG-8.3): İSG uzmanı ve güvenlik. Silme yok, arşivleme var. */
-export default function Page() {
+/** Taşeron firmalar (FG-8.3): İSG uzmanı ve güvenlik. Arşivdekiler istenmedikçe gizli; firma sayfasında silme (iş paketi 3.14). */
+export default function Page({ searchParams }: PageProps<"/[locale]/security/contractors">) {
   return (
     <Suspense fallback={<PageSkeleton />}>
-      <Content />
+      <Content searchParams={searchParams} />
     </Suspense>
   );
 }
 
-async function Content() {
+async function Content({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const access = await securityAccess("contractors.manage");
   if (!access) return <NotFoundView />;
-  const [t, tNav, format, rows] = await Promise.all([
+  // Arşivdeki firmalar istenmedikçe gizlenir (iş paketi 3.14)
+  const showArchived = (await searchParams).archived === "1";
+  const [t, tNav, tDel, format, all] = await Promise.all([
     getTranslations("visitors"),
     getTranslations("sections.security"),
+    getTranslations("deletion"),
     getFormatter(),
     listCompanies(access.actor, { includeArchived: true }),
   ]);
+  const archivedCount = all.filter((c) => c.archivedAt).length;
+  const rows = showArchived ? all : all.filter((c) => !c.archivedAt);
   return (
     <section className="flex max-w-4xl flex-col gap-8">
       <PageHeader title={t("cards.contractors.title")} description={t("cards.contractors.description")} back={{ href: "/security", label: tNav("title") }} />
+      {archivedCount > 0 && (
+        <Link
+          href={showArchived ? "/security/contractors" : "/security/contractors?archived=1"}
+          className="inline-flex min-h-12 items-center self-end underline underline-offset-4"
+        >
+          {showArchived ? tDel("hideArchived") : `${tDel("showArchived")} (${archivedCount})`}
+        </Link>
+      )}
       {rows.length === 0 ? (
         <p className="rounded-xl border border-dashed p-5 text-muted-foreground">{t("companies.empty")}</p>
       ) : (
