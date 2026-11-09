@@ -16,6 +16,7 @@ test("iş paketi 3.14 (kararlar #283–287): bağlı kayıt uyarısı, onaylı s
   await acceptConsentIfAsked(page);
   await page.goto("/admin/org");
   const main = page.getByRole("main").filter({ visible: true });
+  await main.getByRole("button", { name: "Tümünü aç" }).click();
 
   // Bölümü ve pozisyonu olan departman: "önce onları silin" uyarısı, silme düğmesi yok
   await main.getByRole("button", { name: `Sil: ${dept}` }).click();

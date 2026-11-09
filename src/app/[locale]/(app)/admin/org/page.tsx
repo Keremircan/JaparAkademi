@@ -7,7 +7,8 @@ import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 import { Button } from "@/components/ui/button";
 import { adminAccess } from "@/features/admin/guard";
-import { activeOnly, OrgTree, passiveCount } from "@/features/org/components/org-tree";
+import { ExpandAll } from "@/features/org/components/org-collapse";
+import { activeOnly, OrgTree, passiveCount, unitIds } from "@/features/org/components/org-tree";
 import { Link } from "@/i18n/navigation";
 import { getOrgTree } from "@/server/services/org";
 
@@ -35,6 +36,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
     getOrgTree(access.actor),
   ]);
   const passive = passiveCount(tree);
+  const nodes = showPassive ? tree : activeOnly(tree);
 
   return (
     <section className="max-w-5xl">
@@ -49,15 +51,24 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
           </Button>
         }
       />
-      {passive > 0 && (
-        <div className="mb-4 flex justify-end">
-          <Button variant="outline" size="sm" nativeButton={false} render={<Link href={showPassive ? "/admin/org" : "/admin/org?passive=1"} />}>
-            {showPassive ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
-            {showPassive ? tDel("hidePassive") : `${tDel("showPassive")} (${passive})`}
-          </Button>
+      {(nodes.length > 0 || passive > 0) && (
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          {nodes.length > 0 && <ExpandAll ids={unitIds(nodes)} />}
+          {passive > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="ml-auto"
+              nativeButton={false}
+              render={<Link href={showPassive ? "/admin/org" : "/admin/org?passive=1"} />}
+            >
+              {showPassive ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
+              {showPassive ? tDel("hidePassive") : `${tDel("showPassive")} (${passive})`}
+            </Button>
+          )}
         </div>
       )}
-      <OrgTree nodes={showPassive ? tree : activeOnly(tree)} />
+      <OrgTree nodes={nodes} />
     </section>
   );
 }

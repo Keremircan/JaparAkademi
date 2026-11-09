@@ -529,7 +529,14 @@
       "inactive": "Pasif",
       "empty": "Henüz departman yok. İlk departmanı ekleyin.",
       "noPositions": "Pozisyon yok",
+      "directPositions": "Departmana doğrudan bağlı pozisyonlar",
+      "expandAll": "Tümünü aç",
+      "collapseAll": "Tümünü kapat",
       "activePersonnel": "{count} kişi",
+      "summary": {
+        "sections": "{count, plural, one {# bölüm} other {# bölüm}}",
+        "positions": "{count, plural, one {# pozisyon} other {# pozisyon}}"
+      },
       "code": "Kod",
       "kind": {
         "department": "Departman",
