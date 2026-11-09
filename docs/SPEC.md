@@ -89,7 +89,7 @@ Her kullanıcı bir **personel** kaydıdır. Roller personelin üzerine eklenir 
 | Pratik sınav 2. imza, işe başlama onayı | ❌ | ❌ | ✅ (kapsam) | ❌ | ❌ | ❌ | ❌ |
 | Gözetmen kodu üretme | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
 | Raporlar | ❌ | ❌ | ✅ (kapsam) | ✅ (İSG) | ✅ (tümü) | ✅ (ziyaretçi) | ✅ |
-| Parametreler, roller, entegrasyon | ❌ | ❌ | ❌ | ✅ (yalnızca İSG parametreleri) | ❌ | ❌ | ✅ |
+| Parametreler, roller, entegrasyon | ❌ | ❌ | ❌ | ✅ (yalnızca İSG parametreleri) | ✅ (yalnızca vardiya türleri, karar #291) | ❌ | ✅ |
 
 \* Her rol aynı zamanda personeldir. Kendisine eğitim atanmışsa kursiyer ekranlarını kullanır.
 
@@ -217,7 +217,7 @@ Her pozisyon için aynı yapıda bir kart doldurulur. Yazılım bu alanları for
 
 | # | Bölüm | İçerik | Zorunlu | Veri yapısı |
 |---|---|---|---|---|
-| 1 | Künye | Pozisyon adı, kodu, departman, bağlı olduğu amir pozisyonu, vekil pozisyonu, yaka tipi, vardiya düzeni | Evet | Yapısal alanlar |
+| 1 | Künye | Pozisyon adı, kodu, departman, bağlı olduğu amir pozisyonu, vekil pozisyonu, yaka tipi, vardiya düzeni (vardiya türlerinden seçilir, karar #291) | Evet | Yapısal alanlar |
 | 2 | Amaç | Pozisyonun var olma nedeni (1–2 cümle) | Evet | Metin (en fazla 500 karakter) |
 | 3 | Görev ve sorumluluklar | Madde madde görevler + sıklık (`continuous` / `daily` / `weekly` / `monthly`) | Evet | Liste |
 | 4 | İş akışı | Adım adım; girdi → işlem → çıktı; varsa akış şeması görseli | Evet | Sıralı adımlar + opsiyonel görsel |
@@ -687,6 +687,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | Anahtar | Varsayılan | Plan | Yöneten |
 |---|---|---|---|
 | `org.timezone` | Europe/Istanbul | — | sysadmin |
+| `org.shift_types` | 23:00-07:00, 07:00-15:00, 15:00-23:00, 08:00-18:00 | — | hr, sysadmin |
 | `ohs.hazard_class` | null (→ tehlikeli kabul) | — | ohs_specialist |
 | `ohs.hours_by_class` | {low: 8, medium: 12, high: 16} | — | ohs_specialist |
 | `ohs.renewal_years_by_class` | {low: 3, medium: 2, high: 1} | — | ohs_specialist |
@@ -934,7 +935,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 114 | Personel anonimleştirmesi (ilke) | İş ilişkisi bitişi + `retention.personnel_years_after_exit` dolunca kişi verisi silinir; değiştirilemez kayıtların kendisi kalır. Sertifika snapshot'ındaki ad hukuk teyidine kadar dokunulmaz |
 | 115 | Tahliye listesi cihazda | Yalnızca son liste tarayıcıda (IndexedDB); çıkışta silinir, 24 saatten eski liste gösterilmez; yalnızca güvenlik ve İSG |
 | 116 | Görselde işaretleme | Doğru bölge dikdörtgen veya daire; dokunulan nokta bölgedeyse doğru |
-| 117 | Parametreler ekranı | `/admin/settings` (Sistem → Parametreler; sysadmin ve İSG uzmanı). Herkes yalnızca yönettiği (`managedBy`) parametreleri görür. İmza yetkilileri kendi ekranında; `org.timezone` salt okunur. Değer kayıttaki Zod şemasıyla doğrulanır; varsayılana dönülebilir |
+| 117 | Parametreler ekranı | `/admin/settings` (Sistem → Parametreler; sysadmin ve İSG uzmanı; İK yalnızca vardiya türleri için, karar #291). Herkes yalnızca yönettiği (`managedBy`) parametreleri görür. İmza yetkilileri kendi ekranında; `org.timezone` salt okunur. Değer kayıttaki Zod şemasıyla doğrulanır; varsayılana dönülebilir |
 | 118 | Değişiklik gerekçesi | `settings.change_note`; `retention.*` için en az 10 karakter zorunlu, diğerlerinde isteğe bağlı. Gerekçe denetim kaydına da yazılır |
 | 119 | Bildirim kanalları | `notify.channels.<olay>` yerine `notify.email_events` listesi; ekranda olay × kanal (uygulama içi her zaman). Push için 2.6'da `notify.push_events` |
 | 120 | Anonimleştirme kapsamı | Ad "Anonim #XXXXXXXX", sicil "ANON-XXXXXXXX"; TC, telefon, e-posta silinir; oturum, şifre, rol ve kapsamlar silinir; bildirim, e-posta kuyruğu ve şifre sıfırlama kayıtları silinir; giriş denemesi, sınav denemesi, KVKK onayı ve imzadaki IP/cihaz silinir; Excel aktarım satırının verisi silinir |
@@ -1108,6 +1109,7 @@ Tüm parametreler `settings` tablosundadır; değişiklikler denetim kaydına ya
 | 288 | Silinmeyenler | Kara liste kaydı, sistem dışı son eğitim tarihi, sertifika, sınav denemesi, imza, onay ve yayınlanmış sürümler silinmez; mevcut kaldırma, düzeltme, geçersiz kılma ve iptal işlemleri geçerlidir. Yayınlanmamış taslaklar (içerik, kart, ziyaretçi paketi) mevcut "Taslağı sil" ile, hukuki metin taslağı bütün dilleriyle **Taslağı sil** ile silinir. İlk sürüm kart taslağı pozisyonla birlikte silinir |
 | 289 | Testlerin ayrı verisi | Testler geliştirme veritabanına ve dosya deposuna yazmaz. Entegrasyon testleri `akademi_test` + `<depo>-test`, uçtan uca testler `akademi_e2e` + `<depo>-e2e` kullanır; ikisi de her çalıştırmanın başında boşaltılır (yalnızca adı test sonekiyle biten hedefe dokunulur). Uçtan uca testler kendi üretim derlemesiyle ayrı portta çalışır; bu sunucuda e-posta ve push yalnızca kayda yazılır |
 | 290 | Kişi sayfasında silme yolu | Kişi sayfasında tek "Kişiyi sil" bölümü vardır. Sayfa açılırken silme denenip geri alınır (`personDeletePath`) ve yalnızca geçerli yol gösterilir. Geçmiş kaydı yoksa "Bu kişinin sistemde geçmiş kaydı yok…" ve **Kişiyi sil** düğmesi (işten ayrıldı işaretlemesi gerekmez, karar #285). Geçmiş kaydı varsa iki adım: 1) "İşten ayrıldı" olarak işaretleme (yapıldıysa onay işaretiyle), 2) üst yöneticinin **Kişisel verileri kalıcı olarak sil** düğmesi (karar #264; 1. adımdan sonra çıkar, İK "yalnızca üst yönetici" notunu görür). Kişiyi silme yetkiniz yoksa (üst yönetici ya da sistem yöneticisi hesabı) yalnızca bunu söyleyen not görünür. Kalıcı silme düğmesinin eski adı "Kişiyi kalıcı olarak sil" idi; iki işlem karışmasın diye değişti |
+| 291 | Vardiya türleri | Pozisyonun "Vardiya düzeni" serbest metin değildir; `org.shift_types` parametresindeki vardiyalardan bir ya da birden çoğu işaretlenir (dönüşümlü çalışılan pozisyonda hepsi). Vardiya saat aralığı olarak saklanır (`positions.shifts`, ör. `23:00-07:00`; bitiş ertesi güne düşebilir). Varsayılan liste: 23:00-07:00, 07:00-15:00, 15:00-23:00, 08:00-18:00. Listeyi İK ve sistem yöneticisi Parametreler ekranından değiştirir (satır başına bir vardiya; "8.00 - 18.00" gibi yazımlar düzeltilir). Listeden çıkarılan vardiya onu kullanan pozisyonlarda kalır ("listede yok" etiketiyle), başka pozisyona eklenemez. Künyede seçilenler tek satırda gösterilir; yayınlanmış kartlar değişmez. Eski serbest metinlerdeki saat aralıkları taşındı, diğer yazılar (ör. "3 vardiya") kaldırıldı. Çalışma programlarındaki vardiya programları (karar #252) bundan bağımsızdır |
 
 ### 17.1 Bu Dokümanda Yapılan Varsayımlar (onaya sunulur)
 Kaynak dokümanda açıkça yer almayan ama tasarımı tamamlamak için gereken kararlar:

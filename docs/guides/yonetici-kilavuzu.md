@@ -11,6 +11,7 @@ Bir kişi birden çok role sahip olabilir; menü rollerinize göre oluşur. Kims
 
 ### Organizasyon ve personel
 - **Sistem → Organizasyon yapısı**: departman, bölüm ve pozisyonları tanımlayın. Pozisyonun yaka tipi ortak eğitimleri belirler.
+- **Vardiya düzeni**: pozisyon formunda pozisyonda çalışılan vardiyaları işaretleyin; dönüşümlü çalışılıyorsa hepsini seçin. Seçenekler **Sistem → Parametreler → Vardiya türleri**'ndedir (satır başına bir vardiya, ör. 23:00-07:00). Listeden çıkardığınız vardiya, onu kullanan pozisyonlarda "listede yok" etiketiyle kalır.
 - **Sistem → Personel**:
   - **Ekle**: tek kişi; yeni işe girenler için "eğitim gerekli" işaretlenir. Davet kanalında varsayılan **Şimdi davet etme**'dir (daveti sonra **Davetler** ekranından gönderirsiniz); isterseniz hemen gönderebilirsiniz: **E-posta** (bağlantı kişiye gider; e-posta gönderimi açıkken), **WhatsApp** (kaydettikten sonra **WhatsApp'ta gönder**'e basın; mesaj kendi telefonunuzda yazılmış hâlde açılır, siz gönderirsiniz — telefon numarası gerekir) ya da **Basılı kağıt** (QR + 8 haneli kod; PDF'i yazdırıp elden verin). Kişi şifresini kendisi belirler; siz şifre görmezsiniz. Davet 72 saat geçerlidir.
   - **Excel'den aktar**: şablonu indirin, doldurun, yükleyin. Önce önizleme gösterilir; onaylayınca hesaplar açılır ama davet gönderilmez. Sonuç ekranındaki **Bunlara davet gönder** sizi Davetler ekranına, yalnızca bu aktarımın kişileriyle götürür.

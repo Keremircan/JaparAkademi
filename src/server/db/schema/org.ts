@@ -48,7 +48,8 @@ export const positions = pgTable(
     supervisorPositionId: uuid().references((): AnyPgColumn => positions.id, { onDelete: "restrict" }),
     deputyPositionId: uuid().references((): AnyPgColumn => positions.id, { onDelete: "restrict" }),
     collarType: collarType().notNull(),
-    shiftPattern: text(),
+    // Pozisyonda çalışılan vardiyalar (karar #291): "23:00-07:00" biçiminde, org.shift_types listesinden seçilir
+    shifts: text().array().notNull().default(sql`'{}'::text[]`),
     status: positionStatus().notNull().default("active"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
@@ -56,5 +57,6 @@ export const positions = pgTable(
   (t) => [
     unique("positions_org_unit_name_unique").on(t.orgUnitId, t.name),
     index("positions_org_unit_idx").on(t.orgUnitId),
+    check("positions_shifts_check", sql`array_to_string(${t.shifts}, ',') ~ '^(([01][0-9]|2[0-3]):[0-5][0-9]-([01][0-9]|2[0-3]):[0-5][0-9](,([01][0-9]|2[0-3]):[0-5][0-9]-([01][0-9]|2[0-3]):[0-5][0-9])*)?$'`),
   ],
 );

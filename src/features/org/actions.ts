@@ -5,6 +5,7 @@ import { refresh } from "next/cache";
 import { z } from "zod";
 import { actionUser, formText, runAction, type ActionResult } from "@/features/shared/action-result";
 import { redirect } from "@/i18n/navigation";
+import { MAX_SHIFT_TYPES, SHIFT_PATTERN } from "@/lib/shifts";
 import {
   createOrgUnit,
   createPosition,
@@ -57,7 +58,7 @@ const positionSchema = z.object({
   name: z.string().min(1).max(120),
   code: z.string().min(1).max(40),
   collarType: z.enum(["blue", "white"]),
-  shiftPattern: z.string().max(120).nullable(),
+  shifts: z.array(z.string().regex(SHIFT_PATTERN)).max(MAX_SHIFT_TYPES * 2),
   supervisorPositionId: uuid.nullable(),
   deputyPositionId: uuid.nullable(),
 });
@@ -69,7 +70,7 @@ export async function savePositionAction(_prev: ActionResult | null, formData: F
     name: formText(formData, "name") ?? "",
     code: formText(formData, "code") ?? "",
     collarType: formText(formData, "collarType"),
-    shiftPattern: formText(formData, "shiftPattern"),
+    shifts: formData.getAll("shifts"),
     supervisorPositionId: formText(formData, "supervisorPositionId"),
     deputyPositionId: formText(formData, "deputyPositionId"),
   });

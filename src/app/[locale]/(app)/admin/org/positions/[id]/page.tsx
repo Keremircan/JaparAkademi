@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 import { adminAccess, orNull } from "@/features/admin/guard";
 import { PositionForm } from "@/features/org/components/position-form";
-import { getPosition, listPositionOptions, listUnitOptions } from "@/server/services/org";
+import { getPosition, listPositionOptions, listUnitOptions, shiftTypeOptions } from "@/server/services/org";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.org.positionForm");
@@ -27,16 +27,18 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const position = await orNull(getPosition(access.actor, id));
   if (!position) return <NotFoundView />;
-  const [t, units, positions] = await Promise.all([
+  const [t, units, positions, shiftTypes] = await Promise.all([
     getTranslations("admin.org"),
     listUnitOptions(access.actor),
     listPositionOptions(access.actor, { includePassive: true }),
+    shiftTypeOptions(access.actor),
   ]);
 
   return (
     <section>
       <PageHeader title={t("positionForm.edit")} back={{ href: "/admin/org", label: t("title") }} />
-      <PositionForm position={position} units={units} positionOptions={positions} />
+      {/* Kayıttan sonra eski verinin işaretleri kalmasın: form güncel kayıtla yeniden kurulur */}
+      <PositionForm key={position.updatedAt.getTime()} position={position} units={units} positionOptions={positions} shiftTypes={shiftTypes} />
     </section>
   );
 }

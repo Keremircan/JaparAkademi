@@ -389,6 +389,8 @@
     "report_range_invalid": "The start date cannot be after the end date.",
     "report_too_large": "The report exceeds the row limit. Narrow the date range or the unit/position filter.",
     "invalid_setting": "The value is invalid or outside the allowed range.",
+    "invalid_shift": "The shift times are invalid. Format: 23:00-07:00.",
+    "shift_unknown": "The shift you selected is no longer in the shift types list. Refresh the page and select again.",
     "setting_readonly": "This parameter cannot be changed on screen.",
     "setting_note_required": "Write a reason of at least 10 characters for this parameter.",
     "legal_locale_missing": "Both the Turkish and the English text of this version are required.",
@@ -558,7 +560,10 @@
         "code": "Position code",
         "collarType": "Collar type",
         "shiftPattern": "Shift pattern",
-        "shiftHint": "e.g. 3 shifts, day shift",
+        "shiftHint": "Tick the shifts worked in this position; if staff rotate, select all of them.",
+        "shiftTypesLink": "Edit shift types",
+        "shiftNotInList": "not in the list",
+        "shiftsEmpty": "No shift types are defined. Add shift types under Settings first.",
         "supervisor": "Supervisor position",
         "deputy": "Deputy position",
         "none": "None"
@@ -2967,6 +2972,11 @@
       "org_timezone": {
         "label": "Time zone",
         "hint": "All date calculations use this time zone.",
+        "unit": "{n}"
+      },
+      "org_shift_types": {
+        "label": "Shift types",
+        "hint": "Shifts that can be selected in the position form. Write one shift per line: start-end (e.g. 23:00-07:00). A shift removed from the list stays on the positions that use it.",
         "unit": "{n}"
       },
       "ohs_hazard_class": {

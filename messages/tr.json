@@ -389,6 +389,8 @@
     "report_range_invalid": "Başlangıç tarihi bitiş tarihinden sonra olamaz.",
     "report_too_large": "Rapor satır sınırını aşıyor. Tarih aralığını ya da birim/pozisyon filtresini daraltın.",
     "invalid_setting": "Değer geçersiz ya da izin verilen aralığın dışında.",
+    "invalid_shift": "Vardiya saatleri geçersiz. Biçim: 23:00-07:00.",
+    "shift_unknown": "Seçtiğiniz vardiya artık vardiya türleri listesinde yok. Sayfayı yenileyip yeniden seçin.",
     "setting_readonly": "Bu parametre ekrandan değiştirilemez.",
     "setting_note_required": "Bu parametre için en az 10 karakterlik bir gerekçe yazın.",
     "legal_locale_missing": "Bu sürümün Türkçe ve İngilizce metinlerinin ikisi de gerekli.",
@@ -558,7 +560,10 @@
         "code": "Pozisyon kodu",
         "collarType": "Yaka tipi",
         "shiftPattern": "Vardiya düzeni",
-        "shiftHint": "ör. 3 vardiya, gündüz",
+        "shiftHint": "Pozisyonda çalışılan vardiyaları işaretleyin; dönüşümlü çalışılıyorsa hepsini seçin.",
+        "shiftTypesLink": "Vardiya türlerini düzenle",
+        "shiftNotInList": "listede yok",
+        "shiftsEmpty": "Vardiya türü tanımlı değil. Önce Parametreler'den vardiya türlerini ekleyin.",
         "supervisor": "Bağlı olduğu amir pozisyonu",
         "deputy": "Vekil pozisyonu",
         "none": "Seçilmedi"
@@ -3002,6 +3007,11 @@
       "org_timezone": {
         "label": "Saat dilimi",
         "hint": "Bütün tarih hesapları bu saat dilimine göre yapılır.",
+        "unit": "{n}"
+      },
+      "org_shift_types": {
+        "label": "Vardiya türleri",
+        "hint": "Pozisyon formunda seçilebilen vardiyalar. Her satıra bir vardiya yazın: başlangıç-bitiş (ör. 23:00-07:00). Listeden çıkarılan vardiya, onu kullanan pozisyonlarda kalır.",
         "unit": "{n}"
       },
       "ohs_hazard_class": {

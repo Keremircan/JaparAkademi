@@ -1,5 +1,6 @@
 import { and, asc, count, desc, eq, inArray, isNull, max, or, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
+import { formatShifts } from "@/lib/shifts";
 import type { Actor } from "@/server/authz/actor";
 import { assertNotSelf, assertUser, hasAnyRole, hasOwnRole, hasRole } from "@/server/authz/policy";
 import { assertDifferentApprover, recordOwnerAction } from "@/server/services/owner-actions";
@@ -120,7 +121,7 @@ export async function identityOf(conn: DbOrTx, positionId: string): Promise<Card
       supervisorName: sup.name,
       deputyName: dep.name,
       collarType: positions.collarType,
-      shiftPattern: positions.shiftPattern,
+      shifts: positions.shifts,
     })
     .from(positions)
     .innerJoin(orgUnits, eq(orgUnits.id, positions.orgUnitId))
@@ -138,7 +139,8 @@ export async function identityOf(conn: DbOrTx, positionId: string): Promise<Card
     supervisorName: row.supervisorName,
     deputyName: row.deputyName,
     collarType: row.collarType,
-    shiftPattern: row.shiftPattern,
+    // Künyede tek satır; yayınlanmış eski kartlarda serbest metin olarak kalır (karar #291)
+    shiftPattern: formatShifts(row.shifts),
   };
 }
 
