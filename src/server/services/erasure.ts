@@ -9,6 +9,8 @@ import { messagesFor } from "@/server/i18n/messages";
 import { logger } from "@/server/logger";
 import { APP_LOCALES } from "@/lib/locale";
 import { cleanEraseReason, confirmationMatches, confirmationPhrase } from "@/lib/erasure";
+import type { ResetBlock } from "@/server/state/invitations";
+import { checkDeletion } from "./deletion";
 import { purgeAnonymizedProfilePhotos } from "./profile";
 import { anonymizePeople, purgeAnonymizedSignatureImages } from "./retention";
 
@@ -76,4 +78,23 @@ export async function erasureInfo(actor: Actor, userId: string): Promise<Erasure
     .orderBy(desc(personErasures.erasedAt))
     .limit(1);
   return row ?? null;
+}
+
+/**
+ * Kişi sayfasında hangi silme yolunun geçerli olduğu (karar #290). Sayfa açılırken "Kişiyi sil" düğmesinin yaptığı
+ * denetim (deneme silme + geri alma, `checkDeletion`) yapılır; sayfa böylece yolu baştan söyler:
+ * - `delete`: geçmiş kaydı yok; İK kişiyi doğrudan siler, işten ayrıldı işaretlemesi gerekmez (karar #285);
+ * - `history`: geçmiş kaydı var; kişi işten ayrıldı yapılır, kişisel verileri üst yönetici siler (kararlar #264–267);
+ * - `owner_only` / `sysadmin_only`: bu kişiyi silmeye yetkiniz yok (şifre sıfırlamadaki kural, `resetBlock`).
+ */
+export type PersonDeletePath = "delete" | "history" | ResetBlock;
+
+export async function personDeletePath(actor: Actor, userId: string): Promise<PersonDeletePath> {
+  try {
+    // Kişinin önce silinmesi gereken bağlı kaydı tanımlı değil: sonuç "ok" ya da "history"
+    return (await checkDeletion(actor, "person", userId)).state === "ok" ? "delete" : "history";
+  } catch (err) {
+    if (err instanceof ForbiddenError && (err.permission === "owner_only" || err.permission === "sysadmin_only")) return err.permission;
+    throw err;
+  }
 }
