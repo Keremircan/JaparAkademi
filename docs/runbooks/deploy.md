@@ -102,6 +102,8 @@ Bundan sonra PR'ı açınca **Enable auto-merge** → **Confirm** demeniz yeterl
 
 Küçük işler aynı dalda ayrı commit'ler olarak biriktirilip tek PR ile gönderilebilir; büyük iş paketleri ayrı PR olur.
 
+**Önce imajları bekleyin.** PR birleştirildikten sonra GitHub → **Actions** → **CI** listesinde `main` dalındaki en üstteki çalışma yeşil tik alana kadar (~5 dk) sunucuda `pull` yapmayın. Erken çekerseniz `git pull` yeni compose/migration dosyalarını getirir ama `$C pull` hâlâ eski imajı indirir; uygulama eski kodla açılır. Çalışma kırmızıysa güncellemeyin, önce nedenine bakın.
+
 ```bash
 cd /opt/japar-akademi && git pull     # compose/Caddy/yedek dosyaları için
 $C pull

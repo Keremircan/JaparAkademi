@@ -267,6 +267,32 @@ export default async function globalSetup() {
     const hrAccount = await createAccount(sys, { sicilNo: `E2E-${suffix}-HRP${p}`, fullName: "Deneme İK Atama", password: E2E_PASSWORD, roles: ["hr"], mustChangePassword: false });
     const hrActor = { kind: "user" as const, userId: hrAccount.userId, roles: ["personnel" as const, "hr" as const] };
     await updateAssignment(hrActor, (await myLearning(pracActor)).current!.id, { trainerUserId: trainerAccount.userId, targetDate: null });
+
+    // Faz 3 (iş paketi 3.10): yetkinlik verilecek kişi (karar #219), profil fotoğrafı yükleyecek kişi (karar #232),
+    // süreli teorik modülü planında olan pozisyonda eğitimi atanmamış eski personel (kararlar #222–223)
+    await createAccount(sys, { sicilNo: `E2E-${suffix}-YTK${p}`, fullName: `Deneme Yetkinlik ${p}`, password: E2E_PASSWORD, positionId: sectionPos.id, mustChangePassword: false });
+    await createAccount(sys, { sicilNo: `E2E-${suffix}-FOT${p}`, fullName: `Deneme Fotoğraf ${p}`, password: E2E_PASSWORD, mustChangePassword: false });
+    const perPos = await createPosition(sys, { orgUnitId: section.id, name: `E2E Periyodik Pozisyonu ${p}`, code: `E2E-PER-${suffix}-${p}`.toUpperCase(), collarType: "blue" });
+    const perTheory = await createModule(smActor, {
+      kind: "theory", title: `E2E Periyodik eğitim ${suffix} ${p}`, description: null, durationMin: 30, isOhs: false, remoteAllowed: true,
+      validityMonths: 12, ownerOrgUnitId: section.id, commonTarget: null, commonSortOrder: null,
+    });
+    await setModuleContents(smActor, perTheory.id, [contentId]);
+    await createCard(smActor, perPos.id);
+    await saveCardSections(smActor, perPos.id, fullCardSections());
+    const perCardModule = (await getEditableCard(smActor, perPos.id)).plan.items.find((i) => i.isCardModule)!.moduleId;
+    await savePlan(smActor, perPos.id, {
+      overrides: {},
+      items: [
+        { moduleId: perCardModule, isRequired: true, prerequisiteModuleIds: [], settings: {} },
+        { moduleId: perTheory.id, isRequired: true, prerequisiteModuleIds: [perCardModule], settings: {} },
+      ],
+    });
+    await submitCard(smActor, perPos.id, { changeNote: null });
+    const pendingPer = (await cardApprovalQueue(ohsActor)).find((q) => q.positionId === perPos.id);
+    if (pendingPer) await approveCard(ohsActor, pendingPer.versionId);
+    await createAccount(sys, { sicilNo: `E2E-${suffix}-PER${p}`, fullName: `Deneme Periyodik ${p}`, password: E2E_PASSWORD, positionId: perPos.id, mustChangePassword: false });
+    await createAccount(sys, { sicilNo: `E2E-${suffix}-PTR${p}`, fullName: `Deneme Tarih ${p}`, password: E2E_PASSWORD, positionId: perPos.id, mustChangePassword: false });
   }
 
   // Çalışma programı (iş paketi 3.9): programı olmayan bir pozisyon ve bu pozisyonda personel
