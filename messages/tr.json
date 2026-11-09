@@ -706,9 +706,8 @@
         "scopes": "Bölüm sorumlusu kapsamı"
       },
       "erase": {
-        "title": "Kişiyi kalıcı olarak sil",
-        "intro": "Kişisel verileri saklama süresini beklemeden siler. Bu bölümü yalnızca üst yönetici görür.",
-        "open": "Kişiyi kalıcı olarak sil",
+        "title": "Kişisel verileri kalıcı olarak sil",
+        "open": "Kişisel verileri kalıcı olarak sil",
         "warning": "Kişiye ait tüm kişisel veriler silinecektir! Bu işlem geri alınamaz.",
         "deletedTitle": "Silinecekler",
         "deleted": "Ad soyad, sicil no, TC kimlik no, telefon, e-posta, şifre ve oturumlar, bildirimler, profil fotoğrafı, imza görselleri, çalışma programı.",
@@ -720,16 +719,23 @@
         "confirmLabel": "Onaylamak için aşağıya <b>{phrase}</b> yazın.",
         "cancel": "Vazgeç",
         "submit": "Kalıcı olarak sil",
-        "submitting": "Siliniyor…",
-        "onlyTerminated": "Kalıcı silme yalnızca işten ayrılmış kişide yapılabilir. Önce kişiyi işten ayrıldı olarak işaretleyin."
+        "submitting": "Siliniyor…"
       },
       "waitingButton": "Eğitimi bekleyenler",
       "invitesButton": "Davetler",
       "deleted": "Kişi silindi.",
       "delete": {
         "title": "Kişiyi sil",
-        "intro": "Sistemi hiç kullanmamış kişiyi (yanlış ya da yinelenen kayıt) silebilirsiniz. Eğitim, sınav, giriş ya da onay kaydı olan kişi silinemez; işten ayrıldıysa “İşten ayrıldı” olarak işaretleyin.",
-        "button": "Kişiyi sil"
+        "none": "Bu kişinin sistemde geçmiş kaydı yok (eğitim, sınav, onay ya da KVKK onayı gibi). Yanlış ya da yinelenen bir kayıtsa hemen silebilirsiniz; işten ayrıldı olarak işaretlemeniz gerekmez. Kişi bütün bilgileriyle silinir ve bu işlem geri alınamaz.",
+        "button": "Kişiyi sil",
+        "history": "Bu kişinin sistemde geçmiş kaydı var (eğitim, sınav, onay ya da KVKK onayı gibi). Bu kayıtlar yasal süre boyunca saklandığı için kişi doğrudan silinemez. Kişisel verilerini silmek için:",
+        "stepTerminate": "Kişiyi “İşten ayrıldı” olarak işaretleyin (yukarıdaki Durum bölümünden).",
+        "stepTerminateDone": "Kişi “İşten ayrıldı” olarak işaretlendi.",
+        "stepErase": "Üst yönetici “Kişisel verileri kalıcı olarak sil” düğmesiyle kişisel verileri saklama süresini beklemeden siler. Eğitim, sınav ve sertifika kayıtları isimsiz olarak kalır.",
+        "eraseOwnerOnly": "Bu adımı yalnızca üst yönetici yapabilir.",
+        "eraseAfterTerminate": "Düğme, kişi işten ayrıldı olarak işaretlenince burada görünür.",
+        "owner_only": "Bu kişiyi yalnızca üst yönetici silebilir.",
+        "sysadmin_only": "Bu kişiyi yalnızca üst yönetici ya da sistem yöneticisi silebilir."
       }
     },
     "roles": {
@@ -4249,7 +4255,8 @@
       },
       "person": {
         "blocked": "Silmek istediğiniz kişiye bağlı kayıtlar var. Önce onları silin:",
-        "history": "Bu kişinin sistemde geçmiş kaydı var (eğitim, sınav, onay, KVKK onayı, giriş ya da görüntüleme kaydı); bu yüzden silinemez. Kişi işten ayrıldıysa önce “İşten ayrıldı” olarak işaretleyin; üst yönetici kişisel verilerini “Kişiyi kalıcı olarak sil” ile siler ve kişi listelerden kaybolur."
+        "history": "Bu kişinin sistemde geçmiş kaydı var (eğitim, sınav, onay, KVKK onayı, giriş ya da görüntüleme kaydı); bu yüzden silinemez. Kişi işten ayrıldıysa önce “İşten ayrıldı” olarak işaretleyin; üst yönetici kişisel verilerini “Kişisel verileri kalıcı olarak sil” ile siler ve kişi listelerden kaybolur.",
+        "note": "Kişi bütün bilgileriyle silinir. Sistemde geçmiş kaydı olmadığı için işten ayrıldı işaretlemesi gerekmez."
       },
       "module": {
         "blocked": "Silmek istediğiniz modüle bağlı kayıtlar var. Önce onları silin ya da modülden çıkarın:"

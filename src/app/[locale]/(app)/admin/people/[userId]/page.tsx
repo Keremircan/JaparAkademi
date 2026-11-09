@@ -1,4 +1,4 @@
-import { Pencil, ShieldCheck } from "lucide-react";
+import { CircleCheck, Pencil, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Suspense, type ReactNode } from "react";
@@ -24,6 +24,7 @@ import { certificatesForUser } from "@/server/services/certificates";
 import { PersonalExportButton } from "@/features/reports/components/personal-export-button";
 import { ProfilePhoto } from "@/features/profile/components/profile-photo";
 import { personPhoto } from "@/server/services/profile";
+import { personDeletePath } from "@/server/services/erasure";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.people");
@@ -35,6 +36,17 @@ export default function Page({ params }: PageProps<"/[locale]/admin/people/[user
     <Suspense fallback={<PageSkeleton />}>
       <Content params={params} />
     </Suspense>
+  );
+}
+
+/** Silme adımının numarası; tamamlanan adımda onay işareti (adımın metni de tamamlandığını söyler). */
+function StepMarker({ n, done = false }: { n: number; done?: boolean }) {
+  return done ? (
+    <CircleCheck aria-hidden="true" className="size-6 shrink-0 text-emerald-700 dark:text-emerald-400" />
+  ) : (
+    <span aria-hidden="true" className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold">
+      {n}
+    </span>
   );
 }
 
@@ -71,7 +83,7 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
   const canAssign = can(access.actor, "assignments.manage");
   const canErase = can(access.actor, "people.erase") && !isSelf;
   const showReset = canManage && !isSelf && person.status === "active";
-  const [assignmentList, trainers, ta, tcert, certs, invite, tInvite, photo, block] = await Promise.all([
+  const [assignmentList, trainers, ta, tcert, certs, invite, tInvite, photo, block, deletePath] = await Promise.all([
     canAssign ? assignmentsForPerson(access.actor, person.userId) : Promise.resolve([]),
     canAssign ? trainerCandidates(access.actor) : Promise.resolve([]),
     getTranslations("assignments"),
@@ -81,7 +93,9 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
     getTranslations("invite"),
     personPhoto(access.actor, person.userId),
     showReset ? resetBlockFor(access.actor, person.userId) : Promise.resolve(null),
+    canManage && !isSelf ? personDeletePath(access.actor, person.userId) : Promise.resolve(null),
   ]);
+  const terminated = person.status === "terminated";
   const open = assignmentList.find((a) => ["active", "awaiting_readiness", "awaiting_decision"].includes(a.status));
   const past = assignmentList.filter((a) => a !== open);
   const fmtDate = (d: string | null) => (d ? format.dateTime(new Date(`${d}T00:00:00`), { dateStyle: "medium" }) : tc("none"));
@@ -255,40 +269,54 @@ async function Content({ params }: { params: Promise<{ userId: string }> }) {
         </>
       )}
 
-      {/* Sistemi hiç kullanmamış kişi (yanlış ya da yinelenen kayıt) silinir; geçmişi olan silinemez (iş paketi 3.14) */}
-      {canManage && !isSelf && (
-        <section aria-labelledby="delete-heading" className="mb-6">
+      {/* Kişiyi silme (karar #290): sayfa hangi yolun geçerli olduğunu baştan söyler. Geçmiş kaydı yoksa İK doğrudan
+          siler (iş paketi 3.14, karar #285); varsa kişi işten ayrıldı yapılır ve kişisel verilerini üst yönetici siler
+          (kararlar #264–267). */}
+      {deletePath && (
+        <section aria-labelledby="delete-heading" className="mb-6" data-testid="person-delete">
           <h2 id="delete-heading" className="mb-2 text-base font-semibold">
             {t("delete.title")}
           </h2>
           <div className="flex flex-col items-start gap-3 rounded-xl border px-4 py-3">
-            <p className="text-sm text-muted-foreground">{t("delete.intro")}</p>
-            <DeleteControl
-              kind="person"
-              id={person.userId}
-              subject="person"
-              name={person.fullName}
-              label={t("delete.button")}
-              variant="outline"
-              after="/admin/people?deleted=1"
-            />
-          </div>
-        </section>
-      )}
-
-      {/* Kişiyi kalıcı silme: yalnızca üst yönetici, yalnızca işten ayrılmış kişi (kararlar #264–267) */}
-      {canErase && (
-        <section aria-labelledby="erase-heading" className="mb-6">
-          <h2 id="erase-heading" className="mb-2 text-base font-semibold">
-            {t("erase.title")}
-          </h2>
-          <div className="flex flex-col gap-3 rounded-xl border border-destructive/40 px-4 py-3">
-            <p className="text-sm text-muted-foreground">{t("erase.intro")}</p>
-            {person.status === "terminated" ? (
-              <EraseControl userId={person.userId} fullName={person.fullName} />
-            ) : (
-              <p className="text-sm">{t("erase.onlyTerminated")}</p>
+            {deletePath === "delete" && (
+              <>
+                <p className="text-sm">{t("delete.none")}</p>
+                <DeleteControl
+                  kind="person"
+                  id={person.userId}
+                  subject="person"
+                  name={person.fullName}
+                  label={t("delete.button")}
+                  variant="outline"
+                  after="/admin/people?deleted=1"
+                />
+              </>
             )}
+            {deletePath === "history" && (
+              <>
+                <p className="text-sm">{t("delete.history")}</p>
+                <ol className="flex flex-col gap-3 text-sm">
+                  <li className="flex items-start gap-3">
+                    <StepMarker n={1} done={terminated} />
+                    <span className="pt-0.5">{terminated ? t("delete.stepTerminateDone") : t("delete.stepTerminate")}</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <StepMarker n={2} />
+                    <div className="flex flex-col items-start gap-2 pt-0.5">
+                      <span>{t("delete.stepErase")}</span>
+                      {!canErase ? (
+                        <span className="text-muted-foreground">{t("delete.eraseOwnerOnly")}</span>
+                      ) : terminated ? (
+                        <EraseControl userId={person.userId} fullName={person.fullName} />
+                      ) : (
+                        <span className="text-muted-foreground">{t("delete.eraseAfterTerminate")}</span>
+                      )}
+                    </div>
+                  </li>
+                </ol>
+              </>
+            )}
+            {(deletePath === "owner_only" || deletePath === "sysadmin_only") && <p className="text-sm">{t(`delete.${deletePath}`)}</p>}
           </div>
         </section>
       )}

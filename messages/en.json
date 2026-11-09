@@ -706,9 +706,8 @@
         "scopes": "Section manager scope"
       },
       "erase": {
-        "title": "Delete person permanently",
-        "intro": "Deletes personal data without waiting for the retention period. Only owners see this section.",
-        "open": "Delete person permanently",
+        "title": "Delete personal data permanently",
+        "open": "Delete personal data permanently",
         "warning": "All personal data of this person will be deleted! This cannot be undone.",
         "deletedTitle": "Deleted",
         "deleted": "Full name, employee number, national ID number, phone, email, password and sessions, notifications, profile photo, signature images, work schedule.",
@@ -720,16 +719,23 @@
         "confirmLabel": "To confirm, type <b>{phrase}</b> below.",
         "cancel": "Cancel",
         "submit": "Delete permanently",
-        "submitting": "Deleting…",
-        "onlyTerminated": "Permanent deletion is only possible for people who have left the company. First mark the person as left the company."
+        "submitting": "Deleting…"
       },
       "waitingButton": "Waiting for training",
       "invitesButton": "Invitations",
       "deleted": "The person was deleted.",
       "delete": {
         "title": "Delete person",
-        "intro": "You can delete a person who never used the system (a wrong or duplicate record). A person with training, exam, sign-in or approval records cannot be deleted; if they have left, mark them as “Left the company”.",
-        "button": "Delete person"
+        "none": "This person has no past records in the system (such as training, exams, approvals or privacy notice consent). If this is a wrong or duplicate record, you can delete it right away; you do not need to mark the person as left the company. The person is deleted with all their details and this cannot be undone.",
+        "button": "Delete person",
+        "history": "This person has past records in the system (such as training, exams, approvals or privacy notice consent). These records are kept for the legal retention period, so the person cannot be deleted directly. To delete their personal data:",
+        "stepTerminate": "Mark the person as “Left the company” (in the Status section above).",
+        "stepTerminateDone": "The person is marked as “Left the company”.",
+        "stepErase": "An owner deletes the personal data without waiting for the retention period, using “Delete personal data permanently”. Training, exam and certificate records remain without a name.",
+        "eraseOwnerOnly": "Only an owner can do this step.",
+        "eraseAfterTerminate": "The button appears here once the person is marked as left the company.",
+        "owner_only": "Only an owner can delete this person.",
+        "sysadmin_only": "Only an owner or a system administrator can delete this person."
       }
     },
     "roles": {
@@ -4190,7 +4196,8 @@
       },
       "person": {
         "blocked": "The person you want to delete has linked records. Delete them first:",
-        "history": "This person has past records in the system (training, exam, approval, privacy notice consent, sign-in or viewing record), so they cannot be deleted. If they have left, first mark them as “Left the company”; the owner can then delete their personal data with “Delete person permanently” and they disappear from all lists."
+        "history": "This person has past records in the system (training, exam, approval, privacy notice consent, sign-in or viewing record), so they cannot be deleted. If they have left, first mark them as “Left the company”; the owner can then delete their personal data with “Delete personal data permanently” and they disappear from all lists.",
+        "note": "The person is deleted with all their details. As they have no past records, you do not need to mark them as left the company."
       },
       "module": {
         "blocked": "The module you want to delete has linked records. Delete them or remove them from the module first:"

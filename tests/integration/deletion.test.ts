@@ -32,8 +32,8 @@ import { createCompetency, grantCompetency } from "@/server/services/competencie
 import { createContent, createTag, listTags, saveDraft } from "@/server/services/content";
 import { checkDeletion, deleteRecord } from "@/server/services/deletion";
 import { registerDevice } from "@/server/services/devices";
-import { erasePerson } from "@/server/services/erasure";
-import { createDraft, publishText } from "@/server/services/legal";
+import { erasePerson, personDeletePath } from "@/server/services/erasure";
+import { acceptConsent, createDraft, publishText } from "@/server/services/legal";
 import { createModule, saveTasks, setModuleContents } from "@/server/services/modules";
 import { createOrgUnit, createPosition, setPositionStatus } from "@/server/services/org";
 import { getPerson, listPeople, setPersonStatus } from "@/server/services/people";
@@ -184,6 +184,36 @@ describe("İş paketi 3.14 — personel (SPEC 4.1)", () => {
     const boss = await createTestUser({ roles: ["owner"] });
     await expectCode(checkDeletion(p.hr.actor, "person", boss.userId), ForbiddenError);
     await expectCode(checkDeletion(p.personnel.actor, "person", worker.userId), ForbiddenError, "people.manage");
+  });
+
+  it("karar #290: kişi sayfası silme yolunu baştan bilir; deneme hiçbir şeyi silmez", async () => {
+    const p = await seedContentPeople();
+    const fresh = await createTestUser({ positionId: p.org.positions.presOp });
+    expect(await personDeletePath(p.hr.actor, fresh.userId)).toBe("delete");
+    // Deneme silme geri alınır: kişi yerinde, denetim kaydında silme yok
+    expect(await db().select().from(personnel).where(eq(personnel.userId, fresh.userId))).toHaveLength(1);
+    expect(await db().select().from(users).where(eq(users.id, fresh.userId))).toHaveLength(1);
+    const deletes = await db()
+      .select()
+      .from(auditLog)
+      .where(and(eq(auditLog.tableName, "personnel"), eq(auditLog.recordId, fresh.userId), eq(auditLog.action, "DELETE")));
+    expect(deletes).toHaveLength(0);
+
+    // KVKK onayı veren kişinin geçmiş kaydı vardır: işten ayrıldı + üst yöneticinin kalıcı silmesi
+    const tr = await createDraft(p.hr.actor, { title: "Aydınlatma Metni", body: "Kişisel verileriniz eğitim süreçleri için işlenmektedir. ".repeat(3) });
+    await createDraft(p.hr.actor, { title: "Privacy Notice", body: "Your personal data is processed for training purposes. ".repeat(3) }, "kvkk_personnel", "en");
+    await publishText(p.hr.actor, tr.id);
+    const consented = await createTestUser({ positionId: p.org.positions.presOp });
+    await acceptConsent(consented.actor, tr.id, { ip: "10.0.0.1", userAgent: "vitest" });
+    expect(await personDeletePath(p.hr.actor, consented.userId)).toBe("history");
+
+    // İK yetkili hesabı silemez; üst yönetici silebilir
+    const boss = await createTestUser({ roles: ["owner"] });
+    const admin = await createTestUser({ roles: ["sysadmin"] });
+    expect(await personDeletePath(p.hr.actor, boss.userId)).toBe("owner_only");
+    expect(await personDeletePath(p.hr.actor, admin.userId)).toBe("sysadmin_only");
+    expect(await personDeletePath(boss.actor, admin.userId)).toBe("delete");
+    await expectCode(personDeletePath(p.personnel.actor, fresh.userId), ForbiddenError, "people.manage");
   });
 
   it("3.14 karar #285: kalıcı silinen (anonim) kişi kişi listesinde, kişi sayfasında ve kişi bazlı raporda görünmez", async () => {

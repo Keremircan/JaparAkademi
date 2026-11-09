@@ -5,7 +5,7 @@ import { systemActor } from "../../src/server/authz/actor";
 import { closeDb, db } from "../../src/server/db/client";
 import { legalTexts } from "../../src/server/db/schema";
 import { createAccount } from "../../src/server/services/accounts";
-import { createDraft, currentText, publishText } from "../../src/server/services/legal";
+import { acceptConsent, createDraft, currentText, publishText } from "../../src/server/services/legal";
 import { createBriefingDraft, listBriefings, publishBriefing, saveBriefingDraft } from "../../src/server/services/visitors";
 import { createOrgUnit, createPosition } from "../../src/server/services/org";
 import { setSectionManagerScopes } from "../../src/server/services/roles";
@@ -276,11 +276,15 @@ export default async function globalSetup() {
     await createAccount(sys, { sicilNo: `E2E-${suffix}-PRG${p}`, fullName: `Deneme Programım ${p}`, password: E2E_PASSWORD, positionId: shiftPos.id, mustChangePassword: false });
   }
 
-  // Kişiyi kalıcı silme (kararlar #264–267): üst yönetici ve silinecek kişi
+  // Kişiyi kalıcı silme (kararlar #264–267): üst yönetici ve geçmiş kaydı (KVKK onayı) olan silinecek kişi.
+  // Karar #290: geçmiş kaydı olmayan (yanlış açılmış) kişiyi İK doğrudan siler.
+  const kvkkText = (await currentText("kvkk_personnel", "tr"))!;
   for (const project of ["mobile", "desktop"]) {
     const p = project[0];
     await createAccount(sys, { sicilNo: `E2E-${suffix}-OWN${p}`, fullName: `Deneme Üst Yönetici ${p}`, password: E2E_PASSWORD, roles: ["owner"], mustChangePassword: false });
-    await createAccount(sys, { sicilNo: `E2E-${suffix}-DEL${p}`, fullName: `Işıl Silinecek ${p.toUpperCase()}`, password: E2E_PASSWORD, email: `e2e-del-${suffix}-${p}@japar.test`.toLowerCase(), mustChangePassword: false });
+    const erased = await createAccount(sys, { sicilNo: `E2E-${suffix}-DEL${p}`, fullName: `Işıl Silinecek ${p.toUpperCase()}`, password: E2E_PASSWORD, email: `e2e-del-${suffix}-${p}@japar.test`.toLowerCase(), mustChangePassword: false });
+    await acceptConsent({ kind: "user", userId: erased.userId, roles: ["personnel"] }, kvkkText.id, { ip: "127.0.0.1", userAgent: "e2e" });
+    await createAccount(sys, { sicilNo: `E2E-${suffix}-YNL${p}`, fullName: `Yanlış Kayıt ${p.toUpperCase()}`, password: E2E_PASSWORD, mustChangePassword: false });
   }
 
   // Kayıt silme (iş paketi 3.14): bölümü ve yayınlanmış kartlı (geçmişi olan) pozisyonu olan departman
