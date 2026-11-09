@@ -1,6 +1,6 @@
 # Pilot kontrol listesi
 
-Faz 1 pilotuna geçmeden önce tamamlanacaklar (SPEC 16.3 genel kabul, Bölüm 18 JAPAR'ın hazırlayacakları).
+Pilota geçmeden önce tamamlanacaklar (SPEC 16.3 genel kabul, Bölüm 18 JAPAR'ın hazırlayacakları). Faz 1–3'ün kod kapsamı tamamlandı (`docs/surum-notlari.md`); bu liste kurumun yapacaklarını izler.
 Her satırda sorumlu ve durum doldurulur.
 
 ## 1. Kararlar ve sözleşmeler
@@ -12,9 +12,9 @@ Her satırda sorumlu ve durum doldurulur.
 | 1.2a | Yurt dışına aktarım için KVKK md. 9 dayanağı (ör. Hostinger ile standart sözleşme + Kurum'a bildirim) ve aydınlatma metinlerinde yurt dışı aktarım bilgisi — gerçek veri girilmeden önce | Hukuk / KVKK sorumlusu | ☐ |
 | 1.2b | `owner` (üst yönetici) hesabı olan geliştirici için kurumla gizlilik / veri işleme taahhüdü (tüm personel verisine erişim; karar #192) | Hukuk / KVKK sorumlusu | ☐ |
 | 1.2c | WhatsApp ile davet: bağlantı ve kişinin adı İK'nın cihazından WhatsApp (Meta) üzerinden gider (karar #188). Kanal kullanılmaya devam ediyor; örnek aydınlatma metni bunu yazar (karar #277) — md. 9 dayanağının hukuk değerlendirmesi | Hukuk / KVKK sorumlusu | ☐ |
-| 1.2d | İlk üst yönetici sunucuda tanımlandı (`grant-owner.ts`); kurum yöneticisine uygulamadan üst yönetici rolü verildi | BT | ☐ |
-| 1.3 | Alan adları: `APP_DOMAIN`, `FILES_DOMAIN` | BT | ☐ |
-| 1.4 | Resend hesabı (kurumsal e-posta, iki adımlı doğrulama), gönderen alan adı `mail.japarakademi.io` (bölge İrlanda) için Hostinger DNS kayıtları, alan adı "Verified", açılma/tıklama izleme kapalı, yalnızca gönderim izinli API anahtarı (`docs/runbooks/email-resend.md`, karar #258). Yedek seçenek: M365 uygulama kaydı (Graph `Mail.Send`) | Proje sahibi (Hostinger hesabı) | ☐ |
+| 1.2d | İlk üst yönetici sunucuda tanımlandı (`grant-owner.ts`); kurum yöneticisine uygulamadan üst yönetici rolü verildi | BT | ☑ |
+| 1.3 | Alan adları: `APP_DOMAIN`, `FILES_DOMAIN` | BT | ☑ |
+| 1.4 | Resend hesabı (kurumsal e-posta, iki adımlı doğrulama), gönderen alan adı `mail.japarakademi.io` (bölge İrlanda) için Hostinger DNS kayıtları, alan adı "Verified", açılma/tıklama izleme kapalı, yalnızca gönderim izinli API anahtarı (`docs/runbooks/email-resend.md`, karar #258). Yedek seçenek: M365 uygulama kaydı (Graph `Mail.Send`) | Proje sahibi (Hostinger hesabı) | ☑ |
 | 1.4a | Resend için KVKK md. 9 dayanağı: Resend veri işleme sözleşmesi (AB standart sözleşme maddeleri + DPF), hesap verisi ve kayıtların ABD'de tutulması; aydınlatma metinlerinde e-posta hizmeti bilgisi (örnek metinler Resend'i yazar) — e-posta açılmadan önce. Not (2026-11): Resend KVKK standart sözleşmesini imzalamıyor; proje sahibi Resend'le devam etme kararı verdi, dayanağı hukuk değerlendirir (yedek seçenek M365 Graph) | Hukuk / KVKK sorumlusu | ☐ |
 | 1.5 | KVKK aydınlatma metni (personel, TR + EN; bağlayıcı metin Türkçe — karar #212) — hukuk onayı | Hukuk / KVKK sorumlusu | ☐ |
 | 1.5a | Gerçek kullanımdan önce: "örnek olarak" yayınlanmış bütün metinlerde (personel aydınlatma, açık rıza, ziyaretçi aydınlatma) `[[...]]` alanları kurum bilgileriyle dolduruldu ve yeni sürüm normal **Yayınla** ile yayınlandı; "Gizlilik ve çerezler" sayfasında "Örnek metin" uyarısı kalmadı (kararlar #275–278) | İK + Hukuk / KVKK sorumlusu | ☐ |
@@ -26,11 +26,11 @@ Her satırda sorumlu ve durum doldurulur.
 
 | # | İş | Sorumlu | Durum |
 |---|---|---|---|
-| 2.1 | Sunucu, Docker, DNS kayıtları, 80/443 açık | BT | ☐ |
-| 2.2 | `docker/.env.production` dolduruldu; gizli değerlerin kopyası kasada (TC anahtarları, `BETTER_AUTH_SECRET`, `BACKUP_FILES_PASSWORD`, age gizli anahtarı) | BT | ☐ |
-| 2.3 | Stack ayakta, `/api/health` olumlu, HTTPS ve güvenlik başlıkları doğru | BT | ☐ |
-| 2.4 | İlk sistem yöneticisi açıldı, şifresi değiştirildi | BT | ☐ |
-| 2.5 | `MAIL_TRANSPORT=resend` ile Sistem → E-posta durumu'ndan "Deneme e-postası gönder" başarılı ve e-posta geldi; "Şifremi unuttum" bağlantısı da denendi. Günlük sınır (`mail.daily_limit`) Resend planıyla uyumlu | BT | ☐ |
+| 2.1 | Sunucu, Docker, DNS kayıtları, 80/443 açık | BT | ☑ |
+| 2.2 | `docker/.env.production` dolduruldu; gizli değerlerin kopyası kasada (TC anahtarları, `BETTER_AUTH_SECRET`, `BACKUP_FILES_PASSWORD`, age gizli anahtarı) | BT | ☑ |
+| 2.3 | Stack ayakta, `/api/health` olumlu, HTTPS ve güvenlik başlıkları doğru | BT | ☑ |
+| 2.4 | İlk sistem yöneticisi açıldı, şifresi değiştirildi | BT | ☑ |
+| 2.5 | `MAIL_TRANSPORT=resend` ile Sistem → E-posta durumu'ndan "Deneme e-postası gönder" başarılı ve e-posta geldi; "Şifremi unuttum" bağlantısı da denendi. Günlük sınır (`mail.daily_limit`) Resend planıyla uyumlu | BT | ☑ (2026-11-06, canlı deneme e-postası geldi) |
 | 2.6 | Gece yedeği çalıştı; `BACKUP_REMOTE` uzak kopyası doğrulandı | BT | ☐ |
 | 2.7 | **Sunucuda geri dönüş testi** yapıldı, `restore.md` tablosuna yazıldı | BT | ☐ |
 | 2.8 | Ortak cihazlar (eğitim odası bilgisayarları) tanımlandı | Sistem yöneticisi | ☐ |
@@ -60,6 +60,12 @@ Her satırda sorumlu ve durum doldurulur.
 | 3.11 | Pilot personelin Excel ile aktarımı; Davetler ekranından toplu davet (WhatsApp / basılı) gönderildi ve hesaplar etkinleştirildi (kararlar #185, #198–201) | İK | ☐ |
 | 3.12 | Pratik eğitmen ve hedef tarihler atandı | İK | ☐ |
 | 3.13 | Türkçe bilmeyen personel varsa: dil tercihleri (Profil → Dil) ayarlandı; pozisyonlarının içeriklerine ve sınav sorularına İngilizce metin eklendi (kararlar #207–211) | Bölüm sorumluları + İSG | ☐ |
+| 3.14 | Tesisin bütün personeli sistemde: Excel'den aktarıldı (TC ve telefon dahil), pozisyonları ve vardiyaları doğru (Faz 3 kabulü) | İK | ☐ |
+| 3.15 | Vardiya türleri (Parametreler → `org.shift_types`) ve pozisyon başına çalışma programları (Yönetim → Çalışma programları) hazırlandı (kararlar #251–257, #291) | İK | ☐ |
+| 3.16 | Yetkinlik tanımları (makine / görev, geçerlilik süresi) girildi; pratik görevler ilgili yetkinliğe bağlandı (kararlar #218–221) | Bölüm sorumluları | ☐ |
+| 3.17 | Eski personelin süreli eğitimlerinde sistem dışı son eğitim tarihleri girildi (Yönetim → Periyodik eğitimler, ekrandan ya da Excel'den; kararlar #222–225) | İK + İSG uzmanı | ☐ |
+| 3.18 | İSG modüllerine konu grubu verildi (OSGB dosyasında konu sütunu; kararlar #226–229) | İSG uzmanı | ☐ |
+| 3.19 | İK ve üst yöneticilerin e-posta adresleri kayıtlı; ilk aylık yönetim özeti e-postası geldi (kararlar #241–242) | İK | ☐ |
 
 ## 4. Kabul (SPEC 16.3)
 
@@ -73,6 +79,8 @@ Her satırda sorumlu ve durum doldurulur.
 | 4.6 | **Faz 2 kabulü:** bir hafta boyunca bütün ziyaretçiler sistem üzerinden girdi (ön kayıt / QR → bilgilendirme → kapı) | Güvenlik + İSG | ☐ |
 | 4.7 | **Faz 2 kabulü:** tahliye tatbikatında yoklama listesi telefondan alındı (2.13) | İSG + güvenlik | ☐ |
 | 4.8 | İngilizce kullanan bir personelin uçtan uca akışı: İngilizce etkinleştirme → KVKK (EN) → eğitim → sınav (EN sorular) → bildirim e-postası İngilizce | Proje ekibi | ☐ |
+| 4.9 | **Faz 3 kabulü:** tesisin bütün personeli sistemde tanımlı ve periyodik eğitimleri sistemden izleniyor (Periyodik eğitimler ekranında "Tarih yok" kalan kişi yok; süresi gelen eğitimler gece kendiliğinden açılıyor) | İK + İSG uzmanı | ☐ |
+| 4.10 | **Faz 3 kabulü:** İSG uzmanı OSGB dosyasını sistemden aldı (İSG eğitim kayıt defteri → OSGB Excel / CSV) ve OSGB dosyayı kabul etti | İSG uzmanı | ☐ |
 
 ## 5. Pilot süresince (haftalık)
 
@@ -85,4 +93,4 @@ Her satırda sorumlu ve durum doldurulur.
 
 - Hata takibi (GlitchTip) kurulmadı; pilotta JSON loglar ve e-posta hatası alarmı kullanılıyor (karar #104).
 - Kılavuzlarda ekran görüntüsü yok; uygulama içi "Yardım" bağlantısı Faz 2.
-- Faz 2 kod kapsamı tamamlandı (2.1–2.7b; `docs/surum-notlari.md`). İngilizce yalnızca personel ekranlarında; yönetim ekranları, pozisyon kartı içeriği, ara değerlendirme soruları ve sertifikalar Türkçe (karar #209).
+- Faz 2 ve Faz 3 kod kapsamı tamamlandı (2.1–2.7b, 3.1–3.14; `docs/surum-notlari.md`). İngilizce yalnızca personel ekranlarında; yönetim ekranları, pozisyon kartı içeriği, ara değerlendirme soruları ve sertifikalar Türkçe (karar #209).

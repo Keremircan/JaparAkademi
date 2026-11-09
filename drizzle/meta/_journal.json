@@ -435,6 +435,13 @@
       "when": 1794206819442,
       "tag": "0061_position_shifts",
       "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1794222062356,
+      "tag": "0062_notify_event_lists",
+      "breakpoints": true
     }
   ]
 }
