@@ -44,8 +44,8 @@ const HEADER_ALIASES: Record<ImportField, string[]> = {
   position: ["pozisyon", "görev", "gorev", "pozisyon kodu"],
   hireDate: ["işe giriş tarihi", "ise giris tarihi", "işe giriş", "giriş tarihi", "giris tarihi"],
   collarType: ["yaka tipi", "yaka"],
-  nationalId: ["tc kimlik no", "tc kimlik", "tc", "t.c. kimlik no", "tckn"],
-  phone: ["telefon", "tel", "cep telefonu"],
+  nationalId: ["tc kimlik no", "tc kimlik", "tc", "tckn", "tc kimlik numarası", "tc no", "kimlik no", "kimlik numarası"],
+  phone: ["telefon", "tel", "cep telefonu", "cep tel", "cep", "cep no", "gsm", "telefon no", "telefon numarası", "cep telefon numarası"],
   email: ["e-posta", "eposta", "email", "e-mail", "mail"],
 };
 
@@ -58,6 +58,11 @@ export function matchKey(s: string): string {
     .normalize("NFC")
     .replace(/i̇|[çğıöşü]/g, (ch) => FOLD[ch] ?? ch);
 }
+
+/** Başlık anahtarı: harf büyüklüğü, Türkçe harf, boşluk ve noktalama önemsiz ("TC.Kimlik No" = "T.C. Kimlik No" = "tc kimlik no"). */
+const headerKey = (s: string) => matchKey(s).replace(/[^a-z0-9]/g, "");
+
+const ALIAS_KEYS = Object.entries(HEADER_ALIASES).map(([field, aliases]) => [field as ImportField, new Set(aliases.map(headerKey))] as const);
 
 export type RawRow = { rowNumber: number } & Partial<Record<ImportField, string>> & { hireDateValue?: Date };
 
@@ -86,9 +91,9 @@ export async function parseWorkbook(buffer: ArrayBuffer | Buffer): Promise<Parse
 
   const columns = new Map<ImportField, number>();
   sheet.getRow(1).eachCell((cell, col) => {
-    const header = trLower(cellText(cell.value));
-    for (const [field, aliases] of Object.entries(HEADER_ALIASES) as [ImportField, string[]][]) {
-      if (!columns.has(field) && aliases.includes(header)) columns.set(field, col);
+    const header = headerKey(cellText(cell.value));
+    for (const [field, keys] of ALIAS_KEYS) {
+      if (!columns.has(field) && keys.has(header)) columns.set(field, col);
     }
   });
   const missingColumns = REQUIRED_FIELDS.filter((f) => !columns.has(f));

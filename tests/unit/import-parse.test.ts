@@ -49,6 +49,20 @@ describe("FG-1.4 Excel okuma", () => {
     expect(parsed.rows[0]).toMatchObject({ sicilNo: "1001", position: "Pres Operatörü", fullName: "Ayşe" });
   });
 
+  it("FG-1.4 TC ve telefon başlıklarını noktalama, boşluk ve harf büyüklüğünden bağımsız tanır", async () => {
+    const headers = ["SİCİL NO", "Ad Soyad", "Departman", "Pozisyon", "İşe Giriş Tarihi", "Yaka Tipi"];
+    for (const [tc, phone] of [
+      ["TC.Kimlik No", "Cep Tel"],
+      ["T.C. Kimlik No", "GSM"],
+      ["TC Kimlik Numarası", "Telefon No"],
+      ["tc_kimlik_no", "Cep Telefonu"],
+    ]) {
+      const { parsed, checks } = await check([ok.slice(0, 8)], [...headers, tc!, phone!]);
+      expect(parsed.missingColumns, `${tc} / ${phone}`).toEqual([]);
+      expect(checks[0]!.data, `${tc} / ${phone}`).toMatchObject({ nationalId: "10000000146", phone: "+905321112233" });
+    }
+  });
+
   it("zorunlu sütun eksikse listeler", async () => {
     const parsed = await parseWorkbook(await buildPeopleXlsx([["1001"]], ["Sicil No", "Ad Soyad"]));
     expect(parsed.missingColumns).toEqual(["department", "position", "hireDate", "collarType"]);
