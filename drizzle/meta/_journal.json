@@ -442,6 +442,20 @@
       "when": 1794222062356,
       "tag": "0062_notify_event_lists",
       "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1794231993244,
+      "tag": "0063_sample_records",
+      "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "7",
+      "when": 1794232008082,
+      "tag": "0064_sample_purge",
+      "breakpoints": true
     }
   ]
 }

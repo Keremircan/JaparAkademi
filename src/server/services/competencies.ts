@@ -18,6 +18,7 @@ import {
   users,
 } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
+import { notSamplePerson } from "@/server/sample-data/context";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/server/errors";
 import { competencyState, grantValidUntil, type CompetencyState } from "@/server/state/competencies";
 import { notify, sectionManagersForPerson } from "./notifications";
@@ -454,7 +455,8 @@ export async function notifyCompetencyExpiring(actor: Actor, now: Date = new Dat
     join ${users} u on u.id = l.user_id
     join ${personnel} p on p.user_id = l.user_id and p.status = 'active'
     join ${competencies} c on c.id = l.competency_id and c.archived_at is null
-    where l.valid_until is not null and l.valid_until > ${now.toISOString()}::timestamptz and l.valid_until <= ${until.toISOString()}::timestamptz`);
+    where l.valid_until is not null and l.valid_until > ${now.toISOString()}::timestamptz and l.valid_until <= ${until.toISOString()}::timestamptz
+      and ${notSamplePerson(sql`l.user_id`)}`);
   if (rows.length === 0) return 0;
   await withActor(actor, async (tx) => {
     for (const r of rows) {

@@ -4,6 +4,7 @@ import { db } from "@/server/db/client";
 import { assignments, users } from "@/server/db/schema";
 import { withActor } from "@/server/db/with-actor";
 import { logger } from "@/server/logger";
+import { notSamplePerson } from "@/server/sample-data/context";
 import { recertCutoff } from "@/server/state/recert";
 import { notify, usersWithRole } from "../notifications";
 import { getSettings } from "../settings";
@@ -58,6 +59,7 @@ export async function dueRenewals(cutoff: Date): Promise<DueRenewal[]> {
     from latest l
     join personnel p on p.user_id = l.user_id and p.status = 'active' and p.position_id is not null
     where l.expires_at is not null
+      and ${notSamplePerson(sql`l.user_id`)}
       and l.expires_at <= ${cutoff.toISOString()}::timestamptz
       and not exists (select 1 from assignment_modules r where r.renews_id = l.id)
     union all
@@ -65,6 +67,7 @@ export async function dueRenewals(cutoff: Date): Promise<DueRenewal[]> {
     from prior pr
     join personnel p on p.user_id = pr.user_id and p.status = 'active' and p.position_id is not null
     where pr.expires_at <= ${cutoff.toISOString()}::timestamptz
+      and ${notSamplePerson(sql`pr.user_id`)}
       and not exists (select 1 from assignment_modules r where r.renews_prior_id = pr.id)
       -- Sistemde bu modülü (başka yoldan) almış ya da şu an alıyorsa sistem kaydı geçerlidir
       and not exists (

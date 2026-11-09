@@ -1,4 +1,5 @@
-import { bigint, index, jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { bigint, check, index, jsonb, pgTable, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { users } from "./auth";
 import { createdAt, id, tstz, updatedAt } from "./_shared";
 
@@ -55,5 +56,25 @@ export const auditLog = pgTable(
     index("audit_log_record_idx").on(t.tableName, t.recordId),
     index("audit_log_actor_idx").on(t.actorId, t.at),
     index("audit_log_at_idx").on(t.at),
+  ],
+);
+
+/**
+ * Örnek veri kaydı (karar #296): yükleyicinin oluşturduğu kök kayıtlar ve parametre listelerine eklediği öğeler.
+ * Temizleme komutu buradan başlar; bağlı satırları yabancı anahtarlardan bulur. Kayıt yalnızca eklenir.
+ */
+export const sampleRecords = pgTable(
+  "sample_records",
+  {
+    id: id(),
+    tableName: text().notNull(),
+    recordId: uuid(),
+    settingKey: text(),
+    settingItem: jsonb(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex("sample_records_record_idx").on(t.tableName, t.recordId),
+    check("sample_records_target_check", sql`(${t.recordId} is not null) <> (${t.settingKey} is not null)`),
   ],
 );
