@@ -1,4 +1,5 @@
 import { and, asc, count, eq, inArray, isNull, ne, or } from "drizzle-orm";
+import { normalizeShift, orderShifts } from "@/lib/shifts";
 import type { Actor } from "@/server/authz/actor";
 import { assertCan, can } from "@/server/authz/policy";
 import { inOrgScope, orgScopeFor } from "@/server/authz/scope";
@@ -19,6 +20,7 @@ import {
 import { withActor } from "@/server/db/with-actor";
 import { ForbiddenError, NotFoundError, uniqueViolation, ValidationError } from "@/server/errors";
 import { countRows, type Deletable } from "./deletion/core";
+import { getSetting } from "./settings";
 
 /**
  * Organizasyon ağacı ve pozisyonlar (SPEC 4.1, FG-1.1).
@@ -246,7 +248,8 @@ export type PositionInput = {
   name: string;
   code: string;
   collarType: "blue" | "white";
-  shiftPattern?: string | null;
+  /** Vardiyalar "23:00-07:00" biçiminde (karar #291) */
+  shifts?: readonly string[];
   supervisorPositionId?: string | null;
   deputyPositionId?: string | null;
 };
@@ -265,15 +268,39 @@ async function validatePositionInput(input: PositionInput, selfId?: string) {
     const [p] = await db().select({ id: positions.id }).from(positions).where(eq(positions.id, ref)).limit(1);
     if (!p) throw new NotFoundError("position");
   }
+  const shifts = await resolveShifts(input.shifts ?? [], selfId);
   return {
     orgUnitId: input.orgUnitId,
     name,
     code,
     collarType: input.collarType,
-    shiftPattern: input.shiftPattern?.trim() || null,
+    shifts,
     supervisorPositionId: input.supervisorPositionId || null,
     deputyPositionId: input.deputyPositionId || null,
   };
+}
+
+/**
+ * Vardiya seçimi (karar #291): yalnızca `org.shift_types` listesindeki vardiyalar seçilir. Listeden çıkarılmış bir
+ * vardiya pozisyonda zaten varsa korunabilir (kaldırmak İK'nın elindedir) ama başka pozisyona eklenemez.
+ */
+async function resolveShifts(raw: readonly string[], selfId?: string): Promise<string[]> {
+  const shifts = raw.map(normalizeShift);
+  if (shifts.some((s) => s === null)) throw new ValidationError("invalid_shift");
+  const list = await getSetting("org.shift_types");
+  const [current] = selfId
+    ? await db().select({ shifts: positions.shifts }).from(positions).where(eq(positions.id, selfId)).limit(1)
+    : [];
+  for (const s of shifts as string[]) {
+    if (!list.includes(s) && !current?.shifts.includes(s)) throw new ValidationError("shift_unknown");
+  }
+  return orderShifts(shifts as string[], list);
+}
+
+/** Pozisyon formundaki vardiya seçenekleri (karar #291). */
+export async function shiftTypeOptions(actor: Actor): Promise<string[]> {
+  if (!can(actor, "org.manage")) throw new ForbiddenError("org.manage");
+  return getSetting("org.shift_types");
 }
 
 export async function createPosition(actor: Actor, input: PositionInput): Promise<{ id: string }> {

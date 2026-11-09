@@ -428,6 +428,13 @@
       "when": 1794145949398,
       "tag": "0060_delete_people",
       "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1794206819442,
+      "tag": "0061_position_shifts",
+      "breakpoints": true
     }
   ]
 }

@@ -202,7 +202,8 @@ describe("Parametreler ekranı (iş paketi 2.1)", () => {
     expect(sysKeys.some((k) => k.startsWith("ohs."))).toBe(false);
     expect(sysKeys).not.toContain("certificate.signatories");
     expect(sysKeys).toContain("retention.audit_years");
-    for (const roles of [["hr"], ["section_manager"], []] as const) {
+    // İK yalnızca vardiya türlerini görür (karar #291; org.test.ts)
+    for (const roles of [["trainer"], ["section_manager"], []] as const) {
       const u = await createTestUser({ roles: [...roles] });
       await expect(listSettingsFor(u.actor)).rejects.toBeInstanceOf(ForbiddenError);
     }

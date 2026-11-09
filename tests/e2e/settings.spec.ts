@@ -38,12 +38,17 @@ test("SPEC 14 İSG uzmanı tehlike sınıfını Parametreler ekranından değiş
   await expect(card.getByTestId("setting-value")).not.toHaveText(label);
 });
 
-test("SPEC 14 İK Parametreler ekranını görmez", async ({ page }, testInfo) => {
+test("karar #291: İK Parametreler ekranında yalnızca vardiya türlerini görür", async ({ page }, testInfo) => {
   await login(page, sicil("HR", testInfo.project.name), E2E_PASSWORD);
   await acceptConsentIfAsked(page);
   await page.goto("/admin");
-  await expect(page.locator("#main h1").first()).toBeVisible();
-  await expect(page.getByRole("link", { name: /Parametreler/ })).toHaveCount(0);
-  await page.goto("/admin/settings");
-  await expect(page.getByRole("heading", { level: 1, name: "Parametreler" })).toHaveCount(0);
+  await page.getByRole("link", { name: /Parametreler/ }).click();
+  await page.waitForURL(/\/admin\/settings$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Parametreler" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Kurum" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "İş sağlığı ve güvenliği" })).toHaveCount(0);
+  const card = page.locator('[data-setting="org.shift_types"]').filter({ visible: true });
+  await expect(card).toBeVisible();
+  await expect(card.getByText("Vardiya türleri")).toBeVisible();
+  await expect(page.locator("[data-setting]").filter({ visible: true })).toHaveCount(1);
 });

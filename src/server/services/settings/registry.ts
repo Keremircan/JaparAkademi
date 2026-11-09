@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { Role } from "@/server/authz/roles";
+import { DEFAULT_SHIFT_TYPES, MAX_SHIFT_TYPES, normalizeShift } from "@/lib/shifts";
 import { DEFAULT_EMAIL_EVENTS, NOTIFICATION_KINDS } from "@/server/state/notifications";
 
 /**
@@ -44,6 +45,15 @@ export type VisitorTypeSettings = z.infer<typeof visitorTypeSettings>;
 
 export const SETTINGS = {
   "org.timezone": def({ schema: z.string().min(1), default: "Europe/Istanbul", managedBy: SYS }),
+  // Vardiya türleri (karar #291): pozisyon formunda seçilir. "8.00 - 18.00" gibi yazımlar "08:00-18:00" olarak saklanır.
+  "org.shift_types": def({
+    schema: z
+      .array(z.string().transform((s, ctx) => normalizeShift(s) ?? (ctx.addIssue({ code: "custom", message: "invalid_shift" }), z.NEVER)))
+      .max(MAX_SHIFT_TYPES)
+      .refine((list) => new Set(list).size === list.length, { message: "duplicate_shift" }),
+    default: DEFAULT_SHIFT_TYPES,
+    managedBy: ["hr", "sysadmin"],
+  }),
 
   // İSG (6331 sayılı Kanun ve yönetmelik) — tehlike sınıfı ayarlanana kadar null ("tehlikeli" kabul edilir)
   "ohs.hazard_class": def({ schema: hazardClass.nullable(), default: null, managedBy: OHS }),

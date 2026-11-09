@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
 import { adminAccess } from "@/features/admin/guard";
 import { PositionForm } from "@/features/org/components/position-form";
-import { listPositionOptions, listUnitOptions } from "@/server/services/org";
+import { listPositionOptions, listUnitOptions, shiftTypeOptions } from "@/server/services/org";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin.org.positionForm");
@@ -25,10 +25,11 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
   const access = await adminAccess("org.manage");
   if (!access) return <NotFoundView />;
   const sp = await searchParams;
-  const [t, units, positions] = await Promise.all([
+  const [t, units, positions, shiftTypes] = await Promise.all([
     getTranslations("admin.org"),
     listUnitOptions(access.actor),
     listPositionOptions(access.actor),
+    shiftTypeOptions(access.actor),
   ]);
 
   return (
@@ -38,6 +39,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
         units={units}
         defaultUnitId={typeof sp.orgUnitId === "string" ? sp.orgUnitId : undefined}
         positionOptions={positions}
+        shiftTypes={shiftTypes}
       />
     </section>
   );

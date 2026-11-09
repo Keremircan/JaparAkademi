@@ -66,18 +66,22 @@ const UNITS: UnitSeed[] = [
   { code: "BT", name: "Bilgi Teknolojileri" },
 ];
 
-type PositionSeed = { code: string; name: string; unit: string; collar: "blue" | "white"; shift?: string; supervisor?: string };
+type PositionSeed = { code: string; name: string; unit: string; collar: "blue" | "white"; shifts?: string[]; supervisor?: string };
+// Vardiyalar varsayılan vardiya türlerinden (karar #291)
+const THREE_SHIFTS = ["23:00-07:00", "07:00-15:00", "15:00-23:00"];
+const TWO_SHIFTS = ["07:00-15:00", "15:00-23:00"];
+const DAY_SHIFT = ["08:00-18:00"];
 const POSITIONS: PositionSeed[] = [
-  { code: "URETIM-MUDUR", name: "Üretim Müdürü", unit: "URETIM", collar: "white" },
-  { code: "VARDIYA-SEFI", name: "Vardiya Şefi", unit: "PRES", collar: "blue", shift: "3 vardiya", supervisor: "URETIM-MUDUR" },
-  { code: "PRES-OP", name: "Pres Operatörü", unit: "PRES", collar: "blue", shift: "3 vardiya", supervisor: "VARDIYA-SEFI" },
-  { code: "KALIPCI", name: "Kalıpçı", unit: "PRES", collar: "blue", shift: "3 vardiya", supervisor: "VARDIYA-SEFI" },
-  { code: "MONTAJ-OP", name: "Montaj Operatörü", unit: "MONTAJ", collar: "blue", shift: "2 vardiya", supervisor: "URETIM-MUDUR" },
-  { code: "KK-TEKNISYEN", name: "Kalite Kontrol Teknisyeni", unit: "KALITE", collar: "blue", shift: "3 vardiya" },
-  { code: "IK-UZMAN", name: "İK Uzmanı", unit: "IK", collar: "white" },
-  { code: "ISG-UZMAN", name: "İSG Uzmanı", unit: "ISG", collar: "white" },
-  { code: "GUVENLIK-GOREVLI", name: "Güvenlik Görevlisi", unit: "GUVENLIK", collar: "blue", shift: "3 vardiya" },
-  { code: "BT-UZMAN", name: "Bilgi Teknolojileri Uzmanı", unit: "BT", collar: "white" },
+  { code: "URETIM-MUDUR", name: "Üretim Müdürü", unit: "URETIM", collar: "white", shifts: DAY_SHIFT },
+  { code: "VARDIYA-SEFI", name: "Vardiya Şefi", unit: "PRES", collar: "blue", shifts: THREE_SHIFTS, supervisor: "URETIM-MUDUR" },
+  { code: "PRES-OP", name: "Pres Operatörü", unit: "PRES", collar: "blue", shifts: THREE_SHIFTS, supervisor: "VARDIYA-SEFI" },
+  { code: "KALIPCI", name: "Kalıpçı", unit: "PRES", collar: "blue", shifts: THREE_SHIFTS, supervisor: "VARDIYA-SEFI" },
+  { code: "MONTAJ-OP", name: "Montaj Operatörü", unit: "MONTAJ", collar: "blue", shifts: TWO_SHIFTS, supervisor: "URETIM-MUDUR" },
+  { code: "KK-TEKNISYEN", name: "Kalite Kontrol Teknisyeni", unit: "KALITE", collar: "blue", shifts: THREE_SHIFTS },
+  { code: "IK-UZMAN", name: "İK Uzmanı", unit: "IK", collar: "white", shifts: DAY_SHIFT },
+  { code: "ISG-UZMAN", name: "İSG Uzmanı", unit: "ISG", collar: "white", shifts: DAY_SHIFT },
+  { code: "GUVENLIK-GOREVLI", name: "Güvenlik Görevlisi", unit: "GUVENLIK", collar: "blue", shifts: THREE_SHIFTS },
+  { code: "BT-UZMAN", name: "Bilgi Teknolojileri Uzmanı", unit: "BT", collar: "white", shifts: DAY_SHIFT },
 ];
 
 async function unitId(code: string): Promise<string | undefined> {
@@ -111,7 +115,7 @@ async function seedOrg() {
       name: p.name,
       code: p.code,
       collarType: p.collar,
-      shiftPattern: p.shift ?? null,
+      shifts: p.shifts ?? [],
       supervisorPositionId: p.supervisor ? ((await positionId(p.supervisor)) ?? null) : null,
     });
     console.log(`✓ Pozisyon: ${p.name}`);

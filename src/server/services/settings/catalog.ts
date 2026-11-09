@@ -26,6 +26,8 @@ const int = { kind: "int" } as const;
 export const SETTINGS_CATALOG: Partial<Record<SettingKey, Entry>> = {
   // Saat dilimi değişirse geçmiş tarih hesapları kayar; ekranda salt okunur (karar #117)
   "org.timezone": { group: "org", input: { kind: "readonly" } },
+  // Pozisyon formundaki vardiya seçenekleri (karar #291)
+  "org.shift_types": { group: "org", input: { kind: "list" } },
 
   "ohs.hazard_class": { group: "ohs", input: { kind: "hazardClass" } },
   "ohs.hours_by_class": { group: "ohs", input: { kind: "perHazardClass" } },

@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import { DEFAULT_SHIFT_TYPES } from "@/lib/shifts";
 import { systemActor } from "@/server/authz/actor";
 import { isPersonInScope, orgScopeFor } from "@/server/authz/scope";
 import { db } from "@/server/db/client";
@@ -9,11 +10,16 @@ import {
   createOrgUnit,
   createPosition,
   getOrgTree,
+  getPosition,
   setOrgUnitActive,
   setPositionStatus,
+  shiftTypeOptions,
   updateOrgUnit,
+  updatePosition,
 } from "@/server/services/org";
+import { identityOf } from "@/server/services/positions";
 import { setSectionManagerScopes } from "@/server/services/roles";
+import { getSetting, listSettingsFor, setSetting } from "@/server/services/settings";
 import { owner } from "../support/db";
 import { createTestUser } from "../support/factories";
 import { seedTestOrg } from "../support/org";
@@ -156,5 +162,68 @@ describe("Bölüm sorumlusu kapsamı (SPEC 2.2)", () => {
       const u = await createTestUser({ roles: [...roles] });
       expect(await orgScopeFor(u.actor)).toEqual({ all: false, orgUnitIds: new Set() });
     }
+  });
+});
+
+describe("Karar #291 vardiya türleri", () => {
+  it("karar #291: vardiyalar listeden seçilir, liste sırasıyla saklanır ve künyede tek satır görünür", async () => {
+    const org = await seedTestOrg();
+    const hr = await createTestUser({ roles: ["hr"] });
+    expect(await shiftTypeOptions(hr.actor)).toEqual(DEFAULT_SHIFT_TYPES);
+    const base = { orgUnitId: org.units.kalite, name: "Vardiyalı", code: "VARDIYALI", collarType: "blue" as const };
+
+    const { id } = await createPosition(hr.actor, { ...base, shifts: ["15:00-23:00", "23:00-07:00", "23:00-07:00"] });
+    expect((await getPosition(hr.actor, id)).shifts).toEqual(["23:00-07:00", "15:00-23:00"]);
+    expect((await identityOf(db(), id)).shiftPattern).toBe("23:00 – 07:00, 15:00 – 23:00");
+
+    await updatePosition(hr.actor, id, { ...base, shifts: [] });
+    expect((await getPosition(hr.actor, id)).shifts).toEqual([]);
+    expect((await identityOf(db(), id)).shiftPattern).toBeNull();
+
+    const { actor: trainer } = await createTestUser({ roles: ["trainer"] });
+    await expect(shiftTypeOptions(trainer)).rejects.toBeInstanceOf(ForbiddenError);
+  });
+
+  it("karar #291: listede olmayan vardiya eklenemez; listeden çıkarılan vardiya pozisyonda kalır ama yeniden eklenemez", async () => {
+    const org = await seedTestOrg();
+    const base = { orgUnitId: org.units.kalite, collarType: "blue" as const };
+    await expect(createPosition(sys, { ...base, name: "Ara", code: "ARA", shifts: ["09:00-17:00"] })).rejects.toMatchObject({ code: "shift_unknown" });
+    await expect(createPosition(sys, { ...base, name: "Ara", code: "ARA", shifts: ["25:00-07:00"] })).rejects.toMatchObject({ code: "invalid_shift" });
+
+    const gece = { ...base, name: "Gece", code: "GECE" };
+    const { id } = await createPosition(sys, { ...gece, shifts: ["23:00-07:00", "08:00-18:00"] });
+    await setSetting(sys, "org.shift_types", ["07:00-15:00", "15:00-23:00", "08:00-18:00"]);
+
+    // Pozisyonda zaten olan vardiya korunur; listedekiler önce, listede olmayan sona
+    await updatePosition(sys, id, { ...gece, shifts: ["23:00-07:00", "07:00-15:00"] });
+    expect((await getPosition(sys, id)).shifts).toEqual(["07:00-15:00", "23:00-07:00"]);
+    // Başka pozisyona eklenemez
+    await expect(createPosition(sys, { ...base, name: "Başka", code: "BASKA", shifts: ["23:00-07:00"] })).rejects.toMatchObject({ code: "shift_unknown" });
+    // Pozisyondan kaldırıldıktan sonra yeniden eklenemez
+    await updatePosition(sys, id, { ...gece, shifts: ["07:00-15:00"] });
+    await expect(updatePosition(sys, id, { ...gece, shifts: ["23:00-07:00"] })).rejects.toMatchObject({ code: "shift_unknown" });
+  });
+
+  it("karar #291: vardiya türlerini İK ve sistem yöneticisi değiştirir; yazım düzeltilir, tekrar ve geçersiz saat reddedilir", async () => {
+    const hr = await createTestUser({ roles: ["hr"] });
+    await setSetting(hr.actor, "org.shift_types", ["8.00 - 18.00", "23:00–07:00"]);
+    expect(await getSetting("org.shift_types")).toEqual(["08:00-18:00", "23:00-07:00"]);
+    await expect(setSetting(hr.actor, "org.shift_types", ["08:00-18:00", "8:00-18:00"])).rejects.toMatchObject({ code: "invalid_setting" });
+    await expect(setSetting(hr.actor, "org.shift_types", ["gündüz"])).rejects.toMatchObject({ code: "invalid_setting" });
+
+    const sysadmin = await createTestUser({ roles: ["sysadmin"] });
+    await setSetting(sysadmin.actor, "org.shift_types", ["07:00-19:00", "19:00-07:00"]);
+    expect(await getSetting("org.shift_types")).toEqual(["07:00-19:00", "19:00-07:00"]);
+
+    const ohs = await createTestUser({ roles: ["ohs_specialist"] });
+    await expect(setSetting(ohs.actor, "org.shift_types", [])).rejects.toBeInstanceOf(ForbiddenError);
+    // İK Parametreler ekranında yalnızca vardiya türlerini görür
+    expect((await listSettingsFor(hr.actor)).map((r) => r.key)).toEqual(["org.shift_types"]);
+  });
+
+  it("karar #291: veritabanı biçim dışı vardiyayı kabul etmez", async () => {
+    const org = await seedTestOrg();
+    await expect(owner()`update positions set shifts = '{"3 vardiya"}' where id = ${org.positions.kkTek}`).rejects.toThrow(/positions_shifts_check/);
+    await owner()`update positions set shifts = '{"23:00-07:00","07:00-15:00"}' where id = ${org.positions.kkTek}`;
   });
 });

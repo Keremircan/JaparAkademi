@@ -8,8 +8,9 @@ import type { Role } from "./roles";
  */
 export const PERMISSIONS = {
   // Sistem
-  // Parametreler ekranı: her parametreyi yalnızca yöneten rol görür (registry managedBy, karar #117)
-  "settings.view": ["sysadmin", "ohs_specialist"],
+  // Parametreler ekranı: her parametreyi yalnızca yöneten rol görür (registry managedBy, karar #117).
+  // İK yalnızca vardiya türlerini yönetir (karar #291).
+  "settings.view": ["sysadmin", "ohs_specialist", "hr"],
   "audit.view": ["sysadmin"],
   // Giriş kayıtları ekranı (karar #215); owner her yetkiye sahiptir
   "logins.view": ["sysadmin"],
