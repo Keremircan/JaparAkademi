@@ -9,6 +9,7 @@ import { notify, sectionManagersForPerson, usersWithRole } from "../notification
 import { getSettings } from "../settings";
 import { runRecert } from "./recert";
 import { notifyCompetencyExpiring } from "../competencies";
+import { notSamplePerson } from "@/server/sample-data/context";
 
 /**
  * Faz 2 zamanlanmış eğitim bildirimleri (SPEC 10.2, iş paketi 2.5, kararlar #172–173).
@@ -29,7 +30,7 @@ const LATEST = sql`
 export async function notifyOverdue(actor: Actor, today: string): Promise<number> {
   const rows = await db().execute<{ id: string; user_id: string; name: string }>(sql`
     select a.id, a.user_id, u.name from assignments a join users u on u.id = a.user_id
-    where a.status = 'active' and a.target_date is not null and a.target_date < ${today}::date`);
+    where a.status = 'active' and a.target_date is not null and a.target_date < ${today}::date and ${notSamplePerson(sql`a.user_id`)}`);
   if (rows.length === 0) return 0;
   await withActor(actor, async (tx) => {
     for (const r of rows) {
@@ -62,6 +63,7 @@ export async function notifyUnmarked(actor: Actor, now: Date): Promise<number> {
       join assignments a on a.id = am.assignment_id
       join users u on u.id = a.user_id
       where am.kind = 'practice' and am.status in ('available', 'in_progress') and a.status = 'active' and a.trainer_user_id is not null
+        and ${notSamplePerson(sql`a.user_id`)}
     ) x where x.last is not null and x.last < ${before.toISOString()}::timestamptz`);
   if (rows.length === 0) return 0;
   await withActor(actor, async (tx) => {
@@ -87,7 +89,8 @@ export async function notifyOhsExpired(actor: Actor, now: Date, today: string): 
   const [row] = await db().execute<{ n: number }>(sql`
     select count(distinct l.user_id)::int as n from (${LATEST}) l
     join personnel p on p.user_id = l.user_id and p.status = 'active'
-    where l.is_ohs and l.expires_at > ${since.toISOString()}::timestamptz and l.expires_at <= ${now.toISOString()}::timestamptz`);
+    where l.is_ohs and l.expires_at > ${since.toISOString()}::timestamptz and l.expires_at <= ${now.toISOString()}::timestamptz
+      and ${notSamplePerson(sql`l.user_id`)}`);
   const count = row?.n ?? 0;
   if (count === 0) return 0;
   await withActor(actor, async (tx) => {
@@ -143,7 +146,7 @@ export async function teamCounts(manager: UserActor, now: Date, today: string, e
   const [r] = await db().execute<TeamCounts>(sql`
     with team as (
       select p.user_id from personnel p join positions pos on pos.id = p.position_id
-      where p.status = 'active' and ${unitFilter}
+      where p.status = 'active' and ${unitFilter} and ${notSamplePerson(sql`p.user_id`)}
     )
     select
       (select count(*)::int from team) as people,

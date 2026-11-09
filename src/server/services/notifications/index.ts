@@ -11,6 +11,7 @@ import { env } from "@/server/env";
 import { emailHtml, type NotificationKind } from "@/server/state/notifications";
 import { localizedPath, messagesFor } from "@/server/i18n/messages";
 import { toAppLocale } from "@/lib/locale";
+import { quietRecipients } from "@/server/sample-data/context";
 import { queuePush } from "../push";
 import { getSettings } from "../settings";
 
@@ -51,7 +52,8 @@ function emailContent(kind: NotificationKind, link: string, params: Record<strin
 
 export async function notify(tx: Tx, input: NotifyInput): Promise<void> {
   const exclude = new Set(input.exclude?.filter(Boolean));
-  const ids = [...new Set(input.userIds.filter((u): u is string => !!u && !exclude.has(u)))];
+  // Örnek veri yüklenirken gerçek kişilere bildirim gitmez (karar #297)
+  const ids = quietRecipients([...new Set(input.userIds.filter((u): u is string => !!u && !exclude.has(u)))]);
   if (ids.length === 0) return;
   const { "notify.email_events": emailEvents } = await getSettings(["notify.email_events"], tx);
   const wantsEmail = emailEvents.includes(input.kind);

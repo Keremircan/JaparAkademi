@@ -1,5 +1,24 @@
 # Sürüm notları
 
+## Örnek veri paketi (kararlar #296–297)
+
+Canlı sitede eğitim ve tanıtım için her eklenebilir kayıttan en az bir örnek, tek komutla yüklenir ve tek komutla
+temizlenir. Örnekler Droplast/Pres İşçisi pozisyonu üzerine kurulur: içerik kütüphanesi (7 içerik türü, Türkçe +
+İngilizce), modüller, soru bankası (4 soru tipi), pozisyon kartı ve eğitim planı, bir kursiyerin QR kodlu sertifikaya
+kadar bütün eğitimi, yetkinlikler, periyodik eğitim, çalışma programı, ziyaretçi kayıtları ve birkaç sistem ayarı.
+İçerikler resmî mevzuat ve kurum kaynaklarından derlenmiştir (`scripts/sample-data/KAYNAKLAR.md`).
+
+- Örnek kişilerin sicili `ORNEK-…`, adlarının sonunda "(Örnek)"; giriş yapamazlar, davet gönderilmez.
+- Yükleme sırasında gerçek kişilere bildirim ve e-posta gitmez; gece işleri örnek kişileri atlar (karar #297).
+- Mevcut departman, bölüm, pozisyon ve personel değişmez. Yasal metinler yayınlanmaz.
+- Temizlik örnek olarak işaretli kayıtları (değiştirilemez olanlar dahil) siler; gerçek kayıtlar değiştirilemez kalır
+  (karar #296). Sonradan gerçek bir kayda bağlanan örnek silinmez, raporlanır.
+
+### Güncelleme
+
+1. Her zamanki güncelleme; veritabanı değişiklikleri `0063`–`0064` kendiliğinden uygulanır (`docs/runbooks/deploy.md`).
+2. Örnek veriyi yüklemek isterseniz `docs/runbooks/sample-data.md`: önce `--check` ile ön kontrol, sonra yükleme.
+
 ## Faz 3 — Olgunlaşma
 
 Faz 3'ün kod kapsamı tamamlandı (SPEC 16.5). Kabul kriteri: tesisin bütün personeli sistemde tanımlı ve periyodik eğitimleri sistemden izleniyor; İSG uzmanı OSGB dosyasını sistemden alıyor (pilot kontrol listesi 4.9–4.10).
