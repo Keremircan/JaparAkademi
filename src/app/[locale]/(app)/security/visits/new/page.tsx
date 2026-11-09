@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { NotFoundView } from "@/components/app-shell/not-found-view";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
+import { FreshOnNavigate } from "@/components/forms/fresh-on-navigate";
 import { VisitForm } from "@/features/visitors/components/visit-form";
 import { securityAccess } from "@/features/visitors/guard";
 import { todayIn } from "@/lib/dates";
@@ -31,7 +32,9 @@ async function Content() {
   return (
     <section className="flex flex-col gap-6">
       <PageHeader title={t("mine.new")} description={t("securityNewHint")} back={{ href: "/security/visits", label: t("cards.visits.title") }} />
-      <VisitForm mode="security" base="/security/visits" types={types} companies={companies} minDate={todayIn(s["org.timezone"])} />
+      <FreshOnNavigate>
+        <VisitForm mode="security" base="/security/visits" types={types} companies={companies} minDate={todayIn(s["org.timezone"])} />
+      </FreshOnNavigate>
     </section>
   );
 }

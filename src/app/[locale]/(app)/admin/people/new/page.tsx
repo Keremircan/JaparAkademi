@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { NotFoundView } from "@/components/app-shell/not-found-view";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
+import { FreshOnNavigate } from "@/components/forms/fresh-on-navigate";
 import { adminAccess } from "@/features/admin/guard";
 import { PersonForm } from "@/features/people/components/person-form";
 import { inviteMailEnabled } from "@/server/services/invitations";
@@ -29,7 +30,9 @@ async function Content() {
   return (
     <section>
       <PageHeader title={t("form.new")} back={{ href: "/admin/people", label: t("title") }} />
-      <PersonForm positions={positions.map((p) => ({ id: p.id, label: p.label }))} mailEnabled={inviteMailEnabled()} />
+      <FreshOnNavigate>
+        <PersonForm positions={positions.map((p) => ({ id: p.id, label: p.label }))} mailEnabled={inviteMailEnabled()} />
+      </FreshOnNavigate>
     </section>
   );
 }

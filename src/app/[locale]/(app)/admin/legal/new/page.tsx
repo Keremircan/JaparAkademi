@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { NotFoundView } from "@/components/app-shell/not-found-view";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
+import { FreshOnNavigate } from "@/components/forms/fresh-on-navigate";
 import { legalAccess } from "@/features/legal/access";
 import { LegalForm } from "@/features/legal/components/legal-form";
 import { currentText, LEGAL_KINDS } from "@/server/services/legal";
@@ -35,7 +36,9 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
         title={`${t("newDraft")} · ${t(`kinds.${access.kind}`)}${locales.length > 1 ? ` · ${t(`locales.${locale as "tr" | "en"}`)}` : ""}`}
         back={{ href: `/admin/legal?kind=${access.kind}`, label: t("title") }}
       />
-      <LegalForm kind={access.kind} locale={locale} text={current ? { id: "", title: current.title, body: current.body } : undefined} />
+      <FreshOnNavigate>
+        <LegalForm kind={access.kind} locale={locale} text={current ? { id: "", title: current.title, body: current.body } : undefined} />
+      </FreshOnNavigate>
     </section>
   );
 }

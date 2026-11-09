@@ -65,6 +65,7 @@ Yeni bir özelliğe, tabloya veya ekrana başlamadan önce SPEC.md'nin ilgili b�
 - Base UI `Button`'ı bağlantı olarak kullanırken `nativeButton={false}` + `render={<Link …/>}`.
 - Oturum sırası `requireUser()` içinde: giriş → şifre değiştirme (`mustChangePassword`) → KVKK onayı (`/consent`) → sayfa.
 - Mutasyon sonrası aynı sayfada kalınıyorsa `refresh()` (`next/cache`), başka sayfaya gidiliyorsa next-intl `redirect`.
+- Next son 3 sayfayı gizli tutar (`<Activity>`): yeni kayıt sayfasında form `<FreshOnNavigate>` (`components/forms/fresh-on-navigate.tsx`, `bfcacheId`) içinde render edilir, yoksa önceki kaydın yazıları ve adresteki eski ön seçim (`?orgUnitId=`) kalır; düzenleme sayfasında form `key={kayıt.updatedAt.getTime()}` alır (karar #292). Gizli sayfada `defaultValue` değişikliği `<select>`'e ve kullanıcının dokunduğu alana yansımaz.
 
 ### Uygulama kalıpları
 - Server Action: Zod ile ayrıştır → `actionUser()` → `runAction(() => servis(...))` → `ActionResult` (`src/features/shared/action-result.ts`). Hata kodu arayüzde `errors.<kod>` ile gösterilir (`<FormError />`). Mesaj gönder düğmesinin hemen üstüne konur (sabit kaydet çubuklu düzenleyicide çubuğun içine; tek düğmelik eylemde düğmenin altına); `FormError`/`AlertMessage` ekranda değilse kendini görünür alana kaydırır (`src/lib/reveal.ts`, kararlar #269–270).

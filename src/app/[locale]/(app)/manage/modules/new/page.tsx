@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { NotFoundView } from "@/components/app-shell/not-found-view";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
+import { FreshOnNavigate } from "@/components/forms/fresh-on-navigate";
 import { libraryAccess } from "@/features/content/guard";
 import { ModuleForm } from "@/features/modules/components/module-form";
 import { hasAnyRole, hasRole } from "@/server/authz/policy";
@@ -32,7 +33,9 @@ async function Content() {
   return (
     <section>
       <PageHeader title={t("new")} description={t("newIntro")} back={{ href: "/manage/modules", label: t("title") }} />
-      <ModuleForm mode="create" owners={owners} ohsOnly={ohsOnly} ohsSpecialist={hasRole(access.actor, "ohs_specialist")} />
+      <FreshOnNavigate>
+        <ModuleForm mode="create" owners={owners} ohsOnly={ohsOnly} ohsSpecialist={hasRole(access.actor, "ohs_specialist")} />
+      </FreshOnNavigate>
     </section>
   );
 }

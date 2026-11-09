@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { NotFoundView } from "@/components/app-shell/not-found-view";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
+import { FreshOnNavigate } from "@/components/forms/fresh-on-navigate";
 import { adminAccess, orNull } from "@/features/admin/guard";
 import { UnitForm } from "@/features/org/components/unit-form";
 import { getOrgUnit } from "@/server/services/org";
@@ -37,7 +38,9 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
         title={kind === "department" ? t("unitForm.newDepartment") : t("unitForm.newSection")}
         back={{ href: "/admin/org", label: t("title") }}
       />
-      <UnitForm kind={kind} parent={parent ? { id: parent.id, name: parent.name } : null} />
+      <FreshOnNavigate>
+        <UnitForm kind={kind} parent={parent ? { id: parent.id, name: parent.name } : null} />
+      </FreshOnNavigate>
     </section>
   );
 }

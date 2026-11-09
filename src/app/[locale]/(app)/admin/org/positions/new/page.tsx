@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { NotFoundView } from "@/components/app-shell/not-found-view";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
+import { FreshOnNavigate } from "@/components/forms/fresh-on-navigate";
 import { adminAccess } from "@/features/admin/guard";
 import { PositionForm } from "@/features/org/components/position-form";
 import { listPositionOptions, listUnitOptions, shiftTypeOptions } from "@/server/services/org";
@@ -35,12 +36,14 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
   return (
     <section>
       <PageHeader title={t("positionForm.new")} back={{ href: "/admin/org", label: t("title") }} />
-      <PositionForm
-        units={units}
-        defaultUnitId={typeof sp.orgUnitId === "string" ? sp.orgUnitId : undefined}
-        positionOptions={positions}
-        shiftTypes={shiftTypes}
-      />
+      <FreshOnNavigate>
+        <PositionForm
+          units={units}
+          defaultUnitId={typeof sp.orgUnitId === "string" ? sp.orgUnitId : undefined}
+          positionOptions={positions}
+          shiftTypes={shiftTypes}
+        />
+      </FreshOnNavigate>
     </section>
   );
 }

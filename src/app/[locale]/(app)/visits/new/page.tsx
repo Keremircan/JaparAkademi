@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
+import { FreshOnNavigate } from "@/components/forms/fresh-on-navigate";
 import { VisitForm } from "@/features/visitors/components/visit-form";
 import { todayIn } from "@/lib/dates";
 import { requireUser } from "@/server/auth/current-user";
@@ -31,7 +32,9 @@ async function Content() {
   return (
     <section className="flex flex-col gap-6">
       <PageHeader title={t("new")} description={t("newHint")} back={{ href: "/visits", label: t("title") }} />
-      <VisitForm mode="host" base="/visits" types={types} companies={companies} minDate={todayIn(s["org.timezone"])} />
+      <FreshOnNavigate>
+        <VisitForm mode="host" base="/visits" types={types} companies={companies} minDate={todayIn(s["org.timezone"])} />
+      </FreshOnNavigate>
     </section>
   );
 }
