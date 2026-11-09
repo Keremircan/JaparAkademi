@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { NotFoundView } from "@/components/app-shell/not-found-view";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
+import { FreshOnNavigate } from "@/components/forms/fresh-on-navigate";
 import { QuestionForm } from "@/features/questions/components/question-form";
 import { questionsAccess } from "@/features/questions/guard";
 import { can } from "@/server/authz/policy";
@@ -35,7 +36,9 @@ async function Content() {
   return (
     <section>
       <PageHeader title={t("new")} back={{ href: "/manage/questions", label: t("title") }} />
-      <QuestionForm mode="create" owners={owners} topics={topics} modules={modules} image={null} />
+      <FreshOnNavigate>
+        <QuestionForm mode="create" owners={owners} topics={topics} modules={modules} image={null} />
+      </FreshOnNavigate>
     </section>
   );
 }

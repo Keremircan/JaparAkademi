@@ -529,7 +529,14 @@
       "inactive": "Inactive",
       "empty": "No departments yet. Add the first department.",
       "noPositions": "No positions",
+      "directPositions": "Positions directly under the department",
+      "expandAll": "Expand all",
+      "collapseAll": "Collapse all",
       "activePersonnel": "{count} people",
+      "summary": {
+        "sections": "{count, plural, one {# section} other {# sections}}",
+        "positions": "{count, plural, one {# position} other {# positions}}"
+      },
       "code": "Code",
       "kind": {
         "department": "Department",

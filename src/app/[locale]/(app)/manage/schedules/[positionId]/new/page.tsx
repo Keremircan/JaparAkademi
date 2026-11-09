@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { NotFoundView } from "@/components/app-shell/not-found-view";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
+import { FreshOnNavigate } from "@/components/forms/fresh-on-navigate";
 import { orNull } from "@/features/admin/guard";
 import { ProgramForm } from "@/features/schedules/components/program-form";
 import { schedulesAccess } from "@/features/schedules/guard";
@@ -35,7 +36,9 @@ async function Content({ params }: { params: Promise<{ positionId: string }> }) 
   return (
     <section className="flex max-w-4xl flex-col gap-2">
       <PageHeader title={t("new")} description={`${data.position.unitName} · ${data.position.name}`} back={{ href: `/manage/schedules/${positionId}`, label: data.position.name }} />
-      <ProgramForm positionId={positionId} scheduleId={null} initial={null} />
+      <FreshOnNavigate>
+        <ProgramForm positionId={positionId} scheduleId={null} initial={null} />
+      </FreshOnNavigate>
     </section>
   );
 }

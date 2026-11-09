@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { NotFoundView } from "@/components/app-shell/not-found-view";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
+import { FreshOnNavigate } from "@/components/forms/fresh-on-navigate";
 import { ClassroomForm } from "@/features/classroom/components/classroom-form";
 import { libraryAccess } from "@/features/content/guard";
 import { can } from "@/server/authz/policy";
@@ -30,20 +31,22 @@ async function Content() {
   return (
     <section>
       <PageHeader title={t("new")} description={t("newIntro")} back={{ href: "/manage/classroom", label: t("title") }} />
-      <ClassroomForm
-        id={null}
-        modules={modules}
-        form={null}
-        initial={{
-          moduleId: "",
-          trainer: { userId: access.user.userId, name: access.user.fullName, sicilNo: access.user.sicilNo },
-          sessionDate: todayStr,
-          durationMin: 60,
-          location: "",
-          notes: "",
-          attendees: [],
-        }}
-      />
+      <FreshOnNavigate>
+        <ClassroomForm
+          id={null}
+          modules={modules}
+          form={null}
+          initial={{
+            moduleId: "",
+            trainer: { userId: access.user.userId, name: access.user.fullName, sicilNo: access.user.sicilNo },
+            sessionDate: todayStr,
+            durationMin: 60,
+            location: "",
+            notes: "",
+            attendees: [],
+          }}
+        />
+      </FreshOnNavigate>
     </section>
   );
 }

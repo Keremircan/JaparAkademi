@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { NotFoundView } from "@/components/app-shell/not-found-view";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { PageSkeleton } from "@/components/app-shell/page-skeleton";
+import { FreshOnNavigate } from "@/components/forms/fresh-on-navigate";
 import { CreateContentForm } from "@/features/content/components/create-content-form";
 import { libraryAccess } from "@/features/content/guard";
 import { hasAnyRole, hasRole } from "@/server/authz/policy";
@@ -32,7 +33,9 @@ async function Content() {
   return (
     <section>
       <PageHeader title={t("heading")} description={t("intro")} back={{ href: "/manage/library", label: tl("title") }} />
-      <CreateContentForm owners={owners} ohsOnly={ohsOnly} />
+      <FreshOnNavigate>
+        <CreateContentForm owners={owners} ohsOnly={ohsOnly} />
+      </FreshOnNavigate>
     </section>
   );
 }
