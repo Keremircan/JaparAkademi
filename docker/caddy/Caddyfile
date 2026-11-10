@@ -34,3 +34,8 @@
 	}
 	reverse_proxy garage:3900
 }
+
+# Aynı sunucudaki başka siteler (karar #298): sunucuda /opt/caddy-sites/*.caddy, repoya girmez.
+# Eşleşen dosya yoksa hata vermez. Bu dosyalardaki bir hata Caddy'nin açılmasını engeller:
+# kaydetmeden önce `caddy validate`, sonra `caddy reload` (docs/runbooks/deploy.md → Aynı sunucuda başka site).
+import /etc/caddy/sites/*.caddy
