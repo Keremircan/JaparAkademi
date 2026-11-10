@@ -1,5 +1,22 @@
 # Sürüm notları
 
+## Aynı sunucuda başka site (karar #298)
+
+Japar Akademi'nin Caddy'si aynı sunucudaki başka bir web uygulamasını da yayınlayabilir (ilk örnek: Em3Task,
+`gorev.japarakademi.io`). Uygulamada değişiklik yoktur; yalnızca sunucu ayarı değişir.
+
+- Caddy, repo dışındaki `/opt/caddy-sites/*.caddy` dosyalarını içe aktarır; klasör boşsa hiçbir şey değişmez.
+- Sabit adlı `edge` ağı açılır ve Japar'dan yalnızca Caddy bağlanır. Diğer uygulama Japar'ın veritabanına, dosya
+  deposuna ve yedeğine erişemez.
+
+### Güncelleme
+
+1. Her zamanki güncelleme (`docs/runbooks/deploy.md`). Bu sürümde `$C up -d` Caddy'yi yeniden oluşturur; siteler
+   birkaç saniye kesilir.
+2. Kontrol (yalnızca okur): `docker network inspect edge --format '{{range .Containers}}{{.Name}} {{end}}'` çıktısında
+   yalnızca Japar'ın caddy kapsayıcısı görünür.
+3. Diğer siteyi eklemek için `docs/runbooks/deploy.md` → **7. Aynı sunucuda başka site**.
+
 ## Örnek veri paketi (kararlar #296–297)
 
 Canlı sitede eğitim ve tanıtım için her eklenebilir kayıttan en az bir örnek, tek komutla yüklenir ve tek komutla

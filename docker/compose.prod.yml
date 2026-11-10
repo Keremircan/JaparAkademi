@@ -1,4 +1,4 @@
-# Üretim ortamı (SPEC 11.1, 13.1; karar #100–108). Türkiye'deki Linux VM'de çalışır.
+# Üretim ortamı (SPEC 11.1, 13.1; karar #100–108). Hostinger VPS'te (Almanya, karar #174) çalışır.
 #   cp docker/.env.production.example docker/.env.production   (değerleri doldurun; repoya girmez)
 #   docker compose -f docker/compose.prod.yml --env-file docker/.env.production pull
 #   docker compose -f docker/compose.prod.yml --env-file docker/.env.production up -d
@@ -95,8 +95,14 @@ services:
       ACME_EMAIL: ${ACME_EMAIL:?}
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # Aynı sunucudaki başka sitelerin Caddy blokları (karar #298); repo dışında, yoksa boş açılır
+      - ${CADDY_SITES_DIR:-/opt/caddy-sites}:/etc/caddy/sites:ro
       - caddy-data:/data
       - caddy-config:/config
+    # edge: yalnızca Caddy ile başka sitelerin web kapsayıcıları; veritabanı ve depo default ağda kalır
+    networks:
+      - default
+      - edge
     depends_on:
       - app
       - garage
@@ -121,6 +127,12 @@ services:
       postgres:
         condition: service_healthy
     <<: *logging
+
+networks:
+  # Sabit adlı ortak ağ (karar #298): başka bir compose projesi `external: true` ile katılır.
+  # Elle `docker network create edge` yapmayın; ağı bu dosya oluşturur.
+  edge:
+    name: edge
 
 volumes:
   pgdata:

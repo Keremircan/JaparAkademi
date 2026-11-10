@@ -112,6 +112,9 @@ $C logs --since 10m migrate app worker
 ```
 
 `docker/backup/` değiştiyse yedek imajı sunucuda derlendiği için ayrıca `$C up -d --build backup` çalıştırın.
+`docker/caddy/Caddyfile` değiştiyse ayrıca `$C restart caddy` çalıştırın: dosya kapsayıcıya tek dosya olarak bağlı
+olduğundan `git pull`'dan sonra Caddy eski hâlini görmeye devam eder (`up -d` yalnızca compose'da Caddy'nin ayarı
+değiştiyse onu yeniden oluşturur). Yeniden başlatma sunucudaki bütün siteleri birkaç saniye keser.
 İş paketi 3.13'ten sonraki ilk gece yedeğinde (karar #279), eskiden dosya yedeğinde kalan silinmiş dosyalar
 `.deleted/` altına taşınır ve 30 gün sonra yedekten de silinir; bu beklenen davranıştır.
 
@@ -147,3 +150,42 @@ Migration'lar geri alınmaz; şema değişikliği içeren bir sürümü geri alm
 - Caddy güvenlik başlıklarını ekler (HSTS, CSP, X-Frame-Options, Permissions-Policy, Referrer-Policy).
 - CI her değişiklikte bağımlılık güvenlik taraması yapar (`scripts/audit-check.mjs`); düzeltmesi olmayan ve incelenen istisnalar `audit-allowlist.json`'dadır ve gerekçeleri yazılıdır.
 - Kişisel veri sunucu dışındaki üçüncü taraf servislere gönderilmez. İmajlar GHCR'de durur ama yalnızca kod içerir. İstisna: e-postalar Resend (ABD) üzerinden gider (karar #258; kurulum `email-resend.md`, yedek M365 Graph).
+
+## 7. Aynı sunucuda başka site (karar #298)
+
+Japar'ın Caddy'si sunucunun tek giriş kapısıdır (80/443). Aynı sunucudaki başka bir web uygulaması (ilk örnek:
+Em3Task, `gorev.japarakademi.io`) kendi compose projesiyle çalışır ve Caddy üzerinden yayınlanır:
+
+```
+İnternet ──443──▶ caddy ──edge ağı──▶ diğer sitenin web kapsayıcısı
+                    │
+                    └── default ağı: app, worker, postgres, garage (diğer site buraya bağlanmaz)
+```
+
+| Ne | Kural |
+|---|---|
+| Site ayarı | `/opt/caddy-sites/<ad>.caddy`, repo dışında (yeri `CADDY_SITES_DIR` ile değişir). Japar Caddyfile'ı bu klasördeki `*.caddy` dosyalarını içe aktarır; dosya yoksa hata vermez. Başka sitenin ayarı Japar reposuna ya da `docker/caddy/Caddyfile`'a yazılmaz |
+| Ağ | Sabit adlı `edge` ağı. Japar compose'u oluşturur, Japar'dan yalnızca `caddy` bağlıdır. Diğer proje `networks: edge: external: true` ile ve yalnızca web kapsayıcısıyla katılır. Elle `docker network create edge` yapılmaz |
+| Adlar | Diğer sitenin `edge` ağındaki servis adı benzersizdir (ör. `em3task-web`). `app`, `worker`, `postgres`, `garage` kullanılmaz; Caddy'deki `app:3000` adresi karışır |
+| Portlar | Diğer proje port açmaz; 80/443 yalnızca Caddy'dedir |
+| Güvenlik başlıkları | Site bloğunda `import security` ile HSTS, nosniff ve Referrer-Policy eklenir |
+
+Site dosyasını ekleyince ya da değiştirince önce yazımı denetleyin, sonra yeniden yükleyin. Yeniden yükleme siteleri
+kesmez; yeni ayar hatalıysa reddedilir ve eski ayar çalışmaya devam eder:
+
+```bash
+$C exec -w /etc/caddy caddy caddy validate --config /etc/caddy/Caddyfile
+$C exec -w /etc/caddy caddy caddy reload
+```
+
+Bilmeniz gerekenler:
+
+- **Hatalı site dosyası Caddy'nin açılmasını engeller.** `reload` hatayı reddeder, ama Caddy yeniden başlarken (Japar
+  güncellemesi, sunucunun yeniden açılması) dosya hâlâ hatalıysa Caddy açılmaz ve **bütün siteler kapanır**. Öyle
+  olursa `$C logs caddy`'ye bakın, hatalı dosyayı `/opt/caddy-sites` dışına taşıyın ve `$C up -d caddy` çalıştırın.
+- `$C down` çalıştırıldığında diğer site `edge` ağına bağlıysa Compose ağı silemez ve uyarı verir; Japar kapsayıcıları
+  yine durur. Uyarı görmemek için önce diğer siteyi durdurun.
+- Diğer site Japar'ın veritabanına, dosya deposuna ve yedeğine erişemez; kendi verisinden ve yedeğinden kendi projesi
+  sorumludur.
+- Sunucu kaynakları ortaktır: Japar'ın worker'ı video işlerken (ffmpeg) işlemciyi doldurabilir. Diğer projenin
+  compose'unda bellek ve işlemci sınırı bulunur.
